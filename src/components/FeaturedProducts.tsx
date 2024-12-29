@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 const featuredProducts = [
   {
     id: 1,
     title: "Urban Explorer X1",
     price: 2499,
-    image: "/ebike111.png?w=600",
+    imagePath: "ebike111.png",
     description: "Sleek city commuter with 60-mile range and integrated smart features.",
     category: "Urban",
     path: "/bikes/urban-explorer"
@@ -15,7 +17,7 @@ const featuredProducts = [
     id: 2,
     title: "Mountain Master Pro",
     price: 3299,
-    image: "/ebike111.png?w=600",
+    imagePath: "ebike111.png",
     description: "High-performance e-MTB with dual suspension and powerful drivetrain.",
     category: "Mountain",
     path: "/bikes/mountain-master"
@@ -24,7 +26,7 @@ const featuredProducts = [
     id: 3,
     title: "City Cruiser Elite",
     price: 1999,
-    image: "/ebike111.png?w=600",
+    imagePath: "ebike111.png",
     description: "Comfortable urban e-bike with elegant design and smooth power delivery.",
     category: "City",
     path: "/bikes/city-cruiser"
@@ -33,6 +35,27 @@ const featuredProducts = [
 
 export const FeaturedProducts = () => {
   const navigate = useNavigate();
+  const [imageUrls, setImageUrls] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const imageUrl = 'https://zbzyvwuszullvlbatogb.supabase.co/storage/v1/object/public/product-images/ebike111.png';
+        console.log('Using direct URL:', imageUrl);
+        
+        const urls: { [key: string]: string } = {};
+        for (const product of featuredProducts) {
+          urls[product.imagePath] = imageUrl;
+        }
+        
+        setImageUrls(urls);
+      } catch (error) {
+        console.error('Error loading product images:', error);
+      }
+    };
+
+    loadImages();
+  }, []);
 
   return (
     <section className="py-16 bg-white" id="models">
@@ -50,11 +73,14 @@ export const FeaturedProducts = () => {
           {featuredProducts.map((product) => (
             <div key={product.id} className="bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <div className="h-[300px] relative">
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  className="w-full h-full object-cover"
-                />
+                {imageUrls[product.imagePath] && (
+                  <img
+                    src={imageUrls[product.imagePath]}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                )}
               </div>
               <div className="p-8">
                 <span className="text-sm uppercase tracking-wider text-gray-500">
