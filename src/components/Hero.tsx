@@ -7,8 +7,9 @@ export const Hero = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
+    // Preload optimized image
     const img = new Image();
-    img.src = "/Tara.jpg";
+    img.src = "/Tara.jpg?format=webp&quality=80&w=1920";
     img.onload = () => setImageLoaded(true);
   }, []);
 
@@ -20,25 +21,22 @@ export const Hero = () => {
   };
 
   return (
-    <div className="relative h-screen">
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <img
-          src="/Tara.jpg"
-          alt="Hero Background"
-          className={`w-full h-full object-cover transition-opacity duration-500 ${
-            imageLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-          loading="eager"
-          fetchPriority="high"
-        />
+    <div className="relative h-screen bg-gray-100">
+      {/* Background Image with initial color */}
+      <div className="absolute inset-0 bg-gray-200 transition-opacity duration-300">
+        {imageLoaded && (
+          <div
+            className="absolute inset-0 transition-opacity duration-500"
+            style={{
+              backgroundImage: 'url(/Tara.jpg?format=webp&quality=80&w=1920)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: imageLoaded ? 1 : 0
+            }}
+          />
+        )}
         <div className="absolute inset-0 bg-black/40" />
       </div>
-
-      {/* Loading Placeholder */}
-      {!imageLoaded && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-      )}
 
       {/* Content */}
       <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
