@@ -6,7 +6,7 @@ const featuredProducts = [
     id: 1,
     title: "Urban Explorer X1",
     price: 2499,
-    image: "/ebike111.png",
+    image: "/ebike111.png?format=webp&quality=80&w=800",
     description: "Perfect for city commuting with a range of 60 miles.",
     category: "Urban",
   },
@@ -14,7 +14,7 @@ const featuredProducts = [
     id: 2,
     title: "Mountain Master Pro",
     price: 3299,
-    image: "/ebike111.png",
+    image: "/ebike111.png?format=webp&quality=80&w=800",
     description: "Conquer any terrain with dual suspension and powerful motor.",
     category: "Mountain",
   },
@@ -22,7 +22,7 @@ const featuredProducts = [
     id: 3,
     title: "City Cruiser Elite",
     price: 1999,
-    image: "/ebike111.png",
+    image: "/ebike111.png?format=webp&quality=80&w=800",
     description: "Elegant design meets comfort for daily urban rides.",
     category: "City",
   },
@@ -48,11 +48,12 @@ export const FeaturedProducts = () => {
           } mb-16`}
         >
           {/* Image Section */}
-          <div className="w-full md:w-1/2 h-[600px] relative">
+          <div className="w-full md:w-1/2 h-[600px] relative bg-gray-50">
             <img
               src={product.image}
               alt={product.title}
               className="w-full h-full object-cover"
+              loading={index === 0 ? "eager" : "lazy"}
             />
           </div>
 
