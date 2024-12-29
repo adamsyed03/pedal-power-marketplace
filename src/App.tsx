@@ -1,31 +1,29 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navigation } from "@/components/Navigation";
 import Index from "@/pages/Index";
 import AboutUs from "@/pages/AboutUs";
-import Dealers from "@/pages/Dealers";
 import Contact from "@/pages/Contact";
-
-const queryClient = new QueryClient();
+import Dealers from "@/pages/Dealers";
+import UrbanExplorer from "@/pages/BikeDetails/UrbanExplorer";
+import MountainMaster from "@/pages/BikeDetails/MountainMaster";
+import CityCruiser from "@/pages/BikeDetails/CityCruiser";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Router>
-          <div className="min-h-screen bg-background">
-            <Navigation />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/about-us" element={<AboutUs />} />
-              <Route path="/dealers" element={<Dealers />} />
-              <Route path="/contact" element={<Contact />} />
-            </Routes>
-          </div>
-        </Router>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <Router>
+      <div className="min-h-screen">
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/dealers" element={<Dealers />} />
+          <Route path="/bikes/urban-explorer" element={<UrbanExplorer />} />
+          <Route path="/bikes/mountain-master" element={<MountainMaster />} />
+          <Route path="/bikes/city-cruiser" element={<CityCruiser />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
