@@ -1,4 +1,3 @@
-import { ProductCard } from "./ProductCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -47,41 +46,9 @@ export const FeaturedProducts = () => {
 
       {/* Product Grid */}
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* First Row - Large Featured Product */}
-          <div className="md:col-span-2">
-            <div className="bg-gray-50 rounded-2xl overflow-hidden">
-              <div className="grid md:grid-cols-2 items-center">
-                <div className="h-[400px] relative">
-                  <img
-                    src={featuredProducts[0].image}
-                    alt={featuredProducts[0].title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-8 md:p-12">
-                  <span className="text-sm uppercase tracking-wider text-gray-500">
-                    {featuredProducts[0].category}
-                  </span>
-                  <h3 className="text-3xl font-bold mt-2 mb-4">{featuredProducts[0].title}</h3>
-                  <p className="text-base text-gray-600 mb-6 line-clamp-2">{featuredProducts[0].description}</p>
-                  <p className="text-2xl font-bold text-primary mb-8">
-                    Starting from ${featuredProducts[0].price.toLocaleString()}
-                  </p>
-                  <Button 
-                    onClick={() => navigate(featuredProducts[0].path)}
-                    className="w-full md:w-auto"
-                  >
-                    Learn More
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Second Row - Two Smaller Products */}
-          {featuredProducts.slice(1).map((product) => (
-            <div key={product.id} className="bg-gray-50 rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {featuredProducts.map((product) => (
+            <div key={product.id} className="bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <div className="h-[300px] relative">
                 <img
                   src={product.image}
@@ -100,7 +67,7 @@ export const FeaturedProducts = () => {
                 </p>
                 <Button 
                   onClick={() => navigate(product.path)}
-                  className="w-full"
+                  className="w-full bg-black text-white hover:bg-black/90"
                 >
                   Learn More
                 </Button>

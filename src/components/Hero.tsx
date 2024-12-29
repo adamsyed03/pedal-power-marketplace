@@ -1,17 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
   const navigate = useNavigate();
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  useEffect(() => {
-    // Preload a smaller version first
-    const img = new Image();
-    img.src = "/Tara.jpg?w=800";
-    img.onload = () => setImageLoaded(true);
-  }, []);
 
   const scrollToModels = () => {
     const modelsSection = document.getElementById('models');
@@ -21,34 +13,19 @@ export const Hero = () => {
   };
 
   return (
-    <div className="relative h-screen bg-gray-100">
-      {/* Background Image with initial color */}
-      <div className="absolute inset-0 bg-gray-200">
-        <div
-          className={`absolute inset-0 transition-opacity duration-500 ${
-            imageLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{
-            backgroundImage: `url(/Tara.jpg?w=800)`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        <div className="absolute inset-0 bg-black/40" />
-      </div>
-
+    <div className="relative h-screen bg-gray-50">
       {/* Content */}
       <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
-        <h1 className="text-4xl md:text-6xl font-bold mb-8 text-white drop-shadow-lg max-w-[90vw] mx-auto">
+        <h1 className="text-4xl md:text-6xl font-bold mb-8 text-gray-900 max-w-[90vw] mx-auto">
           Experience the Future of E-Mobility
         </h1>
-        <p className="text-xl md:text-2xl mb-12 max-w-3xl text-white/95 font-light drop-shadow">
+        <p className="text-xl md:text-2xl mb-12 max-w-3xl text-gray-600 font-light">
           Premium electric bikes designed for urban adventures and sustainable commuting
         </p>
         <div className="flex justify-center">
           <Button 
             onClick={scrollToModels}
-            className="bg-white/90 text-black hover:bg-white px-8 py-6 text-lg transition-all duration-300 shadow-lg"
+            className="bg-black text-white hover:bg-black/90 px-8 py-6 text-lg transition-all duration-300 shadow-lg"
           >
             Explore Models
           </Button>
@@ -58,7 +35,7 @@ export const Hero = () => {
       {/* Scroll Indicator */}
       <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
         <svg
-          className="w-8 h-8 text-white/80"
+          className="w-8 h-8 text-gray-400"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
