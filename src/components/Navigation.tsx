@@ -7,7 +7,6 @@ export const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Add scroll event listener
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -21,15 +20,14 @@ export const Navigation = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleNavClick = (path: string) => {
     if (location.pathname === path) {
-      scrollToTop();
+      // If we're already on the page, scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
+      // If we're navigating to a new page, navigate and then scroll to top
       navigate(path);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
