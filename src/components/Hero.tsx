@@ -1,8 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export const Hero = () => {
   const navigate = useNavigate();
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/Tara.jpg";
+    img.onload = () => setImageLoaded(true);
+  }, []);
 
   const scrollToModels = () => {
     const modelsSection = document.getElementById('models');
@@ -18,10 +26,19 @@ export const Hero = () => {
         <img
           src="/Tara.jpg"
           alt="Hero Background"
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover transition-opacity duration-500 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          loading="eager"
+          fetchPriority="high"
         />
         <div className="absolute inset-0 bg-black/40" />
       </div>
+
+      {/* Loading Placeholder */}
+      {!imageLoaded && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+      )}
 
       {/* Content */}
       <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
