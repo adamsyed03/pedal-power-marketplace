@@ -25,11 +25,11 @@ export default function Dealers() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location
+                    City
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter your city or postal code"
+                    placeholder="Enter your city"
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>

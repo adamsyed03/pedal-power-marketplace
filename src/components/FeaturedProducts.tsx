@@ -71,7 +71,11 @@ export const FeaturedProducts = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {featuredProducts.map((product) => (
-            <div key={product.id} className="bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div 
+              key={product.id} 
+              className="bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
+              onClick={() => navigate(product.path)}
+            >
               <div className="h-[300px] relative">
                 {imageUrls[product.imagePath] && (
                   <img
@@ -92,8 +96,7 @@ export const FeaturedProducts = () => {
                   Starting from ${product.price.toLocaleString()}
                 </p>
                 <Button 
-                  onClick={() => navigate(product.path)}
-                  className="w-full bg-black text-white hover:bg-black/90"
+                  className="w-full bg-black text-white hover:bg-black/90 group-hover:bg-black/80"
                 >
                   Learn More
                 </Button>
