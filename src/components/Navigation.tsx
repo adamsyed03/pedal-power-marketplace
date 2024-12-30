@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -114,41 +114,66 @@ export const Navigation = () => {
       </nav>
 
       {/* Mobile Menu Overlay */}
-      <div
-        className={`fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out ${
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        } md:hidden`}
-      >
-        <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
-        <div className="absolute right-0 h-full w-64 bg-white shadow-xl">
-          <div className="flex flex-col p-6 space-y-4">
-            <button
-              onClick={scrollToModels}
-              className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              Models
-            </button>
-            <button
-              onClick={() => handleNavClick('/about-us')}
-              className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              About Us
-            </button>
-            <button
-              onClick={() => handleNavClick('/dealers')}
-              className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              Find Dealer
-            </button>
-            <button
-              onClick={() => handleNavClick('/contact')}
-              className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              Contact Us
-            </button>
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] md:hidden">
+          <div 
+            className={`fixed right-0 top-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
+              isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
+          >
+            <div className="flex flex-col h-full">
+              <div className="flex justify-end p-4">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-label="Close menu"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </Button>
+              </div>
+              <div className="flex flex-col p-6 space-y-4">
+                <button
+                  onClick={scrollToModels}
+                  className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  Models
+                </button>
+                <button
+                  onClick={() => handleNavClick('/about-us')}
+                  className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  About Us
+                </button>
+                <button
+                  onClick={() => handleNavClick('/dealers')}
+                  className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  Find Dealer
+                </button>
+                <button
+                  onClick={() => handleNavClick('/contact')}
+                  className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  Contact Us
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 }; 
