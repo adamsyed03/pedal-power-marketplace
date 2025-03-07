@@ -2,22 +2,22 @@ import { Button } from "@/components/ui/button";
 
 const benefits = [
   {
-    title: "Future Mobility",
-    description: "Shaping tomorrow's mobility with premium e-bikes, leasing and sharing offers. Together, we take responsibility for a future worth living.",
+    title: "Mobilnost Budućnosti",
+    description: "Oblikujemo mobilnost sutrašnjice sa premium e-biciklima, lizingom i ponudama za deljenje. Zajedno preuzimamo odgovornost za budućnost vrednu življenja.",
     image: "/placeholder.svg",
-    link: "Learn More",
+    link: "Saznaj Više",
   },
   {
-    title: "Sustainable Innovation",
-    description: "Our commitment to sustainability goes beyond eco-friendly transportation. We use recycled materials and renewable energy in our production.",
+    title: "Održiva Inovacija",
+    description: "Naša posvećenost održivosti prevazilazi ekološki transport. Koristimo reciklirane materijale i obnovljivu energiju u našoj proizvodnji.",
     image: "/placeholder.svg",
-    link: "Our Impact",
+    link: "Naš Uticaj",
   },
   {
-    title: "Connected Experience",
-    description: "Smart features and digital integration for a better riding experience. Track your rides, manage your bike, and stay connected.",
+    title: "Povezano Iskustvo",
+    description: "Pametne funkcije i digitalna integracija za bolje iskustvo vožnje. Pratite svoje vožnje, upravljajte svojim biciklom i ostanite povezani.",
     image: "/placeholder.svg",
-    link: "Discover Technology",
+    link: "Otkrijte Tehnologiju",
   },
 ];
 
@@ -26,9 +26,9 @@ export const Benefits = () => {
     <section className="py-16">
       {/* Main Title */}
       <div className="container mx-auto px-4 mb-16 text-center">
-        <h2 className="text-4xl font-bold mb-4">Why Choose Pogon</h2>
+        <h2 className="text-4xl font-bold mb-4">Zašto Izabrati Pogon</h2>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Experience the perfect blend of innovation, sustainability, and premium quality
+          Doživite savršen spoj inovacije, održivosti i vrhunskog kvaliteta
         </p>
       </div>
 

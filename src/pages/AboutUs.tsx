@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 
 export default function AboutUs() {
   return (
@@ -8,9 +8,9 @@ export default function AboutUs() {
       <div className="relative h-screen bg-gray-100">
         <div className="container mx-auto px-4 h-full flex items-center pt-20">
           <div className="max-w-2xl">
-            <h1 className="text-5xl font-bold mb-6">About Pogon</h1>
+            <h1 className="text-5xl font-bold mb-6">O Pogonu</h1>
             <p className="text-xl text-gray-600">
-              Shaping the future of sustainable mobility through innovation and design excellence.
+              Oblikujemo budućnost održive mobilnosti kroz inovacije i vrhunski dizajn.
             </p>
           </div>
         </div>
@@ -21,16 +21,16 @@ export default function AboutUs() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-3xl font-bold mb-6">Our Story</h2>
+              <h2 className="text-3xl font-bold mb-6">Naša Priča</h2>
               <p className="text-lg text-gray-600 mb-6">
-                Founded with a vision to revolutionize urban mobility, Pogon has been at the forefront 
-                of e-bike innovation. Our commitment to sustainability and premium quality drives 
-                everything we do.
+                Osnovani sa vizijom revolucionisanja gradske mobilnosti, Pogon je bio na čelu 
+                inovacija e-bicikala. Naša posvećenost održivosti i vrhunskom kvalitetu pokreće 
+                sve što radimo.
               </p>
               <p className="text-lg text-gray-600">
-                We believe in creating products that not only excel in performance but also contribute 
-                to a more sustainable future. Each bike is crafted with precision, incorporating the 
-                latest technology while maintaining our commitment to environmental responsibility.
+                Verujemo u stvaranje proizvoda koji ne samo da se ističu po performansama, već 
+                i doprinose održivijoj budućnosti. Svaki bicikl je izrađen sa preciznošću, 
+                uključujući najnoviju tehnologiju uz održavanje naše posvećenosti ekološkoj odgovornosti.
               </p>
             </div>
             <div className="bg-gray-200 h-[400px]">
@@ -43,24 +43,24 @@ export default function AboutUs() {
       {/* Values Section */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-16">Our Values</h2>
+          <h2 className="text-3xl font-bold text-center mb-16">Naše Vrednosti</h2>
           <div className="grid md:grid-cols-3 gap-12">
             <div className="text-center">
-              <h3 className="text-xl font-bold mb-4">Innovation</h3>
+              <h3 className="text-xl font-bold mb-4">Inovacija</h3>
               <p className="text-gray-600">
-                Pushing the boundaries of what's possible in e-bike technology and design.
+                Pomeramo granice mogućeg u tehnologiji i dizajnu e-bicikala.
               </p>
             </div>
             <div className="text-center">
-              <h3 className="text-xl font-bold mb-4">Sustainability</h3>
+              <h3 className="text-xl font-bold mb-4">Održivost</h3>
               <p className="text-gray-600">
-                Committed to environmental responsibility in every aspect of our business.
+                Posvećeni ekološkoj odgovornosti u svakom aspektu našeg poslovanja.
               </p>
             </div>
             <div className="text-center">
-              <h3 className="text-xl font-bold mb-4">Quality</h3>
+              <h3 className="text-xl font-bold mb-4">Kvalitet</h3>
               <p className="text-gray-600">
-                Uncompromising attention to detail and premium craftsmanship.
+                Beskompromisna pažnja prema detaljima i vrhunska izrada.
               </p>
             </div>
           </div>
@@ -70,13 +70,13 @@ export default function AboutUs() {
       {/* Contact Section */}
       <section className="py-20">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8">Get in Touch</h2>
+          <h2 className="text-3xl font-bold mb-8">Kontaktirajte Nas</h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Have questions about Pogon? We'd love to hear from you and help you discover 
-            the perfect e-bike for your needs.
+            Imate pitanja o Pogonu? Rado ćemo vas čuti i pomoći vam da pronađete 
+            savršen e-bicikl za vaše potrebe.
           </p>
           <Button variant="default" className="bg-black text-white hover:bg-black/90">
-            Contact Us
+            Kontaktirajte Nas
           </Button>
         </div>
       </section>

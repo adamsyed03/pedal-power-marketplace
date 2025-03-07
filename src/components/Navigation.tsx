@@ -49,8 +49,8 @@ export const Navigation = () => {
       <nav
         className={`fixed w-full z-50 transition-all duration-300 ${
           isScrolled 
-            ? "bg-gray-100 text-gray-900 shadow-lg" 
-            : "bg-gray-200/95 text-gray-900"
+            ? "bg-neutral-200 text-neutral-900 shadow-lg" 
+            : "bg-neutral-200/95 text-neutral-900"
         }`}
       >
         <div className="container mx-auto px-4">
@@ -58,31 +58,31 @@ export const Navigation = () => {
             {/* Logo */}
             <div 
               onClick={() => handleNavClick('/')} 
-              className="flex-shrink-0 font-bold text-2xl tracking-wider cursor-pointer"
+              className="flex-shrink-0 font-bold text-2xl tracking-wider cursor-pointer text-neutral-900"
             >
               POGON
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
-              <button onClick={scrollToModels} className="hover:opacity-75 transition-opacity">Models</button>
+              <button onClick={scrollToModels} className="text-neutral-700 hover:text-neutral-900 transition-colors">Modeli</button>
               <button 
                 onClick={() => handleNavClick('/about-us')} 
-                className="hover:opacity-75 transition-opacity"
+                className="text-neutral-700 hover:text-neutral-900 transition-colors"
               >
-                About Us
-              </button>
-              <button 
-                onClick={() => handleNavClick('/dealers')}
-                className="hover:opacity-75 transition-opacity"
-              >
-                Find Dealer
+                O Nama
               </button>
               <button 
                 onClick={() => handleNavClick('/contact')}
-                className="border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-colors px-4 py-2 rounded-md"
+                className="text-neutral-700 hover:text-neutral-900 transition-colors"
               >
-                Contact Us
+                Pronađi Prodavca
+              </button>
+              <button 
+                onClick={() => handleNavClick('/contact')}
+                className="border-2 border-neutral-800 text-neutral-800 hover:bg-neutral-800 hover:text-neutral-100 transition-colors px-4 py-2 rounded-md"
+              >
+                Kontakt
               </button>
             </div>
 
@@ -92,6 +92,7 @@ export const Navigation = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-neutral-800"
                 aria-label="Toggle menu"
               >
                 <svg
@@ -115,11 +116,15 @@ export const Navigation = () => {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] md:hidden">
+        <div 
+          className="fixed inset-0 bg-neutral-900/50 z-[100] md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
           <div 
-            className={`fixed right-0 top-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
+            className={`fixed right-0 top-0 h-full w-64 bg-neutral-200 shadow-xl transform transition-transform duration-300 ease-in-out ${
               isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
             }`}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col h-full">
               <div className="flex justify-end p-4">
@@ -127,6 +132,7 @@ export const Navigation = () => {
                   variant="ghost" 
                   size="icon"
                   onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-neutral-800"
                   aria-label="Close menu"
                 >
                   <svg
@@ -147,27 +153,27 @@ export const Navigation = () => {
               <div className="flex flex-col p-6 space-y-4">
                 <button
                   onClick={scrollToModels}
-                  className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
-                  Models
+                  Modeli
                 </button>
                 <button
                   onClick={() => handleNavClick('/about-us')}
-                  className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
-                  About Us
-                </button>
-                <button
-                  onClick={() => handleNavClick('/dealers')}
-                  className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-                >
-                  Find Dealer
+                  O Nama
                 </button>
                 <button
                   onClick={() => handleNavClick('/contact')}
-                  className="text-left px-4 py-3 text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
-                  Contact Us
+                  Pronađi Prodavca
+                </button>
+                <button
+                  onClick={() => handleNavClick('/contact')}
+                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
+                >
+                  Kontakt
                 </button>
               </div>
             </div>

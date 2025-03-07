@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "../components/ui/button";
+import { DealerSearch } from "../components/DealerSearch";
 
 export default function Dealers() {
   return (
@@ -16,42 +17,8 @@ export default function Dealers() {
         </div>
       </div>
 
-      {/* Search Section */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-xl mx-auto">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold mb-6">Dealer Search</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter your city"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Distance
-                  </label>
-                  <select className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
-                    <option>5 km</option>
-                    <option>10 km</option>
-                    <option>25 km</option>
-                    <option>50 km</option>
-                  </select>
-                </div>
-                <Button className="w-full bg-black text-white hover:bg-black/90">
-                  Search Dealers
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Dealer Search Component */}
+      <DealerSearch />
 
       {/* Map Section */}
       <section className="py-12 bg-gray-50">
