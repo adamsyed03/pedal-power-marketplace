@@ -1,113 +1,106 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
+const images = [
+  { id: 1, src: "/ebike111.png", alt: "Urban Explorer Front View" },
+  { id: 2, src: "/ebike111.png", alt: "Urban Explorer Side View" },
+  { id: 3, src: "/ebike111.png", alt: "Urban Explorer Folded" },
+  { id: 4, src: "/ebike111.png", alt: "Urban Explorer Details" },
+];
+
+const specifications = [
+  { label: "Speed (max)", value: "25km/h" },
+  { label: "Range (minimum)", value: "40km" },
+  { label: "Power (max)", value: "250W" },
+  { label: "Weight (max)", value: "115kg" },
+  { label: "Charge time", value: "5-6h" },
+  { label: "Wheel size", value: "14-16inch" },
+  { label: "Build", value: "foldable" },
+];
+
 export default function UrbanExplorer() {
   const navigate = useNavigate();
+  const [selectedImage, setSelectedImage] = useState(images[0]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div className="min-h-screen pt-20">
-      {/* Hero Section */}
-      <div className="relative h-[60vh] bg-gray-100">
-        <div className="absolute inset-0">
-          <img
-            src="/ebike111.png?w=1200"
-            alt="Urban Explorer X1"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/20" />
-        </div>
-        <div className="relative container mx-auto px-4 h-full flex items-center">
-          <div className="max-w-2xl text-white">
-            <h1 className="text-5xl font-bold mb-4">Urban Explorer X1</h1>
-            <p className="text-xl opacity-90">
-              Savršen pratilac za vaše gradske avanture
-            </p>
+    <div className="min-h-screen pt-20 bg-neutral-50">
+      <div className="container mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-8 items-start">
+          {/* Left Column - Product Info */}
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold text-neutral-900 mb-3">Urban Explorer X1</h1>
+              <p className="text-base text-neutral-600 mb-4">
+                Urban Explorer X1 je vrhunski električni bicikl dizajniran za gradsku vožnju, 
+                kombinujući stil i praktičnost. Sa svojim kompaktnim sklopivim dizajnom i naprednom 
+                tehnologijom, predstavlja savršeno rešenje za svakodnevno putovanje i gradske avanture.
+              </p>
+            </div>
+
+            {/* Specifications */}
+            <div>
+              <h2 className="text-xl font-bold text-neutral-900 mb-3">Specifikacije</h2>
+              <div className="grid gap-2">
+                {specifications.map((spec) => (
+                  <div key={spec.label} className="flex items-center border-b border-neutral-200 pb-1">
+                    <span className="text-neutral-600 w-1/2 text-sm">{spec.label}</span>
+                    <span className="text-neutral-900 font-medium text-sm">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Price and CTA */}
+            <div className="space-y-3">
+              <p className="text-2xl font-bold text-neutral-900">€450</p>
+              <Button 
+                onClick={() => navigate('/contact')}
+                className="w-full bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 text-base"
+              >
+                Kontaktirajte Nas
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Column - Images */}
+          <div className="space-y-3">
+            {/* Main Image */}
+            <div className="bg-white rounded-xl p-3 border border-neutral-200">
+              <img
+                src={selectedImage.src}
+                alt={selectedImage.alt}
+                className="w-full h-[350px] object-contain"
+              />
+            </div>
+
+            {/* Thumbnail Images */}
+            <div className="grid grid-cols-4 gap-3">
+              {images.map((image) => (
+                <button
+                  key={image.id}
+                  onClick={() => setSelectedImage(image)}
+                  className={`bg-white rounded-lg p-2 border transition-all ${
+                    selectedImage.id === image.id
+                      ? 'border-neutral-900'
+                      : 'border-neutral-200 hover:border-neutral-400'
+                  }`}
+                >
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    className="w-full h-16 object-contain"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Specifications */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-16">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">Tehničke Specifikacije</h2>
-              <div className="space-y-4">
-                <div className="border-b pb-4">
-                  <h3 className="font-medium text-gray-900">Domet</h3>
-                  <p className="text-gray-600">Do 60 kilometara sa jednim punjenjem</p>
-                </div>
-                <div className="border-b pb-4">
-                  <h3 className="font-medium text-gray-900">Motor</h3>
-                  <p className="text-gray-600">500W motor sa 5 nivoa asistencije</p>
-                </div>
-                <div className="border-b pb-4">
-                  <h3 className="font-medium text-gray-900">Baterija</h3>
-                  <p className="text-gray-600">48V 14Ah litijum-jonska baterija, uklonjiva</p>
-                </div>
-                <div className="border-b pb-4">
-                  <h3 className="font-medium text-gray-900">Vreme Punjenja</h3>
-                  <p className="text-gray-600">4-6 sati od praznog do punog</p>
-                </div>
-                <div className="border-b pb-4">
-                  <h3 className="font-medium text-gray-900">Ram</h3>
-                  <p className="text-gray-600">Lagan aluminijumski ram, step-through dizajn</p>
-                </div>
-              </div>
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold mb-6">Ključne Karakteristike</h2>
-              <ul className="space-y-4">
-                <li className="flex items-start">
-                  <svg className="w-6 h-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-600">Integrisana LED svetla za bezbednost</span>
-                </li>
-                <li className="flex items-start">
-                  <svg className="w-6 h-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-600">LCD ekran sa USB portom za punjenje</span>
-                </li>
-                <li className="flex items-start">
-                  <svg className="w-6 h-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-600">Hidraulične disk kočnice za pouzdano zaustavljanje</span>
-                </li>
-                <li className="flex items-start">
-                  <svg className="w-6 h-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-600">9-brzinski Shimano sistem menjača</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8">Spremni da Isprobate Urban Explorer?</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Kontaktirajte nas da saznate više o Urban Explorer X1 i zakažete test vožnju.
-          </p>
-          <Button 
-            onClick={() => navigate('/contact')}
-            className="bg-black text-white hover:bg-black/90 px-8 py-6 text-lg"
-          >
-            Kontaktirajte Nas
-          </Button>
-        </div>
-      </section>
     </div>
   );
 } 

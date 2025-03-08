@@ -8,7 +8,14 @@ export const Hero = () => {
   const scrollToModels = () => {
     const modelsSection = document.getElementById('models');
     if (modelsSection) {
-      modelsSection.scrollIntoView({ behavior: 'smooth' });
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = modelsSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
