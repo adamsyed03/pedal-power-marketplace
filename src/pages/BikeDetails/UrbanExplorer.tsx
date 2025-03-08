@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const images = [
   { id: 1, src: "/ebike111.png", alt: "Urban Explorer Front View" },
@@ -22,10 +23,26 @@ const specifications = [
 export default function UrbanExplorer() {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(images[0]);
+  const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
+  const [mainImageLoaded, setMainImageLoaded] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Preload all images
+    images.forEach((image) => {
+      const img = new Image();
+      img.src = image.src;
+      img.onload = () => {
+        setImagesLoaded(prev => ({ ...prev, [image.id]: true }));
+      };
+    });
   }, []);
+
+  // Reset main image loaded state when selected image changes
+  useEffect(() => {
+    setMainImageLoaded(false);
+  }, [selectedImage]);
 
   return (
     <div className="min-h-screen pt-20 bg-neutral-50">
@@ -70,11 +87,19 @@ export default function UrbanExplorer() {
           {/* Right Column - Images */}
           <div className="space-y-3">
             {/* Main Image */}
-            <div className="bg-white rounded-xl p-3 border border-neutral-200">
+            <div className="bg-white rounded-xl p-3 border border-neutral-200 relative">
+              {!mainImageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Skeleton className="w-full h-[350px] rounded-lg" />
+                </div>
+              )}
               <img
                 src={selectedImage.src}
                 alt={selectedImage.alt}
-                className="w-full h-[350px] object-contain"
+                className={`w-full h-[350px] object-contain transition-opacity duration-300 ${
+                  mainImageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                onLoad={() => setMainImageLoaded(true)}
               />
             </div>
 
@@ -84,16 +109,24 @@ export default function UrbanExplorer() {
                 <button
                   key={image.id}
                   onClick={() => setSelectedImage(image)}
-                  className={`bg-white rounded-lg p-2 border transition-all ${
+                  className={`bg-white rounded-lg p-2 border transition-all relative ${
                     selectedImage.id === image.id
                       ? 'border-neutral-900'
                       : 'border-neutral-200 hover:border-neutral-400'
                   }`}
                 >
+                  {!imagesLoaded[image.id] && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Skeleton className="w-full h-16 rounded-lg" />
+                    </div>
+                  )}
                   <img
                     src={image.src}
                     alt={image.alt}
-                    className="w-full h-16 object-contain"
+                    className={`w-full h-16 object-contain transition-opacity duration-300 ${
+                      imagesLoaded[image.id] ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    onLoad={() => setImagesLoaded(prev => ({ ...prev, [image.id]: true }))}
                   />
                 </button>
               ))}
