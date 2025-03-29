@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 const featuredProducts = [
   {
     id: 1,
-    title: "Urban Explorer X1",
-    price: 450,
+    title: "Pogon X",
+    price: 58500,
+    originalPrice: 63999,
     imagePath: "/ebike111.png",
-    description: "Premium električni bicikl sa pametnim funkcijama, savršen za gradsku vožnju i vikend avanture. Opremljen snažnim motorom i dugotrajnom baterijom.",
+    description: "Premium električni bicikl sa pametnim funkcijama, savršen za gradsku vožnju ako su vam dosadile duge gužve i potrage za parkingom",
     category: "Gradski",
     path: "/bikes/urban-explorer"
   }
@@ -51,9 +52,14 @@ export const FeaturedProducts = () => {
                 </span>
                 <h3 className="text-2xl font-bold mt-1 mb-2 text-neutral-900">{product.title}</h3>
                 <p className="text-base text-neutral-600 mb-4">{product.description}</p>
-                <p className="text-xl font-bold text-neutral-900 mb-4">
-                  €{product.price.toLocaleString()}
-                </p>
+                <div className="flex items-center gap-3 mb-4">
+                  <p className="text-xl font-bold text-neutral-900">
+                    {product.price.toLocaleString()} RSD
+                  </p>
+                  <p className="text-lg text-neutral-500 line-through">
+                    {product.originalPrice.toLocaleString()} RSD
+                  </p>
+                </div>
                 <Button 
                   className="w-full bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 text-base group-hover:bg-neutral-800"
                 >

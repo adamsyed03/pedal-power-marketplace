@@ -2,23 +2,23 @@ import { Button } from "@/components/ui/button";
 
 const benefits = [
   {
-    title: "Mobilnost Budućnosti",
-    description: "Oblikujemo mobilnost sutrašnjice sa premium e-biciklima, lizingom i ponudama za deljenje. Zajedno preuzimamo odgovornost za budućnost vrednu življenja.",
-    image: "/placeholder.svg",
-    link: "Saznaj Više",
+    title: "Zdravlje",
+    description: "Zamislite da svakog dana udišete vazduh koji ozbiljno narušava vaše zdravlje — jer to se već dešava. Beograd je među najzagađenijim prestonicama Evrope, sa prosečnom godišnjom koncentracijom PM2.5 čestica od 23,3 µg/m³. Te čestice ulaze duboko u pluća i povećavaju rizik od astme, srčanih bolesti i čak prerane smrti. Pogon nudi rešenje: tihi, električni bicikl koji ne zagađuje i pomaže da zajedno pročistimo vazduh koji dišemo.",
+    source: "IQAir, 2023",
+    image: "/placeholder.svg"
   },
   {
-    title: "Održiva Inovacija",
-    description: "Naša posvećenost održivosti prevazilazi ekološki transport. Koristimo reciklirane materijale i obnovljivu energiju u našoj proizvodnji.",
-    image: "/placeholder.svg",
-    link: "Naš Uticaj",
+    title: "Vreme",
+    description: "U Beogradu svakog dana potrošimo skoro 40 minuta u prevozu — često u haosu, nervozi i zastoju. To je više od 10 dana godišnje izgubljenih u saobraćaju. Umesto da stojite u koloni, mogli biste se kretati lako, brzo i direktno kroz grad uz pomoć Pogona — e-bicikla koji vas vodi bez stresa, kad god i gde god poželite.",
+    source: "Numbeo, 2023",
+    image: "/placeholder.svg"
   },
   {
-    title: "Povezano Iskustvo",
-    description: "Pametne funkcije i digitalna integracija za bolje iskustvo vožnje. Pratite svoje vožnje, upravljajte svojim biciklom i ostanite povezani.",
-    image: "/placeholder.svg",
-    link: "Otkrijte Tehnologiju",
-  },
+    title: "Ekonomske Prednosti",
+    description: "Od hleba do goriva — sve poskupljuje. Inflacija u Srbiji je u 2023. godini dostigla dvocifrene vrednosti, pri čemu su cene osnovnih proizvoda i usluga skočile i do 20% u nekim sektorima. Troškovi prevoza postaju sve veći deo kućnog budžeta. Pogon je odgovor na svakodnevni pritisak na novčanik: jednom kupite, a vozite bez goriva, registracije, servisa ili parkinga.",
+    source: "Republički zavod za statistiku, 2023",
+    image: "/placeholder.svg"
+  }
 ];
 
 export const Benefits = () => {
@@ -53,14 +53,12 @@ export const Benefits = () => {
             {/* Content Section */}
             <div className="w-full md:w-1/2 flex flex-col justify-center p-8 md:p-16 bg-white">
               <h3 className="text-3xl font-bold mb-6">{benefit.title}</h3>
-              <p className="text-lg text-gray-600 mb-8">
+              <p className="text-lg text-gray-600 mb-4">
                 {benefit.description}
               </p>
-              <div>
-                <Button variant="outline" className="border-black text-black hover:bg-black hover:text-white">
-                  {benefit.link}
-                </Button>
-              </div>
+              <p className="text-sm text-gray-500 italic">
+                Izvor: {benefit.source}
+              </p>
             </div>
           </div>
         ))}

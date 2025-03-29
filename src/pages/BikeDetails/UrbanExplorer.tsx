@@ -11,13 +11,13 @@ const images = [
 ];
 
 const specifications = [
-  { label: "Speed (max)", value: "25km/h" },
-  { label: "Range (minimum)", value: "40km" },
-  { label: "Power (max)", value: "250W" },
-  { label: "Weight (max)", value: "115kg" },
-  { label: "Charge time", value: "5-6h" },
-  { label: "Wheel size", value: "14-16inch" },
-  { label: "Build", value: "foldable" },
+  { label: "Brzina (maks.)", value: "25km/h" },
+  { label: "Domet", value: "40km" },
+  { label: "Snaga", value: "250W" },
+  { label: "Nosivost (maks.)", value: "115kg" },
+  { label: "Vreme punjenja", value: "5-6h" },
+  { label: "Veličina točkova", value: "16 inch" },
+  { label: "Tip konstrukcije", value: "Sklopiv" },
 ];
 
 export default function UrbanExplorer() {
@@ -51,11 +51,12 @@ export default function UrbanExplorer() {
           {/* Left Column - Product Info */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-neutral-900 mb-3">Urban Explorer X1</h1>
+              <h1 className="text-3xl font-bold text-neutral-900 mb-3">Pogon X</h1>
               <p className="text-base text-neutral-600 mb-4">
-                Urban Explorer X1 je vrhunski električni bicikl dizajniran za gradsku vožnju, 
-                kombinujući stil i praktičnost. Sa svojim kompaktnim sklopivim dizajnom i naprednom 
-                tehnologijom, predstavlja savršeno rešenje za svakodnevno putovanje i gradske avanture.
+                Pogon X je vrhunski električni bicikl dizajniran za gradsku vožnju, 
+                savršen za one kojima su dosadile duge gužve i potrage za parkingom. Sa svojim 
+                kompaktnim sklopivim dizajnom i naprednom tehnologijom, predstavlja idealno 
+                rešenje za svakodnevno putovanje kroz grad.
               </p>
             </div>
 
@@ -74,7 +75,10 @@ export default function UrbanExplorer() {
 
             {/* Price and CTA */}
             <div className="space-y-3">
-              <p className="text-2xl font-bold text-neutral-900">€450</p>
+              <div className="flex items-center gap-3">
+                <p className="text-2xl font-bold text-neutral-900">58.500 RSD</p>
+                <p className="text-xl text-neutral-500 line-through">63.999 RSD</p>
+              </div>
               <Button 
                 onClick={() => navigate('/contact')}
                 className="w-full bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 text-base"

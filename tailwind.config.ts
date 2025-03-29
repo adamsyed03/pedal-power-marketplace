@@ -10,6 +10,9 @@ export default {
   ],
   prefix: "",
   theme: {
+    fontFamily: {
+      sans: ['Satoshi', 'system-ui', 'sans-serif'],
+    },
     container: {
       center: true,
       padding: "2rem",
@@ -52,9 +55,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-      },
-      fontFamily: {
-        sans: ["Inter", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

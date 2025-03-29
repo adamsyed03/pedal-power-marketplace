@@ -20,7 +20,7 @@ export const Hero = () => {
   };
 
   return (
-    <div className="relative h-screen">
+    <div className="relative h-screen flex items-center justify-center">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
@@ -32,27 +32,25 @@ export const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
-        <h1 className="text-4xl md:text-6xl font-bold mb-8 text-white max-w-[90vw] mx-auto">
+      <div className="relative w-full flex flex-col items-center justify-center text-center px-4 -mt-12">
+        <h1 className="text-3xl md:text-5xl font-bold mb-8 text-white whitespace-nowrap tracking-tight">
           Doživite Budućnost E-Mobilnosti
         </h1>
-        <p className="text-xl md:text-2xl mb-12 max-w-3xl text-neutral-100 font-light">
-          Premium električni bicikli dizajnirani za gradske avanture i održivi transport
+        <p className="text-lg md:text-xl mb-12 text-neutral-100 font-light whitespace-nowrap tracking-tight">
+          Premium električni bicikli dizajnirani za čistiji, jeftiniji i pametniji prevoz
         </p>
-        <div className="flex justify-center">
-          <Button 
-            onClick={scrollToModels}
-            className="bg-neutral-100 text-neutral-900 hover:bg-white px-8 py-6 text-lg transition-all duration-300 shadow-lg"
-          >
-            Istraži Modele
-          </Button>
-        </div>
+        <Button 
+          onClick={scrollToModels}
+          className="bg-neutral-100 text-neutral-900 hover:bg-white px-8 py-6 text-lg transition-all duration-300 shadow-lg"
+        >
+          Istraži Model
+        </Button>
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <svg
-          className="w-8 h-8 text-white"
+          className="w-6 h-6 text-white"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"

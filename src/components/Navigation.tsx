@@ -81,12 +81,6 @@ export const Navigation = () => {
               </button>
               <button 
                 onClick={() => handleNavClick('/contact')}
-                className="text-neutral-700 hover:text-neutral-900 transition-colors"
-              >
-                Pronađi Prodavca
-              </button>
-              <button 
-                onClick={() => handleNavClick('/contact')}
                 className="border-2 border-neutral-800 text-neutral-800 hover:bg-neutral-800 hover:text-neutral-100 transition-colors px-4 py-2 rounded-md"
               >
                 Kontakt
@@ -169,12 +163,6 @@ export const Navigation = () => {
                   className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
                   O Nama
-                </button>
-                <button
-                  onClick={() => handleNavClick('/contact')}
-                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
-                >
-                  Pronađi Prodavca
                 </button>
                 <button
                   onClick={() => handleNavClick('/contact')}
