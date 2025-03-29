@@ -33,15 +33,15 @@ export const Hero = () => {
 
       {/* Content */}
       <div className="relative w-full max-w-7xl mx-auto px-4 flex flex-col items-center text-center">
-        <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-6 text-white whitespace-nowrap">
+        <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold mb-4 sm:mb-6 text-white">
           Doživite Budućnost E-Mobilnosti
         </h1>
-        <p className="text-lg sm:text-xl lg:text-2xl mb-10 text-neutral-100 font-light whitespace-nowrap">
+        <p className="text-sm sm:text-xl lg:text-2xl mb-6 sm:mb-10 text-neutral-100 font-light max-w-[90%] sm:max-w-none">
           Premium električni bicikli dizajnirani za čistiji, jeftiniji i pametniji prevoz
         </p>
         <Button 
           onClick={scrollToModels}
-          className="bg-neutral-100 text-neutral-900 hover:bg-white px-10 py-6 text-lg transition-all duration-300 shadow-lg"
+          className="bg-neutral-100 text-neutral-900 hover:bg-white px-6 sm:px-10 py-4 sm:py-6 text-base sm:text-lg transition-all duration-300 shadow-lg"
         >
           Istraži Model
         </Button>
