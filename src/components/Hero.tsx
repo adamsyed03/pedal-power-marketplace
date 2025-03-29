@@ -8,7 +8,7 @@ export const Hero = () => {
   const scrollToModels = () => {
     const modelsSection = document.getElementById('models');
     if (modelsSection) {
-      const headerOffset = 80; // Account for fixed header
+      const headerOffset = 80;
       const elementPosition = modelsSection.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -20,7 +20,7 @@ export const Hero = () => {
   };
 
   return (
-    <div className="relative h-screen flex items-center justify-center">
+    <div className="relative h-screen flex flex-col items-center justify-center">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
@@ -32,23 +32,23 @@ export const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="relative w-full flex flex-col items-center justify-center text-center px-4 -mt-12">
-        <h1 className="text-3xl md:text-5xl font-bold mb-8 text-white whitespace-nowrap tracking-tight">
+      <div className="relative w-full max-w-7xl mx-auto px-4 flex flex-col items-center text-center">
+        <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-6 text-white whitespace-nowrap">
           Doživite Budućnost E-Mobilnosti
         </h1>
-        <p className="text-lg md:text-xl mb-12 text-neutral-100 font-light whitespace-nowrap tracking-tight">
+        <p className="text-lg sm:text-xl lg:text-2xl mb-10 text-neutral-100 font-light whitespace-nowrap">
           Premium električni bicikli dizajnirani za čistiji, jeftiniji i pametniji prevoz
         </p>
         <Button 
           onClick={scrollToModels}
-          className="bg-neutral-100 text-neutral-900 hover:bg-white px-8 py-6 text-lg transition-all duration-300 shadow-lg"
+          className="bg-neutral-100 text-neutral-900 hover:bg-white px-10 py-6 text-lg transition-all duration-300 shadow-lg"
         >
           Istraži Model
         </Button>
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
         <svg
           className="w-6 h-6 text-white"
           fill="none"

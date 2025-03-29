@@ -5,19 +5,19 @@ const benefits = [
     title: "Zdravlje",
     description: "Zamislite da svakog dana udišete vazduh koji ozbiljno narušava vaše zdravlje — jer to se već dešava. Beograd je među najzagađenijim prestonicama Evrope, sa prosečnom godišnjom koncentracijom PM2.5 čestica od 23,3 µg/m³. Te čestice ulaze duboko u pluća i povećavaju rizik od astme, srčanih bolesti i čak prerane smrti. Pogon nudi rešenje: tihi, električni bicikl koji ne zagađuje i pomaže da zajedno pročistimo vazduh koji dišemo.",
     source: "IQAir, 2023",
-    image: "/placeholder.svg"
+    image: "/health.jpg.png"
   },
   {
     title: "Vreme",
     description: "U Beogradu svakog dana potrošimo skoro 40 minuta u prevozu — često u haosu, nervozi i zastoju. To je više od 10 dana godišnje izgubljenih u saobraćaju. Umesto da stojite u koloni, mogli biste se kretati lako, brzo i direktno kroz grad uz pomoć Pogona — e-bicikla koji vas vodi bez stresa, kad god i gde god poželite.",
     source: "Numbeo, 2023",
-    image: "/placeholder.svg"
+    image: "/time.jpg.jpg"
   },
   {
     title: "Ekonomske Prednosti",
     description: "Od hleba do goriva — sve poskupljuje. Inflacija u Srbiji je u 2023. godini dostigla dvocifrene vrednosti, pri čemu su cene osnovnih proizvoda i usluga skočile i do 20% u nekim sektorima. Troškovi prevoza postaju sve veći deo kućnog budžeta. Pogon je odgovor na svakodnevni pritisak na novčanik: jednom kupite, a vozite bez goriva, registracije, servisa ili parkinga.",
     source: "Republički zavod za statistiku, 2023",
-    image: "/placeholder.svg"
+    image: "/economy.jpg.png"
   }
 ];
 
@@ -42,11 +42,11 @@ export const Benefits = () => {
             }`}
           >
             {/* Image Section */}
-            <div className="w-full md:w-1/2 h-[500px] relative bg-gray-100">
+            <div className="w-full md:w-1/2 h-[500px] relative bg-gray-100 overflow-hidden">
               <img
                 src={benefit.image}
                 alt={benefit.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain scale-90"
               />
             </div>
 
