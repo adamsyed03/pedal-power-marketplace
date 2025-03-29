@@ -46,22 +46,22 @@ export const FeaturedProducts = () => {
                   loading="lazy"
                 />
               </div>
-              <div className="p-6 bg-neutral-50">
-                <span className="text-sm uppercase tracking-wider text-neutral-500">
+              <div className="p-4 sm:p-6 bg-neutral-50">
+                <span className="text-xs sm:text-sm uppercase tracking-wider text-neutral-500">
                   {product.category}
                 </span>
-                <h3 className="text-2xl font-bold mt-1 mb-2 text-neutral-900">{product.title}</h3>
-                <p className="text-base text-neutral-600 mb-4">{product.description}</p>
-                <div className="flex items-center gap-3 mb-4">
-                  <p className="text-xl font-bold text-neutral-900">
+                <h3 className="text-xl sm:text-2xl font-bold mt-1 mb-2 text-neutral-900">{product.title}</h3>
+                <p className="text-sm sm:text-base text-neutral-600 mb-4">{product.description}</p>
+                <div className="flex items-center gap-2 sm:gap-3 mb-4">
+                  <p className="text-lg sm:text-xl font-bold text-neutral-900">
                     {product.price.toLocaleString()} RSD
                   </p>
-                  <p className="text-lg text-neutral-500 line-through">
+                  <p className="text-base sm:text-lg text-neutral-500 line-through">
                     {product.originalPrice.toLocaleString()} RSD
                   </p>
                 </div>
                 <Button 
-                  className="w-full bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 text-base group-hover:bg-neutral-800"
+                  className="w-full bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-3 sm:py-4 text-sm sm:text-base group-hover:bg-neutral-800"
                 >
                   Saznaj Više
                 </Button>
