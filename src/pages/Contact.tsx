@@ -31,7 +31,7 @@ export default function Contact() {
 
             {/* Phone Card */}
             <a 
-              href="tel:+447403113911"
+              href="tel:+38169692345"
               className="block bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
             >
               <div className="flex items-center space-x-4">
@@ -40,7 +40,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">Telefon</div>
-                  <div className="text-lg font-medium">+44 7403 113911</div>
+                  <div className="text-lg font-medium">+381 69692345</div>
                 </div>
               </div>
             </a>

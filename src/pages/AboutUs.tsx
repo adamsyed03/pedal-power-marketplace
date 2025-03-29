@@ -15,7 +15,7 @@ export default function AboutUs() {
 
             {/* Main Description */}
             <p className="text-base text-neutral-900 leading-relaxed">
-              Ne prodajemo sprave za vežbanje — redefinišemo šta bicikl danas znači. Za nas, to nije vikend hobi, već najpametniji način da stigneš od tačke A do tačke B. U gradovima gde su gužve, stres oko parkiranja i sve veći troškovi svakodnevnica, Pogon nudi čisto, pristupačno i efikasno rešenje.
+              Ne prodajemo sprave za vežbanje — mi redefinišemo šta znači voziti bicikl danas. Za nas, to nije samo rekreacija, već najpametniji način da stigneš od tačke A do tačke B. U gradovima prepunim gužvi, stresa i rastućih troškova, Pogon nudi čisto, pristupačno i efikasno rešenje.
             </p>
 
             {/* Origin Story */}
