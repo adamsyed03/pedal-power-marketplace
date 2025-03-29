@@ -26,8 +26,8 @@ export const Benefits = () => {
     <section className="py-16">
       {/* Main Title */}
       <div className="container mx-auto px-4 mb-16 text-center">
-        <h2 className="text-4xl font-bold mb-4">Zašto Izabrati Pogon</h2>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <h2 className="text-[18px] sm:text-4xl font-bold mb-4">Zašto Izabrati Pogon</h2>
+        <p className="text-[14px] sm:text-xl text-gray-600 max-w-3xl mx-auto">
           Doživite savršen spoj inovacije, održivosti i vrhunskog kvaliteta
         </p>
       </div>
@@ -52,11 +52,11 @@ export const Benefits = () => {
 
             {/* Content Section */}
             <div className="w-full md:w-1/2 flex flex-col justify-center p-8 md:p-16 bg-white">
-              <h3 className="text-3xl font-bold mb-6">{benefit.title}</h3>
-              <p className="text-lg text-gray-600 mb-4">
+              <h3 className="text-[16px] sm:text-3xl font-bold mb-6">{benefit.title}</h3>
+              <p className="text-[12px] sm:text-lg text-gray-600 mb-4">
                 {benefit.description}
               </p>
-              <p className="text-sm text-gray-500 italic">
+              <p className="text-[10px] sm:text-sm text-gray-500 italic">
                 Izvor: {benefit.source}
               </p>
             </div>

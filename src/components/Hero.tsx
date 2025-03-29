@@ -36,7 +36,7 @@ export const Hero = () => {
         <h1 className="text-[18px] sm:text-4xl lg:text-6xl font-bold mb-4 sm:mb-6 text-white whitespace-nowrap">
           Doživite Budućnost E-Mobilnosti
         </h1>
-        <p className="text-[14px] sm:text-xl lg:text-2xl mb-6 sm:mb-10 text-neutral-100 font-light whitespace-nowrap">
+        <p className="text-[14px] sm:text-xl lg:text-2xl mb-6 sm:mb-10 text-neutral-100 font-light">
           Premium električni bicikli dizajnirani za čistiji, jeftiniji i pametniji prevoz
         </p>
         <Button 
