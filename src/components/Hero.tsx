@@ -8,7 +8,7 @@ export const Hero = () => {
   const scrollToModels = () => {
     const modelsSection = document.getElementById('models');
     if (modelsSection) {
-      const headerOffset = 80;
+      const headerOffset = 20;
       const elementPosition = modelsSection.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 

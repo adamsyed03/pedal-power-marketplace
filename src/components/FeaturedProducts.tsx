@@ -20,7 +20,7 @@ export const FeaturedProducts = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="pt-24 pb-8 bg-neutral-100" id="models">
+    <section className="pt-20 pb-16 bg-neutral-100" id="models">
       {/* Category Title */}
       <div className="container mx-auto px-4 mb-8">
         <h2 className="text-3xl font-bold text-center text-neutral-900">Naš Model</h2>
@@ -38,11 +38,11 @@ export const FeaturedProducts = () => {
               className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group border border-neutral-200"
               onClick={() => navigate(product.path)}
             >
-              <div className="h-[200px] relative">
+              <div className="h-[180px] relative">
                 <img
                   src={product.imagePath}
                   alt={product.title}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain p-4"
                   loading="lazy"
                 />
               </div>
