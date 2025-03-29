@@ -23,9 +23,9 @@ const benefits = [
 
 export const Benefits = () => {
   return (
-    <section className="py-16">
+    <section className="py-8 sm:py-16">
       {/* Main Title */}
-      <div className="container mx-auto px-4 mb-16 text-center">
+      <div className="container mx-auto px-4 mb-8 sm:mb-16 text-center">
         <h2 className="text-[18px] sm:text-4xl font-bold mb-4">Zašto Izabrati Pogon</h2>
         <p className="text-[14px] sm:text-xl text-gray-600 max-w-3xl mx-auto">
           Doživite savršen spoj inovacije, održivosti i vrhunskog kvaliteta
@@ -33,7 +33,7 @@ export const Benefits = () => {
       </div>
 
       {/* Benefits Grid */}
-      <div className="grid grid-cols-1 gap-16">
+      <div className="grid grid-cols-1 gap-8 sm:gap-16">
         {benefits.map((benefit, index) => (
           <div
             key={benefit.title}
@@ -42,7 +42,7 @@ export const Benefits = () => {
             }`}
           >
             {/* Image Section */}
-            <div className="w-full md:w-1/2 h-[500px] relative bg-gray-100 overflow-hidden">
+            <div className="w-full md:w-1/2 h-[300px] sm:h-[500px] relative bg-gray-100 overflow-hidden">
               <img
                 src={benefit.image}
                 alt={benefit.title}
@@ -51,9 +51,9 @@ export const Benefits = () => {
             </div>
 
             {/* Content Section */}
-            <div className="w-full md:w-1/2 flex flex-col justify-center p-8 md:p-16 bg-white">
-              <h3 className="text-[16px] sm:text-3xl font-bold mb-6">{benefit.title}</h3>
-              <p className="text-[12px] sm:text-lg text-gray-600 mb-4">
+            <div className="w-full md:w-1/2 flex flex-col justify-center p-4 sm:p-8 md:p-16 bg-white">
+              <h3 className="text-[16px] sm:text-3xl font-bold mb-3 sm:mb-6">{benefit.title}</h3>
+              <p className="text-[12px] sm:text-lg text-gray-600 mb-2 sm:mb-4">
                 {benefit.description}
               </p>
               <p className="text-[10px] sm:text-sm text-gray-500 italic">
