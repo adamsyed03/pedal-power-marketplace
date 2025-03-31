@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Preload the background image
+    const img = new Image();
+    img.src = '/Tara.jpg';
+  }, []);
 
   const scrollToModels = () => {
     const modelsSection = document.getElementById('models');
@@ -23,7 +29,7 @@ export const Hero = () => {
     <div className="relative h-screen flex flex-col items-center justify-center">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center transition-opacity duration-300"
         style={{
           backgroundImage: `url('/Tara.jpg')`,
         }}
@@ -34,7 +40,7 @@ export const Hero = () => {
       {/* Content */}
       <div className="relative w-full max-w-7xl mx-auto px-4 flex flex-col items-center text-center">
         <h1 className="text-[18px] sm:text-4xl lg:text-6xl font-bold mb-4 sm:mb-6 text-white whitespace-nowrap">
-          Doživite Budućnost E-Mobilnosti
+          Pridruži se Revoluciji E-mobilnosti
         </h1>
         <p className="text-[14px] sm:text-xl lg:text-2xl mb-6 sm:mb-10 text-neutral-100 font-light">
           Premium električni bicikli dizajnirani za čistiji, jeftiniji i pametniji prevoz
