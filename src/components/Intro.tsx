@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface IntroProps {
   setShowIntro: (show: boolean) => void;
@@ -8,7 +9,7 @@ interface IntroProps {
 export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [videoError, setVideoError] = useState<string | null>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const [useImageFallback, setUseImageFallback] = useState(false);
 
   useEffect(() => {
@@ -21,10 +22,12 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
       .then(response => {
         if (!response.ok || response.headers.get('content-type')?.includes('text/plain')) {
           // If response is not OK or it's a text file (LFS pointer), use image fallback
+          console.log('Video file not accessible or is LFS pointer, using fallback');
           setUseImageFallback(true);
         }
       })
       .catch(() => {
+        console.log('Error checking video file, using fallback');
         setUseImageFallback(true);
       });
 
@@ -49,34 +52,30 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
     setShowIntro(false);
   };
 
+  // Function to handle video error
+  const handleVideoError = () => {
+    console.log('Video loading error, using fallback image');
+    setUseImageFallback(true);
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans">
-      {/* Video/Image Background */}
-      {useImageFallback ? (
-        <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center scale-105"
-          style={{ 
-            backgroundImage: 'url(/Tara.jpg)',
-            willChange: 'transform'
-          }}
-        />
-      ) : (
+      {/* Video Background with Fallback */}
+      {!useImageFallback && (
         <video
           autoPlay
           muted
           loop
           playsInline
-          preload="auto"
           className="absolute inset-0 w-full h-full object-cover scale-105"
-          style={{ willChange: 'transform' }}
-          onError={(e) => {
-            console.error('Video loading error:', e);
-            setVideoError('Error loading video');
-            setUseImageFallback(true);
+          style={{ 
+            willChange: 'transform',
+            display: videoLoaded ? 'block' : 'none'
           }}
+          onError={handleVideoError}
           onLoadedData={() => {
             console.log('Video loaded successfully');
-            setVideoError(null);
+            setVideoLoaded(true);
           }}
         >
           <source src="/tara-nature.mp4" type="video/mp4" />
@@ -84,11 +83,14 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
         </video>
       )}
 
-      {videoError && !useImageFallback && (
-        <div className="absolute top-4 left-4 bg-red-500 text-white px-4 py-2 rounded">
-          {videoError}
-        </div>
-      )}
+      {/* Fallback background image (shown always until video loads or on error) */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: "url('/Tara.jpg')", 
+          display: (!videoLoaded || useImageFallback) ? 'block' : 'none'
+        }}
+      />
 
       {/* Overlay with gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/40" />
@@ -110,4 +112,4 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
       </div>
     </div>
   );
-}; 
+};

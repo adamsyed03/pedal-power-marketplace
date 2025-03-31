@@ -1,8 +1,19 @@
+
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix Leaflet icon issue
+// This is needed because Leaflet's default icon URLs are relative to the HTML page
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
 
 interface Dealer {
   id: number;
@@ -21,6 +32,8 @@ export const DealerSearch = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [mapPosition, setMapPosition] = useState<[number, number]>([45.815, 15.9819]); // Default to Zagreb coordinates
+  const [map, setMap] = useState<L.Map | null>(null);
 
   // Load dealers from Supabase
   useEffect(() => {
@@ -48,7 +61,14 @@ export const DealerSearch = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation([position.coords.latitude, position.coords.longitude]);
+          const newPosition: [number, number] = [position.coords.latitude, position.coords.longitude];
+          setUserLocation(newPosition);
+          setMapPosition(newPosition); // Update map position to user's location
+          
+          // If map is available, update its view
+          if (map) {
+            map.setView(newPosition, 13);
+          }
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -107,10 +127,12 @@ export const DealerSearch = () => {
       <div className="grid md:grid-cols-2 gap-8">
         {/* Map */}
         <div className="h-[600px] rounded-lg overflow-hidden">
-          <MapContainer
-            center={userLocation || [51.505, -0.09]}
-            zoom={13}
+          <MapContainer 
             style={{ height: '100%', width: '100%' }}
+            className="h-full w-full"
+            center={mapPosition}
+            zoom={13}
+            ref={setMap}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -138,6 +160,17 @@ export const DealerSearch = () => {
                 </Popup>
               </Marker>
             ))}
+            {userLocation && (
+              <Marker 
+                position={userLocation}
+              >
+                <Popup>
+                  <div className="p-2">
+                    <h3 className="font-bold">Your Location</h3>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
           </MapContainer>
         </div>
 
@@ -183,4 +216,4 @@ export const DealerSearch = () => {
       </div>
     </div>
   );
-}; 
+};
