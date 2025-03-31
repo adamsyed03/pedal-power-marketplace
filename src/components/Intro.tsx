@@ -5,11 +5,6 @@ interface IntroProps {
   setShowIntro: (show: boolean) => void;
 }
 
-// Video source based on environment
-const VIDEO_SOURCE = import.meta.env.PROD 
-  ? 'https://res.cloudinary.com/YOUR_CLOUD_NAME/video/upload/v1/tara-nature' // Replace with your Cloudinary URL
-  : '/video.mp4';
-
 export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
