@@ -46,8 +46,15 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
         preload="auto"
         className="absolute inset-0 w-full h-full object-cover scale-105"
         style={{ willChange: 'transform' }}
+        onError={(e) => {
+          console.error('Video loading error:', e);
+        }}
+        onLoadedData={() => {
+          console.log('Video loaded successfully');
+        }}
       >
-        <source src="/tara-nature.mp4" type="video/mp4" />
+        <source src="/video.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
       </video>
 
       {/* Overlay with gradient */}
