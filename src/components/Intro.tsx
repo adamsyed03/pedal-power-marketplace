@@ -9,11 +9,24 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [useImageFallback, setUseImageFallback] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowButton(true);
     }, 1500);
+
+    // Check if video is accessible
+    fetch('/tara-nature.mp4', { method: 'HEAD' })
+      .then(response => {
+        if (!response.ok || response.headers.get('content-type')?.includes('text/plain')) {
+          // If response is not OK or it's a text file (LFS pointer), use image fallback
+          setUseImageFallback(true);
+        }
+      })
+      .catch(() => {
+        setUseImageFallback(true);
+      });
 
     // Preload the main page background image
     const img = new Image();
@@ -38,29 +51,40 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans">
-      {/* Video Background */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        className="absolute inset-0 w-full h-full object-cover scale-105"
-        style={{ willChange: 'transform' }}
-        onError={(e) => {
-          console.error('Video loading error:', e);
-          setVideoError('Error loading video');
-        }}
-        onLoadedData={() => {
-          console.log('Video loaded successfully');
-          setVideoError(null);
-        }}
-      >
-        <source src="/tara-nature.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
+      {/* Video/Image Background */}
+      {useImageFallback ? (
+        <div 
+          className="absolute inset-0 w-full h-full bg-cover bg-center scale-105"
+          style={{ 
+            backgroundImage: 'url(/Tara.jpg)',
+            willChange: 'transform'
+          }}
+        />
+      ) : (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover scale-105"
+          style={{ willChange: 'transform' }}
+          onError={(e) => {
+            console.error('Video loading error:', e);
+            setVideoError('Error loading video');
+            setUseImageFallback(true);
+          }}
+          onLoadedData={() => {
+            console.log('Video loaded successfully');
+            setVideoError(null);
+          }}
+        >
+          <source src="/tara-nature.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      )}
 
-      {videoError && (
+      {videoError && !useImageFallback && (
         <div className="absolute top-4 left-4 bg-red-500 text-white px-4 py-2 rounded">
           {videoError}
         </div>
