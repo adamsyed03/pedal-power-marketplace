@@ -7,8 +7,8 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     port: 8080,
-    host: '0.0.0.0',
-    strictPort: true,
+    host: true,
+    strictPort: false,
     headers: {
       'Cache-Control': 'no-store',
       'Access-Control-Allow-Origin': '*',
@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
     }
   },
   publicDir: 'public',
-  base: './',
+  base: mode === 'development' ? '/' : './',
   plugins: [
     react(),
     mode === 'development' &&
@@ -37,6 +37,8 @@ export default defineConfig(({ mode }) => ({
     target: 'esnext',
     minify: 'esbuild',
     cssMinify: true,
+    outDir: 'dist',
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks(id) {

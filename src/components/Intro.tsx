@@ -6,6 +6,11 @@ interface IntroProps {
   setShowIntro: (show: boolean) => void;
 }
 
+// Video source based on environment
+const VIDEO_URL = import.meta.env.PROD 
+  ? 'https://media.githubusercontent.com/media/adamsyed03/pedal-power-marketplace/main/public/tara-nature.mp4'
+  : '/tara-nature.mp4';
+
 export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,11 +23,10 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
     }, 1500);
 
     // Check if video is accessible
-    fetch('/tara-nature.mp4', { method: 'HEAD' })
+    fetch(VIDEO_URL, { method: 'HEAD' })
       .then(response => {
-        if (!response.ok || response.headers.get('content-type')?.includes('text/plain')) {
-          // If response is not OK or it's a text file (LFS pointer), use image fallback
-          console.log('Video file not accessible or is LFS pointer, using fallback');
+        if (!response.ok) {
+          console.log('Video file not accessible, using fallback');
           setUseImageFallback(true);
         }
       })
@@ -78,7 +82,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
             setVideoLoaded(true);
           }}
         >
-          <source src="/tara-nature.mp4" type="video/mp4" />
+          <source src={VIDEO_URL} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       )}
