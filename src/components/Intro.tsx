@@ -5,9 +5,15 @@ interface IntroProps {
   setShowIntro: (show: boolean) => void;
 }
 
+// Video source based on environment
+const VIDEO_SOURCE = import.meta.env.PROD 
+  ? 'https://res.cloudinary.com/YOUR_CLOUD_NAME/video/upload/v1/tara-nature' // Replace with your Cloudinary URL
+  : '/video.mp4';
+
 export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -48,14 +54,22 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
         style={{ willChange: 'transform' }}
         onError={(e) => {
           console.error('Video loading error:', e);
+          setVideoError('Error loading video');
         }}
         onLoadedData={() => {
           console.log('Video loaded successfully');
+          setVideoError(null);
         }}
       >
-        <source src="/video.mp4" type="video/mp4" />
+        <source src="/tara-nature.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
+
+      {videoError && (
+        <div className="absolute top-4 left-4 bg-red-500 text-white px-4 py-2 rounded">
+          {videoError}
+        </div>
+      )}
 
       {/* Overlay with gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/40" />
