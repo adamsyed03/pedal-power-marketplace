@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { supabase } from '@/lib/supabase';
@@ -124,13 +123,11 @@ export const DealerSearch = () => {
           <MapContainer 
             key={mapPosition.toString()} // Re-render when position changes
             style={{ height: '100%', width: '100%' }}
-            zoom={13}
             className="h-full w-full"
-            // In React Leaflet v5+, center is set with the defaultCenter prop
-            defaultCenter={mapPosition}
+            center={mapPosition}
+            zoom={13}
           >
             <TileLayer
-              // In React Leaflet v5+, attribution is part of the url options
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
@@ -159,7 +156,6 @@ export const DealerSearch = () => {
             {userLocation && (
               <Marker 
                 position={userLocation}
-                // You can add custom icon for user location if needed
               >
                 <Popup>
                   <div className="p-2">

@@ -10,8 +10,8 @@ interface IntroProps {
 export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [videoError, setVideoError] = useState<string | null>(null);
-  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -42,42 +42,41 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   // Function to handle video fallback
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.error('Video loading error:', e);
-    
-    // Instead of showing an error message overlay, use a fallback background
-    const videoElement = e.currentTarget;
-    videoElement.style.display = 'none';
-    
-    // Don't show the dialog, just log the error and continue
-    setVideoError('Video could not be loaded, using fallback background');
+    setUsingFallback(true);
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans">
       {/* Video Background with Fallback */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        className="absolute inset-0 w-full h-full object-cover scale-105"
-        style={{ willChange: 'transform' }}
-        onError={handleVideoError}
-        onLoadedData={() => {
-          console.log('Video loaded successfully');
-          setVideoError(null);
-        }}
-      >
-        <source src="/tara-nature.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
+      {!usingFallback && (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover scale-105"
+          style={{ 
+            willChange: 'transform',
+            display: videoLoaded ? 'block' : 'none'
+          }}
+          onError={handleVideoError}
+          onLoadedData={() => {
+            console.log('Video loaded successfully');
+            setVideoLoaded(true);
+          }}
+        >
+          <source src="/tara-nature.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      )}
 
-      {/* Fallback background image in case video fails */}
+      {/* Fallback background image (shown always until video loads or on error) */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ 
           backgroundImage: "url('/Tara.jpg')", 
-          display: videoError ? 'block' : 'none'
+          display: (!videoLoaded || usingFallback) ? 'block' : 'none'
         }}
       />
 
@@ -100,22 +99,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
         </div>
       </div>
 
-      {/* Error Dialog - hidden but kept for debugging purposes */}
-      <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
-        <DialogContent className="sm:max-w-md">
-          <div className="p-4 text-center">
-            <h3 className="text-lg font-medium">Video Error</h3>
-            <p className="mt-2 text-sm text-gray-600">
-              {videoError || 'There was an error loading the video.'}
-            </p>
-            <div className="mt-4">
-              <Button onClick={() => setShowErrorDialog(false)}>
-                Continue Anyway
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Error Dialog - removed as we're handling errors silently with fallback */}
     </div>
   );
 };
