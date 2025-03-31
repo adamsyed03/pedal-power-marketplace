@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface IntroProps {
   setShowIntro: (show: boolean) => void;
@@ -9,6 +11,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -36,21 +39,30 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
     setShowIntro(false);
   };
 
+  // Function to handle video fallback
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    console.error('Video loading error:', e);
+    
+    // Instead of showing an error message overlay, use a fallback background
+    const videoElement = e.currentTarget;
+    videoElement.style.display = 'none';
+    
+    // Don't show the dialog, just log the error and continue
+    setVideoError('Video could not be loaded, using fallback background');
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans">
-      {/* Video Background */}
+      {/* Video Background with Fallback */}
       <video
         autoPlay
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
         className="absolute inset-0 w-full h-full object-cover scale-105"
         style={{ willChange: 'transform' }}
-        onError={(e) => {
-          console.error('Video loading error:', e);
-          setVideoError('Error loading video');
-        }}
+        onError={handleVideoError}
         onLoadedData={() => {
           console.log('Video loaded successfully');
           setVideoError(null);
@@ -60,11 +72,14 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
         Your browser does not support the video tag.
       </video>
 
-      {videoError && (
-        <div className="absolute top-4 left-4 bg-red-500 text-white px-4 py-2 rounded">
-          {videoError}
-        </div>
-      )}
+      {/* Fallback background image in case video fails */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: "url('/Tara.jpg')", 
+          display: videoError ? 'block' : 'none'
+        }}
+      />
 
       {/* Overlay with gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/40" />
@@ -84,6 +99,23 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
           </Button>
         </div>
       </div>
+
+      {/* Error Dialog - hidden but kept for debugging purposes */}
+      <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <DialogContent className="sm:max-w-md">
+          <div className="p-4 text-center">
+            <h3 className="text-lg font-medium">Video Error</h3>
+            <p className="mt-2 text-sm text-gray-600">
+              {videoError || 'There was an error loading the video.'}
+            </p>
+            <div className="mt-4">
+              <Button onClick={() => setShowErrorDialog(false)}>
+                Continue Anyway
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-}; 
+};
