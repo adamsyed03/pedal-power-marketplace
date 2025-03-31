@@ -22,6 +22,19 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
     const img = new Image();
     img.src = '/Tara.jpg';
 
+    // Check if the video file exists
+    fetch('/tara-nature.mp4', { method: 'HEAD' })
+      .then(response => {
+        if (!response.ok) {
+          console.log('Video file not accessible, using fallback');
+          setUsingFallback(true);
+        }
+      })
+      .catch(() => {
+        console.log('Error checking video file, using fallback');
+        setUsingFallback(true);
+      });
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -40,8 +53,8 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   };
 
   // Function to handle video fallback
-  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('Video loading error:', e);
+  const handleVideoError = () => {
+    console.log('Video loading error, using fallback image');
     setUsingFallback(true);
   };
 
@@ -54,7 +67,6 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
           muted
           loop
           playsInline
-          preload="auto"
           className="absolute inset-0 w-full h-full object-cover scale-105"
           style={{ 
             willChange: 'transform',
@@ -98,8 +110,6 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
           </Button>
         </div>
       </div>
-
-      {/* Error Dialog - removed as we're handling errors silently with fallback */}
     </div>
   );
 };

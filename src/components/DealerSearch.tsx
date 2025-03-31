@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { supabase } from '@/lib/supabase';
@@ -32,6 +33,7 @@ export const DealerSearch = () => {
   const [loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [mapPosition, setMapPosition] = useState<[number, number]>([45.815, 15.9819]); // Default to Zagreb coordinates
+  const [map, setMap] = useState<L.Map | null>(null);
 
   // Load dealers from Supabase
   useEffect(() => {
@@ -62,6 +64,11 @@ export const DealerSearch = () => {
           const newPosition: [number, number] = [position.coords.latitude, position.coords.longitude];
           setUserLocation(newPosition);
           setMapPosition(newPosition); // Update map position to user's location
+          
+          // If map is available, update its view
+          if (map) {
+            map.setView(newPosition, 13);
+          }
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -121,11 +128,10 @@ export const DealerSearch = () => {
         {/* Map */}
         <div className="h-[600px] rounded-lg overflow-hidden">
           <MapContainer 
-            key={mapPosition.toString()} // Re-render when position changes
             style={{ height: '100%', width: '100%' }}
             className="h-full w-full"
-            center={mapPosition}
-            zoom={13}
+            ref={setMap}
+            whenCreated={setMap}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
