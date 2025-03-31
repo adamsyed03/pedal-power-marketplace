@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "../components/ui/button";
 import { DealerSearch } from "../components/DealerSearch";
@@ -20,18 +21,6 @@ export default function Dealers() {
       {/* Dealer Search Component */}
       <DealerSearch />
 
-      {/* Map Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="bg-gray-200 h-[400px] rounded-lg">
-            {/* Map will be integrated here */}
-            <div className="h-full flex items-center justify-center">
-              <p className="text-gray-600">Map integration coming soon</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Contact Section */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4 text-center">
@@ -47,4 +36,4 @@ export default function Dealers() {
       </section>
     </div>
   );
-} 
+}
