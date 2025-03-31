@@ -130,8 +130,9 @@ export const DealerSearch = () => {
           <MapContainer 
             style={{ height: '100%', width: '100%' }}
             className="h-full w-full"
+            center={mapPosition}
+            zoom={13}
             ref={setMap}
-            whenCreated={setMap}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
