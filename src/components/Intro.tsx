@@ -6,10 +6,14 @@ interface IntroProps {
   setShowIntro: (show: boolean) => void;
 }
 
-// Video source based on environment
+// Use local files in development, LFS URLs in production
 const VIDEO_URL = import.meta.env.PROD 
   ? 'https://media.githubusercontent.com/media/adamsyed03/pedal-power-marketplace/main/public/tara-nature.mp4'
   : '/tara-nature.mp4';
+
+const IMAGE_URL = import.meta.env.PROD
+  ? 'https://media.githubusercontent.com/media/adamsyed03/pedal-power-marketplace/main/public/Tara.jpg'
+  : '/Tara.jpg';
 
 export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
@@ -28,16 +32,18 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
         if (!response.ok) {
           console.log('Video file not accessible, using fallback');
           setUseImageFallback(true);
+        } else {
+          console.log('Video file accessible');
         }
       })
-      .catch(() => {
-        console.log('Error checking video file, using fallback');
+      .catch((error) => {
+        console.error('Error checking video file:', error);
         setUseImageFallback(true);
       });
 
-    // Preload the main page background image
+    // Preload the fallback image
     const img = new Image();
-    img.src = '/Tara.jpg';
+    img.src = IMAGE_URL;
 
     return () => clearTimeout(timer);
   }, []);
@@ -45,11 +51,11 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const handleExplore = async () => {
     setIsLoading(true);
     
-    // Ensure main page image is loaded
+    // Ensure fallback image is loaded
     await new Promise((resolve) => {
       const img = new Image();
       img.onload = resolve;
-      img.src = '/Tara.jpg';
+      img.src = IMAGE_URL;
     });
 
     // Switch to main page immediately
@@ -57,8 +63,8 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   };
 
   // Function to handle video error
-  const handleVideoError = () => {
-    console.log('Video loading error, using fallback image');
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    console.error('Video loading error:', e);
     setUseImageFallback(true);
   };
 
@@ -91,7 +97,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ 
-          backgroundImage: "url('/Tara.jpg')", 
+          backgroundImage: `url('${IMAGE_URL}')`, 
           display: (!videoLoaded || useImageFallback) ? 'block' : 'none'
         }}
       />
