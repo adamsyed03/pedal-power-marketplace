@@ -12,16 +12,15 @@ const IMAGE_URL = 'https://pub-a596780795d544d0ae581ceaebbb8e46.r2.dev/tara.jpg'
 export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
   const [useImageFallback, setUseImageFallback] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowButton(true);
-    }, 1500);
+    }, 1000); // Show button faster
 
-    // Check if the video is accessible
+    // Check if video is accessible
     fetch(VIDEO_URL, { method: 'HEAD' })
       .then(res => {
         if (!res.ok) {
@@ -30,31 +29,27 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
       })
       .catch(() => setUseImageFallback(true));
 
-    const img = new Image();
-    img.src = IMAGE_URL;
-
     return () => clearTimeout(timer);
   }, []);
 
   const handleExplore = () => {
     setIsLoading(true);
 
-    // Smooth fade-out animation
     if (wrapperRef.current) {
-      wrapperRef.current.classList.add('opacity-0');
+      wrapperRef.current.classList.add('fade-out-soft');
     }
 
     setTimeout(() => {
-      setShowIntro(false); // Unmount intro and show app
-    }, 800);
+      setShowIntro(false);
+    }, 300); // shorter fade
   };
 
   return (
     <div
       ref={wrapperRef}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans transition-opacity duration-700 ease-in-out bg-black"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans bg-black transition-opacity duration-300 ease-in-out"
     >
-      {/* Video or Fallback Image */}
+      {/* Video Background */}
       {!useImageFallback ? (
         <video
           autoPlay
@@ -62,8 +57,11 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
           loop
           playsInline
           className="absolute inset-0 w-full h-full object-cover scale-105"
-          onLoadedData={() => setVideoLoaded(true)}
-          onError={() => setUseImageFallback(true)}
+          onError={() => {
+            console.error("Video failed to load");
+            setUseImageFallback(true);
+          }}
+          poster={IMAGE_URL}
         >
           <source src={VIDEO_URL} type="video/mp4" />
         </video>
