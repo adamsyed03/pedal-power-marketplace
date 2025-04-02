@@ -2,12 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+
+// Cloudflare R2 hosted image
+const imageURL = "https://pub-a596780795d544d0ae581ceaebbb8e46.r2.dev/PogonXstanding.png";
 
 const images = [
-  { id: 1, src: "/ebike111.png", alt: "Urban Explorer Front View" },
-  { id: 2, src: "/ebike111.png", alt: "Urban Explorer Side View" },
-  { id: 3, src: "/ebike111.png", alt: "Urban Explorer Folded" },
-  { id: 4, src: "/ebike111.png", alt: "Urban Explorer Details" },
+  { id: 1, src: imageURL, alt: "Pogon X Front View" },
+  { id: 2, src: imageURL, alt: "Pogon X Side View" },
+  { id: 3, src: imageURL, alt: "Pogon X Folded" },
+  { id: 4, src: imageURL, alt: "Pogon X Details" },
 ];
 
 const specifications = [
@@ -25,11 +29,10 @@ export default function UrbanExplorer() {
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
   const [mainImageLoaded, setMainImageLoaded] = useState(false);
+  const [zoomDialogOpen, setZoomDialogOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    // Preload all images
     images.forEach((image) => {
       const img = new Image();
       img.src = image.src;
@@ -39,7 +42,6 @@ export default function UrbanExplorer() {
     });
   }, []);
 
-  // Reset main image loaded state when selected image changes
   useEffect(() => {
     setMainImageLoaded(false);
   }, [selectedImage]);
@@ -63,12 +65,11 @@ export default function UrbanExplorer() {
             {/* Specifications */}
             <div>
               <h2 className="text-xl font-bold text-neutral-900 mb-3">Specifikacije</h2>
-              <div className="grid gap-2">
+              <div className="space-y-1">
                 {specifications.map((spec) => (
-                  <div key={spec.label} className="flex items-center border-b border-neutral-200 pb-1">
-                    <span className="text-neutral-600 w-1/2 text-sm">{spec.label}</span>
-                    <span className="text-neutral-900 font-medium text-sm">{spec.value}</span>
-                  </div>
+                  <p key={spec.label} className="text-sm text-neutral-700">
+                    <strong>{spec.label}:</strong> {spec.value}
+                  </p>
                 ))}
               </div>
             </div>
@@ -90,8 +91,11 @@ export default function UrbanExplorer() {
 
           {/* Right Column - Images */}
           <div className="space-y-3">
-            {/* Main Image */}
-            <div className="bg-white rounded-xl p-3 border border-neutral-200 relative">
+            {/* Main Image with Click-to-Zoom */}
+            <div
+              className="bg-white rounded-xl p-3 border border-neutral-200 relative overflow-hidden cursor-zoom-in"
+              onClick={() => setZoomDialogOpen(true)}
+            >
               {!mainImageLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Skeleton className="w-full h-[350px] rounded-lg" />
@@ -107,7 +111,22 @@ export default function UrbanExplorer() {
               />
             </div>
 
-            {/* Thumbnail Images */}
+            {/* Zoom Modal */}
+            <Dialog open={zoomDialogOpen} onOpenChange={setZoomDialogOpen}>
+              <DialogContent className="max-w-4xl w-full overflow-auto">
+                <div className="relative w-full h-[75vh] overflow-scroll">
+                  <img
+                    src={selectedImage.src}
+                    alt="Zoomed view"
+                    className="object-contain w-full h-full cursor-move"
+                    style={{ transform: 'scale(2)', transformOrigin: 'top left' }}
+                    draggable={false}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Thumbnails */}
             <div className="grid grid-cols-4 gap-3">
               {images.map((image) => (
                 <button
@@ -140,4 +159,4 @@ export default function UrbanExplorer() {
       </div>
     </div>
   );
-} 
+}
