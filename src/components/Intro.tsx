@@ -21,84 +21,58 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
       setShowButton(true);
     }, 1500);
 
-    // Check if video is accessible
+    // Check if the video is accessible
     fetch(VIDEO_URL, { method: 'HEAD' })
-      .then(response => {
-        if (!response.ok) {
-          console.log('Video file not accessible, using fallback');
+      .then(res => {
+        if (!res.ok) {
           setUseImageFallback(true);
         }
       })
-      .catch((error) => {
-        console.error('Error checking video file:', error);
-        setUseImageFallback(true);
-      });
+      .catch(() => setUseImageFallback(true));
 
-    // Preload fallback image
     const img = new Image();
     img.src = IMAGE_URL;
 
     return () => clearTimeout(timer);
   }, []);
 
-  const handleExplore = async () => {
+  const handleExplore = () => {
     setIsLoading(true);
 
-    await new Promise((resolve) => {
-      const img = new Image();
-      img.onload = resolve;
-      img.src = IMAGE_URL;
-    });
-
+    // Smooth fade-out animation
     if (wrapperRef.current) {
       wrapperRef.current.classList.add('opacity-0');
     }
 
     setTimeout(() => {
-      setShowIntro(false);
+      setShowIntro(false); // Unmount intro and show app
     }, 800);
-  };
-
-  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('Video error:', e);
-    setUseImageFallback(true);
   };
 
   return (
     <div
       ref={wrapperRef}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans transition-opacity duration-700 ease-in-out"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans transition-opacity duration-700 ease-in-out bg-black"
     >
-      {/* Video Background */}
-      {!useImageFallback && (
+      {/* Video or Fallback Image */}
+      {!useImageFallback ? (
         <video
           autoPlay
           muted
           loop
           playsInline
           className="absolute inset-0 w-full h-full object-cover scale-105"
-          style={{
-            display: videoLoaded ? 'block' : 'none',
-          }}
-          onLoadedData={() => {
-            console.log('Video loaded');
-            setVideoLoaded(true);
-          }}
-          onError={handleVideoError}
+          onLoadedData={() => setVideoLoaded(true)}
+          onError={() => setUseImageFallback(true)}
         >
           <source src={VIDEO_URL} type="video/mp4" />
-          Your browser does not support the video tag.
         </video>
+      ) : (
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url('${IMAGE_URL}')` }}
+        />
       )}
-
-      {/* Fallback Background */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('${IMAGE_URL}')`,
-          display: (!videoLoaded || useImageFallback) ? 'block' : 'none',
-        }}
-      />
 
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/40" />
@@ -109,7 +83,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
           Budućnost transporta je stigla
         </h1>
         <div className={`mt-8 sm:mt-12 flex justify-center transition-transform duration-300 ${showButton ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <Button
+          <Button 
             onClick={handleExplore}
             disabled={isLoading}
             className="bg-white/80 backdrop-blur-sm text-black hover:bg-white/90 px-8 py-6 text-[16px] sm:text-xl transition-all duration-300 hover:scale-105 font-sans disabled:opacity-80"
