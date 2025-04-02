@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -26,24 +27,27 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
       setShowButton(true);
     }, 1500);
 
-    // Check if video is accessible
-    fetch(VIDEO_URL, { method: 'HEAD' })
-      .then(response => {
+    // Force refresh assets to get the latest versions
+    const checkVideoAvailability = async () => {
+      try {
+        const response = await fetch(`${VIDEO_URL}?t=${new Date().getTime()}`, { method: 'HEAD' });
         if (!response.ok) {
           console.log('Video file not accessible, using fallback');
           setUseImageFallback(true);
         } else {
           console.log('Video file accessible');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Error checking video file:', error);
         setUseImageFallback(true);
-      });
+      }
+    };
 
-    // Preload the fallback image
+    checkVideoAvailability();
+
+    // Preload the fallback image with cache busting
     const img = new Image();
-    img.src = IMAGE_URL;
+    img.src = `${IMAGE_URL}?t=${new Date().getTime()}`;
 
     return () => clearTimeout(timer);
   }, []);
@@ -55,7 +59,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
     await new Promise((resolve) => {
       const img = new Image();
       img.onload = resolve;
-      img.src = IMAGE_URL;
+      img.src = `${IMAGE_URL}?t=${new Date().getTime()}`;
     });
 
     // Switch to main page immediately
@@ -88,7 +92,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
             setVideoLoaded(true);
           }}
         >
-          <source src={VIDEO_URL} type="video/mp4" />
+          <source src={`${VIDEO_URL}?t=${new Date().getTime()}`} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       )}
@@ -97,7 +101,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ 
-          backgroundImage: `url('${IMAGE_URL}')`, 
+          backgroundImage: `url('${IMAGE_URL}?t=${new Date().getTime()}')`, 
           display: (!videoLoaded || useImageFallback) ? 'block' : 'none'
         }}
       />
