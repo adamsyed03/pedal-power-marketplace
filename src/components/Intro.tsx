@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -6,14 +7,9 @@ interface IntroProps {
   setShowIntro: (show: boolean) => void;
 }
 
-// Use local files in development, LFS URLs in production
-const VIDEO_URL = import.meta.env.PROD 
-  ? 'https://github.com/adamsyed03/pedal-power-marketplace/raw/main/public/tara-nature.mp4'
-  : '/tara-nature.mp4';
-
-const IMAGE_URL = import.meta.env.PROD
-  ? 'https://media.githubusercontent.com/media/adamsyed03/pedal-power-marketplace/main/public/Tara.jpg'
-  : '/Tara.jpg';
+// Use direct URL to the video that works in all environments
+const VIDEO_URL = '/tara-nature.mp4';
+const IMAGE_URL = '/Tara.jpg';
 
 console.log('Current VIDEO_URL:', VIDEO_URL);
 
