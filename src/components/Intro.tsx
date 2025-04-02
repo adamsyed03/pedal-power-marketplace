@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -9,12 +8,14 @@ interface IntroProps {
 
 // Use local files in development, LFS URLs in production
 const VIDEO_URL = import.meta.env.PROD 
-  ? 'https://media.githubusercontent.com/media/adamsyed03/pedal-power-marketplace/main/public/tara-nature.mp4'
+  ? 'https://github.com/adamsyed03/pedal-power-marketplace/raw/main/public/tara-nature.mp4'
   : '/tara-nature.mp4';
 
 const IMAGE_URL = import.meta.env.PROD
   ? 'https://media.githubusercontent.com/media/adamsyed03/pedal-power-marketplace/main/public/Tara.jpg'
   : '/Tara.jpg';
+
+console.log('Current VIDEO_URL:', VIDEO_URL);
 
 export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
@@ -27,27 +28,24 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
       setShowButton(true);
     }, 1500);
 
-    // Force refresh assets to get the latest versions
-    const checkVideoAvailability = async () => {
-      try {
-        const response = await fetch(`${VIDEO_URL}?t=${new Date().getTime()}`, { method: 'HEAD' });
+    // Check if video is accessible
+    fetch(VIDEO_URL, { method: 'HEAD' })
+      .then(response => {
         if (!response.ok) {
           console.log('Video file not accessible, using fallback');
           setUseImageFallback(true);
         } else {
           console.log('Video file accessible');
         }
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error('Error checking video file:', error);
         setUseImageFallback(true);
-      }
-    };
+      });
 
-    checkVideoAvailability();
-
-    // Preload the fallback image with cache busting
+    // Preload the fallback image
     const img = new Image();
-    img.src = `${IMAGE_URL}?t=${new Date().getTime()}`;
+    img.src = IMAGE_URL;
 
     return () => clearTimeout(timer);
   }, []);
@@ -59,7 +57,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
     await new Promise((resolve) => {
       const img = new Image();
       img.onload = resolve;
-      img.src = `${IMAGE_URL}?t=${new Date().getTime()}`;
+      img.src = IMAGE_URL;
     });
 
     // Switch to main page immediately
@@ -92,7 +90,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
             setVideoLoaded(true);
           }}
         >
-          <source src={`${VIDEO_URL}?t=${new Date().getTime()}`} type="video/mp4" />
+          <source src={VIDEO_URL} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       )}
@@ -101,7 +99,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ 
-          backgroundImage: `url('${IMAGE_URL}?t=${new Date().getTime()}')`, 
+          backgroundImage: `url('${IMAGE_URL}')`, 
           display: (!videoLoaded || useImageFallback) ? 'block' : 'none'
         }}
       />
