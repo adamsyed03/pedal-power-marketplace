@@ -1,23 +1,20 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface IntroProps {
   setShowIntro: (show: boolean) => void;
 }
 
-// Use direct URL to the video that works in all environments
-const VIDEO_URL = '/tara-nature.mp4';
-const IMAGE_URL = '/Tara.jpg';
-
-console.log('Current VIDEO_URL:', VIDEO_URL);
+// Cloudflare R2 URLs
+const VIDEO_URL = 'https://pub-a596780795d544d0ae581ceaebbb8e46.r2.dev/tara-nature.mp4';
+const IMAGE_URL = 'https://pub-a596780795d544d0ae581ceaebbb8e46.r2.dev/tara.jpg';
 
 export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [useImageFallback, setUseImageFallback] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -30,8 +27,6 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
         if (!response.ok) {
           console.log('Video file not accessible, using fallback');
           setUseImageFallback(true);
-        } else {
-          console.log('Video file accessible');
         }
       })
       .catch((error) => {
@@ -39,7 +34,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
         setUseImageFallback(true);
       });
 
-    // Preload the fallback image
+    // Preload fallback image
     const img = new Image();
     img.src = IMAGE_URL;
 
@@ -48,27 +43,33 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
 
   const handleExplore = async () => {
     setIsLoading(true);
-    
-    // Ensure fallback image is loaded
+
     await new Promise((resolve) => {
       const img = new Image();
       img.onload = resolve;
       img.src = IMAGE_URL;
     });
 
-    // Switch to main page immediately
-    setShowIntro(false);
+    if (wrapperRef.current) {
+      wrapperRef.current.classList.add('opacity-0');
+    }
+
+    setTimeout(() => {
+      setShowIntro(false);
+    }, 800);
   };
 
-  // Function to handle video error
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('Video loading error:', e);
+    console.error('Video error:', e);
     setUseImageFallback(true);
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans">
-      {/* Video Background with Fallback */}
+    <div
+      ref={wrapperRef}
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden font-sans transition-opacity duration-700 ease-in-out"
+    >
+      {/* Video Background */}
       {!useImageFallback && (
         <video
           autoPlay
@@ -76,31 +77,30 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
           loop
           playsInline
           className="absolute inset-0 w-full h-full object-cover scale-105"
-          style={{ 
-            willChange: 'transform',
-            display: videoLoaded ? 'block' : 'none'
+          style={{
+            display: videoLoaded ? 'block' : 'none',
           }}
-          onError={handleVideoError}
           onLoadedData={() => {
-            console.log('Video loaded successfully');
+            console.log('Video loaded');
             setVideoLoaded(true);
           }}
+          onError={handleVideoError}
         >
           <source src={VIDEO_URL} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       )}
 
-      {/* Fallback background image (shown always until video loads or on error) */}
-      <div 
+      {/* Fallback Background */}
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ 
-          backgroundImage: `url('${IMAGE_URL}')`, 
-          display: (!videoLoaded || useImageFallback) ? 'block' : 'none'
+        style={{
+          backgroundImage: `url('${IMAGE_URL}')`,
+          display: (!videoLoaded || useImageFallback) ? 'block' : 'none',
         }}
       />
 
-      {/* Overlay with gradient */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/40" />
 
       {/* Content */}
@@ -109,7 +109,7 @@ export const Intro: React.FC<IntroProps> = ({ setShowIntro }) => {
           Budućnost transporta je stigla
         </h1>
         <div className={`mt-8 sm:mt-12 flex justify-center transition-transform duration-300 ${showButton ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <Button 
+          <Button
             onClick={handleExplore}
             disabled={isLoading}
             className="bg-white/80 backdrop-blur-sm text-black hover:bg-white/90 px-8 py-6 text-[16px] sm:text-xl transition-all duration-300 hover:scale-105 font-sans disabled:opacity-80"
