@@ -21,7 +21,7 @@ export default function WaitlistPage() {
     };
 
     try {
-      // Replace with the actual Worker URL from your Wrangler publish output.
+      // Replace with your actual Worker URL from Wrangler publish output.
       const workerUrl = "https://waitlist-worker.ctinvestmentswork.workers.dev";
       const response = await fetch(workerUrl, {
         method: "POST",
@@ -51,14 +51,17 @@ export default function WaitlistPage() {
         loop
         muted
         playsInline
-        className="absolute inset-0 w-full h-full object-cover filter grayscale brightness-50"
+        className="absolute inset-0 w-full h-full object-cover opacity-75"
       >
         <source src={VIDEO_URL} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
+      {/* Dark Overlay for Fading Effect */}
+      <div className="absolute inset-0 bg-black opacity-30"></div>
+
       {/* Content Overlay */}
-      <div className="relative z-10 flex flex-col items-center justify-center p-4 bg-transparent">
+      <div className="relative z-10 flex flex-col items-center justify-center p-4">
         <h1 className="text-3xl font-bold text-white mb-4">Pridružite se čekanju</h1>
         <p className="text-lg text-white mb-8 text-center">
           Unesite svoju email adresu da biste se pridružili listi čekanja.
