@@ -1,0 +1,10 @@
+name = "waitlist-worker"
+main = "worker.js"      # Or "Worker.js" if you prefer
+compatibility_date = "2025-04-10"
+
+account_id = "27968dab2cb15339364229f771203b2b"
+workers_dev = true
+
+kv_namespaces = [
+  { binding = "WAITLIST_STORE", id = "11915f206616485ba8ee51fcbca5d936" }
+]
