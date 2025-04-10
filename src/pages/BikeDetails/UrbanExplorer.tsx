@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-// Cloudflare R2 hosted image
 const imageURL = "https://pub-a596780795d544d0ae581ceaebbb8e46.r2.dev/PogonXstanding.png";
 
 const images = [
@@ -30,6 +29,7 @@ export default function UrbanExplorer() {
   const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
   const [mainImageLoaded, setMainImageLoaded] = useState(false);
   const [zoomDialogOpen, setZoomDialogOpen] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(2);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -37,64 +37,85 @@ export default function UrbanExplorer() {
       const img = new Image();
       img.src = image.src;
       img.onload = () => {
-        setImagesLoaded(prev => ({ ...prev, [image.id]: true }));
+        setImagesLoaded((prev) => ({ ...prev, [image.id]: true }));
       };
     });
+    setSelectedImage(images[0]);
+    setZoomLevel(2);
   }, []);
 
   useEffect(() => {
     setMainImageLoaded(false);
   }, [selectedImage]);
 
+  const handleZoomClick = () => {
+    setZoomDialogOpen(true);
+    setZoomLevel((prev) => (prev === 2 ? 4 : 2));
+  };
+
+  const handleImageLoad = () => {
+    if (!mainImageLoaded) {
+      setMainImageLoaded(true);
+    }
+  };
+
   return (
-    <div className="min-h-screen pt-20 bg-neutral-50">
+    <div className="min-h-screen pt-24 bg-neutral-50">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-8 items-start">
-          {/* Left Column - Product Info */}
+          {/* Left Column */}
           <div className="space-y-6">
+            {/* Title and Description */}
             <div>
-              <h1 className="text-3xl font-bold text-neutral-900 mb-3">Pogon X</h1>
+              <h1 className="text-3xl font-bold text-neutral-900 mb-3 text-center">
+                Pogon X
+              </h1>
               <p className="text-base text-neutral-600 mb-4">
-                Pogon X je vrhunski električni bicikl dizajniran za gradsku vožnju, 
-                savršen za one kojima su dosadile duge gužve i potrage za parkingom. Sa svojim 
-                kompaktnim sklopivim dizajnom i naprednom tehnologijom, predstavlja idealno 
-                rešenje za svakodnevno putovanje kroz grad.
+                Pogon X je vrhunski električni bicikl dizajniran za gradsku vožnju,
+                savršen za one kojima su dosadile duge gužve i potrage za parkingom.
+                Sa svojim kompaktnim sklopivim dizajnom i naprednom tehnologijom,
+                predstavlja idealno rešenje za svakodnevno putovanje kroz grad.
               </p>
             </div>
 
             {/* Specifications */}
             <div>
-              <h2 className="text-xl font-bold text-neutral-900 mb-3">Specifikacije</h2>
+              <h2 className="text-xl font-bold text-neutral-900 mb-3">
+                Specifikacije
+              </h2>
               <div className="space-y-1">
                 {specifications.map((spec) => (
-                  <p key={spec.label} className="text-sm text-neutral-700">
+                  <p key={spec.label} className="text-lg text-neutral-700">
                     <strong>{spec.label}:</strong> {spec.value}
                   </p>
                 ))}
               </div>
             </div>
 
-            {/* Price and CTA */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <p className="text-2xl font-bold text-neutral-900">58.500 RSD</p>
-                <p className="text-xl text-neutral-500 line-through">63.999 RSD</p>
+            {/* Price and Button */}
+            <div className="space-y-3 text-center mt-4">
+              <div className="flex items-center gap-3 justify-center">
+                <p className="text-2xl font-bold text-neutral-900">
+                  47,411 RSD
+                </p>
+                <p className="text-xl text-neutral-500 line-through">
+                  59,411 RSD
+                </p>
               </div>
-              <Button 
-                onClick={() => navigate('/contact')}
-                className="w-full bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 text-base"
+              <Button
+                onClick={() => navigate("/waitlist")}
+                className="mx-auto bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-3 px-6 text-base"
               >
-                Kontaktirajte Nas
+                Pridružite se čekanju
               </Button>
             </div>
           </div>
 
-          {/* Right Column - Images */}
+          {/* Right Column (Image and Thumbnails) */}
           <div className="space-y-3">
-            {/* Main Image with Click-to-Zoom */}
             <div
               className="bg-white rounded-xl p-3 border border-neutral-200 relative overflow-hidden cursor-zoom-in"
-              onClick={() => setZoomDialogOpen(true)}
+              onClick={handleZoomClick}
             >
               {!mainImageLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -105,28 +126,28 @@ export default function UrbanExplorer() {
                 src={selectedImage.src}
                 alt={selectedImage.alt}
                 className={`w-full h-[350px] object-contain transition-opacity duration-300 ${
-                  mainImageLoaded ? 'opacity-100' : 'opacity-0'
+                  mainImageLoaded ? "opacity-100" : "opacity-0"
                 }`}
-                onLoad={() => setMainImageLoaded(true)}
+                onLoad={handleImageLoad}
               />
             </div>
 
-            {/* Zoom Modal */}
             <Dialog open={zoomDialogOpen} onOpenChange={setZoomDialogOpen}>
               <DialogContent className="max-w-4xl w-full overflow-auto">
-                <div className="relative w-full h-[75vh] overflow-scroll">
-                  <img
-                    src={selectedImage.src}
-                    alt="Zoomed view"
-                    className="object-contain w-full h-full cursor-move"
-                    style={{ transform: 'scale(2)', transformOrigin: 'top left' }}
-                    draggable={false}
-                  />
-                </div>
+                {zoomDialogOpen && (
+                  <div className="relative w-full h-[75vh] overflow-scroll">
+                    <img
+                      src={selectedImage.src}
+                      alt="Zoomed view"
+                      className="object-contain cursor-move"
+                      style={{ transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
+                      draggable={false}
+                    />
+                  </div>
+                )}
               </DialogContent>
             </Dialog>
 
-            {/* Thumbnails */}
             <div className="grid grid-cols-4 gap-3">
               {images.map((image) => (
                 <button
@@ -134,8 +155,8 @@ export default function UrbanExplorer() {
                   onClick={() => setSelectedImage(image)}
                   className={`bg-white rounded-lg p-2 border transition-all relative ${
                     selectedImage.id === image.id
-                      ? 'border-neutral-900'
-                      : 'border-neutral-200 hover:border-neutral-400'
+                      ? "border-neutral-900"
+                      : "border-neutral-200 hover:border-neutral-400"
                   }`}
                 >
                   {!imagesLoaded[image.id] && (
@@ -147,9 +168,11 @@ export default function UrbanExplorer() {
                     src={image.src}
                     alt={image.alt}
                     className={`w-full h-16 object-contain transition-opacity duration-300 ${
-                      imagesLoaded[image.id] ? 'opacity-100' : 'opacity-0'
+                      imagesLoaded[image.id] ? "opacity-100" : "opacity-0"
                     }`}
-                    onLoad={() => setImagesLoaded(prev => ({ ...prev, [image.id]: true }))}
+                    onLoad={() =>
+                      setImagesLoaded((prev) => ({ ...prev, [image.id]: true }))
+                    }
                   />
                 </button>
               ))}

@@ -9,6 +9,7 @@ import Dealers from "@/pages/Dealers";
 import UrbanExplorer from "@/pages/BikeDetails/UrbanExplorer";
 import MountainMaster from "@/pages/BikeDetails/MountainMaster";
 import CityCruiser from "@/pages/BikeDetails/CityCruiser";
+import WaitlistPage from "@/pages/Waitlist"; // Updated import using the correct file name
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
@@ -28,6 +29,7 @@ function App() {
             <Route path="/bikes/urban-explorer" element={<UrbanExplorer />} />
             <Route path="/bikes/mountain-master" element={<MountainMaster />} />
             <Route path="/bikes/city-cruiser" element={<CityCruiser />} />
+            <Route path="/waitlist" element={<WaitlistPage />} /> {/* New route for Waitlist */}
           </Routes>
         </div>
       )}
