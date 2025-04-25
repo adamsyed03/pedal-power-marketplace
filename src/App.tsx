@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Intro } from "@/components/Intro";
 import { useState, useEffect } from "react";
@@ -12,15 +12,17 @@ import CityCruiser from "@/pages/BikeDetails/CityCruiser";
 import WaitlistPage from "@/pages/Waitlist"; // Updated import using the correct file name
 
 function AppContent() {
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(false); // Default to false
   const location = useLocation();
   
-  // Skip intro if we're on a specific page
   useEffect(() => {
-    if (location.pathname !== '/') {
+    // Only show intro on the home page and if it's not a direct navigation from another page
+    if (location.pathname === '/' && !location.key) {
+      setShowIntro(true);
+    } else {
       setShowIntro(false);
     }
-  }, [location.pathname]);
+  }, [location]);
 
   return (
     <>
@@ -38,6 +40,7 @@ function AppContent() {
             <Route path="/bikes/mountain-master" element={<MountainMaster />} />
             <Route path="/bikes/city-cruiser" element={<CityCruiser />} />
             <Route path="/waitlist" element={<WaitlistPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       )}
