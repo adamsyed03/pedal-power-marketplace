@@ -12,7 +12,7 @@ const featuredProducts = [
     imagePath: "/ebike111.png",
     description: "Premium električni bicikl sa pametnim funkcijama, savršen za gradsku vožnju ako su vam dosadile duge gužve i potrage za parkingom",
     category: "Gradski",
-    path: "/bikes/urban-explorer"
+    path: "/bikes/pogon-x"
   }
 ];
 

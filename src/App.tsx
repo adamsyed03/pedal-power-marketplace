@@ -26,10 +26,10 @@ function App() {
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/dealers" element={<Dealers />} />
-            <Route path="/bikes/urban-explorer" element={<UrbanExplorer />} />
+            <Route path="/bikes/pogon-x" element={<UrbanExplorer />} />
             <Route path="/bikes/mountain-master" element={<MountainMaster />} />
             <Route path="/bikes/city-cruiser" element={<CityCruiser />} />
-            <Route path="/waitlist" element={<WaitlistPage />} /> {/* New route for Waitlist */}
+            <Route path="/waitlist" element={<WaitlistPage />} />
           </Routes>
         </div>
       )}
