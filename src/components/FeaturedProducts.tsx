@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 
@@ -17,8 +17,6 @@ const featuredProducts = [
 ];
 
 export const FeaturedProducts = () => {
-  const navigate = useNavigate();
-
   return (
     <section className="pt-16 sm:pt-20 pb-16 bg-neutral-100" id="models">
       {/* Category Title */}
@@ -33,10 +31,10 @@ export const FeaturedProducts = () => {
       <div className="container mx-auto px-2 sm:px-4">
         <div className="max-w-2xl mx-auto">
           {featuredProducts.map((product) => (
-            <div 
+            <Link 
               key={product.id} 
-              className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group border border-neutral-200"
-              onClick={() => navigate(product.path)}
+              to={product.path}
+              className="block bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group border border-neutral-200"
             >
               <div className="h-[140px] sm:h-[180px] relative">
                 <img
@@ -60,13 +58,13 @@ export const FeaturedProducts = () => {
                     {product.originalPrice.toLocaleString()} RSD
                   </p>
                 </div>
-                <Button 
-                  className="w-full bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-2 sm:py-4 text-[12px] sm:text-base group-hover:bg-neutral-800"
+                <div 
+                  className="w-full bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-2 sm:py-4 text-[12px] sm:text-base group-hover:bg-neutral-800 text-center rounded-md"
                 >
                   Saznaj Više
-                </Button>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

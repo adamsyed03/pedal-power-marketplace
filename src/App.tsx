@@ -1,7 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Intro } from "@/components/Intro";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Index from "@/pages/Index";
 import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
@@ -11,11 +11,19 @@ import MountainMaster from "@/pages/BikeDetails/MountainMaster";
 import CityCruiser from "@/pages/BikeDetails/CityCruiser";
 import WaitlistPage from "@/pages/Waitlist"; // Updated import using the correct file name
 
-function App() {
+function AppContent() {
   const [showIntro, setShowIntro] = useState(true);
+  const location = useLocation();
+  
+  // Skip intro if we're on a specific page
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      setShowIntro(false);
+    }
+  }, [location.pathname]);
 
   return (
-    <Router>
+    <>
       {showIntro ? (
         <Intro setShowIntro={setShowIntro} />
       ) : (
@@ -33,6 +41,14 @@ function App() {
           </Routes>
         </div>
       )}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
