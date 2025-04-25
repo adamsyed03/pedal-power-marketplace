@@ -7,8 +7,8 @@ const featuredProducts = [
   {
     id: 1,
     title: "Pogon X",
-    price: 47411,
-    originalPrice: 59411,  // Changed from 58411 to match the correct price
+    price: 58499,
+    originalPrice: 68499,  // Updated from 47411/59411
     imagePath: "/ebike111.png",
     description: "Premium električni bicikl sa pametnim funkcijama, savršen za gradsku vožnju ako su vam dosadile duge gužve i potrage za parkingom",
     category: "Gradski",

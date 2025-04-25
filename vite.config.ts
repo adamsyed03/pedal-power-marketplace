@@ -1,3 +1,5 @@
+process.env.ROLLUP_USE_ESM = 'true'; // 👈 Force JS fallback instead of native Rollup
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -40,6 +42,7 @@ export default defineConfig(({ mode }) => ({
     outDir: 'dist',
     assetsDir: 'assets',
     rollupOptions: {
+      external: ['@rollup/rollup-linux-x64-gnu'], // prevent native dependency from being bundled
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {

@@ -96,10 +96,10 @@ export default function UrbanExplorer() {
             <div className="space-y-3 text-center mt-4">
               <div className="flex items-center gap-3 justify-center">
                 <p className="text-2xl font-bold text-neutral-900">
-                  47,411 RSD
+                  58,499 RSD
                 </p>
                 <p className="text-xl text-neutral-500 line-through">
-                  59,411 RSD
+                  68,499 RSD
                 </p>
               </div>
               <Button
