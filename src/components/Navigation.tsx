@@ -80,8 +80,14 @@ export const Navigation = () => {
                 O Nama
               </button>
               <button 
-                onClick={() => handleNavClick('/contact')}
-                className="border-2 border-neutral-800 text-neutral-800 hover:bg-neutral-800 hover:text-neutral-100 transition-colors px-4 py-2 rounded-md"
+                onClick={() => handleNavClick('/join-network')} 
+                className="text-neutral-700 hover:text-neutral-900 transition-colors"
+              >
+                Pridružite se Mreži
+              </button>
+              <button 
+                onClick={() => handleNavClick('/contact')} 
+                className="text-neutral-700 hover:text-neutral-900 transition-colors"
               >
                 Kontakt
               </button>
@@ -89,8 +95,8 @@ export const Navigation = () => {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="text-neutral-800"
@@ -163,6 +169,12 @@ export const Navigation = () => {
                   className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
                   O Nama
+                </button>
+                <button
+                  onClick={() => handleNavClick('/join-network')}
+                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
+                >
+                  Pridružite Se Mreži
                 </button>
                 <button
                   onClick={() => handleNavClick('/contact')}
