@@ -12,17 +12,15 @@ import CityCruiser from "@/pages/BikeDetails/CityCruiser";
 import WaitlistPage from "@/pages/Waitlist"; // Updated import using the correct file name
 
 function AppContent() {
-  const [showIntro, setShowIntro] = useState(false); // Default to false
+  const [showIntro, setShowIntro] = useState(true); // Default to true
   const location = useLocation();
   
   useEffect(() => {
-    // Only show intro on the home page and if it's not a direct navigation from another page
-    if (location.pathname === '/' && !location.key) {
-      setShowIntro(true);
-    } else {
+    // Skip intro if we're on a specific page other than home
+    if (location.pathname !== '/') {
       setShowIntro(false);
     }
-  }, [location]);
+  }, [location.pathname]);
 
   return (
     <>
