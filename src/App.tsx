@@ -3,7 +3,7 @@ import { Navigation } from "@/components/Navigation";
 import { Intro } from "@/components/Intro";
 import { useState, useEffect } from "react";
 import Index from "@/pages/Index";
-import AboutUs from "@/pages/AboutUs";
+import AboutUs from "@/pages/bout-us";
 import Contact from "@/pages/Contact";
 import Dealers from "@/pages/Dealers";
 import UrbanExplorer from "@/pages/BikeDetails/UrbanExplorer";
@@ -34,7 +34,7 @@ function AppContent() {
           <Navigation />
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/bout-us" element={<AboutUs />} />
             <Route path="/join-network" element={<JoinNetwork />} />
             <Route path="/join-network/sales-agent" element={<SalesAgent />} />
             <Route path="/join-network/executive" element={<Executive />} />

@@ -59,6 +59,7 @@ export const Navigation = () => {
             ? "bg-neutral-200 text-neutral-900 shadow-lg" 
             : "bg-neutral-200/95 text-neutral-900"
         }`}
+        style={{ zIndex: 1000 }}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
@@ -74,7 +75,7 @@ export const Navigation = () => {
             <div className="hidden md:flex items-center space-x-6">
               <button onClick={scrollToModels} className="text-neutral-700 hover:text-neutral-900 transition-colors">Modeli</button>
               <button 
-                onClick={() => handleNavClick('/about-us')} 
+                onClick={() => handleNavClick('/bout-us')} 
                 className="text-neutral-700 hover:text-neutral-900 transition-colors"
               >
                 O Nama
@@ -165,7 +166,7 @@ export const Navigation = () => {
                   Modeli
                 </button>
                 <button
-                  onClick={() => handleNavClick('/about-us')}
+                  onClick={() => handleNavClick('/bout-us')}
                   className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
                   O Nama
