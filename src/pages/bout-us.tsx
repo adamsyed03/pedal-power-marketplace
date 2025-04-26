@@ -1,9 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 // Use the AboutUsVid that's specifically for this page
 const VIDEO_URL = "https://pub-a596780795d544d0ae581ceaebbb8e46.r2.dev/AboutUsVid.mp4";
 
 export default function AboutUs() {
+  // Add loading state for the video
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const [isVideoError, setIsVideoError] = useState(false);
+
   // Fix the navigation bar position
   useEffect(() => {
     // Target the navigation bar
@@ -41,16 +45,44 @@ export default function AboutUs() {
     });
   }, []);
 
+  // Handle video loading events
+  const handleVideoLoaded = () => {
+    setIsVideoLoading(false);
+  };
+
+  const handleVideoError = () => {
+    setIsVideoLoading(false);
+    setIsVideoError(true);
+  };
+
   return (
     <div className="relative min-h-screen">
-      {/* Video Background */}
-      <div className="fixed inset-0 z-0 video-container">
+      {/* Video Background with loading state */}
+      <div className="fixed inset-0 z-0 video-container bg-black">
+        {/* Show loading indicator while video is loading */}
+        {isVideoLoading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-white text-xl">Loading video...</div>
+          </div>
+        )}
+        
+        {/* Show fallback if video fails to load */}
+        {isVideoError && (
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black"></div>
+        )}
+        
+        {/* Preload the video with metadata to start loading faster */}
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover scale-105"
+          preload="metadata"
+          className={`absolute inset-0 w-full h-full object-cover scale-105 ${
+            isVideoLoading ? 'opacity-0' : 'opacity-100'
+          } transition-opacity duration-500`}
+          onLoadedData={handleVideoLoaded}
+          onError={handleVideoError}
         >
           <source src={VIDEO_URL} type="video/mp4" />
           Your browser does not support the video tag.
