@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useLanguage } from '../context/LanguageContext';
 
 // Use the AboutUsVid that's specifically for this page
 const VIDEO_URL = "https://pub-a596780795d544d0ae581ceaebbb8e46.r2.dev/AboutUsVid.mp4";
 
 export default function AboutUs() {
+  // Get the translation function
+  const { t } = useLanguage();
+  
   // Add loading state for the video
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [isVideoError, setIsVideoError] = useState(false);
@@ -62,7 +66,7 @@ export default function AboutUs() {
         {/* Show loading indicator while video is loading */}
         {isVideoLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-white text-xl">Loading video...</div>
+            <div className="text-white text-xl">{t('loading')}</div>
           </div>
         )}
         
@@ -97,28 +101,14 @@ export default function AboutUs() {
         <main className="container mx-auto px-4 py-8 text-white mt-24">
           {/* Keeping the same margin */}
           <div className="max-w-3xl mx-auto bg-black/60 p-8 rounded-lg backdrop-blur-sm">
-            <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">O Nama</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">{t('about.title')}</h1>
             
             <div className="space-y-6 text-lg">
-              <p>
-                Pogon nije samo brend. To je pokret koji okuplja ljude sa zajedničkom strašću za vrhunskim kvalitetom, inovacijama i održivom mobilnošću.
-              </p>
-              
-              <p>
-                Naša priča počinje iz jednostavne, ali snažne ideje: da stvaramo proizvode koji ne samo da ispunjavaju potrebe modernog života, već ih iznova definišu. Od prvog dana, naš cilj je bio jasan – pomeriti granice očekivanog i postaviti nove standarde u svetu električne mobilnosti.
-              </p>
-              
-              <p>
-                Naš tim okuplja vrhunske stručnjake iz inženjeringa, dizajna i proizvodnje, vođene zajedničkom misijom – da oblikujemo budućnost putovanja. Sa svakim projektom težimo ka transparentnosti, vrhunskoj izradi i neprekidnom razvoju.
-              </p>
-              
-              <p>
-                Verujemo da pravo inoviranje dolazi iz stalne težnje da budemo bolji nego juče – za naše korisnike, za zajednicu i za planetu.
-              </p>
-              
-              <p className="font-bold text-xl">
-                Pridružite se Pogonu i budite deo pokreta koji pokreće promene.
-              </p>
+              <p>{t('about.p1')}</p>
+              <p>{t('about.p2')}</p>
+              <p>{t('about.p3')}</p>
+              <p>{t('about.p4')}</p>
+              <p className="font-bold text-xl">{t('about.p5')}</p>
             </div>
           </div>
           

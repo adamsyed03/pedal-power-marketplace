@@ -13,6 +13,7 @@ import WaitlistPage from "@/pages/Waitlist"; // Updated import using the correct
 import JoinNetwork from "@/pages/JoinNetwork";
 import SalesAgent from "@/pages/JoinNetwork/SalesAgent";
 import Executive from "@/pages/JoinNetwork/Executive";
+import LanguageSwitcher from './components/LanguageSwitcher'
 
 function AppContent() {
   const [showIntro, setShowIntro] = useState(true); // Default to true
@@ -44,8 +45,9 @@ function AppContent() {
             <Route path="/bikes/mountain-master" element={<MountainMaster />} />
             <Route path="/bikes/city-cruiser" element={<CityCruiser />} />
             <Route path="/waitlist" element={<WaitlistPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<AboutUs />} />
           </Routes>
+          <LanguageSwitcher />
         </div>
       )}
     </>
