@@ -1,12 +1,14 @@
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLanguage } from '../context/LanguageContext';
 
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -72,24 +74,24 @@ export const Navigation = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
-              <button onClick={scrollToModels} className="text-neutral-700 hover:text-neutral-900 transition-colors">Modeli</button>
+              <button onClick={scrollToModels} className="text-neutral-700 hover:text-neutral-900 transition-colors">{t('nav.models')}</button>
               <button 
                 onClick={() => handleNavClick('/about-us')} 
                 className="text-neutral-700 hover:text-neutral-900 transition-colors"
               >
-                O Nama
+                {t('nav.about')}
               </button>
               <button 
                 onClick={() => handleNavClick('/join-network')} 
                 className="text-neutral-700 hover:text-neutral-900 transition-colors"
               >
-                Pridružite se Mreži
+                {t('nav.join')}
               </button>
               <button 
                 onClick={() => handleNavClick('/contact')} 
                 className="text-neutral-700 hover:text-neutral-900 transition-colors"
               >
-                Kontakt
+                {t('nav.contact')}
               </button>
             </div>
 
@@ -162,25 +164,25 @@ export const Navigation = () => {
                   onClick={scrollToModels}
                   className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
-                  Modeli
+                  {t('nav.models')}
                 </button>
                 <button
                   onClick={() => handleNavClick('/about-us')}
                   className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
-                  O Nama
+                  {t('nav.about')}
                 </button>
                 <button
                   onClick={() => handleNavClick('/join-network')}
                   className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
-                  Pridružite Se Mreži
+                  {t('nav.join')}
                 </button>
                 <button
                   onClick={() => handleNavClick('/contact')}
                   className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
                 >
-                  Kontakt
+                  {t('nav.contact')}
                 </button>
               </div>
             </div>

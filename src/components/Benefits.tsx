@@ -1,34 +1,37 @@
 import { Button } from "@/components/ui/button";
+import { useLanguage } from '../context/LanguageContext';
 
 const benefits = [
   {
-    title: "Zdravlje",
-    description: "Zamislite da svakog dana udišete vazduh koji ozbiljno narušava vaše zdravlje — jer to se već dešava. Beograd je među najzagađenijim prestonicama Evrope, sa prosečnom godišnjom koncentracijom PM2.5 čestica od 23,3 µg/m³. Te čestice ulaze duboko u pluća i povećavaju rizik od astme, srčanih bolesti i čak prerane smrti. Pogon nudi rešenje: tihi, električni bicikl koji ne zagađuje i pomaže da zajedno pročistimo vazduh koji dišemo.",
+    title: "Health",
+    description: "Imagine breathing air every day that seriously compromises your health — because that's already happening. Belgrade is among the most polluted capitals in Europe, with an average annual PM2.5 particle concentration of 23.3 µg/m³. These particles penetrate deep into the lungs and increase the risk of asthma, heart disease, and even premature death. Pogon offers a solution: a quiet, electric bike that doesn't pollute and helps us together clean the air we breathe.",
     source: "IQAir, 2023",
     image: "/health.jpg.png"
   },
   {
-    title: "Vreme",
-    description: "U Beogradu svakog dana potrošimo skoro 40 minuta u prevozu — često u haosu, nervozi i zastoju. To je više od 10 dana godišnje izgubljenih u saobraćaju. Umesto da stojite u koloni, mogli biste se kretati lako, brzo i direktno kroz grad uz pomoć Pogona — e-bicikla koji vas vodi bez stresa, kad god i gde god poželite.",
+    title: "Time",
+    description: "In Belgrade, we spend nearly 40 minutes in transport every day — often in chaos, nervousness, and traffic jams. That's more than 10 days a year lost in traffic. Instead of standing in queues, you could move easily, quickly, and directly through the city with the help of Pogon — an e-bike that takes you stress-free, whenever and wherever you want.",
     source: "Numbeo, 2023",
     image: "/time.jpg.jpg"
   },
   {
-    title: "Ekonomske Prednosti",
-    description: "Od hleba do goriva — sve poskupljuje. Inflacija u Srbiji je u 2023. godini dostigla dvocifrene vrednosti, pri čemu su cene osnovnih proizvoda i usluga skočile i do 20% u nekim sektorima. Troškovi prevoza postaju sve veći deo kućnog budžeta. Pogon je odgovor na svakodnevni pritisak na novčanik: jednom kupite, a vozite bez goriva, registracije, servisa ili parkinga.",
-    source: "Republički zavod za statistiku, 2023",
+    title: "Economic Benefits",
+    description: "From bread to fuel — everything is getting more expensive. Inflation in Serbia reached double-digit values in 2023, with prices of basic products and services jumping up to 20% in some sectors. Transport costs are becoming an increasingly larger part of the household budget. Pogon is the answer to daily wallet pressure: buy once, and ride without fuel, registration, service, or parking.",
+    source: "Serbian Statistical Office, 2023",
     image: "/economy.jpg.png"
   }
 ];
 
 export const Benefits = () => {
+  const { t } = useLanguage();
+  
   return (
     <section className="py-8 sm:py-16">
       {/* Main Title */}
       <div className="container mx-auto px-4 mb-8 sm:mb-16 text-center">
-        <h2 className="text-[18px] sm:text-4xl font-bold mb-4">Zašto Izabrati Pogon</h2>
+        <h2 className="text-[18px] sm:text-4xl font-bold mb-4">{t('benefits.title')}</h2>
         <p className="text-[14px] sm:text-xl text-gray-600 max-w-3xl mx-auto">
-          Doživite savršen spoj inovacije, održivosti i vrhunskog kvaliteta
+          {t('benefits.subtitle')}
         </p>
       </div>
 
@@ -52,12 +55,12 @@ export const Benefits = () => {
 
             {/* Content Section */}
             <div className="w-full md:w-1/2 flex flex-col justify-center p-4 sm:p-8 md:p-16 bg-white">
-              <h3 className="text-[16px] sm:text-3xl font-bold mb-3 sm:mb-6">{benefit.title}</h3>
+              <h3 className="text-[16px] sm:text-3xl font-bold mb-3 sm:mb-6">{t(`benefits.${benefit.title.toLowerCase().replace(/\s+/g, '')}.title`)}</h3>
               <p className="text-[12px] sm:text-lg text-gray-600 mb-2 sm:mb-4">
-                {benefit.description}
+                {t(`benefits.${benefit.title.toLowerCase().replace(/\s+/g, '')}.description`)}
               </p>
               <p className="text-[10px] sm:text-sm text-gray-500 italic">
-                Izvor: {benefit.source}
+                {t('benefits.source')} {benefit.source}
               </p>
             </div>
           </div>

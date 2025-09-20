@@ -2,6 +2,9 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "r
 import { Navigation } from "@/components/Navigation";
 import { Intro } from "@/components/Intro";
 import { useState, useEffect } from "react";
+import { LanguageProvider } from './context/LanguageContext';
+import LanguageSwitcher from './components/LanguageSwitcher';
+import ReferFriendBanner from './components/ReferFriendBanner';
 import Index from "@/pages/Index";
 import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
@@ -32,6 +35,9 @@ function AppContent() {
       ) : (
         <div className="min-h-screen">
           <Navigation />
+          <div className="pt-20">
+            <ReferFriendBanner />
+          </div>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about-us" element={<AboutUs />} />
@@ -46,6 +52,7 @@ function AppContent() {
             <Route path="/waitlist" element={<WaitlistPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <LanguageSwitcher />
         </div>
       )}
     </>
@@ -54,9 +61,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <LanguageProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </LanguageProvider>
   );
 }
 
