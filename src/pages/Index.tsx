@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Hero } from "@/components/Hero";
 import { FeaturedProducts } from "@/components/FeaturedProducts";
 import { Benefits } from "@/components/Benefits";
+import { ReferAndEarn } from "@/components/ReferAndEarn";
 
 export default function Index() {
   const location = useLocation();
@@ -24,6 +25,7 @@ export default function Index() {
       <Hero />
       <FeaturedProducts />
       <Benefits />
+      <ReferAndEarn />
     </main>
   );
 }

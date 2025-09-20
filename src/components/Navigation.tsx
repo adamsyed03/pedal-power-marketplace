@@ -62,15 +62,15 @@ export const Navigation = () => {
             : "bg-neutral-200/95 text-neutral-900"
         }`}
       >
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <div 
-              onClick={() => handleNavClick('/')} 
-              className="flex-shrink-0 font-bold text-2xl tracking-wider cursor-pointer text-neutral-900"
-            >
-              POGON
-            </div>
+            <div className="container mx-auto px-4 sm:px-6">
+              <div className="flex items-center justify-between h-16 sm:h-20">
+                {/* Logo */}
+                <div 
+                  onClick={() => handleNavClick('/')} 
+                  className="flex-shrink-0 font-bold text-xl sm:text-2xl tracking-wider cursor-pointer text-neutral-900"
+                >
+                  POGON
+                </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
@@ -82,12 +82,6 @@ export const Navigation = () => {
                 {t('nav.about')}
               </button>
               <button 
-                onClick={() => handleNavClick('/join-network')} 
-                className="text-neutral-700 hover:text-neutral-900 transition-colors"
-              >
-                {t('nav.join')}
-              </button>
-              <button 
                 onClick={() => handleNavClick('/contact')} 
                 className="text-neutral-700 hover:text-neutral-900 transition-colors"
               >
@@ -95,100 +89,94 @@ export const Navigation = () => {
               </button>
             </div>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-neutral-800"
-                aria-label="Toggle menu"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
-                  />
-                </svg>
-              </Button>
-            </div>
+                {/* Mobile Menu Button */}
+                <div className="md:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="text-neutral-800 p-2"
+                    aria-label="Toggle menu"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                      />
+                    </svg>
+                  </Button>
+                </div>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-neutral-900/50 z-[100] md:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <div 
-            className={`fixed right-0 top-0 h-full w-64 bg-neutral-200 shadow-xl transform transition-transform duration-300 ease-in-out ${
-              isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex flex-col h-full">
-              <div className="flex justify-end p-4">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-neutral-800"
-                  aria-label="Close menu"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </Button>
-              </div>
-              <div className="flex flex-col p-6 space-y-4">
-                <button
-                  onClick={scrollToModels}
-                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
-                >
-                  {t('nav.models')}
-                </button>
-                <button
-                  onClick={() => handleNavClick('/about-us')}
-                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
-                >
-                  {t('nav.about')}
-                </button>
-                <button
-                  onClick={() => handleNavClick('/join-network')}
-                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
-                >
-                  {t('nav.join')}
-                </button>
-                <button
-                  onClick={() => handleNavClick('/contact')}
-                  className="text-left px-4 py-3 text-neutral-700 hover:bg-neutral-300 rounded-md transition-colors"
-                >
-                  {t('nav.contact')}
-                </button>
+          {/* Mobile Menu Overlay */}
+          {isMobileMenuOpen && (
+            <div 
+              className="fixed inset-0 bg-neutral-900/50 z-[100] md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <div 
+                className={`fixed right-0 top-0 h-full w-72 sm:w-80 bg-neutral-200 shadow-xl transform transition-transform duration-300 ease-in-out ${
+                  isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+                }`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-end p-4 border-b border-neutral-300">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-neutral-800 p-2"
+                      aria-label="Close menu"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </Button>
+                  </div>
+                  <div className="flex flex-col p-6 space-y-2">
+                    <button
+                      onClick={scrollToModels}
+                      className="text-left px-4 py-4 text-neutral-700 hover:bg-neutral-300 rounded-lg transition-colors text-lg font-medium"
+                    >
+                      {t('nav.models')}
+                    </button>
+                    <button
+                      onClick={() => handleNavClick('/about-us')}
+                      className="text-left px-4 py-4 text-neutral-700 hover:bg-neutral-300 rounded-lg transition-colors text-lg font-medium"
+                    >
+                      {t('nav.about')}
+                    </button>
+                    <button
+                      onClick={() => handleNavClick('/contact')}
+                      className="text-left px-4 py-4 text-neutral-700 hover:bg-neutral-300 rounded-lg transition-colors text-lg font-medium"
+                    >
+                      {t('nav.contact')}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
     </>
   );
 }; 

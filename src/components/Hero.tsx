@@ -40,25 +40,25 @@ export const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="relative w-full max-w-7xl mx-auto px-4 flex flex-col items-center text-center">
-        <h1 className="text-[18px] sm:text-4xl lg:text-6xl font-bold mb-4 sm:mb-6 text-white whitespace-nowrap">
+      <div className="relative w-full max-w-7xl mx-auto px-6 sm:px-4 flex flex-col items-center text-center">
+        <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold mb-3 sm:mb-6 text-white leading-tight px-2">
           {t('hero.title')}
         </h1>
-        <p className="text-[14px] sm:text-xl lg:text-2xl mb-6 sm:mb-10 text-neutral-100 font-light">
+        <p className="text-base sm:text-xl lg:text-2xl mb-6 sm:mb-10 text-neutral-100 font-light max-w-4xl px-4 leading-relaxed">
           {t('hero.subtitle')}
         </p>
         <Button 
           onClick={scrollToModels}
-          className="bg-neutral-100 text-neutral-900 hover:bg-white px-4 sm:px-10 py-2 sm:py-6 text-[14px] sm:text-lg transition-all duration-300 shadow-lg"
+          className="bg-neutral-100 text-neutral-900 hover:bg-white px-6 sm:px-10 py-3 sm:py-6 text-base sm:text-lg transition-all duration-300 shadow-lg rounded-lg font-semibold"
         >
           {t('hero.button')}
         </Button>
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <div className="absolute bottom-8 sm:bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
         <svg
-          className="w-6 h-6 text-white"
+          className="w-5 h-5 sm:w-6 sm:h-6 text-white"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"

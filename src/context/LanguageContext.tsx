@@ -39,9 +39,16 @@ const translations = {
     'benefits.economy.description': 'From bread to fuel — everything is getting more expensive. Inflation in Serbia reached double-digit values in 2023, with prices of basic products and services jumping up to 20% in some sectors. Transport costs are becoming an increasingly larger part of the household budget. Pogon is the answer to daily wallet pressure: buy once, and ride without fuel, registration, service, or parking.',
     'benefits.source': 'Source:',
     
-    // Refer Friend Banner
-    'referBanner.text': 'Refer a friend to the Pogon Boost Plan and get a FREE WEEK each!',
-    'referBanner.learnMore': 'Learn More',
+        // Refer Friend Banner
+        'referBanner.text': 'Refer a friend to the Pogon Boost Plan and get a FREE WEEK each!',
+        'referBanner.learnMore': 'Learn More',
+        
+        // Refer and Earn Section
+        'referEarn.title': 'Refer and Earn',
+        'referEarn.subtitle': 'Refer a friend who signs up for our Boost Plan and you\'ll both receive a FREE WEEK of riding!',
+        'referEarn.description': 'The free week applies to e-bikes and e-mopeds.',
+        'referEarn.disclaimer': 'Terms and conditions apply.',
+        'referEarn.cta': 'REFER A FRIEND',
   },
   sr: {
     // Navigation
@@ -73,9 +80,16 @@ const translations = {
     'benefits.economy.description': 'Od hleba do goriva — sve poskupljuje. Inflacija u Srbiji je u 2023. godini dostigla dvocifrene vrednosti, pri čemu su cene osnovnih proizvoda i usluga skočile i do 20% u nekim sektorima. Troškovi prevoza postaju sve veći deo kućnog budžeta. Pogon je odgovor na svakodnevni pritisak na novčanik: jednom kupite, a vozite bez goriva, registracije, servisa ili parkinga.',
     'benefits.source': 'Izvor:',
     
-    // Refer Friend Banner
-    'referBanner.text': 'Preporučite prijatelja za Pogon Boost Plan i dobijte BESPLATNU NEDELJU svaki!',
-    'referBanner.learnMore': 'Saznaj Više',
+        // Refer Friend Banner
+        'referBanner.text': 'Preporučite prijatelja za Pogon Boost Plan i dobijte BESPLATNU NEDELJU svaki!',
+        'referBanner.learnMore': 'Saznaj Više',
+        
+        // Refer and Earn Section
+        'referEarn.title': 'Preporuči i Zaradi',
+        'referEarn.subtitle': 'Preporučite prijatelja koji se prijavi za naš Boost Plan i oboje ćete dobiti BESPLATNU NEDELJU vožnje!',
+        'referEarn.description': 'Besplatna nedelja važi za e-bicikle i e-skutere.',
+        'referEarn.disclaimer': 'Važe uslovi i odredbe.',
+        'referEarn.cta': 'PREPORUČI PRIJATELJA',
   },
   ru: {
     // Navigation
@@ -107,9 +121,16 @@ const translations = {
     'benefits.economy.description': 'От хлеба до топлива — все дорожает. Инфляция в Сербии в 2023 году достигла двузначных значений, при этом цены на основные товары и услуги выросли до 20% в некоторых секторах. Расходы на транспорт становятся все большей частью семейного бюджета. Pogon — это ответ на ежедневное давление на кошелек: купите один раз и ездите без топлива, регистрации, обслуживания или парковки.',
     'benefits.source': 'Источник:',
     
-    // Refer Friend Banner
-    'referBanner.text': 'Пригласите друга в Pogon Boost Plan и получите БЕСПЛАТНУЮ НЕДЕЛЮ каждый!',
-    'referBanner.learnMore': 'Узнать Больше',
+        // Refer Friend Banner
+        'referBanner.text': 'Пригласите друга в Pogon Boost Plan и получите БЕСПЛАТНУЮ НЕДЕЛЮ каждый!',
+        'referBanner.learnMore': 'Узнать Больше',
+        
+        // Refer and Earn Section
+        'referEarn.title': 'Рекомендуй и Зарабатывай',
+        'referEarn.subtitle': 'Рекомендуйте друга, который подпишется на наш Boost Plan, и вы оба получите БЕСПЛАТНУЮ НЕДЕЛЮ катания!',
+        'referEarn.description': 'Бесплатная неделя действует для электровелосипедов и электроскутеров.',
+        'referEarn.disclaimer': 'Действуют условия и положения.',
+        'referEarn.cta': 'РЕКОМЕНДОВАТЬ ДРУГА',
   }
 };
 
