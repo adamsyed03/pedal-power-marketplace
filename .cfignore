@@ -1,0 +1,14 @@
+# Cloudflare Pages ignore file
+# Ignore nested folder (old project structure)
+pedal-power-marketplace/
+
+# Ignore any existing dist folder (will be rebuilt)
+dist/
+
+# Ignore node_modules
+node_modules/
+
+# Ignore build artifacts
+*.local
+.env*
+

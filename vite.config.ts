@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => ({
     }
   },
   publicDir: 'public',
-  base: mode === 'development' ? '/' : './',
+  base: '/',
   plugins: [
     react(),
     mode === 'development' &&
