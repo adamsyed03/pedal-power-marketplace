@@ -65,16 +65,19 @@ export const Navigation = () => {
             <div className="container mx-auto px-4 sm:px-6">
               <div className="flex items-center justify-between h-16 sm:h-20">
                 {/* Logo */}
-                <div 
-                  onClick={() => handleNavClick('/')} 
-                  className="flex-shrink-0 font-bold text-xl sm:text-2xl tracking-wider cursor-pointer text-neutral-900"
+                <button
+                  onClick={() => handleNavClick('/')}
+                  className="flex items-center gap-2 flex-shrink-0 cursor-pointer"
                 >
-                  POGON
-                </div>
+                  <img
+                    src="/Logo.png"
+                    alt="Pogon logo"
+                    className="h-32 sm:h-40 w-auto"
+                  />
+                </button>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
-              <button onClick={scrollToModels} className="text-neutral-700 hover:text-neutral-900 transition-colors">{t('nav.models')}</button>
               <button 
                 onClick={() => handleNavClick('/about-us')} 
                 className="text-neutral-700 hover:text-neutral-900 transition-colors"
@@ -154,12 +157,6 @@ export const Navigation = () => {
                     </Button>
                   </div>
                   <div className="flex flex-col p-6 space-y-2">
-                    <button
-                      onClick={scrollToModels}
-                      className="text-left px-4 py-4 text-neutral-700 hover:bg-neutral-300 rounded-lg transition-colors text-lg font-medium"
-                    >
-                      {t('nav.models')}
-                    </button>
                     <button
                       onClick={() => handleNavClick('/about-us')}
                       className="text-left px-4 py-4 text-neutral-700 hover:bg-neutral-300 rounded-lg transition-colors text-lg font-medium"

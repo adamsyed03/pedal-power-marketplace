@@ -14,28 +14,15 @@ export default function WaitlistPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Build the submission object with email and current date/time (ISO format)
-    const submission = {
-      email,
-      submittedAt: new Date().toISOString(),
-    };
-
     try {
-      // Replace with your actual Worker URL from Wrangler publish output.
-      const workerUrl = "https://waitlist-worker.ctinvestmentswork.workers.dev";
-      const response = await fetch(workerUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submission),
-      });
+      const { submitToGoogleSheets } = await import("../lib/googleSheets");
+      const result = await submitToGoogleSheets('signup', { email });
       
-      if (response.ok) {
-        const data = await response.json();
+      if (result.success) {
         setMessage("Hvala, uspešno ste se prijavili!");
         setEmail(""); // Clear the input field after success.
       } else {
-        const errorData = await response.json();
-        setMessage("Greška: " + (errorData.error || "Nepoznata greška."));
+        setMessage("Greška: " + (result.error || "Nepoznata greška."));
       }
     } catch (error) {
       console.error("Error submitting data:", error);

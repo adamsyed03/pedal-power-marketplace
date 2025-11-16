@@ -3,33 +3,33 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-
-const imageURL = "https://pub-a596780795d544d0ae581ceaebbb8e46.r2.dev/PogonXstanding.png";
+import { useLanguage } from "../../context/LanguageContext";
+import { BuyRentForm } from "../../components/BuyRentForm";
 
 const images = [
-  { id: 1, src: imageURL, alt: "Pogon X Front View" },
-  { id: 2, src: imageURL, alt: "Pogon X Side View" },
-  { id: 3, src: imageURL, alt: "Pogon X Folded" },
-  { id: 4, src: imageURL, alt: "Pogon X Details" },
+  { id: 1, src: "/Excellent%201.png", alt: "P-Comfort main view" },
+  { id: 2, src: "/Excellent%202.png", alt: "P-Comfort side view" },
+  { id: 3, src: "/Excellent%203.png", alt: "P-Comfort folded view" },
+  { id: 4, src: "/Excellent%204.png", alt: "P-Comfort detail view" },
 ];
 
 const specifications = [
-  { label: "Brzina (maks.)", value: "25km/h" },
-  { label: "Domet", value: "40km" },
-  { label: "Snaga", value: "250W" },
-  { label: "Nosivost (maks.)", value: "115kg" },
-  { label: "Vreme punjenja", value: "5-6h" },
-  { label: "Veličina točkova", value: "16 inch" },
-  { label: "Tip konstrukcije", value: "Sklopiv" },
+  { labelKey: "bike.pogonX.spec.speed", value: "25km/h" },
+  { labelKey: "bike.pogonX.spec.range", value: "85km" },
+  { labelKey: "bike.pogonX.spec.power", value: "250W" },
+  { labelKey: "bike.pogonX.spec.capacity", value: "110kg" },
+  { labelKey: "bike.pogonX.spec.chargeTime", value: "5-6h" },
 ];
 
 export default function UrbanExplorer() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
   const [mainImageLoaded, setMainImageLoaded] = useState(false);
   const [zoomDialogOpen, setZoomDialogOpen] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(2);
+  const [buyFormOpen, setBuyFormOpen] = useState(false);
+  const [rentFormOpen, setRentFormOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -41,7 +41,6 @@ export default function UrbanExplorer() {
       };
     });
     setSelectedImage(images[0]);
-    setZoomLevel(2);
   }, []);
 
   useEffect(() => {
@@ -50,7 +49,6 @@ export default function UrbanExplorer() {
 
   const handleZoomClick = () => {
     setZoomDialogOpen(true);
-    setZoomLevel((prev) => (prev === 2 ? 4 : 2));
   };
 
   const handleImageLoad = () => {
@@ -68,53 +66,56 @@ export default function UrbanExplorer() {
             {/* Title and Description */}
             <div>
               <h1 className="text-3xl font-bold text-neutral-900 mb-3 text-center">
-                Pogon X
+                {t("bike.pogonX.title")}
               </h1>
               <p className="text-base text-neutral-600 mb-4">
-                Pogon X je vrhunski električni bicikl dizajniran za gradsku vožnju,
-                savršen za one kojima su dosadile duge gužve i potrage za parkingom.
-                Sa svojim kompaktnim sklopivim dizajnom i naprednom tehnologijom,
-                predstavlja idealno rešenje za svakodnevno putovanje kroz grad.
+                {t("bike.pogonX.description")}
               </p>
             </div>
 
             {/* Specifications */}
             <div>
               <h2 className="text-xl font-bold text-neutral-900 mb-3">
-                Specifikacije
+                {t("bike.pogonX.specsTitle")}
               </h2>
               <div className="space-y-1">
                 {specifications.map((spec) => (
-                  <p key={spec.label} className="text-lg text-neutral-700">
-                    <strong>{spec.label}:</strong> {spec.value}
+                  <p key={spec.labelKey} className="text-lg text-neutral-700">
+                    <strong>{t(spec.labelKey)}:</strong> {spec.value}
                   </p>
                 ))}
               </div>
             </div>
 
-            {/* Price and Button */}
+            {/* Price and Buttons */}
             <div className="space-y-3 text-center mt-4">
               <div className="flex items-center gap-3 justify-center">
                 <p className="text-2xl font-bold text-neutral-900">
-                  58,499 RSD
-                </p>
-                <p className="text-xl text-neutral-500 line-through">
-                  68,499 RSD
+                  4,499 RSD/week
                 </p>
               </div>
-              <Button
-                onClick={() => navigate("/waitlist")}
-                className="mx-auto bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-3 px-6 text-base"
-              >
-                Pridružite se čekanju
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  onClick={() => setBuyFormOpen(true)}
+                  className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-3 px-6 text-base"
+                >
+                  {t("bike.pogonX.buy")}
+                </Button>
+                <Button
+                  onClick={() => setRentFormOpen(true)}
+                  variant="outline"
+                  className="border-neutral-900 text-neutral-900 hover:bg-neutral-100 py-3 px-6 text-base"
+                >
+                  {t("bike.pogonX.rent")}
+                </Button>
+              </div>
             </div>
           </div>
 
           {/* Right Column (Image and Thumbnails) */}
           <div className="space-y-3">
             <div
-              className="bg-white rounded-xl p-3 border border-neutral-200 relative overflow-hidden cursor-zoom-in"
+              className="bg-white rounded-xl p-3 border border-neutral-200 relative overflow-hidden cursor-pointer"
               onClick={handleZoomClick}
             >
               {!mainImageLoaded && (
@@ -133,23 +134,20 @@ export default function UrbanExplorer() {
             </div>
 
             <Dialog open={zoomDialogOpen} onOpenChange={setZoomDialogOpen}>
-              <DialogContent className="max-w-4xl w-full overflow-auto">
-                {zoomDialogOpen && (
-                  <div className="relative w-full h-[75vh] overflow-scroll">
-                    <img
-                      src={selectedImage.src}
-                      alt="Zoomed view"
-                      className="object-contain cursor-move"
-                      style={{ transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
-                      draggable={false}
-                    />
-                  </div>
-                )}
+              <DialogContent className="max-w-4xl w-full">
+                <div className="w-full h-[70vh] bg-neutral-50 rounded-lg flex items-center justify-center">
+                  <img
+                    src={selectedImage.src}
+                    alt="Zoomed view"
+                    className="max-h-full max-w-full object-contain rounded-lg select-none"
+                    draggable={false}
+                  />
+                </div>
               </DialogContent>
             </Dialog>
 
-            <div className="grid grid-cols-4 gap-3">
-              {images.map((image) => (
+            <div className="grid grid-cols-3 gap-3">
+              {images.slice(1).map((image) => (
                 <button
                   key={image.id}
                   onClick={() => setSelectedImage(image)}
@@ -180,6 +178,22 @@ export default function UrbanExplorer() {
           </div>
         </div>
       </div>
+      
+      {/* Buy Form Dialog */}
+      <BuyRentForm
+        isOpen={buyFormOpen}
+        onClose={() => setBuyFormOpen(false)}
+        type="buy"
+        modelName={t("bike.pogonX.title")}
+      />
+      
+      {/* Rent Form Dialog */}
+      <BuyRentForm
+        isOpen={rentFormOpen}
+        onClose={() => setRentFormOpen(false)}
+        type="rent"
+        modelName={t("bike.pogonX.title")}
+      />
     </div>
   );
 }

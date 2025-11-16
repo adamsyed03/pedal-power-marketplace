@@ -13,18 +13,12 @@ export const Hero = () => {
     img.src = '/Tara.jpg';
   }, []);
 
-  const scrollToModels = () => {
-    const modelsSection = document.getElementById('models');
-    if (modelsSection) {
-      const headerOffset = 20;
-      const elementPosition = modelsSection.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+  const goToLifestyle = () => {
+    navigate("/lifestyle");
+  };
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
+  const goToDelivery = () => {
+    navigate("/delivery");
   };
 
   return (
@@ -44,15 +38,23 @@ export const Hero = () => {
         <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold mb-3 sm:mb-6 text-white leading-tight px-2">
           {t('hero.title')}
         </h1>
-        <p className="text-base sm:text-xl lg:text-2xl mb-6 sm:mb-10 text-neutral-100 font-light max-w-4xl px-4 leading-relaxed">
+        <p className="text-base sm:text-xl lg:text-2xl mb-6 sm:mb-8 text-neutral-100 font-light max-w-4xl px-4 leading-relaxed">
           {t('hero.subtitle')}
         </p>
-        <Button 
-          onClick={scrollToModels}
-          className="bg-neutral-100 text-neutral-900 hover:bg-white px-6 sm:px-10 py-3 sm:py-6 text-base sm:text-lg transition-all duration-300 shadow-lg rounded-lg font-semibold"
-        >
-          {t('hero.button')}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+          <Button
+            onClick={goToLifestyle}
+            className="bg-white/5 text-white border border-white/30 hover:bg-white/10 hover:border-white/60 px-6 sm:px-10 py-3 sm:py-4 text-base sm:text-lg transition-all duration-300 shadow-lg rounded-full font-semibold backdrop-blur-md w-full sm:w-auto"
+          >
+            {t('hero.lifestyle')}
+          </Button>
+          <Button
+            onClick={goToDelivery}
+            className="bg-white/0 text-white border border-white/40 hover:bg-white/10 hover:border-white/70 px-6 sm:px-10 py-3 sm:py-4 text-base sm:text-lg transition-all duration-300 shadow-lg rounded-full font-semibold backdrop-blur-md w-full sm:w-auto"
+          >
+            {t('hero.delivery')}
+          </Button>
+        </div>
       </div>
 
       {/* Scroll Indicator */}

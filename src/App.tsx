@@ -1,11 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
-import { Intro } from "@/components/Intro";
-import { useState, useEffect } from "react";
-import { LanguageProvider } from './context/LanguageContext';
-import LanguageSwitcher from './components/LanguageSwitcher';
-import ReferFriendBanner from './components/ReferFriendBanner';
+import { LanguageProvider } from "./context/LanguageContext";
+import LanguageSwitcher from "./components/LanguageSwitcher";
+import ReferFriendBanner from "./components/ReferFriendBanner";
 import Index from "@/pages/Index";
+import Lifestyle from "@/pages/Lifestyle";
+import Delivery from "@/pages/Delivery";
 import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
 import Dealers from "@/pages/Dealers";
@@ -14,50 +14,30 @@ import MountainMaster from "@/pages/BikeDetails/MountainMaster";
 import CityCruiser from "@/pages/BikeDetails/CityCruiser";
 import WaitlistPage from "@/pages/Waitlist"; // Updated import using the correct file name
 
-function AppContent() {
-  const [showIntro, setShowIntro] = useState(true); // Default to true
-  const location = useLocation();
-  
-  useEffect(() => {
-    // Skip intro if we're on a specific page other than home
-    if (location.pathname !== '/') {
-      setShowIntro(false);
-    }
-  }, [location.pathname]);
-
+function App() {
   return (
-    <>
-      {showIntro ? (
-        <Intro setShowIntro={setShowIntro} />
-      ) : (
+    <LanguageProvider>
+      <Router>
         <div className="min-h-screen">
           <Navigation />
           <div className="pt-20">
             <ReferFriendBanner />
           </div>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/about-us" element={<AboutUs />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/dealers" element={<Dealers />} />
-                <Route path="/bikes/pogon-x" element={<UrbanExplorer />} />
-                <Route path="/bikes/mountain-master" element={<MountainMaster />} />
-                <Route path="/bikes/city-cruiser" element={<CityCruiser />} />
-                <Route path="/waitlist" element={<WaitlistPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/lifestyle" element={<Lifestyle />} />
+            <Route path="/delivery" element={<Delivery />} />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/dealers" element={<Dealers />} />
+            <Route path="/bikes/pogon-x" element={<UrbanExplorer />} />
+            <Route path="/bikes/mountain-master" element={<MountainMaster />} />
+            <Route path="/bikes/city-cruiser" element={<CityCruiser />} />
+            <Route path="/waitlist" element={<WaitlistPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
           <LanguageSwitcher />
         </div>
-      )}
-    </>
-  );
-}
-
-function App() {
-  return (
-    <LanguageProvider>
-      <Router>
-        <AppContent />
       </Router>
     </LanguageProvider>
   );

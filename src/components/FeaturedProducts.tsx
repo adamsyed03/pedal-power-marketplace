@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 import { useLanguage } from '../context/LanguageContext';
@@ -8,9 +8,9 @@ const featuredProducts = [
   {
     id: 1,
     title: "P-Starter",
-    price: "4,999rsd/week",
+    price: "4,499rsd/week",
     originalPrice: null,
-    imagePath: "/ebike111.png",
+    imagePath: "/Excellent%201.png",
     description: "Premium electric bike with smart features, perfect for city riding if you're tired of long traffic jams and parking searches",
     category: "Urban",
     path: "/bikes/p-starter"
@@ -18,27 +18,28 @@ const featuredProducts = [
   {
     id: 2,
     title: "P-Fold",
-    price: "4,999rsd/week",
+    price: "4,499rsd/week",
     originalPrice: null,
-    imagePath: "/ebike111.png",
+    imagePath: "/Excellent%201.png",
     description: "Premium electric bike with smart features, perfect for city riding if you're tired of long traffic jams and parking searches",
     category: "Urban",
     path: "/bikes/p-fold"
   },
   {
     id: 3,
-    title: "P-Comfort",
-    price: "4,999rsd/week",
+    title: "Glide",
+    price: "4,499rsd/week",
     originalPrice: null,
-    imagePath: "/ebike111.png",
+    imagePath: "/Excellent%201.png",
     description: "Premium electric bike with smart features, perfect for city riding if you're tired of long traffic jams and parking searches",
     category: "Urban",
-    path: "/bikes/p-comfort"
+    path: "/bikes/pogon-x"
   }
 ];
 
 export const FeaturedProducts = () => {
   const { t } = useLanguage();
+  const location = useLocation();
   
   return (
         <section className="pt-12 sm:pt-20 pb-12 sm:pb-16 bg-neutral-100" id="models">
@@ -53,13 +54,24 @@ export const FeaturedProducts = () => {
           {/* Product Display */}
           <div className="container mx-auto px-4 sm:px-4">
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 max-w-6xl mx-auto">
-              {featuredProducts.map((product) => (
-                <Link 
-                  key={product.id} 
-                  to={product.path}
-                  className="block bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group border border-neutral-200 w-full max-w-sm"
+              {featuredProducts.map((product, index) => {
+                const isBlurred = index !== featuredProducts.length - 1;
+                const CardWrapper = isBlurred ? 'div' : Link;
+                const wrapperProps = isBlurred
+                  ? {}
+                  : { to: product.path };
+
+                return (
+                <CardWrapper
+                  key={product.id}
+                  {...(wrapperProps as any)}
+                  className={`block bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 ${
+                    isBlurred
+                      ? 'filter blur-sm opacity-40 cursor-default pointer-events-none select-none'
+                      : 'cursor-pointer group'
+                  } border border-neutral-200 w-full max-w-sm`}
                 >
-                  <div className="h-[160px] sm:h-[180px] relative">
+                  <div className="h-[208px] sm:h-[234px] relative">
                     <img
                       src={product.imagePath}
                       alt={product.title}
@@ -73,19 +85,25 @@ export const FeaturedProducts = () => {
                     </span>
                     <h3 className="text-lg sm:text-2xl font-bold mt-2 mb-2 text-neutral-900">{product.title}</h3>
                     <p className="text-sm sm:text-base text-neutral-600 mb-3 sm:mb-4 leading-relaxed">{t('products.description')}</p>
-                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                      <p className="text-base sm:text-xl font-bold text-neutral-900">
-                        {product.price}
-                      </p>
-                    </div>
+                     <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                       <p className="text-base sm:text-xl font-bold text-neutral-900">
+                         {location.pathname === '/lifestyle' && !isBlurred
+                           ? '179,999 RSD'
+                           : location.pathname === '/delivery' && !isBlurred
+                           ? '4,499 RSD/week'
+                           : product.price}
+                       </p>
+                     </div>
                     <div 
-                      className="w-full bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-3 sm:py-4 text-sm sm:text-base group-hover:bg-neutral-800 text-center rounded-md font-medium"
+                      className={`w-full bg-neutral-900 text-neutral-50 py-3 sm:py-4 text-sm sm:text-base text-center rounded-md font-medium ${
+                        isBlurred ? 'opacity-60' : 'hover:bg-neutral-800 group-hover:bg-neutral-800'
+                      }`}
                     >
                       {t('products.learnMore')}
                     </div>
                   </div>
-                </Link>
-              ))}
+                </CardWrapper>
+              )})}
         </div>
       </div>
     </section>
