@@ -1,18 +1,15 @@
-# Google Sheets Integration Setup
+# Google Apps Script Deployment Instructions
 
-This guide explains how to set up Google Sheets integration for the forms.
+## IMPORTANT: Make sure the script is deployed as a WEB APP, not a library!
 
-## Steps:
+## Step-by-Step Deployment:
 
-1. **Create a Google Sheet** with three sheets:
-   - `Partnership` - with columns: First Name, Last Name, City, Phone, Email, Preferred Contact
-   - `Glide Renters` - with columns: First Name, Last Name, City, Email, Phone
-   - `Glide Buyers` - with columns: First Name, Last Name, City, Email, Phone
+1. **Open your Google Sheet** (Pogon Database)
 
-2. **Create a Google Apps Script**:
-   - Open your Google Sheet
+2. **Open Google Apps Script**:
    - Go to Extensions → Apps Script
-   - Copy and paste this code:
+
+3. **Delete ALL existing code** and paste this code:
 
 ```javascript
 function doPost(e) {
@@ -134,23 +131,50 @@ function doGet(e) {
 }
 ```
 
-3. **Deploy as Web App**:
-   - Click "Deploy" → "New deployment"
-   - Select type: "Web app"
-   - Execute as: "Me"
-   - Who has access: "Anyone"
+4. **Save the script** (Ctrl+S or Cmd+S)
+
+5. **Deploy as Web App**:
+   - Click "Deploy" button in the top right
+   - Click "New deployment"
+   - Click the gear icon ⚙️ (settings)
+   - Select type: **"Web app"** (IMPORTANT: NOT Library!)
+   - Description: "Pogon Forms Handler" (optional)
+   - Execute as: **"Me"** (your email)
+   - Who has access: **"Anyone"** (THIS IS CRITICAL!)
    - Click "Deploy"
-   - Copy the Web App URL
 
-4. **Set Environment Variable**:
-   - Create a `.env` file in your project root
-   - Add: `VITE_GOOGLE_SCRIPT_URL=YOUR_WEB_APP_URL_HERE`
-   - Replace `YOUR_WEB_APP_URL_HERE` with the URL you copied
+6. **Authorize the script** (first time only):
+   - You'll see "Authorization required"
+   - Click "Authorize access"
+   - Choose your Google account
+   - Click "Advanced" → "Go to [Project Name] (unsafe)"
+   - Click "Allow"
 
-5. **Restart your dev server** to load the environment variable
+7. **Copy the Web App URL**:
+   - After deployment, you'll see a URL like:
+   - `https://script.google.com/macros/s/AKfycb.../exec`
+   - Click "Copy URL"
 
-## Notes:
-- The Google Apps Script will automatically add new rows to the appropriate sheet based on the `sheetName` parameter
-- Make sure your Google Sheet has the correct sheet names: `Partnership`, `Glide Renters`, and `Glide Buyers`
-- The script handles all three forms automatically
+8. **Update the code**:
+   - The URL in `src/utils/googleSheets.ts` is already set to your deployment ID
+   - The URL is: `https://script.google.com/macros/s/AKfycbwo_ImIZ3cXHhuEI2OkRKE522AE5pVcYvclX8S8GaVmjRcD2t6vER7vsRL4jTFLqW87cA/exec`
+   - Make sure this matches your deployment URL
+
+9. **Test it**:
+   - Open this URL in a browser (it should NOT ask you to sign in if deployed correctly):
+   - `https://script.google.com/macros/s/AKfycbwo_ImIZ3cXHhuEI2OkRKE522AE5pVcYvclX8S8GaVmjRcD2t6vER7vsRL4jTFLqW87cA/exec?sheetName=Glide%20Buyers&data=["2024-01-01T00:00:00.000Z","test@example.com"]`
+   - If it works, you should see `{"success":true}` and a row should appear in your "Glide Buyers" sheet
+
+## Troubleshooting:
+
+- **If the URL asks you to sign in**: The deployment is NOT set to "Anyone". Go back and redeploy with "Anyone" access.
+- **If nothing appears in the sheet**: Check the "Executions" tab in Apps Script to see if there are errors
+- **If you see errors in Executions**: Click on the execution to see the error message
+
+## Verify your sheets have these exact names:
+- `Partnership`
+- `Glide Renters`
+- `Glide Buyers`
+
+Make sure the names match EXACTLY (case-sensitive).
 

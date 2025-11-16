@@ -13,6 +13,8 @@ import UrbanExplorer from "@/pages/BikeDetails/UrbanExplorer";
 import MountainMaster from "@/pages/BikeDetails/MountainMaster";
 import CityCruiser from "@/pages/BikeDetails/CityCruiser";
 import WaitlistPage from "@/pages/Waitlist"; // Updated import using the correct file name
+import RentWaitlist from "@/pages/RentWaitlist";
+import BuyWaitlist from "@/pages/BuyWaitlist";
 
 function App() {
   return (
@@ -34,6 +36,8 @@ function App() {
             <Route path="/bikes/mountain-master" element={<MountainMaster />} />
             <Route path="/bikes/city-cruiser" element={<CityCruiser />} />
             <Route path="/waitlist" element={<WaitlistPage />} />
+            <Route path="/rent-waitlist" element={<RentWaitlist />} />
+            <Route path="/buy-waitlist" element={<BuyWaitlist />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <LanguageSwitcher />

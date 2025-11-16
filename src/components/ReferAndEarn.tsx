@@ -4,14 +4,37 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { submitPartner } from '../utils/googleSheets';
+
+const countryCodes = [
+  { code: '+381', country: 'Serbia (SRB)' },
+  { code: '+1', country: 'United States (US)' },
+  { code: '+44', country: 'United Kingdom (UK)' },
+  { code: '+387', country: 'Bosnia and Herzegovina (BA)' },
+  { code: '+382', country: 'Montenegro (ME)' },
+  { code: '+383', country: 'Kosovo (XK)' },
+  { code: '+389', country: 'North Macedonia (MK)' },
+  { code: '+385', country: 'Croatia (HR)' },
+  { code: '+386', country: 'Slovenia (SI)' },
+  { code: '+43', country: 'Austria (AT)' },
+  { code: '+49', country: 'Germany (DE)' },
+  { code: '+33', country: 'France (FR)' },
+  { code: '+39', country: 'Italy (IT)' },
+  { code: '+34', country: 'Spain (ES)' },
+  { code: '+7', country: 'Russia (RU)' },
+];
 
 export const ReferAndEarn = () => {
   const { t } = useLanguage();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     city: '',
+    countryCode: '+381',
     phone: '',
     email: '',
     preferredContact: '',
@@ -22,32 +45,49 @@ export const ReferAndEarn = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleCountryCodeChange = (value: string) => {
+    setFormData(prev => ({ ...prev, countryCode: value }));
+  };
+
+  const handlePreferredContactChange = (value: string) => {
+    setFormData(prev => ({ ...prev, preferredContact: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setIsSubmitting(true);
+    setSubmitMessage('');
+
     try {
-      const { submitToGoogleSheets } = await import('../lib/googleSheets');
-      const result = await submitToGoogleSheets('refer', formData);
+      await submitPartner({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        city: formData.city,
+        phone: `${formData.countryCode}${formData.phone}`,
+        email: formData.email,
+        preferredContact: formData.preferredContact,
+      });
+      setSubmitMessage(t('referEarn.form.success') || 'Thank you! Your submission has been received.');
       
-      if (result.success) {
-        setIsDialogOpen(false);
-        // Reset form
+      // Reset form after successful submission
+      setTimeout(() => {
         setFormData({
           firstName: '',
           lastName: '',
           city: '',
+          countryCode: '+381',
           phone: '',
           email: '',
           preferredContact: '',
         });
-        // Show success message (you can add a toast notification here)
-        alert('Thank you! We will contact you soon.');
-      } else {
-        alert(result.error || 'Failed to submit form. Please try again.');
-      }
+        setIsDialogOpen(false);
+        setSubmitMessage('');
+      }, 2000);
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('An error occurred. Please try again later.');
+      setSubmitMessage(t('referEarn.form.error') || 'There was an error submitting your form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -141,14 +181,30 @@ export const ReferAndEarn = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">{t('referEarn.form.phone')}</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                value={formData.phone}
-                onChange={handleInputChange}
-              />
+              <div className="flex gap-2">
+                <Select value={formData.countryCode} onValueChange={handleCountryCodeChange}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countryCodes.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        {country.code} {country.country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="flex-1"
+                  placeholder={t('referEarn.form.phonePlaceholder') || 'Phone number'}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t('referEarn.form.email')}</Label>
@@ -163,25 +219,41 @@ export const ReferAndEarn = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="preferredContact">{t('referEarn.form.preferredContact')}</Label>
-              <Input
-                id="preferredContact"
-                name="preferredContact"
-                type="text"
-                required
-                value={formData.preferredContact}
-                onChange={handleInputChange}
-              />
+              <Select value={formData.preferredContact} onValueChange={handlePreferredContactChange} required>
+                <SelectTrigger id="preferredContact">
+                  <SelectValue placeholder={t('referEarn.form.preferredContactPlaceholder') || 'Select preferred contact'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Call">{t('referEarn.form.contact.call') || 'Call'}</SelectItem>
+                  <SelectItem value="Email">{t('referEarn.form.contact.email') || 'Email'}</SelectItem>
+                  <SelectItem value="WhatsApp">{t('referEarn.form.contact.whatsapp') || 'WhatsApp'}</SelectItem>
+                  <SelectItem value="Viber">{t('referEarn.form.contact.viber') || 'Viber'}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            {submitMessage && (
+              <div className={`p-3 rounded-md text-sm ${
+                submitMessage.includes('error') || submitMessage.includes('Error')
+                  ? 'bg-red-50 text-red-700'
+                  : 'bg-green-50 text-green-700'
+              }`}>
+                {submitMessage}
+              </div>
+            )}
             <div className="flex justify-end space-x-2 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsDialogOpen(false)}
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  setSubmitMessage('');
+                }}
+                disabled={isSubmitting}
               >
                 {t('referEarn.form.cancel')}
               </Button>
-              <Button type="submit">
-                {t('referEarn.form.submit')}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (t('referEarn.form.submitting') || 'Submitting...') : t('referEarn.form.submit')}
               </Button>
             </div>
           </form>

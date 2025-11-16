@@ -1,11 +1,15 @@
 import React, { useState } from "react";
+import { useLanguage } from "../context/LanguageContext";
+import { submitBuyer } from "../utils/googleSheets";
 
 // Use the provided Tara-nature video URL
 const VIDEO_URL = "https://pub-a596780795d544d0ae581ceaebbb8e46.r2.dev/tara-nature.mp4";
 
-export default function WaitlistPage() {
+export default function BuyWaitlistPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
@@ -13,33 +17,20 @@ export default function WaitlistPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    // Build the submission object with email and current date/time (ISO format)
-    const submission = {
-      email,
-      submittedAt: new Date().toISOString(),
-    };
+    setIsSubmitting(true);
+    setMessage("");
 
     try {
-      // Replace with your actual Worker URL from Wrangler publish output.
-      const workerUrl = "https://waitlist-worker.ctinvestmentswork.workers.dev";
-      const response = await fetch(workerUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submission),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setMessage("Hvala, uspešno ste se prijavili!");
-        setEmail(""); // Clear the input field after success.
-      } else {
-        const errorData = await response.json();
-        setMessage("Greška: " + (errorData.error || "Nepoznata greška."));
-      }
-    } catch (error) {
+      await submitBuyer({ email });
+
+      setMessage(t('buyWaitlist.success') || "Hvala, uspešno ste se prijavili!");
+      setEmail("");
+    } catch (error: any) {
       console.error("Error submitting data:", error);
-      setMessage("Prijava nije uspela.");
+      const errorMsg = error?.message || "Unknown error";
+      setMessage(`${t('buyWaitlist.error') || 'Error: Sign up failed.'} (${errorMsg})`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -62,28 +53,37 @@ export default function WaitlistPage() {
 
       {/* Content Overlay */}
       <div className="relative z-10 flex flex-col items-center justify-center p-4">
-        <h1 className="text-3xl font-bold text-white mb-4">Pridružite se čekanju</h1>
+        <h1 className="text-3xl font-bold text-white mb-4">
+          {t('buyWaitlist.title') || 'Pridružite se listi za kupovinu'}
+        </h1>
         <p className="text-lg text-white mb-8 text-center">
-          Unesite svoju email adresu da biste se pridružili listi čekanja.
+          {t('buyWaitlist.description') || 'Unesite svoju email adresu da biste se pridružili listi za kupovinu.'}
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-4">
           <input
             type="email"
             value={email}
             onChange={handleEmailChange}
-            placeholder="Unesite svoju email adresu ovde"
+            placeholder={t('buyWaitlist.placeholder') || 'Unesite svoju email adresu ovde'}
             required
+            disabled={isSubmitting}
             className="w-64 p-2 text-sm border border-gray-300 rounded placeholder-gray-400"
           />
           <button
             type="submit"
-            className="w-64 p-2 text-sm bg-gray-800 text-white hover:bg-gray-700 rounded"
+            disabled={isSubmitting}
+            className="w-64 p-2 text-sm bg-gray-800 text-white hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Pošaljite
+            {isSubmitting ? (t('buyWaitlist.submitting') || 'Slanje...') : (t('buyWaitlist.submit') || 'Pošaljite')}
           </button>
         </form>
-        {message && <p className="mt-4 text-center text-white">{message}</p>}
+        {message && (
+          <p className={`mt-4 text-center text-white ${message.includes('Greška') || message.includes('Error') ? 'text-red-200' : ''}`}>
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );
 }
+

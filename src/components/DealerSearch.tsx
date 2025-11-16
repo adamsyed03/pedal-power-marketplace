@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'
 
 // Fix Leaflet icon issue

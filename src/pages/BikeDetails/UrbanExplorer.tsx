@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useLanguage } from "../../context/LanguageContext";
-import { BuyRentForm } from "../../components/BuyRentForm";
 
 const images = [
   { id: 1, src: "/Excellent%201.png", alt: "P-Comfort main view" },
@@ -23,13 +22,16 @@ const specifications = [
 
 export default function UrbanExplorer() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
   const [mainImageLoaded, setMainImageLoaded] = useState(false);
   const [zoomDialogOpen, setZoomDialogOpen] = useState(false);
-  const [buyFormOpen, setBuyFormOpen] = useState(false);
-  const [rentFormOpen, setRentFormOpen] = useState(false);
+  
+  // Determine if user came from delivery or lifestyle page
+  const fromDelivery = (location.state as any)?.from === 'delivery';
+  const fromLifestyle = (location.state as any)?.from === 'lifestyle';
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -91,23 +93,41 @@ export default function UrbanExplorer() {
             <div className="space-y-3 text-center mt-4">
               <div className="flex items-center gap-3 justify-center">
                 <p className="text-2xl font-bold text-neutral-900">
-                  4,499 RSD/week
+                  {fromLifestyle ? '179,999 RSD' : '4,499 RSD/week'}
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button
-                  onClick={() => setBuyFormOpen(true)}
-                  className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-3 px-6 text-base"
-                >
-                  {t("bike.pogonX.buy")}
-                </Button>
-                <Button
-                  onClick={() => setRentFormOpen(true)}
-                  variant="outline"
-                  className="border-neutral-900 text-neutral-900 hover:bg-neutral-100 py-3 px-6 text-base"
-                >
-                  {t("bike.pogonX.rent")}
-                </Button>
+                {fromDelivery ? (
+                  <Button
+                    onClick={() => navigate("/rent-waitlist")}
+                    className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 px-8 text-lg font-semibold min-w-[200px] w-full sm:w-auto"
+                  >
+                    {t("bike.pogonX.rent")}
+                  </Button>
+                ) : fromLifestyle ? (
+                  <Button
+                    onClick={() => navigate("/buy-waitlist")}
+                    className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 px-8 text-lg font-semibold min-w-[200px] w-full sm:w-auto"
+                  >
+                    {t("bike.pogonX.buy")}
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => navigate("/rent-waitlist")}
+                      className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 px-8 text-lg font-semibold min-w-[200px]"
+                    >
+                      {t("bike.pogonX.rent")}
+                    </Button>
+              <Button
+                      onClick={() => navigate("/buy-waitlist")}
+                      variant="outline"
+                      className="border-neutral-900 text-neutral-900 hover:bg-neutral-100 py-4 px-8 text-lg font-semibold min-w-[200px]"
+              >
+                      {t("bike.pogonX.buy")}
+              </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -136,13 +156,13 @@ export default function UrbanExplorer() {
             <Dialog open={zoomDialogOpen} onOpenChange={setZoomDialogOpen}>
               <DialogContent className="max-w-4xl w-full">
                 <div className="w-full h-[70vh] bg-neutral-50 rounded-lg flex items-center justify-center">
-                  <img
-                    src={selectedImage.src}
-                    alt="Zoomed view"
+                    <img
+                      src={selectedImage.src}
+                      alt="Zoomed view"
                     className="max-h-full max-w-full object-contain rounded-lg select-none"
-                    draggable={false}
-                  />
-                </div>
+                      draggable={false}
+                    />
+                  </div>
               </DialogContent>
             </Dialog>
 
@@ -178,22 +198,6 @@ export default function UrbanExplorer() {
           </div>
         </div>
       </div>
-      
-      {/* Buy Form Dialog */}
-      <BuyRentForm
-        isOpen={buyFormOpen}
-        onClose={() => setBuyFormOpen(false)}
-        type="buy"
-        modelName={t("bike.pogonX.title")}
-      />
-      
-      {/* Rent Form Dialog */}
-      <BuyRentForm
-        isOpen={rentFormOpen}
-        onClose={() => setRentFormOpen(false)}
-        type="rent"
-        modelName={t("bike.pogonX.title")}
-      />
     </div>
   );
 }

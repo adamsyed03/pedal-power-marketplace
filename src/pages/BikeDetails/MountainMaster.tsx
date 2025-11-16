@@ -24,7 +24,7 @@ const specifications = [
   { label: "Tip konstrukcije", value: "Sklopiv" },
 ];
 
-export default function UrbanExplorer() {
+export default function MountainMaster() {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
