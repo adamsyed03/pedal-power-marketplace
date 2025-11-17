@@ -62,8 +62,8 @@ export const Navigation = () => {
             : "bg-neutral-200/95 text-neutral-900"
         }`}
       >
-            <div className="container mx-auto px-4 sm:px-6">
-              <div className="flex items-center justify-between h-16 sm:h-20">
+            <div className="container mx-auto px-3 sm:px-4 md:px-6">
+              <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
                 {/* Logo */}
                 <button
                   onClick={() => handleNavClick('/')}
@@ -72,7 +72,7 @@ export const Navigation = () => {
                   <img
                     src="/Logo.png"
                     alt="Pogon logo"
-                    className="h-32 sm:h-40 w-auto"
+                    className="h-16 sm:h-24 md:h-32 lg:h-40 w-auto"
                   />
                 </button>
 

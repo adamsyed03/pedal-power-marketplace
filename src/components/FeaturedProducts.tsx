@@ -73,7 +73,8 @@ export const FeaturedProducts = () => {
 
                 return (
                 <div
-              key={product.id} 
+              key={product.id}
+                  id={!isBlurred ? 'available-model' : undefined}
                   onClick={handleCardClick}
                   className={`block bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 ${
                     isBlurred

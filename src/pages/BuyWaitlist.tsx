@@ -52,14 +52,14 @@ export default function BuyWaitlistPage() {
       <div className="absolute inset-0 bg-black opacity-30"></div>
 
       {/* Content Overlay */}
-      <div className="relative z-10 flex flex-col items-center justify-center p-4">
-        <h1 className="text-3xl font-bold text-white mb-4">
+      <div className="relative z-10 flex flex-col items-center justify-center p-4 sm:p-6 min-h-screen">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4 text-center px-4">
           {t('buyWaitlist.title') || 'Pridružite se listi za kupovinu'}
         </h1>
-        <p className="text-lg text-white mb-8 text-center">
+        <p className="text-base sm:text-lg text-white mb-6 sm:mb-8 text-center px-4 max-w-md">
           {t('buyWaitlist.description') || 'Unesite svoju email adresu da biste se pridružili listi za kupovinu.'}
         </p>
-        <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-3 sm:space-y-4 w-full max-w-sm px-4">
           <input
             type="email"
             value={email}
@@ -67,18 +67,18 @@ export default function BuyWaitlistPage() {
             placeholder={t('buyWaitlist.placeholder') || 'Unesite svoju email adresu ovde'}
             required
             disabled={isSubmitting}
-            className="w-64 p-2 text-sm border border-gray-300 rounded placeholder-gray-400"
+            className="w-full p-3 sm:p-2.5 text-sm sm:text-base border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50"
           />
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-64 p-2 text-sm bg-gray-800 text-white hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full p-3 sm:p-2.5 text-sm sm:text-base bg-gray-800 text-white hover:bg-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
           >
             {isSubmitting ? (t('buyWaitlist.submitting') || 'Slanje...') : (t('buyWaitlist.submit') || 'Pošaljite')}
           </button>
         </form>
         {message && (
-          <p className={`mt-4 text-center text-white ${message.includes('Greška') || message.includes('Error') ? 'text-red-200' : ''}`}>
+          <p className={`mt-4 text-center text-white px-4 text-sm sm:text-base ${message.includes('Greška') || message.includes('Error') ? 'text-red-200' : ''}`}>
             {message}
           </p>
         )}

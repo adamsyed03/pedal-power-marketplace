@@ -22,7 +22,7 @@ function App() {
       <Router>
         <div className="min-h-screen">
           <Navigation />
-          <div className="pt-20">
+          <div className="pt-14 sm:pt-16 md:pt-20">
             <ReferFriendBanner />
           </div>
           <Routes>

@@ -104,29 +104,29 @@ export const DealerSearch = () => {
     });
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-4">Find a Dealer</h2>
-        <div className="flex gap-4 mb-4">
+    <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4">Find a Dealer</h2>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
           <input
             type="text"
             placeholder="Search by name or location..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+            className="flex-1 px-4 py-2.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Button
             onClick={getUserLocation}
-            className="bg-black text-white hover:bg-black/90"
+            className="bg-black text-white hover:bg-black/90 text-sm sm:text-base py-2.5 sm:py-2 w-full sm:w-auto"
           >
             Use My Location
           </Button>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
         {/* Map */}
-        <div className="h-[600px] rounded-lg overflow-hidden">
+        <div className="h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden order-2 md:order-1">
           <MapContainer 
             style={{ height: '100%', width: '100%' }}
             className="h-full w-full"
@@ -175,18 +175,18 @@ export const DealerSearch = () => {
         </div>
 
         {/* Dealer List */}
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-xl font-bold mb-4">
+        <div className="bg-gray-50 rounded-lg p-4 sm:p-6 order-1 md:order-2">
+          <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
             {loading ? 'Loading dealers...' : `${filteredDealers.length} Dealers Found`}
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4 max-h-[300px] sm:max-h-[400px] md:max-h-none overflow-y-auto">
             {filteredDealers.map(dealer => (
               <div
                 key={dealer.id}
-                className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white p-3 sm:p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
               >
-                <h4 className="font-bold">{dealer.name}</h4>
-                <p className="text-sm text-gray-600">{dealer.address}</p>
+                <h4 className="font-bold text-sm sm:text-base">{dealer.name}</h4>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">{dealer.address}</p>
                 {userLocation && (
                   <p className="text-sm text-gray-500">
                     {calculateDistance(

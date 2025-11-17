@@ -140,12 +140,12 @@ export const ReferAndEarn = () => {
 
       {/* Refer Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto mx-4">
           <DialogHeader>
-            <DialogTitle>{t('referEarn.form.title')}</DialogTitle>
-            <DialogDescription>{t('referEarn.form.description')}</DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">{t('referEarn.form.title')}</DialogTitle>
+            <DialogDescription className="text-sm">{t('referEarn.form.description')}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">{t('referEarn.form.firstName')}</Label>
               <Input
@@ -181,9 +181,9 @@ export const ReferAndEarn = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">{t('referEarn.form.phone')}</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Select value={formData.countryCode} onValueChange={handleCountryCodeChange}>
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="w-full sm:w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

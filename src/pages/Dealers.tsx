@@ -5,13 +5,13 @@ import { DealerSearch } from "../components/DealerSearch";
 
 export default function Dealers() {
   return (
-    <div className="pt-20">
+    <div className="pt-14 sm:pt-16 md:pt-20">
       {/* Hero Section */}
-      <div className="relative h-[40vh] bg-gray-100">
-        <div className="container mx-auto px-4 h-full flex items-center">
+      <div className="relative min-h-[200px] sm:h-[30vh] md:h-[40vh] bg-gray-100">
+        <div className="container mx-auto px-4 sm:px-6 h-full flex items-center py-8 sm:py-0">
           <div className="max-w-2xl">
-            <h1 className="text-5xl font-bold mb-6">Find a Dealer</h1>
-            <p className="text-xl text-gray-600">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 md:mb-6">Find a Dealer</h1>
+            <p className="text-base sm:text-lg md:text-xl text-gray-600">
               Locate your nearest Pogon dealer and experience our e-bikes in person.
             </p>
           </div>
