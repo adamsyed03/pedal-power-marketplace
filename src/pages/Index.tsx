@@ -9,7 +9,7 @@ const homeCopy = {
     heroPrimary: "Explore Bikes",
     heroSecondary: "Delivery Solutions",
     heroSignal: "Long range * Urban comfort * Delivery-ready",
-    heroLocal: "Designed for Serbian streets",
+    heroLocal: "Designed for streets across Serbia",
     whyTitle: "Why Pogon",
     whyCards: [
       {
@@ -76,7 +76,7 @@ const homeCopy = {
     heroPrimary: "Istrazi bicikle",
     heroSecondary: "Resenja za dostavu",
     heroSignal: "Veliki domet * Udobnost u gradu * Spremno za dostavu",
-    heroLocal: "Dizajnirano za ulice Srbije",
+    heroLocal: "Dizajnirano za ulice sirom Srbije",
     whyTitle: "Zasto Pogon",
     whyCards: [
       {
