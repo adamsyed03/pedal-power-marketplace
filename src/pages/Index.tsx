@@ -123,7 +123,7 @@ export default function Index() {
             <p className="mb-6 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#d6e0d8] backdrop-blur-sm">
               Designed for the streets of Serbia
             </p>
-            <h1 className="text-balance text-4xl font-semibold leading-[1.02] text-[#f6f8f4] sm:text-5xl md:text-6xl lg:text-7xl">
+            <h1 className="whitespace-nowrap text-[1.12rem] font-semibold leading-[1.08] text-[#f6f8f4] sm:whitespace-normal sm:text-5xl md:text-6xl lg:text-7xl">
               {copy.heroTitle}
             </h1>
             <p className="mt-6 max-w-2xl text-base text-[#d5ddd5] sm:text-lg md:text-xl">{copy.heroSub}</p>
