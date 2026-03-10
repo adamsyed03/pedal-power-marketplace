@@ -33,7 +33,7 @@ const WHATSAPP_BASE = "https://wa.me/381631505003";
 
 const homeCopy: Record<Lang, Copy> = {
   en: {
-    heroTitle: "Move the Way Builders Move",
+    heroTitle: "Progress is impossible without change",
     heroSub: "Electric bikes designed for people building their future.",
     heroPrimary: "Explore Bikes",
     heroSecondary: "Lifestyle",
@@ -65,7 +65,7 @@ const homeCopy: Record<Lang, Copy> = {
     footerLinks: ["Bikes", "Lifestyle", "About", "Contact"],
   },
   sr: {
-    heroTitle: "Kreci se kao ljudi koji grade svoju buducnost",
+    heroTitle: "Napredak je nemoguc bez promene",
     heroSub: "Elektricni bicikli za ljude koji svaki dan rade na svom napretku.",
     heroPrimary: "Istrazi bicikle",
     heroSecondary: "Lifestyle",
