@@ -1,179 +1,223 @@
-import { Button } from "./ui/button";
-import { useState, useEffect } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useLanguage } from '../context/LanguageContext';
+import { Menu, X, ChevronDown } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
+
+const navLabels = {
+  en: {
+    bikes: "Bikes",
+    lifestyle: "Lifestyle",
+    delivery: "Delivery",
+    about: "About",
+    contact: "Contact",
+    cta: "Talk to Us",
+  },
+  sr: {
+    bikes: "Bicikli",
+    lifestyle: "Lifestyle",
+    delivery: "Dostava",
+    about: "O nama",
+    contact: "Kontakt",
+    cta: "Kontakt",
+  },
+} as const;
+
+const trustPoints = {
+  en: [
+    "2-year warranty",
+    "Delivery across Serbia",
+    "Service and support network",
+    "Flexible payment inquiry",
+  ],
+  sr: [
+    "2 godine garancije",
+    "Isporuka sirom Srbije",
+    "Servis i podrska",
+    "Fleksibilan upit za placanje",
+  ],
+} as const;
+
+const languages = [
+  { code: "en", label: "EN" },
+  { code: "sr", label: "SR" },
+] as const;
+
+type HomeAnchor = "bikes" | "lifestyle" | "delivery";
 
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setIsScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleNavClick = (path: string) => {
-    if (location.pathname === path) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      navigate(path);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  useEffect(() => {
+    const hash = location.hash?.replace("#", "");
+    if (!hash || location.pathname !== "/") {
+      return;
     }
-    setIsMobileMenuOpen(false);
-  };
 
-  const scrollToModels = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (location.pathname !== '/') {
-      navigate('/', { state: { scrollToModels: true } });
-    } else {
-      const modelsSection = document.getElementById('models');
-      if (modelsSection) {
-        const headerOffset = 80; // Account for fixed header
-        const elementPosition = modelsSection.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    const target = document.getElementById(hash);
+    if (target) {
+      const navOffset = 112;
+      const top = target.getBoundingClientRect().top + window.scrollY - navOffset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  }, [location]);
 
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
+  const labels = useMemo(() => (language === "sr" ? navLabels.sr : navLabels.en), [language]);
+  const strip = useMemo(() => (language === "sr" ? trustPoints.sr : trustPoints.en), [language]);
+
+  const goHomeAnchor = (id: HomeAnchor) => {
+    if (location.pathname === "/") {
+      const target = document.getElementById(id);
+      if (target) {
+        const navOffset = 112;
+        const top = target.getBoundingClientRect().top + window.scrollY - navOffset;
+        window.scrollTo({ top, behavior: "smooth" });
       }
+    } else {
+      navigate(`/#${id}`);
     }
     setIsMobileMenuOpen(false);
   };
+
+  const baseNavClass =
+    location.pathname === "/" && !isScrolled
+      ? "bg-[#0f1412]/35 text-[#f7f8f4] border-white/15"
+      : "bg-[#f4f5f1]/90 text-[#111613] border-[#d4d9d3] shadow-[0_8px_26px_rgba(16,22,18,0.08)]";
 
   return (
-    <>
-      <nav
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          isScrolled 
-            ? "bg-neutral-200 text-neutral-900 shadow-lg" 
-            : "bg-neutral-200/95 text-neutral-900"
-        }`}
-      >
-            <div className="container mx-auto px-3 sm:px-4 md:px-6">
-              <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
-                {/* Logo */}
-                <button
-                  onClick={() => handleNavClick('/')}
-                  className="flex items-center gap-2 flex-shrink-0 cursor-pointer"
-                >
-                  <img
-                    src="/Logo.png"
-                    alt="Pogon logo"
-                    className="h-16 sm:h-24 md:h-32 lg:h-40 w-auto"
-                  />
-                </button>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
-              <button 
-                onClick={() => handleNavClick('/about-us')} 
-                className="text-neutral-700 hover:text-neutral-900 transition-colors"
-              >
-                {t('nav.about')}
-              </button>
-              <button 
-                onClick={() => handleNavClick('/contact')} 
-                className="text-neutral-700 hover:text-neutral-900 transition-colors"
-              >
-                {t('nav.contact')}
-              </button>
+    <header className="fixed top-0 left-0 right-0 z-50">
+      <div className="h-8 border-b border-white/10 bg-[#111613] text-[11px] font-medium text-[#e7ece5] backdrop-blur">
+        <div className="mx-auto flex h-full max-w-7xl items-center gap-2 overflow-x-auto px-4 lg:px-8">
+          {strip.map((item, index) => (
+            <div key={item} className="flex shrink-0 items-center gap-2">
+              {index > 0 ? <span className="text-[#6a746f]">*</span> : null}
+              <span>{item}</span>
             </div>
-
-                {/* Mobile Menu Button */}
-                <div className="md:hidden">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="text-neutral-800 p-2"
-                    aria-label="Toggle menu"
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
-                      />
-                    </svg>
-                  </Button>
-                </div>
-          </div>
+          ))}
         </div>
-      </nav>
+      </div>
 
-          {/* Mobile Menu Overlay */}
-          {isMobileMenuOpen && (
-            <div 
-              className="fixed inset-0 bg-neutral-900/50 z-[100] md:hidden"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <div 
-                className={`fixed right-0 top-0 h-full w-72 sm:w-80 bg-neutral-200 shadow-xl transform transition-transform duration-300 ease-in-out ${
-                  isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-                }`}
-                onClick={(e) => e.stopPropagation()}
+      <nav className={`border-b transition-all duration-300 ${baseNavClass}`} aria-label="Primary">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/Logo.png" alt="Pogon" className="h-10 w-auto" loading="eager" />
+          </Link>
+
+          <div className="hidden items-center gap-8 lg:flex">
+            <button onClick={() => goHomeAnchor("bikes")} className="text-sm tracking-wide hover:opacity-70">
+              {labels.bikes}
+            </button>
+            <button onClick={() => goHomeAnchor("lifestyle")} className="text-sm tracking-wide hover:opacity-70">
+              {labels.lifestyle}
+            </button>
+            <button onClick={() => goHomeAnchor("delivery")} className="text-sm tracking-wide hover:opacity-70">
+              {labels.delivery}
+            </button>
+            <Link to="/about-us" className="text-sm tracking-wide hover:opacity-70">
+              {labels.about}
+            </Link>
+            <Link to="/contact" className="text-sm tracking-wide hover:opacity-70">
+              {labels.contact}
+            </Link>
+          </div>
+
+          <div className="hidden items-center gap-3 lg:flex">
+            <div className="relative">
+              <button
+                onClick={() => setIsLangOpen((prev) => !prev)}
+                className="inline-flex items-center gap-1 rounded-full border border-current/25 px-3 py-1.5 text-xs font-semibold"
+                aria-label="Select language"
               >
-                <div className="flex flex-col h-full">
-                  <div className="flex justify-end p-4 border-b border-neutral-300">
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-neutral-800 p-2"
-                      aria-label="Close menu"
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </Button>
-                  </div>
-                  <div className="flex flex-col p-6 space-y-2">
+                {language === "sr" ? "SR" : "EN"}
+                <ChevronDown size={14} />
+              </button>
+              {isLangOpen ? (
+                <div className="absolute right-0 mt-2 w-20 overflow-hidden rounded-xl border border-[#d4d9d3] bg-white text-[#111613] shadow-lg">
+                  {languages.map((option) => (
                     <button
-                      onClick={() => handleNavClick('/about-us')}
-                      className="text-left px-4 py-4 text-neutral-700 hover:bg-neutral-300 rounded-lg transition-colors text-lg font-medium"
+                      key={option.code}
+                      onClick={() => {
+                        setLanguage(option.code as "en" | "sr");
+                        setIsLangOpen(false);
+                      }}
+                      className="block w-full px-3 py-2 text-left text-xs hover:bg-[#edf1eb]"
                     >
-                      {t('nav.about')}
+                      {option.label}
                     </button>
-                    <button
-                      onClick={() => handleNavClick('/contact')}
-                      className="text-left px-4 py-4 text-neutral-700 hover:bg-neutral-300 rounded-lg transition-colors text-lg font-medium"
-                    >
-                      {t('nav.contact')}
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              </div>
+              ) : null}
             </div>
-          )}
-    </>
+            <Link
+              to="/contact"
+              className="rounded-full bg-[#5f7f67] px-4 py-2 text-sm font-semibold text-[#f3f5f2] transition hover:bg-[#4d6954]"
+            >
+              {labels.cta}
+            </Link>
+          </div>
+
+          <button
+            className="inline-flex items-center justify-center rounded-md p-2 lg:hidden"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+
+        {isMobileMenuOpen ? (
+          <div className="border-t border-current/15 bg-[#f4f5f1] px-4 py-4 text-[#111613] lg:hidden">
+            <div className="flex flex-col gap-3">
+              <button onClick={() => goHomeAnchor("bikes")} className="text-left text-sm">
+                {labels.bikes}
+              </button>
+              <button onClick={() => goHomeAnchor("lifestyle")} className="text-left text-sm">
+                {labels.lifestyle}
+              </button>
+              <button onClick={() => goHomeAnchor("delivery")} className="text-left text-sm">
+                {labels.delivery}
+              </button>
+              <Link to="/about-us" onClick={() => setIsMobileMenuOpen(false)} className="text-sm">
+                {labels.about}
+              </Link>
+              <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)} className="text-sm">
+                {labels.contact}
+              </Link>
+              <div className="mt-2 flex items-center gap-2">
+                {languages.map((option) => (
+                  <button
+                    key={option.code}
+                    onClick={() => setLanguage(option.code as "en" | "sr")}
+                    className={`rounded-full border px-3 py-1 text-xs ${
+                      language === option.code ? "border-[#111613] bg-[#111613] text-white" : "border-[#c7cdc5]"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              <Link
+                to="/contact"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="mt-2 rounded-full bg-[#5f7f67] px-4 py-2 text-center text-sm font-semibold text-[#f3f5f2]"
+              >
+                {labels.cta}
+              </Link>
+            </div>
+          </div>
+        ) : null}
+      </nav>
+    </header>
   );
-}; 
+};

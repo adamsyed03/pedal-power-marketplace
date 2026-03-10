@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useLanguage } from "../../context/LanguageContext";
@@ -22,16 +22,11 @@ const specifications = [
 
 export default function UrbanExplorer() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useLanguage();
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
   const [mainImageLoaded, setMainImageLoaded] = useState(false);
   const [zoomDialogOpen, setZoomDialogOpen] = useState(false);
-  
-  // Determine if user came from delivery or lifestyle page
-  const fromDelivery = (location.state as any)?.from === 'delivery';
-  const fromLifestyle = (location.state as any)?.from === 'lifestyle';
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,10 +44,6 @@ export default function UrbanExplorer() {
     setMainImageLoaded(false);
   }, [selectedImage]);
 
-  const handleZoomClick = () => {
-    setZoomDialogOpen(true);
-  };
-
   const handleImageLoad = () => {
     if (!mainImageLoaded) {
       setMainImageLoaded(true);
@@ -63,9 +54,7 @@ export default function UrbanExplorer() {
     <div className="min-h-screen pt-14 sm:pt-20 md:pt-24 bg-neutral-50">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-start">
-          {/* Left Column */}
           <div className="space-y-4 sm:space-y-6 order-2 md:order-1">
-            {/* Title and Description */}
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2 sm:mb-3 text-center md:text-left">
                 {t("bike.pogonX.title")}
@@ -75,11 +64,8 @@ export default function UrbanExplorer() {
               </p>
             </div>
 
-            {/* Specifications */}
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 mb-2 sm:mb-3">
-                {t("bike.pogonX.specsTitle")}
-              </h2>
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 mb-2 sm:mb-3">{t("bike.pogonX.specsTitle")}</h2>
               <div className="space-y-1">
                 {specifications.map((spec) => (
                   <p key={spec.labelKey} className="text-sm sm:text-base md:text-lg text-neutral-700">
@@ -89,54 +75,23 @@ export default function UrbanExplorer() {
               </div>
             </div>
 
-            {/* Price and Buttons */}
             <div className="space-y-3 text-center mt-4">
-              <div className="flex items-center gap-3 justify-center">
-                <p className="text-xl sm:text-2xl font-bold text-neutral-900">
-                  {fromLifestyle ? '179,999 RSD' : '4,499 RSD/week'}
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0">
-                {fromDelivery ? (
-                  <Button
-                    onClick={() => navigate("/rent-waitlist")}
-                    className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 px-8 text-lg font-semibold min-w-[200px] w-full sm:w-auto"
-                  >
-                    {t("bike.pogonX.rent")}
-                  </Button>
-                ) : fromLifestyle ? (
-                  <Button
-                    onClick={() => navigate("/buy-waitlist")}
-                    className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 px-8 text-lg font-semibold min-w-[200px] w-full sm:w-auto"
-                  >
-                    {t("bike.pogonX.buy")}
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      onClick={() => navigate("/rent-waitlist")}
-                      className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 px-8 text-lg font-semibold min-w-[200px]"
-                    >
-                      {t("bike.pogonX.rent")}
-                    </Button>
-              <Button
-                      onClick={() => navigate("/buy-waitlist")}
-                      variant="outline"
-                      className="border-neutral-900 text-neutral-900 hover:bg-neutral-100 py-4 px-8 text-lg font-semibold min-w-[200px]"
-              >
-                      {t("bike.pogonX.buy")}
-              </Button>
-                  </>
-                )}
+              <p className="text-2xl font-bold text-neutral-900">170,000 RSD</p>
+              <div className="flex justify-center px-4 sm:px-0">
+                <Button
+                  onClick={() => navigate("/buy-waitlist")}
+                  className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 px-8 text-lg font-semibold min-w-[220px]"
+                >
+                  {t("bike.pogonX.buy")}
+                </Button>
               </div>
             </div>
           </div>
 
-          {/* Right Column (Image and Thumbnails) */}
           <div className="space-y-3 order-1 md:order-2">
             <div
               className="bg-white rounded-xl p-2 sm:p-3 border border-neutral-200 relative overflow-hidden cursor-pointer"
-              onClick={handleZoomClick}
+              onClick={() => setZoomDialogOpen(true)}
             >
               {!mainImageLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -156,13 +111,13 @@ export default function UrbanExplorer() {
             <Dialog open={zoomDialogOpen} onOpenChange={setZoomDialogOpen}>
               <DialogContent className="max-w-4xl w-full">
                 <div className="w-full h-[70vh] bg-neutral-50 rounded-lg flex items-center justify-center">
-                    <img
-                      src={selectedImage.src}
-                      alt="Zoomed view"
+                  <img
+                    src={selectedImage.src}
+                    alt="Zoomed view"
                     className="max-h-full max-w-full object-contain rounded-lg select-none"
-                      draggable={false}
-                    />
-                  </div>
+                    draggable={false}
+                  />
+                </div>
               </DialogContent>
             </Dialog>
 
@@ -172,9 +127,7 @@ export default function UrbanExplorer() {
                   key={image.id}
                   onClick={() => setSelectedImage(image)}
                   className={`bg-white rounded-lg p-1.5 sm:p-2 border transition-all relative ${
-                    selectedImage.id === image.id
-                      ? "border-neutral-900"
-                      : "border-neutral-200 hover:border-neutral-400"
+                    selectedImage.id === image.id ? "border-neutral-900" : "border-neutral-200 hover:border-neutral-400"
                   }`}
                 >
                   {!imagesLoaded[image.id] && (
@@ -188,9 +141,7 @@ export default function UrbanExplorer() {
                     className={`w-full h-12 sm:h-16 object-contain transition-opacity duration-300 ${
                       imagesLoaded[image.id] ? "opacity-100" : "opacity-0"
                     }`}
-                    onLoad={() =>
-                      setImagesLoaded((prev) => ({ ...prev, [image.id]: true }))
-                    }
+                    onLoad={() => setImagesLoaded((prev) => ({ ...prev, [image.id]: true }))}
                   />
                 </button>
               ))}
