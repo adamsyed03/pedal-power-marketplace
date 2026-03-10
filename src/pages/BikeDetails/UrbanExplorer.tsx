@@ -22,7 +22,8 @@ const specifications = [
 
 export default function UrbanExplorer() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const isSerbian = language === "sr";
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
   const [mainImageLoaded, setMainImageLoaded] = useState(false);
@@ -57,10 +58,12 @@ export default function UrbanExplorer() {
           <div className="space-y-4 sm:space-y-6 order-2 md:order-1">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2 sm:mb-3 text-center md:text-left">
-                {t("bike.pogonX.title")}
+                {isSerbian ? "Glide 1" : "Glide 1"}
               </h1>
               <p className="text-sm sm:text-base text-neutral-600 mb-3 sm:mb-4 px-2 md:px-0">
-                {t("bike.pogonX.description")}
+                {isSerbian
+                  ? "Glide 1 je gradski elektricni bicikl napravljen za svakodnevnu voznju, komfor i pouzdano kretanje kroz grad."
+                  : "Glide 1 is an urban electric bike built for daily riding, comfort, and reliable movement through the city."}
               </p>
             </div>
 
@@ -79,10 +82,10 @@ export default function UrbanExplorer() {
               <p className="text-2xl font-bold text-neutral-900">170,000 RSD</p>
               <div className="flex justify-center px-4 sm:px-0">
                 <Button
-                  onClick={() => navigate("/buy-waitlist")}
+                  onClick={() => navigate("/contact")}
                   className="bg-neutral-900 text-neutral-50 hover:bg-neutral-800 py-4 px-8 text-lg font-semibold min-w-[220px]"
                 >
-                  {t("bike.pogonX.buy")}
+                  {t("bike.pogonX.buy")} Glide 1
                 </Button>
               </div>
             </div>

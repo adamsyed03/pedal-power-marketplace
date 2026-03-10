@@ -7,7 +7,6 @@ const navLabels = {
   en: {
     bikes: "Bikes",
     lifestyle: "Lifestyle",
-    delivery: "Delivery",
     about: "About",
     contact: "Contact",
     cta: "Talk to Us",
@@ -15,7 +14,6 @@ const navLabels = {
   sr: {
     bikes: "Bicikli",
     lifestyle: "Lifestyle",
-    delivery: "Dostava",
     about: "O nama",
     contact: "Kontakt",
     cta: "Kontakt",
@@ -25,7 +23,7 @@ const navLabels = {
 const trustPoints = {
   en: [
     "2-year warranty",
-    "Delivery across Serbia",
+    "Nationwide support",
     "Service and support network",
     "Flexible payment inquiry",
   ],
@@ -42,7 +40,7 @@ const languages = [
   { code: "sr", label: "SR" },
 ] as const;
 
-type HomeAnchor = "bikes" | "lifestyle" | "delivery";
+type HomeAnchor = "bikes" | "lifestyle";
 
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -73,8 +71,14 @@ export const Navigation = () => {
     }
   }, [location]);
 
-  const labels = useMemo(() => (language === "sr" ? navLabels.sr : navLabels.en), [language]);
-  const strip = useMemo(() => (language === "sr" ? trustPoints.sr : trustPoints.en), [language]);
+  const labels = useMemo(() => {
+    if (language === "sr") return navLabels.sr;
+    return navLabels.en;
+  }, [language]);
+  const strip = useMemo(() => {
+    if (language === "sr") return trustPoints.sr;
+    return trustPoints.en;
+  }, [language]);
 
   const goHomeAnchor = (id: HomeAnchor) => {
     if (location.pathname === "/") {
@@ -109,9 +113,9 @@ export const Navigation = () => {
       </div>
 
       <nav className={`border-b transition-all duration-300 ${baseNavClass}`} aria-label="Primary">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
+        <div className="mx-auto flex h-28 max-w-7xl items-center justify-between px-4 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/Logo.png" alt="Pogon" className="h-10 w-auto" loading="eager" />
+            <img src="/Logo.png" alt="Pogon" className="h-20 w-auto md:h-24" loading="eager" />
           </Link>
 
           <div className="hidden items-center gap-8 lg:flex">
@@ -120,9 +124,6 @@ export const Navigation = () => {
             </button>
             <button onClick={() => goHomeAnchor("lifestyle")} className="text-sm tracking-wide hover:opacity-70">
               {labels.lifestyle}
-            </button>
-            <button onClick={() => goHomeAnchor("delivery")} className="text-sm tracking-wide hover:opacity-70">
-              {labels.delivery}
             </button>
             <Link to="/about-us" className="text-sm tracking-wide hover:opacity-70">
               {labels.about}
@@ -184,9 +185,6 @@ export const Navigation = () => {
               </button>
               <button onClick={() => goHomeAnchor("lifestyle")} className="text-left text-sm">
                 {labels.lifestyle}
-              </button>
-              <button onClick={() => goHomeAnchor("delivery")} className="text-left text-sm">
-                {labels.delivery}
               </button>
               <Link to="/about-us" onClick={() => setIsMobileMenuOpen(false)} className="text-sm">
                 {labels.about}

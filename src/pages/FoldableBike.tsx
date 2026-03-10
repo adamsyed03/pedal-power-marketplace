@@ -1,64 +1,88 @@
-import { Mail, ArrowLeft } from "lucide-react";
+﻿import React from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
+import { Button } from "@/components/ui/button";
+
+const specs = [
+  { en: "Top speed", sr: "Maksimalna brzina", value: "25km/h" },
+  { en: "Range", sr: "Domet", value: "70km" },
+  { en: "Power", sr: "Snaga", value: "250W" },
+  { en: "Max load", sr: "Maks. nosivost", value: "110kg" },
+  { en: "Charging time", sr: "Vreme punjenja", value: "5-6h" },
+];
 
 export default function FoldableBike() {
   const { language } = useLanguage();
   const isSerbian = language === "sr";
 
   const copy = {
-    title: isSerbian ? "Pogon Foldable" : "Pogon Foldable",
-    subtitle: isSerbian
-      ? "Kompaktni gradski e-bike za svakodnevne voznje."
-      : "Compact urban e-bike for everyday movement.",
-    status: isSerbian ? "Rasprodato" : "Sold Out",
-    body: isSerbian
-      ? "Ovaj model je trenutno rasprodat. Kliknite ispod i posaljite nam email da vas obavestimo cim bude ponovo dostupan."
-      : "This model is currently sold out. Click below to email us and we will notify you when it is available again.",
-    emailCta: isSerbian ? "Email us about this bike" : "Email us about this bike",
+    title: "Pogon Foldable",
+    description: isSerbian
+      ? "Kompaktni elektricni bicikl za gradsku voznju i svakodnevno kretanje."
+      : "Compact electric bike for city riding and everyday movement.",
+    specsTitle: isSerbian ? "Specifikacije" : "Specifications",
+    priceLabel: isSerbian ? "Cena" : "Price",
+    soldOut: isSerbian ? "Rasprodato" : "Sold Out",
+    emailUs: isSerbian ? "Email upit" : "Email us",
     back: isSerbian ? "Nazad na pocetnu" : "Back to homepage",
   };
 
   return (
-    <main className="min-h-screen bg-[#f4f5f1] px-4 pb-20 pt-36 sm:px-6 lg:px-8">
-      <section className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-        <div className="relative overflow-hidden rounded-[2rem] border border-[#d7ded6] bg-[#131a16] shadow-[0_16px_32px_rgba(16,22,18,0.18)]">
-          <img
-            src="/ebike111.png"
-            alt="Pogon foldable bike"
-            className="h-[420px] w-full object-cover object-center"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0f1412]/88 via-transparent to-transparent" />
-          <div className="absolute bottom-6 left-6">
-            <p className="text-xs uppercase tracking-[0.18em] text-[#cfd9d1]">Pogon Foldable</p>
-            <p className="mt-2 inline-flex rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur">
-              {copy.status}
-            </p>
+    <div className="min-h-screen pt-14 sm:pt-20 md:pt-24 bg-neutral-50">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-start">
+          <div className="space-y-4 sm:space-y-6 order-2 md:order-1">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2 sm:mb-3 text-center md:text-left">
+                {copy.title}
+              </h1>
+              <p className="text-sm sm:text-base text-neutral-600 mb-3 sm:mb-4 px-2 md:px-0">{copy.description}</p>
+            </div>
+
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 mb-2 sm:mb-3">{copy.specsTitle}</h2>
+              <div className="space-y-1">
+                {specs.map((item) => (
+                  <p key={item.en} className="text-sm sm:text-base md:text-lg text-neutral-700">
+                    <strong>{isSerbian ? item.sr : item.en}:</strong> {item.value}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3 text-center mt-4">
+              <p className="text-2xl font-bold text-neutral-900">{copy.priceLabel}: 72,999 RSD</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0">
+                <Button disabled className="bg-neutral-400 text-white py-4 px-8 text-lg font-semibold min-w-[220px] cursor-not-allowed">
+                  {copy.soldOut}
+                </Button>
+                <a
+                  href="mailto:pogonmobility@gmail.com?subject=Pogon%20Foldable%20Availability"
+                  className="inline-flex items-center justify-center border border-neutral-900 text-neutral-900 hover:bg-neutral-100 py-4 px-8 text-lg font-semibold min-w-[220px] rounded-md"
+                >
+                  {copy.emailUs}
+                </a>
+              </div>
+              <div>
+                <Link to="/" className="text-sm text-neutral-700 hover:text-neutral-900 underline">
+                  {copy.back}
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3 order-1 md:order-2">
+            <div className="bg-white rounded-xl p-2 sm:p-3 border border-neutral-200 relative overflow-hidden">
+              <img
+                src="/ebike111.png"
+                alt="Pogon Foldable"
+                className="w-full h-[240px] sm:h-[320px] md:h-[420px] object-contain"
+                loading="eager"
+              />
+            </div>
           </div>
         </div>
-
-        <div className="rounded-3xl border border-[#d7ded6] bg-white p-8">
-          <h1 className="text-3xl font-semibold text-[#111613] sm:text-4xl">{copy.title}</h1>
-          <p className="mt-3 text-base text-[#405046]">{copy.subtitle}</p>
-          <p className="mt-6 text-sm leading-relaxed text-[#445249] sm:text-base">{copy.body}</p>
-
-          <a
-            href="mailto:adamksyed03@gmail.com?subject=Pogon%20Foldable%20Availability&body=Hi%20Pogon%20team,%20please%20notify%20me%20when%20the%20foldable%20bike%20is%20available."
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#5f7f67] px-6 py-3 text-sm font-semibold text-[#f3f5f2] transition hover:bg-[#4d6954]"
-          >
-            <Mail size={16} />
-            {copy.emailCta}
-          </a>
-
-          <div className="mt-6">
-            <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#1f2a23] hover:opacity-70">
-              <ArrowLeft size={15} />
-              {copy.back}
-            </Link>
-          </div>
-        </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }

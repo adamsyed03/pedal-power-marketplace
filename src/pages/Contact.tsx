@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Button } from "../components/ui/button";
 import { Mail, Phone } from "lucide-react";
 
@@ -14,13 +14,13 @@ export default function Contact() {
           
           {/* Description Text with inline styling for debugging */}
           <p style={{ color: "#1f2937" }} className="text-base sm:text-lg text-center mb-8 sm:mb-10 md:mb-12 px-2">
-            Javite nam se da saznate više o Pogon e-biciklima ili da razgovaramo o vašim specifičnim potrebama.
+            Javite nam se da saznate viÅ¡e o Pogon e-biciklima ili da razgovaramo o vaÅ¡im specifiÄnim potrebama.
           </p>
 
           <div className="space-y-4 sm:space-y-6 md:space-y-8">
             {/* Email Card with lighter gray background */}
             <a 
-              href="mailto:adamksyed03@gmail.com"
+              href="mailto:pogonmobility@gmail.com"
               className="block bg-neutral-200 rounded-xl p-4 sm:p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
             >
               <div className="flex items-center space-x-3 sm:space-x-4">
@@ -29,14 +29,14 @@ export default function Contact() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div style={{ color: "#4B5563" }} className="text-xs sm:text-sm mb-1 text-neutral-900">Email</div> {/* Light gray color */}
-                  <div className="text-sm sm:text-base md:text-lg font-medium text-neutral-900 break-all">adamksyed03@gmail.com</div> {/* Dark color */}
+                  <div className="text-sm sm:text-base md:text-lg font-medium text-neutral-900 break-all">pogonmobility@gmail.com</div> {/* Dark color */}
                 </div>
               </div>
             </a>
 
             {/* Phone Card with lighter gray background */}
             <a 
-              href="tel:+38169692345"
+              href="tel:+381631505003"
               className="block bg-neutral-200 rounded-xl p-4 sm:p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
             >
               <div className="flex items-center space-x-3 sm:space-x-4">
@@ -45,7 +45,7 @@ export default function Contact() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div style={{ color: "#4B5563" }} className="text-xs sm:text-sm mb-1 text-neutral-900">Telefon</div> {/* Light gray color */}
-                  <div className="text-sm sm:text-base md:text-lg font-medium text-neutral-900">+381 69692345</div> {/* Dark color */}
+                  <div className="text-sm sm:text-base md:text-lg font-medium text-neutral-900">+381 63 1505003</div> {/* Dark color */}
                 </div>
               </div>
             </a>
@@ -54,7 +54,7 @@ export default function Contact() {
           <div className="mt-8 sm:mt-10 md:mt-12 text-center px-2">
             {/* Additional Info Text with inline styling for debugging */}
             <p style={{ color: "#1f2937" }} className="text-xs sm:text-sm">
-              Naš tim je dostupan od ponedeljka do petka, 9:00 do 18:00 GMT
+              NaÅ¡ tim je dostupan od ponedeljka do petka, 9:00 do 18:00 GMT
             </p>
           </div>
         </div>
