@@ -16,7 +16,7 @@ const navLabels = {
     lifestyle: "Lifestyle",
     about: "O nama",
     contact: "Kontakt",
-    cta: "Kontakt",
+    cta: "Javi se",
   },
 } as const;
 
@@ -29,9 +29,9 @@ const trustPoints = {
   ],
   sr: [
     "2 godine garancije",
-    "Isporuka sirom Srbije",
-    "Servis i podrska",
-    "Fleksibilan upit za placanje",
+    "Isporuka širom Srbije",
+    "Servis i podrška",
+    "Fleksibilne opcije plaćanja",
   ],
 } as const;
 

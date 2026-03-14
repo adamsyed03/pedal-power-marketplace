@@ -26,15 +26,15 @@ const productModels: ProductModel[] = [
     tag: { en: "Model", sr: "Model" },
     description: {
       en: "A city electric bike designed for comfortable, reliable everyday movement.",
-      sr: "Gradski elektricni bicikl napravljen za udobnu i pouzdanu svakodnevnu voznju.",
+      sr: "Gradski električni bicikl za udobnu i pouzdanu svakodnevnu vožnju.",
     },
     price: "170,000 RSD",
     image: { src: "/Excellent 1.png", alt: "Glide bike" },
     points: [
-      { en: "Rear hub motor", sr: "Motor u zadnjem tocku" },
-      { en: "Hydraulic brakes", sr: "Hidraulicne kocnice" },
+      { en: "Rear hub motor", sr: "Motor u zadnjem točku" },
+      { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
       { en: "Lithium battery", sr: "Litijumska baterija" },
-      { en: "110kg capacity", sr: "Nosivost 110kg" },
+      { en: "110kg capacity", sr: "Nosivost 110 kg" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Glide.",
@@ -47,17 +47,16 @@ const productModels: ProductModel[] = [
     tag: { en: "Model", sr: "Model" },
     description: {
       en: "Compact urban e-bike for practical daily city riding.",
-      sr: "Kompaktan gradski e-bicikl za prakticnu svakodnevnu voznju.",
+      sr: "Kompaktan gradski e-bike za praktičnu svakodnevnu vožnju.",
     },
     price: "72,999 RSD",
     soldOut: true,
     image: { src: "/ebike111.png", alt: "Compact bike" },
     points: [
-      { en: "Max speed: 25 km/h", sr: "Maks. brzina: 25 km/h" },
+      { en: "Max speed: 25 km/h", sr: "Maks. brzina 25 km/h" },
       { en: "Range: 70 km", sr: "Domet: 70 km" },
-      { en: "Motor power: 250W", sr: "Snaga: 250W" },
-      { en: "Max load: 110 kg", sr: "Nosivost: 110 kg" },
-      { en: "Charging time: 5-6 h", sr: "Vreme punjenja: 5-6 h" },
+      { en: "Motor power: 250W", sr: "Snaga 250 W" },
+      { en: "Max load: 110 kg", sr: "Nosivost 110 kg" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Compact.",
@@ -70,16 +69,15 @@ const productModels: ProductModel[] = [
     tag: { en: "Model", sr: "Model" },
     description: {
       en: "Fat-tire urban model built for comfort and control.",
-      sr: "Fat-tire gradski model napravljen za udobnost i kontrolu.",
+      sr: "Fat-tire gradski model za više udobnosti i kontrole.",
     },
     price: "170,000 RSD",
     image: { src: "/Core Codifice.png", alt: "Core bike" },
     points: [
-      { en: "Max speed: 25 km/h", sr: "Maks. brzina: 25 km/h" },
+      { en: "Max speed: 25 km/h", sr: "Maks. brzina 25 km/h" },
       { en: "Range: 85 km", sr: "Domet: 85 km" },
-      { en: "Motor power: 250W", sr: "Snaga: 250W" },
-      { en: "Max load: 120 kg", sr: "Nosivost: 120 kg" },
-      { en: "Charging time: 5-6 h", sr: "Vreme punjenja: 5-6 h" },
+      { en: "Motor power: 250W", sr: "Snaga 250 W" },
+      { en: "Max load: 120 kg", sr: "Nosivost 120 kg" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Core.",
@@ -92,16 +90,15 @@ const productModels: ProductModel[] = [
     tag: { en: "Model", sr: "Model" },
     description: {
       en: "Compact fat-tire work bike for urban hauling and delivery.",
-      sr: "Kompaktan fat-tire radni bicikl za gradski transport i dostavu.",
+      sr: "Kompaktan fat-tire model za gradski transport i dostavu.",
     },
     price: "170,000 RSD",
     image: { src: "/CargoCodifice.png", alt: "Cargo bike" },
     points: [
-      { en: "Max speed: 25 km/h", sr: "Maks. brzina: 25 km/h" },
+      { en: "Max speed: 25 km/h", sr: "Maks. brzina 25 km/h" },
       { en: "Range: 80 km", sr: "Domet: 80 km" },
-      { en: "Motor power: 250W", sr: "Snaga: 250W" },
-      { en: "Max load: 120 kg", sr: "Nosivost: 120 kg" },
-      { en: "Charging time: 5-6 h", sr: "Vreme punjenja: 5-6 h" },
+      { en: "Motor power: 250W", sr: "Snaga 250 W" },
+      { en: "Max load: 120 kg", sr: "Nosivost 120 kg" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Cargo.",
@@ -139,14 +136,14 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
     title: lang === "sr" ? "Modeli za kupovinu" : lang === "ru" ? "Modeli dlya pokupki" : "Bike Buying Experience",
     subtitle:
       lang === "sr"
-        ? "Premium prikaz modela sa prakticnim specifikacijama i direktnom kupovinom."
-        : "Premium inline product presentation with practical specs and direct purchase intent.",
+        ? "Pogledaj modele, uporedi detalje i javi nam se direktno."
+        : "Premium inline product presentation with practical specs and a direct path to our team.",
     soldOut: lang === "sr" ? "Rasprodato" : "Sold Out",
     comingSoon: lang === "sr" ? "Uskoro" : "Coming Soon",
-    buy: lang === "sr" ? "Kupi" : "Buy",
+    buy: lang === "sr" ? "Javi nam se" : "Talk to us",
     price: lang === "sr" ? "Cena" : "Price",
     prev: lang === "sr" ? "Prethodni model" : "Previous model",
-    next: lang === "sr" ? "Sledeci model" : "Next model",
+    next: lang === "sr" ? "Sledeći model" : "Next model",
   };
 
   const previousSlide = () => setActiveIndex((prev) => (prev === 0 ? productModels.length - 1 : prev - 1));
@@ -165,47 +162,34 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
   };
 
   return (
-    <section id="bikes" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-24 lg:px-8">
-      <div className="mb-8">
-        <h2 className="text-3xl font-semibold sm:text-4xl">{copy.title}</h2>
-        <p className="mt-3 max-w-3xl text-base text-[#415047]">{copy.subtitle}</p>
+    <section id="bikes" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-12 lg:px-8">
+      <div className="mb-4">
+        <h2 className="text-3xl font-black leading-none tracking-[-0.045em] text-[#111613] sm:text-4xl">{copy.title}</h2>
+        <p className="mt-2 max-w-3xl text-sm font-medium tracking-[-0.02em] text-[#415047] sm:text-base">{copy.subtitle}</p>
       </div>
 
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-4 flex items-center justify-center gap-3">
+      <div className="mx-auto max-w-[48rem]">
+        <div className="relative" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           <button
             type="button"
             onClick={previousSlide}
-            className="rounded-full border border-[#cad3cc] bg-white px-3 py-1.5 text-sm font-medium text-[#25332b] hover:bg-[#f2f5f2]"
+            className="absolute left-1 top-1/2 z-10 -translate-y-1/2 rounded-full border border-[#cad3cc] bg-white/95 px-3 py-2 text-sm font-medium text-[#25332b] shadow-sm transition hover:bg-[#f2f5f2] sm:-left-5"
             aria-label={copy.prev}
           >
             <ChevronLeft size={16} />
           </button>
 
-          <div className="flex items-center gap-2" aria-label="Carousel pagination">
-            {productModels.map((model, index) => (
-              <button
-                key={model.key}
-                type="button"
-                onClick={() => setActiveIndex(index)}
-                className={`h-2.5 w-2.5 rounded-full transition ${index === activeIndex ? "bg-[#111613]" : "bg-[#c5cec7] hover:bg-[#9ca9a1]"}`}
-                aria-label={`${model.name[lang]} slide`}
-              />
-            ))}
-          </div>
-
           <button
             type="button"
             onClick={nextSlide}
-            className="rounded-full border border-[#cad3cc] bg-white px-3 py-1.5 text-sm font-medium text-[#25332b] hover:bg-[#f2f5f2]"
+            className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full border border-[#cad3cc] bg-white/95 px-3 py-2 text-sm font-medium text-[#25332b] shadow-sm transition hover:bg-[#f2f5f2] sm:-right-5"
             aria-label={copy.next}
           >
             <ChevronRight size={16} />
           </button>
-        </div>
 
-        <div className="relative overflow-hidden rounded-3xl" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-          <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(calc(${14 - activeIndex * 72}%))` }}>
+          <div className="relative overflow-hidden rounded-3xl">
+          <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(calc(${18 - activeIndex * 64}%))` }}>
             {productModels.map((model) => {
               const isActive = model.key === productModels[activeIndex].key;
               const modelMessage = model.whatsappMessage[lang];
@@ -213,13 +197,13 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
               const isCompactSoldOut = model.key === "compact-1";
 
               return (
-                <div key={model.key} className="w-[72%] shrink-0 px-2">
-                  <article className={`mx-auto flex min-h-[620px] w-full flex-col rounded-3xl border border-[#e1e5e1] bg-white p-4 shadow-[0_10px_20px_rgba(17,22,18,0.06)] transition duration-500 ${isActive ? "opacity-100" : "opacity-55"}`}>
-                    <div className="rounded-2xl bg-white p-4">
-                      <div className="mb-3 flex items-center justify-end">
-                        <span className="rounded-md border border-[#ccd2cc] bg-white px-3 py-1 text-xs font-semibold tracking-[0.02em]">{model.tag[lang]}</span>
+                <div key={model.key} className="w-[64%] shrink-0 px-2">
+                  <article className={`mx-auto flex h-[500px] w-full flex-col rounded-3xl border border-[#e1e5e1] bg-white p-3 shadow-[0_10px_20px_rgba(17,22,18,0.06)] transition duration-500 ${isActive ? "opacity-100" : "opacity-55"}`}>
+                    <div className="rounded-2xl bg-white p-2.5">
+                      <div className="mb-2 flex items-center justify-end">
+                        <span className="rounded-md border border-[#ccd2cc] bg-white px-2.5 py-1 text-[11px] font-bold tracking-[-0.02em] text-[#111613]">{model.tag[lang]}</span>
                         {model.soldOut ? (
-                          <span className="ml-2 rounded-md border border-[#e0b8b8] bg-[#fff1f1] px-2 py-1 text-xs font-semibold text-[#8f3f3f]">
+                          <span className="ml-2 rounded-md border border-[#e0b8b8] bg-[#fff1f1] px-2 py-1 text-[11px] font-bold tracking-[-0.02em] text-[#8f3f3f]">
                             {copy.soldOut}
                           </span>
                         ) : null}
@@ -229,7 +213,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                         <img
                           src={model.image.src}
                           alt={model.image.alt}
-                          className="h-[210px] w-full object-contain sm:h-[230px]"
+                          className="h-[150px] w-full object-contain sm:h-[168px]"
                           loading="lazy"
                           onError={(e) => {
                             const target = e.currentTarget;
@@ -238,39 +222,39 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                           }}
                         />
                       ) : (
-                        <div className="flex h-[210px] w-full items-center justify-center rounded-xl border border-dashed border-[#c8cec8] bg-[#ecefec] text-base font-semibold text-[#66736b] sm:h-[230px]">
+                        <div className="flex h-[150px] w-full items-center justify-center rounded-xl border border-dashed border-[#c8cec8] bg-[#ecefec] text-sm font-semibold text-[#66736b] sm:h-[168px]">
                           {copy.comingSoon}
                         </div>
                       )}
                     </div>
 
-                    <div className="mt-4 flex grow flex-col">
-                      <h3 className="text-4xl font-semibold leading-none">{model.name[lang]}</h3>
+                    <div className="mt-2.5 flex grow flex-col">
+                      <h3 className="text-[2rem] font-black leading-none tracking-[-0.05em] text-[#111613]">{model.name[lang]}</h3>
 
                       <div className="relative">
                         <div className={isCoreOrCargo || isCompactSoldOut ? "pointer-events-none select-none blur-[3px] opacity-55" : ""}>
-                          <p className="mt-3 text-base leading-relaxed text-[#424f47]">{model.description[lang]}</p>
+                          <p className="mt-2 text-[13px] font-medium leading-[1.35] tracking-[-0.02em] text-[#424f47]">{model.description[lang]}</p>
 
                           {model.points.length > 0 ? (
-                            <ul className="mt-5 space-y-2 text-[17px] text-[#121a16]">
+                            <ul className="mt-3 space-y-1 text-[13px] font-medium tracking-[-0.02em] text-[#121a16]">
                               {model.points.map((point) => (
                                 <li key={point.en} className="flex items-start gap-2">
-                                  <Check size={16} className="mt-1 shrink-0 text-[#111613]" />
+                                  <Check size={13} className="mt-0.5 shrink-0 text-[#111613]" />
                                   <span>{point[lang]}</span>
                                 </li>
                               ))}
                             </ul>
                           ) : null}
 
-                          <p className="mt-6 text-base text-[#111613]">
+                          <p className="mt-3 mb-6 text-[13px] font-medium tracking-[-0.02em] text-[#111613]">
                             <span className="mr-2 font-medium text-[#5a665f]">{copy.price}:</span>
-                            <span className="font-semibold">{model.price}</span>
+                            <span className="font-black tracking-[-0.03em]">{model.price}</span>
                           </p>
                         </div>
 
                         {isCoreOrCargo || isCompactSoldOut ? (
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="rounded-full border border-[#cfd5cf] bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-[#3d4a42]">
+                            <span className="rounded-full border border-[#cfd5cf] bg-white/90 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.03em] text-[#3d4a42]">
                               {isCompactSoldOut ? copy.soldOut : copy.comingSoon}
                             </span>
                           </div>
@@ -281,9 +265,9 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                         href={getWhatsAppHref(modelMessage)}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#020706] px-6 py-3.5 text-base font-semibold uppercase tracking-[0.04em] text-white transition hover:bg-[#111613]"
+                        className="mt-auto inline-flex w-fit min-w-[200px] max-w-full self-center items-center justify-center gap-2 rounded-xl bg-[#020706] px-5 py-2 text-sm font-black uppercase tracking-[0.02em] text-white transition hover:bg-[#111613]"
                       >
-                        <MessageCircle size={18} />
+                        <MessageCircle size={16} />
                         {copy.buy}
                       </a>
                     </div>
@@ -292,6 +276,19 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
               );
             })}
           </div>
+        </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-center gap-2" aria-label="Carousel pagination">
+          {productModels.map((model, index) => (
+            <button
+              key={model.key}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              className={`h-2.5 w-2.5 rounded-full transition ${index === activeIndex ? "bg-[#111613]" : "bg-[#c5cec7] hover:bg-[#9ca9a1]"}`}
+              aria-label={`${model.name[lang]} slide`}
+            />
+          ))}
         </div>
       </div>
     </section>

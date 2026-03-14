@@ -65,34 +65,34 @@ const homeCopy: Record<Lang, Copy> = {
     footerLinks: ["Bikes", "Lifestyle", "About", "Contact"],
   },
   sr: {
-    heroTitle: "Napredak je nemoguc bez promene",
-    heroSub: "Elektricni bicikli za ljude koji svaki dan rade na svom napretku.",
-    heroPrimary: "Istrazi bicikle",
+    heroTitle: "Pokreni dan po svom",
+    heroSub: "Električni bicikli za grad, tempo i planove koji ne čekaju.",
+    heroPrimary: "Pogledaj modele",
     heroSecondary: "Lifestyle",
-    trustTitle: "Poverenje vozaca sirom Srbije",
-    trustItems: ["Dugotrajna baterija", "2 godine garancije", "Anti-theft sistemi i GPS", "Premium bezbednosne funkcije"],
+    trustTitle: "Vozi se širom Srbije",
+    trustItems: ["Baterija koja drži tempo", "2 godine garancije", "Zaštita od krađe i GPS", "Ozbiljna bezbednosna oprema"],
     whyTitle: "Zasto Pogon",
     whyCards: [
-      { title: "Pametnije kretanje", desc: "Krecite se kroz grad sa manje napora, manje cekanja i boljim dnevnim ritmom." },
-      { title: "Nizi troskovi", desc: "Smanjite troskove goriva i parkinga uz pouzdano dnevno koriscenje." },
-      { title: "Za svakodnevni gradski zivot", desc: "Udobna geometrija i prakticna elektricna pomoc za realne gradske rute." },
+      { title: "Pametniji gradski ritam", desc: "Krećeš se brže, bez čekanja i bez zamora koji dolazi uz klasičan gradski prevoz." },
+      { title: "Manje troška iz dana u dan", desc: "Manje para odlazi na gorivo, parking i svakodnevno cimanje po gradu." },
+      { title: "Pravljen za realan grad", desc: "Udoban ram, praktična asistencija i vožnja koja ima smisla u svakodnevici." },
     ],
-    modernTitle: "Napravljeno za moderno kretanje",
-    modernBody: "I bez studijskih fotografija, Pogon je predstavljen kroz jak proizvodni fokus, jasnu hijerarhiju informacija i prakticno poverenje.",
+    modernTitle: "Napravljen za gradski život",
+    modernBody: "Pogon spaja čist dizajn, praktične detalje i osećaj vožnje koji odgovara stvarnom životu u gradu.",
     modernPoints: [
-      "Elektricna pomoc za gradski stop-start saobracaj",
-      "Udobna geometrija za dnevne rute",
-      "Efikasan setup za svakodnevno kretanje",
-      "Praktican urbani dizajn za puteve Srbije",
+      "Električna asistencija za gradski stop-and-go",
+      "Udobna geometrija za svaki dan",
+      "Podešen za svakodnevne relacije",
+      "Dizajn koji radi na ulicama Srbije",
     ],
-    identityTitle: "Za ljude koji idu napred",
-    identityBody: "Pogon je za mlade profesionalce, preduzetnike, studente i sve koji svaki dan rade na svojoj buducnosti.",
-    identityPull: "Brend za one koji rade ozbiljno i krecu se sa ciljem.",
-    finalTitle: "Pokreni svoju buducnost na dva tocka",
-    finalBody: "Izaberi model i pisi nam direktno na WhatsApp.",
-    finalPrimary: "Istrazi bicikle",
+    identityTitle: "Za ljude koji drže tempo",
+    identityBody: "Pogon je za mlade profesionalce, preduzetnike, studente i sve koji žele da kroz grad prolaze pametnije, brže i sa više stila.",
+    identityPull: "Mobilnost koja izgleda dobro i radi još bolje.",
+    finalTitle: "Izaberi model i pokreni gradsku rutinu",
+    finalBody: "Javi nam se na WhatsApp i pomoći ćemo ti da izabereš pravi Pogon.",
+    finalPrimary: "Pogledaj modele",
     finalSecondary: "Javi se na WhatsApp",
-    footerTag: "Premium elektricna mobilnost za gradove Srbije.",
+    footerTag: "Električna mobilnost za gradove Srbije, bez viška buke i komplikacije.",
     footerSections: { navigate: "Navigacija", contact: "Kontakt", language: "Jezik" },
     footerLinks: ["Bicikli", "Lifestyle", "O nama", "Kontakt"],
   },
@@ -121,7 +121,7 @@ export default function Index() {
         <div className="relative mx-auto flex min-h-screen max-w-7xl items-end px-4 pb-28 pt-44 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <p className="mb-6 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#d6e0d8] backdrop-blur-sm">
-              Designed for the streets of Serbia
+              {lang === "sr" ? "Pravljen za ulice Srbije" : "Designed for the streets of Serbia"}
             </p>
             <h1 className="max-w-[18ch] text-[2.24rem] font-semibold leading-[1.02] text-[#f6f8f4] sm:max-w-none sm:text-5xl md:text-6xl lg:text-7xl">
               {copy.heroTitle}
@@ -172,7 +172,9 @@ export default function Index() {
           <a href="/?model=glide-1#bikes" className="group relative overflow-hidden rounded-3xl border border-[#d6ddd5] bg-[#e8ece8] p-4 shadow-[0_12px_32px_rgba(16,22,18,0.08)]">
             <img src="/Excellent 1.png" alt="Glide" className="h-[360px] w-full object-contain transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#111613]/35 via-transparent to-transparent" />
-            <span className="absolute bottom-4 left-4 rounded-full border border-white/25 bg-black/35 px-3 py-1 text-xs text-white backdrop-blur">Glide - Buy page</span>
+            <span className="absolute bottom-4 left-4 rounded-full border border-white/25 bg-black/35 px-3 py-1 text-xs text-white backdrop-blur">
+              {lang === "sr" ? "Glide - kupovina" : "Glide - Buy page"}
+            </span>
           </a>
 
           <div>
@@ -194,7 +196,7 @@ export default function Index() {
 
       <section className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 md:grid-cols-[1fr_1fr] md:py-24 lg:px-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#5f7f67]">Pogon identity</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#5f7f67]">{lang === "sr" ? "Pogon identitet" : "Pogon identity"}</p>
           <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">{copy.identityTitle}</h2>
           <p className="mt-5 text-base leading-relaxed text-[#425047]">{copy.identityBody}</p>
           <p className="mt-6 text-lg font-medium text-[#1a241f]">{copy.identityPull}</p>
@@ -205,7 +207,7 @@ export default function Index() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#101713]/78 via-transparent to-transparent" />
           <div className="absolute bottom-6 left-6 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white backdrop-blur">
             <MapPin size={12} className="mr-1 inline-block" />
-            Serbia urban mobility
+            {lang === "sr" ? "Urbana mobilnost u Srbiji" : "Serbia urban mobility"}
           </div>
         </div>
       </section>
@@ -222,7 +224,7 @@ export default function Index() {
                 {copy.finalPrimary}
               </a>
               <a
-                href={getWhatsAppHref(lang === "sr" ? "Zdravo, zainteresovan sam za Pogon bicikle." : "Hello, I'm interested in Pogon bikes.")}
+                href={getWhatsAppHref(lang === "sr" ? "Zdravo, zanimaju me Pogon električni bicikli." : "Hello, I'm interested in Pogon bikes.")}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center rounded-full border border-white/35 px-6 py-3 text-sm font-semibold text-[#f3f6f3] transition hover:bg-white/10"
@@ -251,7 +253,7 @@ export default function Index() {
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide">{copy.footerSections.contact}</h3>
             <ul className="mt-4 space-y-2 text-sm text-[#435047]">
-              <li>Belgrade, Serbia</li>
+              <li>{lang === "sr" ? "Beograd, Srbija" : "Belgrade, Serbia"}</li>
               <li>+381 63 1505003</li>
               <li>pogonmobility@gmail.com</li>
               <li>@pogonrs</li>
@@ -265,7 +267,9 @@ export default function Index() {
             </div>
           </div>
         </div>
-        <div className="border-t border-[#d4dbd3] px-4 py-4 text-center text-xs text-[#556258]">© {new Date().getFullYear()} Pogon. All rights reserved.</div>
+        <div className="border-t border-[#d4dbd3] px-4 py-4 text-center text-xs text-[#556258]">
+          © {new Date().getFullYear()} Pogon. {lang === "sr" ? "Sva prava zadržana." : "All rights reserved."}
+        </div>
       </footer>
     </main>
   );
