@@ -44,6 +44,7 @@ type HomeAnchor = "bikes" | "lifestyle";
 
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isBottomStripVisible, setIsBottomStripVisible] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const location = useLocation();
@@ -51,11 +52,22 @@ export const Navigation = () => {
   const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 24);
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 24);
+
+      if (location.pathname !== "/") {
+        setIsBottomStripVisible(false);
+        return;
+      }
+
+      const whySection = document.getElementById("why");
+      setIsBottomStripVisible(!whySection || whySection.getBoundingClientRect().top > window.innerHeight - 96);
+    };
+
     onScroll();
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [location.pathname]);
 
   useEffect(() => {
     const hash = location.hash?.replace("#", "");
@@ -100,25 +112,15 @@ export const Navigation = () => {
       : "bg-[#f4f5f1]/90 text-[#111613] border-[#d4d9d3] shadow-[0_8px_26px_rgba(16,22,18,0.08)]";
 
   return (
+    <>
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div className="h-8 border-b border-white/10 bg-[#111613] text-[11px] font-medium text-[#e7ece5] backdrop-blur">
-        <div className="mx-auto flex h-full max-w-7xl items-center gap-2 overflow-x-auto px-4 lg:px-8">
-          {strip.map((item, index) => (
-            <div key={item} className="flex shrink-0 items-center gap-2">
-              {index > 0 ? <span className="text-[#6a746f]">*</span> : null}
-              <span>{item}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <nav className={`border-b transition-all duration-300 ${baseNavClass}`} aria-label="Primary">
-        <div className="mx-auto flex h-28 max-w-7xl items-center justify-between px-4 lg:px-8">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/Logo.png" alt="Pogon" className="h-20 w-auto md:h-24" loading="eager" />
+            <img src="/Logo.png" alt="Pogon" className="h-14 w-auto md:h-16" loading="eager" />
           </Link>
 
-          <div className="hidden items-center gap-8 lg:flex">
+          <div className="hidden items-center gap-6 lg:flex">
             <button onClick={() => goHomeAnchor("bikes")} className="text-sm tracking-wide hover:opacity-70">
               {labels.bikes}
             </button>
@@ -133,11 +135,11 @@ export const Navigation = () => {
             </Link>
           </div>
 
-          <div className="hidden items-center gap-3 lg:flex">
+          <div className="hidden items-center gap-2 lg:flex">
             <div className="relative">
               <button
                 onClick={() => setIsLangOpen((prev) => !prev)}
-                className="inline-flex items-center gap-1 rounded-full border border-current/25 px-3 py-1.5 text-xs font-semibold"
+                className="inline-flex items-center gap-1 rounded-full border border-current/25 px-2.5 py-1 text-xs font-semibold"
                 aria-label="Select language"
               >
                 {language === "sr" ? "SR" : "EN"}
@@ -162,7 +164,7 @@ export const Navigation = () => {
             </div>
             <Link
               to="/contact"
-              className="rounded-full bg-[#5f7f67] px-4 py-2 text-sm font-semibold text-[#f3f5f2] transition hover:bg-[#4d6954]"
+              className="inline-flex min-w-[5.5rem] justify-center rounded-full bg-[#5f7f67] px-3 py-1.5 text-sm font-semibold text-[#f3f5f2] transition hover:bg-[#4d6954]"
             >
               {labels.cta}
             </Link>
@@ -217,5 +219,25 @@ export const Navigation = () => {
         ) : null}
       </nav>
     </header>
+    <div
+      className={`fixed bottom-0 left-0 right-0 z-40 h-14 overflow-hidden border-t border-white/15 bg-[#111613]/92 text-[#f4f7f3] shadow-[0_-12px_30px_rgba(8,12,10,0.28)] backdrop-blur transition duration-300 sm:h-16 ${
+        isBottomStripVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-full opacity-0"
+      }`}
+      aria-label={language === "sr" ? "Pogon pogodnosti" : "Pogon benefits"}
+    >
+      <div className="flex h-full w-max animate-marquee items-center">
+        {[0, 1].map((group) => (
+          <div key={group} className="flex h-full shrink-0 items-center">
+            {strip.map((item) => (
+              <div key={`${group}-${item}`} className="flex h-full w-72 shrink-0 items-center justify-center gap-5 px-5 sm:w-96 sm:px-8">
+                <span className="h-2 w-2 rounded-full bg-[#8fb798]" />
+                <span className="whitespace-nowrap text-center text-sm font-semibold tracking-wide sm:text-base">{item}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+    </>
   );
 };

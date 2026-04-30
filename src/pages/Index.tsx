@@ -71,7 +71,7 @@ const homeCopy: Record<Lang, Copy> = {
     heroSecondary: "Lifestyle",
     trustTitle: "Vozi se širom Srbije",
     trustItems: ["Baterija koja drži tempo", "2 godine garancije", "Zaštita od krađe i GPS", "Ozbiljna bezbednosna oprema"],
-    whyTitle: "Zasto Pogon",
+    whyTitle: "Zašto Pogon",
     whyCards: [
       { title: "Pametniji gradski ritam", desc: "Krećeš se brže, bez čekanja i bez zamora koji dolazi uz klasičan gradski prevoz." },
       { title: "Manje troška iz dana u dan", desc: "Manje para odlazi na gorivo, parking i svakodnevno cimanje po gradu." },
@@ -155,7 +155,7 @@ export default function Index() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-24 lg:px-8">
+      <section id="why" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-24 lg:px-8">
         <h2 className="text-3xl font-semibold sm:text-4xl">{copy.whyTitle}</h2>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {copy.whyCards.map((card) => (

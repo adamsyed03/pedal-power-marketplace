@@ -10,6 +10,8 @@ type ProductModel = {
   tag: { en: string; sr: string };
   description: { en: string; sr: string };
   price: string;
+  originalPrice?: string;
+  salePrice?: string;
   soldOut?: boolean;
   comingSoon?: boolean;
   image?: { src: string; alt: string };
@@ -33,7 +35,7 @@ const productModels: ProductModel[] = [
     points: [
       { en: "Rear hub motor", sr: "Motor u zadnjem točku" },
       { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
-      { en: "Lithium battery", sr: "Litijumska baterija" },
+      { en: "60km range", sr: "Domet 60 km" },
       { en: "110kg capacity", sr: "Nosivost 110 kg" },
     ],
     whatsappMessage: {
@@ -42,42 +44,22 @@ const productModels: ProductModel[] = [
     },
   },
   {
-    key: "compact-1",
-    name: { en: "Compact", sr: "Compact" },
-    tag: { en: "Model", sr: "Model" },
-    description: {
-      en: "Compact urban e-bike for practical daily city riding.",
-      sr: "Kompaktan gradski e-bike za praktičnu svakodnevnu vožnju.",
-    },
-    price: "72,999 RSD",
-    soldOut: true,
-    image: { src: "/ebike111.png", alt: "Compact bike" },
-    points: [
-      { en: "Max speed: 25 km/h", sr: "Maks. brzina 25 km/h" },
-      { en: "Range: 70 km", sr: "Domet: 70 km" },
-      { en: "Motor power: 250W", sr: "Snaga 250 W" },
-      { en: "Max load: 110 kg", sr: "Nosivost 110 kg" },
-    ],
-    whatsappMessage: {
-      en: "Hello, I'm interested in the Pogon Compact.",
-      sr: "Zdravo, zainteresovan sam za Pogon Compact.",
-    },
-  },
-  {
     key: "core",
     name: { en: "Core", sr: "Core" },
     tag: { en: "Model", sr: "Model" },
     description: {
-      en: "Fat-tire urban model built for comfort and control.",
-      sr: "Fat-tire gradski model za više udobnosti i kontrole.",
+      en: "Foldable fat-tire urban model built for comfort and control.",
+      sr: "Sklopivi fat-tire gradski model za više udobnosti i kontrole.",
     },
-    price: "170,000 RSD",
+    price: "105,000 RSD",
+    originalPrice: "160,000 RSD",
+    salePrice: "105,000 RSD",
     image: { src: "/Core Codifice.png", alt: "Core bike" },
     points: [
-      { en: "Max speed: 25 km/h", sr: "Maks. brzina 25 km/h" },
-      { en: "Range: 85 km", sr: "Domet: 85 km" },
-      { en: "Motor power: 250W", sr: "Snaga 250 W" },
-      { en: "Max load: 120 kg", sr: "Nosivost 120 kg" },
+      { en: "Rear hub motor", sr: "Motor u zadnjem točku" },
+      { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
+      { en: "2 batteries with a range of 90km", sr: "2 baterije sa dometom od 90 km" },
+      { en: "+100kg capacity", sr: "Nosivost +100 kg" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Core.",
@@ -105,6 +87,28 @@ const productModels: ProductModel[] = [
       sr: "Zdravo, zainteresovan sam za Pogon Cargo.",
     },
   },
+  {
+    key: "compact-1",
+    name: { en: "Compact", sr: "Compact" },
+    tag: { en: "Model", sr: "Model" },
+    description: {
+      en: "Compact urban e-bike for practical daily city riding.",
+      sr: "Kompaktan gradski e-bike za praktičnu svakodnevnu vožnju.",
+    },
+    price: "72,999 RSD",
+    soldOut: true,
+    image: { src: "/ebike111.png", alt: "Compact bike" },
+    points: [
+      { en: "Max speed: 25 km/h", sr: "Maks. brzina 25 km/h" },
+      { en: "Range: 70 km", sr: "Domet: 70 km" },
+      { en: "Motor power: 250W", sr: "Snaga 250 W" },
+      { en: "Max load: 110 kg", sr: "Nosivost 110 kg" },
+    ],
+    whatsappMessage: {
+      en: "Hello, I'm interested in the Pogon Compact.",
+      sr: "Zdravo, zainteresovan sam za Pogon Compact.",
+    },
+  },
 ];
 
 function getWhatsAppHref(message: string) {
@@ -116,7 +120,10 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
   const lang = language === "sr" ? "sr" : "en";
 
   const focusModel = useMemo<ModelKey>(
-    () => (initialModel === "compact-1" || initialModel === "glide-1" ? initialModel : "glide-1"),
+    () =>
+      initialModel === "compact-1" || initialModel === "glide-1" || initialModel === "core" || initialModel === "cargo"
+        ? initialModel
+        : "core",
     [initialModel],
   );
 
@@ -140,8 +147,9 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
         : "Premium inline product presentation with practical specs and a direct path to our team.",
     soldOut: lang === "sr" ? "Rasprodato" : "Sold Out",
     comingSoon: lang === "sr" ? "Uskoro" : "Coming Soon",
-    buy: lang === "sr" ? "Javi nam se" : "Talk to us",
+    buy: lang === "sr" ? "Javite se" : "Talk to us",
     price: lang === "sr" ? "Cena" : "Price",
+    sale: lang === "sr" ? "Ograničena ponuda" : "Limited offer",
     prev: lang === "sr" ? "Prethodni model" : "Previous model",
     next: lang === "sr" ? "Sledeći model" : "Next model",
   };
@@ -193,12 +201,12 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
             {productModels.map((model) => {
               const isActive = model.key === productModels[activeIndex].key;
               const modelMessage = model.whatsappMessage[lang];
-              const isCoreOrCargo = model.key === "core" || model.key === "cargo";
+              const isComingSoon = model.key === "cargo";
               const isCompactSoldOut = model.key === "compact-1";
 
               return (
                 <div key={model.key} className="w-[64%] shrink-0 px-2">
-                  <article className={`mx-auto flex h-[500px] w-full flex-col rounded-3xl border border-[#e1e5e1] bg-white p-3 shadow-[0_10px_20px_rgba(17,22,18,0.06)] transition duration-500 ${isActive ? "opacity-100" : "opacity-55"}`}>
+                  <article className={`mx-auto flex h-[520px] w-full flex-col rounded-3xl border border-[#e1e5e1] bg-white p-3 shadow-[0_10px_20px_rgba(17,22,18,0.06)] transition duration-500 ${isActive ? "opacity-100" : "opacity-55"}`}>
                     <div className="rounded-2xl bg-white p-2.5">
                       <div className="mb-2 flex items-center justify-end">
                         <span className="rounded-md border border-[#ccd2cc] bg-white px-2.5 py-1 text-[11px] font-bold tracking-[-0.02em] text-[#111613]">{model.tag[lang]}</span>
@@ -213,7 +221,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                         <img
                           src={model.image.src}
                           alt={model.image.alt}
-                          className="h-[150px] w-full object-contain sm:h-[168px]"
+                          className="h-[140px] w-full object-contain sm:h-[158px]"
                           loading="lazy"
                           onError={(e) => {
                             const target = e.currentTarget;
@@ -222,7 +230,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                           }}
                         />
                       ) : (
-                        <div className="flex h-[150px] w-full items-center justify-center rounded-xl border border-dashed border-[#c8cec8] bg-[#ecefec] text-sm font-semibold text-[#66736b] sm:h-[168px]">
+                        <div className="flex h-[140px] w-full items-center justify-center rounded-xl border border-dashed border-[#c8cec8] bg-[#ecefec] text-sm font-semibold text-[#66736b] sm:h-[158px]">
                           {copy.comingSoon}
                         </div>
                       )}
@@ -232,7 +240,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                       <h3 className="text-[2rem] font-black leading-none tracking-[-0.05em] text-[#111613]">{model.name[lang]}</h3>
 
                       <div className="relative">
-                        <div className={isCoreOrCargo || isCompactSoldOut ? "pointer-events-none select-none blur-[3px] opacity-55" : ""}>
+                        <div className={isComingSoon || isCompactSoldOut ? "pointer-events-none select-none blur-[3px] opacity-55" : ""}>
                           <p className="mt-2 text-[13px] font-medium leading-[1.35] tracking-[-0.02em] text-[#424f47]">{model.description[lang]}</p>
 
                           {model.points.length > 0 ? (
@@ -246,13 +254,25 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                             </ul>
                           ) : null}
 
-                          <p className="mt-3 mb-6 text-[13px] font-medium tracking-[-0.02em] text-[#111613]">
-                            <span className="mr-2 font-medium text-[#5a665f]">{copy.price}:</span>
-                            <span className="font-black tracking-[-0.03em]">{model.price}</span>
-                          </p>
+                          {model.salePrice && model.originalPrice ? (
+                            <div className="mt-3 mb-4 rounded-2xl border border-[#d9c7a4] bg-[#fff7e5] px-3 py-2">
+                              <p className="text-[12px] font-semibold tracking-[-0.02em] text-[#7b5940]">
+                                <span className="mr-2">{copy.price}:</span>
+                                <span className="line-through decoration-2">{model.originalPrice}</span>
+                              </p>
+                              <p className="mt-1 text-[17px] font-black leading-none tracking-[-0.045em] text-[#111613] sm:text-[19px]">
+                                {copy.sale}: <span className="text-[#5f7f67]">{model.salePrice}</span>
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="mt-3 mb-6 text-[13px] font-medium tracking-[-0.02em] text-[#111613]">
+                              <span className="mr-2 font-medium text-[#5a665f]">{copy.price}:</span>
+                              <span className="font-black tracking-[-0.03em]">{model.price}</span>
+                            </p>
+                          )}
                         </div>
 
-                        {isCoreOrCargo || isCompactSoldOut ? (
+                        {isComingSoon || isCompactSoldOut ? (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <span className="rounded-full border border-[#cfd5cf] bg-white/90 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.03em] text-[#3d4a42]">
                               {isCompactSoldOut ? copy.soldOut : copy.comingSoon}
