@@ -53,9 +53,9 @@ const homeCopy: Record<Lang, Copy> = {
       "Efficient setup for daily commuting",
       "Practical urban design for Serbian roads",
     ],
-    identityTitle: "For People Going Somewhere",
-    identityBody: "Pogon is for young professionals, entrepreneurs, students, and builders who move every day with purpose.",
-    identityPull: "A bike brand for people working hard to build their future.",
+    identityTitle: "Built for people who don’t wait.",
+    identityBody: "Pogon is for builders, operators, and people moving with intent. The ones working late, waking early, and getting somewhere.",
+    identityPull: "This isn’t just a bike. It’s how you move faster through your day and your life.",
     finalTitle: "Start Building Your Future on Two Wheels",
     finalBody: "Choose your model and talk directly with our team on WhatsApp.",
     finalPrimary: "Explore Bikes",
@@ -85,9 +85,9 @@ const homeCopy: Record<Lang, Copy> = {
       "Podešen za svakodnevne relacije",
       "Dizajn koji radi na ulicama Srbije",
     ],
-    identityTitle: "Za ljude koji drže tempo",
-    identityBody: "Pogon je za mlade profesionalce, preduzetnike, studente i sve koji žele da kroz grad prolaze pametnije, brže i sa više stila.",
-    identityPull: "Mobilnost koja izgleda dobro i radi još bolje.",
+    identityTitle: "Napravljen za ljude koji ne čekaju.",
+    identityBody: "Pogon je za graditelje, operativce i ljude koji se kreću sa namerom. Za one koji rade do kasno, ustaju rano i idu negde.",
+    identityPull: "Ovo nije samo bicikl. Ovo je način da se brže krećeš kroz svoj dan i svoj život.",
     finalTitle: "Izaberi model i pokreni gradsku rutinu",
     finalBody: "Javi nam se na WhatsApp i pomoći ćemo ti da izabereš pravi Pogon.",
     finalPrimary: "Pogledaj modele",
@@ -156,7 +156,7 @@ export default function Index() {
       </section>
 
       <section id="why" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-24 lg:px-8">
-        <h2 className="text-3xl font-semibold sm:text-4xl">{copy.whyTitle}</h2>
+        <h2 className="text-center text-3xl font-semibold sm:text-4xl">{copy.whyTitle}</h2>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {copy.whyCards.map((card) => (
             <article key={card.title} className="rounded-3xl border border-[#d7ded6] bg-white px-6 py-7 shadow-[0_10px_28px_rgba(16,22,18,0.06)]">
@@ -167,36 +167,11 @@ export default function Index() {
         </div>
       </section>
 
-      <section id="lifestyle" className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 md:pb-24 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-          <a href="/?model=glide-1#bikes" className="group relative overflow-hidden rounded-3xl border border-[#d6ddd5] bg-[#e8ece8] p-4 shadow-[0_12px_32px_rgba(16,22,18,0.08)]">
-            <img src="/Excellent 1.png" alt="Glide" className="h-[360px] w-full object-contain transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#111613]/35 via-transparent to-transparent" />
-            <span className="absolute bottom-4 left-4 rounded-full border border-white/25 bg-black/35 px-3 py-1 text-xs text-white backdrop-blur">
-              {lang === "sr" ? "Glide - kupovina" : "Glide - Buy page"}
-            </span>
-          </a>
-
-          <div>
-            <h2 className="text-3xl font-semibold sm:text-5xl">{copy.modernTitle}</h2>
-            <p className="mt-4 text-base leading-relaxed text-[#3f4c44]">{copy.modernBody}</p>
-            <ul className="mt-6 space-y-3">
-              {copy.modernPoints.map((point) => (
-                <li key={point} className="flex items-start gap-2 text-[#223029]">
-                  <span className="mt-2 inline-block h-1.5 w-1.5 rounded-full bg-[#5f7f67]" />
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
       <ProductShowcase initialModel={initialModel} />
 
       <section className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 md:grid-cols-[1fr_1fr] md:py-24 lg:px-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#5f7f67]">{lang === "sr" ? "Pogon identitet" : "Pogon identity"}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#5f7f67]">POGON IDENTITY</p>
           <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">{copy.identityTitle}</h2>
           <p className="mt-5 text-base leading-relaxed text-[#425047]">{copy.identityBody}</p>
           <p className="mt-6 text-lg font-medium text-[#1a241f]">{copy.identityPull}</p>
