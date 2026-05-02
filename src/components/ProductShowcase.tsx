@@ -37,6 +37,10 @@ const productModels: ProductModel[] = [
       { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
       { en: "60km range", sr: "Domet 60 km" },
       { en: "110kg capacity", sr: "Nosivost 110 kg" },
+      { en: "GPS safety features", sr: "GPS sigurnosne funkcije" },
+      { en: "25km/h", sr: "25 km/h" },
+      { en: "250W motor", sr: "Motor 250 W" },
+      { en: "48V25Ah Lithium battery", sr: "48V25Ah litijumska baterija" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Glide.",
@@ -58,8 +62,12 @@ const productModels: ProductModel[] = [
     points: [
       { en: "Rear hub motor", sr: "Motor u zadnjem točku" },
       { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
-      { en: "2 batteries with a range of 90km", sr: "2 baterije sa dometom od 90 km" },
+      { en: "2 lithium batteries", sr: "2 litijumske baterije" },
+      { en: "Range up to 90km", sr: "Domet do 90 km" },
       { en: "+100kg capacity", sr: "Nosivost +100 kg" },
+      { en: "GPS security features", sr: "GPS sigurnosne funkcije" },
+      { en: "250W motor", sr: "250 W motor" },
+      { en: "Folding capability", sr: "Sklopiva konstrukcija" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Core.",
@@ -171,9 +179,9 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
 
   return (
     <section id="bikes" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-12 lg:px-8">
-      <div className="mb-4">
-        <h2 className="text-3xl font-black leading-none tracking-[-0.045em] text-[#111613] sm:text-4xl">{copy.title}</h2>
-        <p className="mt-2 max-w-3xl text-sm font-medium tracking-[-0.02em] text-[#415047] sm:text-base">{copy.subtitle}</p>
+      <div className="mb-4 text-center">
+        <h2 className="text-3xl font-bold leading-tight text-[#111613] sm:text-4xl">{copy.title}</h2>
+        <p className="mx-auto mt-2 max-w-3xl text-sm font-medium text-[#415047] sm:text-base">{copy.subtitle}</p>
       </div>
 
       <div className="mx-auto max-w-[48rem]">
@@ -209,9 +217,9 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                   <article className={`mx-auto flex h-[560px] w-full flex-col rounded-3xl border border-[#e1e5e1] bg-white p-3 pb-5 shadow-[0_10px_20px_rgba(17,22,18,0.06)] transition duration-500 ${isActive ? "opacity-100" : "opacity-55"}`}>
                     <div className="rounded-2xl bg-white p-2.5">
                       <div className="mb-2 flex items-center justify-end">
-                        <span className="rounded-md border border-[#ccd2cc] bg-white px-2.5 py-1 text-[11px] font-bold tracking-[-0.02em] text-[#111613]">{model.tag[lang]}</span>
+                        <span className="rounded-md border border-[#ccd2cc] bg-white px-2.5 py-1 text-[11px] font-bold text-[#111613]">{model.tag[lang]}</span>
                         {model.soldOut ? (
-                          <span className="ml-2 rounded-md border border-[#e0b8b8] bg-[#fff1f1] px-2 py-1 text-[11px] font-bold tracking-[-0.02em] text-[#8f3f3f]">
+                          <span className="ml-2 rounded-md border border-[#e0b8b8] bg-[#fff1f1] px-2 py-1 text-[11px] font-bold text-[#8f3f3f]">
                             {copy.soldOut}
                           </span>
                         ) : null}
@@ -237,17 +245,17 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                     </div>
 
                     <div className="mt-2.5 flex grow flex-col">
-                      <h3 className="text-[2rem] font-black leading-none tracking-[-0.05em] text-[#111613]">{model.name[lang]}</h3>
+                      <h3 className="text-[1.85rem] font-black leading-tight text-[#111613]">{model.name[lang]}</h3>
 
                       <div className="relative">
                         <div className={isComingSoon || isCompactSoldOut ? "pointer-events-none select-none blur-[3px] opacity-55" : ""}>
-                          <p className="mt-2 text-[13px] font-medium leading-[1.35] tracking-[-0.02em] text-[#424f47]">{model.description[lang]}</p>
+                          <p className="mt-1.5 text-[12px] font-medium leading-tight text-[#424f47]">{model.description[lang]}</p>
 
                           {model.points.length > 0 ? (
-                            <ul className="mt-3 space-y-1 text-[13px] font-medium tracking-[-0.02em] text-[#121a16]">
+                            <ul className="mt-2 space-y-0 text-[12px] font-medium leading-tight text-[#121a16]">
                               {model.points.map((point) => (
                                 <li key={point.en} className="flex items-start gap-2">
-                                  <Check size={13} className="mt-0.5 shrink-0 text-[#111613]" />
+                                  <Check size={12} className="mt-0.5 shrink-0 text-[#111613]" />
                                   <span>{point[lang]}</span>
                                 </li>
                               ))}
@@ -255,19 +263,21 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                           ) : null}
 
                           {model.salePrice && model.originalPrice ? (
-                            <div className="mt-3 mb-4 rounded-2xl border border-[#d9c7a4] bg-[#fff7e5] px-3 py-2">
-                              <p className="text-sm font-semibold tracking-[-0.02em] text-[#7b5940]">
+                            <div className="mt-2 mb-2">
+                              <p className="mb-1 px-1 text-xs font-semibold text-[#7b5940]">
                                 <span className="mr-2">{copy.price}:</span>
                                 <span className="line-through decoration-2">{model.originalPrice}</span>
                               </p>
-                              <p className="mt-1 text-2xl font-black leading-none tracking-[-0.045em] text-[#111613]">
-                                {copy.sale}: <span className="text-[#5f7f67]">{model.salePrice}</span>
-                              </p>
+                              <div className="rounded-2xl border border-[#d9c7a4] bg-[#fff7e5] px-3 py-1.5">
+                                <p className="whitespace-nowrap text-[clamp(0.82rem,2.95vw,1.08rem)] font-black leading-tight text-[#111613]">
+                                  {copy.sale}: <span className="text-[#5f7f67]">{model.salePrice}</span>
+                                </p>
+                              </div>
                             </div>
                           ) : (
-                            <p className="mt-3 mb-6 text-lg font-medium tracking-[-0.02em] text-[#111613]">
+                            <p className="mt-3 mb-6 text-center text-lg font-medium text-[#111613]">
                               <span className="mr-2 font-medium text-[#5a665f]">{copy.price}:</span>
-                              <span className="text-xl font-black tracking-[-0.03em]">{model.price}</span>
+                              <span className="text-xl font-black">{model.price}</span>
                             </p>
                           )}
                         </div>
@@ -285,7 +295,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                         href={getWhatsAppHref(modelMessage)}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-auto inline-flex w-fit min-w-[200px] max-w-full self-center items-center justify-center gap-2 rounded-xl bg-[#5f7f67] px-5 py-2 text-sm font-black uppercase tracking-[0.02em] text-white transition hover:bg-[#4f6a56]"
+                        className="mt-auto mb-2 inline-flex w-fit min-w-[200px] max-w-full shrink-0 self-center items-center justify-center gap-2 rounded-xl bg-[#5f7f67] px-5 py-1.5 text-sm font-black uppercase tracking-[0.02em] text-white transition hover:bg-[#4f6a56]"
                       >
                         <MessageCircle size={16} />
                         {copy.buy}

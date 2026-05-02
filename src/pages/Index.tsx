@@ -178,7 +178,7 @@ export default function Index() {
         </div>
 
         <div className="relative overflow-hidden rounded-[2rem] border border-[#d7ded6] bg-[#131a16]">
-          <img src="/Excellent 4.jpeg" alt="Pogon identity" className="h-full min-h-[320px] w-full object-cover object-center opacity-80" loading="lazy" />
+          <img src="/Excellent4.jpeg" alt="Pogon identity" className="h-full min-h-[320px] w-full object-cover object-center opacity-80" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#101713]/78 via-transparent to-transparent" />
           <div className="absolute bottom-6 left-6 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white backdrop-blur">
             <MapPin size={12} className="mr-1 inline-block" />

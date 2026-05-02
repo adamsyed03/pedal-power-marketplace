@@ -11,7 +11,8 @@ export default {
   prefix: "",
   theme: {
     fontFamily: {
-      sans: ['Satoshi', 'system-ui', 'sans-serif'],
+      sans: ['Arial', 'Helvetica', 'sans-serif'],
+      serif: ['Libre Baskerville', 'Georgia', 'Times New Roman', 'serif'],
     },
     container: {
       center: true,
