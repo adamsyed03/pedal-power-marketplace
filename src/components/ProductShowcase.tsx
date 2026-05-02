@@ -214,7 +214,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
 
               return (
                 <div key={model.key} className="w-[64%] shrink-0 px-2">
-                  <article className={`mx-auto flex h-[560px] w-full flex-col rounded-3xl border border-[#e1e5e1] bg-white p-3 pb-5 shadow-[0_10px_20px_rgba(17,22,18,0.06)] transition duration-500 ${isActive ? "opacity-100" : "opacity-55"}`}>
+                  <article className={`mx-auto flex h-[580px] w-full flex-col rounded-3xl border border-[#e1e5e1] bg-white p-3 pb-5 shadow-[0_10px_20px_rgba(17,22,18,0.06)] transition duration-500 ${isActive ? "opacity-100" : "opacity-55"}`}>
                     <div className="rounded-2xl bg-white p-2.5">
                       <div className="mb-2 flex items-center justify-end">
                         <span className="rounded-md border border-[#ccd2cc] bg-white px-2.5 py-1 text-[11px] font-bold text-[#111613]">{model.tag[lang]}</span>
@@ -268,16 +268,17 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                                 <span className="mr-2">{copy.price}:</span>
                                 <span className="line-through decoration-2">{model.originalPrice}</span>
                               </p>
-                              <div className="rounded-2xl border border-[#d9c7a4] bg-[#fff7e5] px-3 py-1.5">
-                                <p className="whitespace-nowrap text-[clamp(0.82rem,2.95vw,1.08rem)] font-black leading-tight text-[#111613]">
-                                  {copy.sale}: <span className="text-[#5f7f67]">{model.salePrice}</span>
+                              <div className="rounded-2xl border border-[#d9c7a4] bg-[#fff7e5] px-3 py-1.5 text-center">
+                                <p className="text-[clamp(0.82rem,2.95vw,1.08rem)] font-black leading-tight text-[#111613]">
+                                  <span>{copy.sale}:</span>
+                                  <span className="block text-[#5f7f67] sm:inline sm:pl-1">{model.salePrice}</span>
                                 </p>
                               </div>
                             </div>
                           ) : (
-                            <p className="mt-3 mb-6 text-center text-lg font-medium text-[#111613]">
-                              <span className="mr-2 font-medium text-[#5a665f]">{copy.price}:</span>
-                              <span className="text-xl font-black">{model.price}</span>
+                            <p className="mt-3 mb-6 text-center text-lg font-medium leading-tight text-[#111613]">
+                              <span className="block font-medium text-[#5a665f]">{copy.price}:</span>
+                              <span className="block text-xl font-black">{model.price}</span>
                             </p>
                           )}
                         </div>
