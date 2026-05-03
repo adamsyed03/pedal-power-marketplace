@@ -174,7 +174,7 @@ export default function Index() {
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#5f7f67]">POGON IDENTITY</p>
           <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">{copy.identityTitle}</h2>
           <p className="mt-5 text-base leading-relaxed text-[#425047]">{copy.identityBody}</p>
-          <p className="mt-6 text-lg font-medium text-[#1a241f]">{copy.identityPull}</p>
+          <p className="mt-6 text-base leading-relaxed text-[#425047]">{copy.identityPull}</p>
         </div>
 
         <div className="relative overflow-hidden rounded-[2rem] border border-[#d7ded6] bg-[#131a16]">
