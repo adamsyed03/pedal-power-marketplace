@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, MessageCircle, X, ZoomIn } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 type ModelKey = "glide-1" | "compact-1" | "core" | "cargo";
@@ -41,6 +41,7 @@ const productModels: ProductModel[] = [
       { en: "25km/h", sr: "25 km/h" },
       { en: "250W motor", sr: "Motor 250 W" },
       { en: "48V25Ah Lithium battery", sr: "48V25Ah litijumska baterija" },
+      { en: "Aluminium frame", sr: "Aluminijumski ram" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Glide.",
@@ -82,13 +83,16 @@ const productModels: ProductModel[] = [
       en: "Compact fat-tire work bike for urban hauling and delivery.",
       sr: "Kompaktan fat-tire model za gradski transport i dostavu.",
     },
-    price: "170,000 RSD",
+    price: "140,000 RSD",
     image: { src: "/CargoCodifice.png", alt: "Cargo bike" },
     points: [
-      { en: "Max speed: 25 km/h", sr: "Maks. brzina 25 km/h" },
-      { en: "Range: 80 km", sr: "Domet: 80 km" },
-      { en: "Motor power: 250W", sr: "Snaga 250 W" },
-      { en: "Max load: 120 kg", sr: "Nosivost 120 kg" },
+      { en: "Rear hub motor", sr: "Motor u zadnjem točku" },
+      { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
+      { en: "2 lithium batteries", sr: "2 litijumske baterije" },
+      { en: "Range up to 90km", sr: "Domet do 90 km" },
+      { en: "+100kg capacity", sr: "Nosivost +100 kg" },
+      { en: "GPS security features", sr: "GPS sigurnosne funkcije" },
+      { en: "250W motor", sr: "250 W motor" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Cargo.",
@@ -141,6 +145,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
   }, [focusModel]);
 
   const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const [previewImage, setPreviewImage] = useState<{ src: string; alt: string; name: string } | null>(null);
   const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
@@ -158,6 +163,9 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
     buy: lang === "sr" ? "Javite se" : "Talk to us",
     price: lang === "sr" ? "Cena" : "Price",
     sale: lang === "sr" ? "Ograničena ponuda" : "Limited offer",
+    imagePreview: lang === "sr" ? "Uvećaj sliku" : "Open larger image",
+    moreInfo: lang === "sr" ? "Za više informacija i slika, javite se porukom." : "Message us for more information and pictures.",
+    closePreview: lang === "sr" ? "Zatvori prikaz slike" : "Close image preview",
     prev: lang === "sr" ? "Prethodni model" : "Previous model",
     next: lang === "sr" ? "Sledeći model" : "Next model",
   };
@@ -209,7 +217,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
             {productModels.map((model) => {
               const isActive = model.key === productModels[activeIndex].key;
               const modelMessage = model.whatsappMessage[lang];
-              const isComingSoon = model.key === "cargo";
+              const isComingSoon = Boolean(model.comingSoon);
               const isCompactSoldOut = model.key === "compact-1";
 
               return (
@@ -226,17 +234,27 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                       </div>
 
                       {model.image ? (
-                        <img
-                          src={model.image.src}
-                          alt={model.image.alt}
-                          className="h-[140px] w-full object-contain sm:h-[158px]"
-                          loading="lazy"
-                          onError={(e) => {
-                            const target = e.currentTarget;
-                            if (model.key === "core") target.src = "/Excellent 3.png";
-                            if (model.key === "cargo") target.src = "/PogonXstanding.png";
-                          }}
-                        />
+                        <button
+                          type="button"
+                          onClick={() => setPreviewImage({ src: model.image!.src, alt: model.image!.alt, name: model.name[lang] })}
+                          className="group relative block h-[140px] w-full rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5f7f67] sm:h-[158px]"
+                          aria-label={`${copy.imagePreview}: ${model.name[lang]}`}
+                        >
+                          <img
+                            src={model.image.src}
+                            alt={model.image.alt}
+                            className="h-full w-full object-contain"
+                            loading="lazy"
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              if (model.key === "core") target.src = "/Excellent 3.png";
+                              if (model.key === "cargo") target.src = "/PogonXstanding.png";
+                            }}
+                          />
+                          <span className="absolute bottom-1.5 right-1.5 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d7ded6] bg-white/90 text-[#111613] opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                            <ZoomIn size={15} />
+                          </span>
+                        </button>
                       ) : (
                         <div className="flex h-[140px] w-full items-center justify-center rounded-xl border border-dashed border-[#c8cec8] bg-[#ecefec] text-sm font-semibold text-[#66736b] sm:h-[158px]">
                           {copy.comingSoon}
@@ -276,7 +294,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                               </div>
                             </div>
                           ) : (
-                            <p className="mt-3 mb-6 text-center text-lg font-medium leading-tight text-[#111613]">
+                            <p className="mt-auto mb-6 pt-3 text-center text-lg font-medium leading-tight text-[#111613]">
                               <span className="block font-medium text-[#5a665f]">{copy.price}:</span>
                               <span className="block text-xl font-black">{model.price}</span>
                             </p>
@@ -292,11 +310,13 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                         ) : null}
                       </div>
 
+                      <p className="mt-auto text-center text-[11px] font-medium leading-tight text-[#607067]">{copy.moreInfo}</p>
+
                       <a
                         href={getWhatsAppHref(modelMessage)}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-auto mb-2 inline-flex w-fit min-w-[200px] max-w-full shrink-0 self-center items-center justify-center gap-2 rounded-xl bg-[#5f7f67] px-5 py-1.5 text-sm font-black uppercase tracking-[0.02em] text-white transition hover:bg-[#4f6a56]"
+                        className="mt-2 mb-2 inline-flex w-fit min-w-[200px] max-w-full shrink-0 self-center items-center justify-center gap-2 rounded-xl bg-[#5f7f67] px-5 py-1.5 text-sm font-black uppercase tracking-[0.02em] text-white transition hover:bg-[#4f6a56]"
                       >
                         <MessageCircle size={16} />
                         {copy.buy}
@@ -322,6 +342,26 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
           ))}
         </div>
       </div>
+
+      {previewImage ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d120f]/88 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={previewImage.name}>
+          <button type="button" className="absolute inset-0 cursor-default" aria-label={copy.closePreview} onClick={() => setPreviewImage(null)} />
+          <div className="relative z-10 flex max-h-full w-full max-w-5xl flex-col items-center">
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="mb-3 self-end rounded-full border border-white/25 bg-white/10 p-2 text-white transition hover:bg-white/20"
+              aria-label={copy.closePreview}
+            >
+              <X size={20} />
+            </button>
+            <div className="w-full rounded-3xl bg-white p-4 shadow-2xl">
+              <img src={previewImage.src} alt={previewImage.alt} className="max-h-[78vh] w-full object-contain" />
+            </div>
+            <p className="mt-3 text-center text-sm font-semibold text-white">{previewImage.name}</p>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

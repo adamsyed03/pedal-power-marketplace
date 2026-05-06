@@ -10,6 +10,7 @@ type Copy = {
   heroSub: string;
   heroPrimary: string;
   heroSecondary: string;
+  testRideMessage: string;
   trustTitle: string;
   trustItems: string[];
   whyTitle: string;
@@ -36,7 +37,8 @@ const homeCopy: Record<Lang, Copy> = {
     heroTitle: "Progress is impossible without change",
     heroSub: "Electric bikes designed for people building their future.",
     heroPrimary: "Explore Bikes",
-    heroSecondary: "Lifestyle",
+    heroSecondary: "Book a Test Ride",
+    testRideMessage: "Hi I want a test ride",
     trustTitle: "Trusted by riders across Serbia",
     trustItems: ["Long-lasting battery", "2-year guarantee", "Anti-theft systems and GPS", "Premium safety features"],
     whyTitle: "Why Pogon",
@@ -68,7 +70,8 @@ const homeCopy: Record<Lang, Copy> = {
     heroTitle: "Pokreni dan po svom",
     heroSub: "Električni bicikli za grad, tempo i planove koji ne čekaju.",
     heroPrimary: "Pogledaj modele",
-    heroSecondary: "Lifestyle",
+    heroSecondary: "Zakaži test vožnju",
+    testRideMessage: "Zdravo, želim test vožnju",
     trustTitle: "Vozi se širom Srbije",
     trustItems: ["Baterija koja drži tempo", "2 godine garancije", "Zaštita od krađe i GPS", "Ozbiljna bezbednosna oprema"],
     whyTitle: "Zašto Pogon",
@@ -132,7 +135,12 @@ export default function Index() {
                 {copy.heroPrimary}
                 <ArrowRight size={16} />
               </a>
-              <a href="#lifestyle" className="inline-flex items-center rounded-full border border-white/35 px-6 py-3 text-sm font-semibold text-[#f6f8f4] transition hover:bg-white/10">
+              <a
+                href={getWhatsAppHref(copy.testRideMessage)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center rounded-full border border-white/35 px-6 py-3 text-sm font-semibold text-[#f6f8f4] transition hover:bg-white/10"
+              >
                 {copy.heroSecondary}
               </a>
             </div>
