@@ -7,7 +7,6 @@ type ModelKey = "glide-1" | "compact-1" | "core" | "cargo";
 type ProductModel = {
   key: ModelKey;
   name: { en: string; sr: string };
-  tag: { en: string; sr: string };
   description: { en: string; sr: string };
   price: string;
   originalPrice?: string;
@@ -25,7 +24,6 @@ const productModels: ProductModel[] = [
   {
     key: "glide-1",
     name: { en: "Glide", sr: "Glide" },
-    tag: { en: "Model", sr: "Model" },
     description: {
       en: "A city electric bike designed for comfortable, reliable everyday movement.",
       sr: "Gradski električni bicikl za udobnu i pouzdanu svakodnevnu vožnju.",
@@ -33,15 +31,12 @@ const productModels: ProductModel[] = [
     price: "170,000 RSD",
     image: { src: "/Excellent 1.png", alt: "Glide bike" },
     points: [
-      { en: "Rear hub motor", sr: "Motor u zadnjem točku" },
-      { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
-      { en: "60km range", sr: "Domet 60 km" },
-      { en: "110kg capacity", sr: "Nosivost 110 kg" },
-      { en: "GPS safety features", sr: "GPS sigurnosne funkcije" },
-      { en: "25km/h", sr: "25 km/h" },
-      { en: "250W motor", sr: "Motor 250 W" },
-      { en: "48V25Ah Lithium battery", sr: "48V25Ah litijumska baterija" },
+      { en: "Motor in rear wheel", sr: "Motor u zadnjem točku" },
       { en: "Aluminium frame", sr: "Aluminijumski ram" },
+      { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
+      { en: "110kg capacity", sr: "Nosivost 110 kg" },
+      { en: "Up to 70km range", sr: "Domet do 70 km" },
+      { en: "GPS safety features", sr: "GPS sigurnosne funkcije" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Glide.",
@@ -51,24 +46,21 @@ const productModels: ProductModel[] = [
   {
     key: "core",
     name: { en: "Core", sr: "Core" },
-    tag: { en: "Model", sr: "Model" },
     description: {
       en: "Foldable fat-tire urban model built for comfort and control.",
       sr: "Sklopivi fat-tire gradski model za više udobnosti i kontrole.",
     },
-    price: "105,000 RSD",
+    price: "160,000 RSD",
     originalPrice: "160,000 RSD",
     salePrice: "105,000 RSD",
     image: { src: "/Core Codifice.png", alt: "Core bike" },
     points: [
-      { en: "Rear hub motor", sr: "Motor u zadnjem točku" },
+      { en: "Motor in rear wheel", sr: "Motor u zadnjem točku" },
+      { en: "Foldable steel frame", sr: "Sklopivi čelični ram" },
       { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
-      { en: "2 lithium batteries", sr: "2 litijumske baterije" },
-      { en: "Range up to 90km", sr: "Domet do 90 km" },
-      { en: "+100kg capacity", sr: "Nosivost +100 kg" },
-      { en: "GPS security features", sr: "GPS sigurnosne funkcije" },
-      { en: "250W motor", sr: "250 W motor" },
-      { en: "Folding capability", sr: "Sklopiva konstrukcija" },
+      { en: "Dual battery setup up to 90km range", sr: "Dve baterije, domet do 90 km" },
+      { en: "Fat tyre", sr: "Fat tyre gume" },
+      { en: "GPS safety features", sr: "GPS sigurnosne funkcije" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Core.",
@@ -78,7 +70,6 @@ const productModels: ProductModel[] = [
   {
     key: "cargo",
     name: { en: "Cargo", sr: "Cargo" },
-    tag: { en: "Model", sr: "Model" },
     description: {
       en: "Compact fat-tire work bike for urban hauling and delivery.",
       sr: "Kompaktan fat-tire model za gradski transport i dostavu.",
@@ -86,13 +77,12 @@ const productModels: ProductModel[] = [
     price: "140,000 RSD",
     image: { src: "/CargoCodifice.png", alt: "Cargo bike" },
     points: [
-      { en: "Rear hub motor", sr: "Motor u zadnjem točku" },
+      { en: "Motor in rear wheel", sr: "Motor u zadnjem točku" },
+      { en: "Steel frame", sr: "Čelični ram" },
       { en: "Hydraulic brakes", sr: "Hidraulične kočnice" },
-      { en: "2 lithium batteries", sr: "2 litijumske baterije" },
-      { en: "Range up to 90km", sr: "Domet do 90 km" },
-      { en: "+100kg capacity", sr: "Nosivost +100 kg" },
-      { en: "GPS security features", sr: "GPS sigurnosne funkcije" },
-      { en: "250W motor", sr: "250 W motor" },
+      { en: "Dual battery setup up to 90km range", sr: "Dve baterije, domet do 90 km" },
+      { en: "Fat tyre", sr: "Fat tyre gume" },
+      { en: "GPS safety features", sr: "GPS sigurnosne funkcije" },
     ],
     whatsappMessage: {
       en: "Hello, I'm interested in the Pogon Cargo.",
@@ -102,7 +92,6 @@ const productModels: ProductModel[] = [
   {
     key: "compact-1",
     name: { en: "Compact", sr: "Compact" },
-    tag: { en: "Model", sr: "Model" },
     description: {
       en: "Compact urban e-bike for practical daily city riding.",
       sr: "Kompaktan gradski e-bike za praktičnu svakodnevnu vožnju.",
@@ -162,7 +151,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
     comingSoon: lang === "sr" ? "Uskoro" : "Coming Soon",
     buy: lang === "sr" ? "Javite se" : "Talk to us",
     price: lang === "sr" ? "Cena" : "Price",
-    sale: lang === "sr" ? "Ograničena ponuda" : "Limited offer",
+    salePrice: lang === "sr" ? "Akcijska cena" : "Sale price",
     imagePreview: lang === "sr" ? "Uvećaj sliku" : "Open larger image",
     moreInfo: lang === "sr" ? "Za više informacija i slika, javite se porukom." : "Message us for more information and pictures.",
     closePreview: lang === "sr" ? "Zatvori prikaz slike" : "Close image preview",
@@ -186,18 +175,18 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
   };
 
   return (
-    <section id="bikes" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-12 lg:px-8">
-      <div className="mb-4 text-center">
-        <h2 className="text-3xl font-bold leading-tight text-[#111613] sm:text-4xl">{copy.title}</h2>
+    <section id="bikes" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:flex lg:min-h-screen lg:flex-col lg:justify-center lg:px-8 lg:py-6">
+      <div className="mb-6 text-center">
+        <h2 className="text-[clamp(2rem,4vw,2.8rem)] font-bold leading-tight text-[#111613]">{copy.title}</h2>
         <p className="mx-auto mt-2 max-w-3xl text-sm font-medium text-[#415047] sm:text-base">{copy.subtitle}</p>
       </div>
 
-      <div className="mx-auto max-w-[48rem]">
+      <div className="mx-auto max-w-[48rem] lg:max-h-[calc(100vh-140px)] lg:max-w-none">
         <div className="relative" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           <button
             type="button"
             onClick={previousSlide}
-            className="absolute left-1 top-1/2 z-10 -translate-y-1/2 rounded-full border border-[#cad3cc] bg-white/95 px-3 py-2 text-sm font-medium text-[#25332b] shadow-sm transition hover:bg-[#f2f5f2] sm:-left-5"
+            className="absolute left-1 top-1/2 z-10 -translate-y-1/2 rounded-full border border-[#cad3cc] bg-white/95 px-3 py-2 text-sm font-medium text-[#25332b] shadow-sm transition hover:bg-[#f2f5f2] sm:-left-5 lg:hidden"
             aria-label={copy.prev}
           >
             <ChevronLeft size={16} />
@@ -206,14 +195,14 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
           <button
             type="button"
             onClick={nextSlide}
-            className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full border border-[#cad3cc] bg-white/95 px-3 py-2 text-sm font-medium text-[#25332b] shadow-sm transition hover:bg-[#f2f5f2] sm:-right-5"
+            className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full border border-[#cad3cc] bg-white/95 px-3 py-2 text-sm font-medium text-[#25332b] shadow-sm transition hover:bg-[#f2f5f2] sm:-right-5 lg:hidden"
             aria-label={copy.next}
           >
             <ChevronRight size={16} />
           </button>
 
-          <div className="relative overflow-hidden rounded-3xl">
-          <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(calc(${18 - activeIndex * 64}%))` }}>
+          <div className="relative overflow-hidden rounded-3xl lg:overflow-visible">
+          <div className="flex transition-transform duration-500 ease-out lg:!transform-none lg:grid lg:grid-cols-4 lg:gap-4 lg:transition-none" style={{ transform: `translateX(calc(${18 - activeIndex * 64}%))` }}>
             {productModels.map((model) => {
               const isActive = model.key === productModels[activeIndex].key;
               const modelMessage = model.whatsappMessage[lang];
@@ -221,29 +210,20 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
               const isCompactSoldOut = model.key === "compact-1";
 
               return (
-                <div key={model.key} className="w-[64%] shrink-0 px-2">
-                  <article className={`mx-auto flex h-[580px] w-full flex-col rounded-3xl border border-[#e1e5e1] bg-white p-3 pb-5 shadow-[0_10px_20px_rgba(17,22,18,0.06)] transition duration-500 ${isActive ? "opacity-100" : "opacity-55"}`}>
-                    <div className="rounded-2xl bg-white p-2.5">
-                      <div className="mb-2 flex items-center justify-end">
-                        <span className="rounded-md border border-[#ccd2cc] bg-white px-2.5 py-1 text-[11px] font-bold text-[#111613]">{model.tag[lang]}</span>
-                        {model.soldOut ? (
-                          <span className="ml-2 rounded-md border border-[#e0b8b8] bg-[#fff1f1] px-2 py-1 text-[11px] font-bold text-[#8f3f3f]">
-                            {copy.soldOut}
-                          </span>
-                        ) : null}
-                      </div>
-
+                <div key={model.key} className="w-[64%] shrink-0 px-2 lg:w-auto lg:px-0">
+                  <article className={`mx-auto flex h-[540px] max-h-[540px] w-full flex-col overflow-hidden rounded-2xl border border-[#e1e5e1] bg-white p-4 shadow-[0_10px_20px_rgba(17,22,18,0.06)] transition duration-500 lg:h-[min(540px,calc(100vh-140px))] ${isActive ? "opacity-100" : "opacity-55 lg:opacity-100"}`}>
+                    <div className="relative mb-3 flex h-[160px] w-full shrink-0 items-center justify-center overflow-hidden">
                       {model.image ? (
                         <button
                           type="button"
                           onClick={() => setPreviewImage({ src: model.image!.src, alt: model.image!.alt, name: model.name[lang] })}
-                          className="group relative block h-[140px] w-full rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5f7f67] sm:h-[158px]"
+                          className="group relative flex h-full w-full items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5f7f67]"
                           aria-label={`${copy.imagePreview}: ${model.name[lang]}`}
                         >
                           <img
                             src={model.image.src}
                             alt={model.image.alt}
-                            className="h-full w-full object-contain"
+                            className="mx-auto block max-h-[150px] w-auto max-w-[80%] object-contain"
                             loading="lazy"
                             onError={(e) => {
                               const target = e.currentTarget;
@@ -256,21 +236,26 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                           </span>
                         </button>
                       ) : (
-                        <div className="flex h-[140px] w-full items-center justify-center rounded-xl border border-dashed border-[#c8cec8] bg-[#ecefec] text-sm font-semibold text-[#66736b] sm:h-[158px]">
+                        <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-[#66736b]">
                           {copy.comingSoon}
                         </div>
                       )}
+                      {model.soldOut ? (
+                        <span className="absolute right-3 top-3 rounded-md border border-[#e0b8b8] bg-[#fff1f1] px-2 py-1 text-[11px] font-bold text-[#8f3f3f]">
+                          {copy.soldOut}
+                        </span>
+                      ) : null}
                     </div>
 
-                    <div className="mt-2.5 flex grow flex-col">
-                      <h3 className="text-[1.85rem] font-black leading-tight text-[#111613]">{model.name[lang]}</h3>
+                    <div className="flex min-h-0 grow flex-col">
+                      <h3 className="text-[1.4rem] font-bold leading-tight text-[#111613]">{model.name[lang]}</h3>
 
                       <div className="relative">
                         <div className={isComingSoon || isCompactSoldOut ? "pointer-events-none select-none blur-[3px] opacity-55" : ""}>
-                          <p className="mt-1.5 text-[12px] font-medium leading-tight text-[#424f47]">{model.description[lang]}</p>
+                          <p className="mt-2 text-[13px] font-medium leading-tight text-[#666]">{model.description[lang]}</p>
 
                           {model.points.length > 0 ? (
-                            <ul className="mt-2 space-y-0 text-[12px] font-medium leading-tight text-[#121a16]">
+                            <ul className="mt-2 space-y-0.5 text-[12px] font-medium leading-[1.5] text-[#121a16]">
                               {model.points.map((point) => (
                                 <li key={point.en} className="flex items-start gap-2">
                                   <Check size={12} className="mt-0.5 shrink-0 text-[#111613]" />
@@ -280,23 +265,18 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                             </ul>
                           ) : null}
 
-                          {model.salePrice && model.originalPrice ? (
-                            <div className="mt-2 mb-2">
-                              <p className="mb-1 px-1 text-xs font-semibold text-[#7b5940]">
-                                <span className="mr-2">{copy.price}:</span>
-                                <span className="line-through decoration-2">{model.originalPrice}</span>
-                              </p>
-                              <div className="rounded-2xl border border-[#d9c7a4] bg-[#fff7e5] px-3 py-1.5 text-center">
-                                <p className="text-[clamp(0.82rem,2.95vw,1.08rem)] font-black leading-tight text-[#111613]">
-                                  <span>{copy.sale}:</span>
-                                  <span className="block text-[#5f7f67] sm:inline sm:pl-1">{model.salePrice}</span>
-                                </p>
-                              </div>
-                            </div>
+                          {model.salePrice ? (
+                            <p className="mt-3 mb-2 text-center leading-tight text-[#111613]">
+                              <span className="block text-[12px] font-medium text-[#888]">
+                                {copy.price}: <span className="line-through">{model.originalPrice ?? model.price}</span>
+                              </span>
+                              <span className="mb-0 block text-[12px] font-medium text-[#888]">{copy.salePrice}:</span>
+                              <span className="block text-[22px] font-bold">{model.salePrice}</span>
+                            </p>
                           ) : (
-                            <p className="mt-auto mb-6 pt-3 text-center text-lg font-medium leading-tight text-[#111613]">
-                              <span className="block font-medium text-[#5a665f]">{copy.price}:</span>
-                              <span className="block text-xl font-black">{model.price}</span>
+                            <p className="mt-3 mb-2 text-center leading-tight text-[#111613]">
+                              <span className="mb-0 block text-[12px] font-medium text-[#888]">{copy.price}:</span>
+                              <span className="block text-[22px] font-bold">{model.price}</span>
                             </p>
                           )}
                         </div>
@@ -316,7 +296,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
                         href={getWhatsAppHref(modelMessage)}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-2 mb-2 inline-flex w-fit min-w-[200px] max-w-full shrink-0 self-center items-center justify-center gap-2 rounded-xl bg-[#5f7f67] px-5 py-1.5 text-sm font-black uppercase tracking-[0.02em] text-white transition hover:bg-[#4f6a56]"
+                        className="mt-2 inline-flex h-10 w-fit min-w-[200px] max-w-full shrink-0 self-center items-center justify-center gap-2 rounded-xl bg-[#5f7f67] px-5 text-[13px] font-semibold text-white transition hover:bg-[#4f6a56]"
                       >
                         <MessageCircle size={16} />
                         {copy.buy}
@@ -330,7 +310,7 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
         </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-2" aria-label="Carousel pagination">
+        <div className="mt-4 flex items-center justify-center gap-2 lg:hidden" aria-label="Carousel pagination">
           {productModels.map((model, index) => (
             <button
               key={model.key}

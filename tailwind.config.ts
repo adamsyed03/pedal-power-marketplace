@@ -11,8 +11,8 @@ export default {
   prefix: "",
   theme: {
     fontFamily: {
-      sans: ['Arial', 'Helvetica', 'sans-serif'],
-      serif: ['Libre Baskerville', 'Georgia', 'Times New Roman', 'serif'],
+      sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+      serif: ['Playfair Display', 'Georgia', 'Times New Roman', 'serif'],
     },
     container: {
       center: true,

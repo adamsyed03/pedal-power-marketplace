@@ -1,13 +1,22 @@
 process.env.ROLLUP_USE_ESM = 'true'; // 👈 Force JS fallback instead of native Rollup
 
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
+const DEFAULT_SITE_URL = "https://www.ridepogon.com";
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  const siteUrl = env.VITE_SITE_URL || DEFAULT_SITE_URL;
+
+  return {
+    define: {
+      "import.meta.env.VITE_SITE_URL": JSON.stringify(siteUrl),
+    },
+    server: {
     port: 8080,
     host: true,
     strictPort: false,
@@ -22,20 +31,26 @@ export default defineConfig(({ mode }) => ({
     watch: {
       usePolling: true
     }
-  },
-  publicDir: 'public',
-  base: '/',
-  plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
-  resolve: {
+    },
+    publicDir: 'public',
+    base: '/',
+    plugins: [
+      {
+        name: "site-url-html-env",
+        transformIndexHtml(html) {
+          return html.replace(/%VITE_SITE_URL%/g, siteUrl);
+        },
+      },
+      react(),
+      mode === 'development' &&
+      componentTagger(),
+    ].filter(Boolean),
+    resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src')
     }
-  },
-  build: {
+    },
+    build: {
     target: 'esnext',
     minify: 'esbuild',
     cssMinify: true,
@@ -51,5 +66,6 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-  },
-}));
+    },
+  };
+});
