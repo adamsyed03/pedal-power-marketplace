@@ -50,9 +50,7 @@ const productModels: ProductModel[] = [
       en: "Foldable fat-tire urban model built for comfort and control.",
       sr: "Sklopivi fat-tire gradski model za više udobnosti i kontrole.",
     },
-    price: "160,000 RSD",
-    originalPrice: "160,000 RSD",
-    salePrice: "105,000 RSD",
+    price: "140,000 RSD",
     image: { src: "/Core Codifice.png", alt: "Core bike" },
     points: [
       { en: "Motor in rear wheel", sr: "Motor u zadnjem točku" },
@@ -74,7 +72,7 @@ const productModels: ProductModel[] = [
       en: "Compact fat-tire work bike for urban hauling and delivery.",
       sr: "Kompaktan fat-tire model za gradski transport i dostavu.",
     },
-    price: "140,000 RSD",
+    price: "120,000 RSD",
     image: { src: "/CargoCodifice.png", alt: "Cargo bike" },
     points: [
       { en: "Motor in rear wheel", sr: "Motor u zadnjem točku" },
@@ -144,9 +142,15 @@ export function ProductShowcase({ initialModel }: { initialModel?: string }) {
   const copy = {
     title: lang === "sr" ? "Modeli za kupovinu" : lang === "ru" ? "Modeli dlya pokupki" : "Bike Buying Experience",
     subtitle:
-      lang === "sr"
-        ? "Pogledaj modele, uporedi detalje i javi nam se direktno."
-        : "Premium inline product presentation with practical specs and a direct path to our team.",
+      lang === "sr" ? (
+        <>
+          Svi modeli dostupni su na <span className="underline decoration-[#111613] decoration-2 underline-offset-4">do 12 mesečnih rata</span>.
+        </>
+      ) : (
+        <>
+          All models are available on <span className="underline decoration-[#111613] decoration-2 underline-offset-4">up to 12 monthly installments</span>.
+        </>
+      ),
     soldOut: lang === "sr" ? "Rasprodato" : "Sold Out",
     comingSoon: lang === "sr" ? "Uskoro" : "Coming Soon",
     buy: lang === "sr" ? "Javite se" : "Talk to us",
