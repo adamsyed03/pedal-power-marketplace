@@ -1,7 +1,7 @@
 {
-  "installCommand": "npm install --prefix tmp_redesign",
-  "buildCommand": "npm run build --prefix tmp_redesign",
-  "outputDirectory": "tmp_redesign/dist",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
