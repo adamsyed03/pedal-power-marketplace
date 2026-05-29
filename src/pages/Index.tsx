@@ -222,7 +222,7 @@ export default function Index() {
       <footer className="border-t border-[#d4dbd3] bg-[#ecefe9]">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
           <div>
-            <img src="/Logo.png" alt="Pogon" className="h-10 w-auto" loading="lazy" />
+            <img src="/Logo.png" alt="Pogon" className="h-16 w-auto sm:h-20" loading="lazy" />
             <p className="mt-4 max-w-xs text-sm text-[#435047]">{copy.footerTag}</p>
           </div>
           <div>

@@ -9,14 +9,14 @@ const navLabels = {
     lifestyle: "Lifestyle",
     about: "About",
     contact: "Contact",
-    cta: "Talk to Us",
+    cta: "Buy now",
   },
   sr: {
     bikes: "Bicikli",
     lifestyle: "Lifestyle",
     about: "O nama",
     contact: "Kontakt",
-    cta: "Javi se",
+    cta: "Kupi sada",
   },
 } as const;
 
@@ -115,9 +115,9 @@ export const Navigation = () => {
     <>
     <header className="fixed top-0 left-0 right-0 z-50">
       <nav className={`border-b transition-all duration-300 ${baseNavClass}`} aria-label="Primary">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-20 lg:h-24 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/Logo.png" alt="Pogon" className="h-14 w-auto md:h-16" loading="eager" />
+            <img src="/Logo.png" alt="Pogon" className="h-16 w-auto md:h-20 lg:h-24" loading="eager" />
           </Link>
 
           <div className="hidden items-center gap-6 lg:flex">
@@ -170,13 +170,21 @@ export const Navigation = () => {
             </Link>
           </div>
 
-          <button
-            className="inline-flex items-center justify-center rounded-md p-2 lg:hidden"
-            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          <div className="flex items-center gap-2 lg:hidden">
+            <Link
+              to="/contact"
+              className="inline-flex justify-center rounded-full bg-[#111613] px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-wide text-[#f3f5f2] transition hover:bg-[#253027]"
+            >
+              {labels.cta}
+            </Link>
+            <button
+              className="inline-flex items-center justify-center rounded-md p-2"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
 
         {isMobileMenuOpen ? (
