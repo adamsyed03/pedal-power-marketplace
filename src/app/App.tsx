@@ -483,9 +483,10 @@ export default function App() {
         .review-marquee > * {
           flex: 0 0 auto;
         }
-        @media (max-width: 1023px) {
-          .review-marquee {
-            animation: none;
+        @media (max-width: 639px) {
+          .review-card {
+            min-width: min(20rem, calc(100vw - 4rem));
+            max-width: min(20rem, calc(100vw - 4rem));
           }
         }
       `}</style>
@@ -780,11 +781,11 @@ export default function App() {
       </section>
 
       {/* Technology Section */}
-      <section id="tehnologija" className="py-32 bg-muted/30">
+      <section id="tehnologija" className="py-20 sm:py-28 lg:py-32 bg-muted/30">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-20">
+          <div className="text-center mb-12 sm:mb-16 lg:mb-20">
             <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4">{ui.innovation}</div>
-            <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tight">{ui.technologyTitle}</h2>
+            <h2 className="mx-auto max-w-[12ch] text-3xl font-black leading-[1.04] tracking-tight sm:text-4xl md:max-w-none md:text-6xl">{ui.technologyTitle}</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <div className="bg-card p-10 rounded-3xl border border-border hover:border-primary/50 transition-all group">
@@ -839,7 +840,7 @@ export default function App() {
               {reviewLoop.map((review, index) => (
                 <div
                   key={`${review.name}-${index}`}
-                  className="min-w-[47vw] max-w-[47vw] sm:min-w-[22rem] md:min-w-[24rem] lg:min-w-[18rem] lg:max-w-[18rem] flex-shrink-0 rounded-3xl border border-border/60 bg-card/90 p-5 sm:p-6 shadow-md snap-center"
+                  className="review-card min-w-[47vw] max-w-[47vw] sm:min-w-[22rem] md:min-w-[24rem] lg:min-w-[18rem] lg:max-w-[18rem] flex-shrink-0 rounded-3xl border border-border/60 bg-card/90 p-5 sm:p-6 shadow-md snap-center"
                 >
                   <div className="flex gap-1 mb-3">
                     {Array.from({ length: review.rating }).map((_, starIndex) => (
