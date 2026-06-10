@@ -492,29 +492,29 @@ export default function App() {
       `}</style>
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-xl border-b border-border/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
-          <div className="w-full flex h-16 items-center justify-between gap-4 rounded-full border border-border/50 bg-background/95 px-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] sm:h-auto sm:py-3">
-            <a href="#top" className="inline-flex items-center sm:rounded-full sm:bg-white/95 sm:border sm:border-border/80 sm:p-2 sm:shadow-sm sm:transition-transform sm:hover:-translate-y-0.5">
-              <div className="flex items-center justify-center sm:h-16 sm:w-16 sm:rounded-full sm:bg-primary/10 sm:border sm:border-primary/20 lg:h-20 lg:w-20">
-                <img src="/Logo.png" alt="POGON" className="h-14 w-auto sm:h-12 lg:h-16" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-2.5">
+          <div className="w-full flex h-8 items-center justify-between gap-2 rounded-full border border-border/50 bg-background/95 px-2 shadow-[0_15px_40px_rgba(15,23,42,0.08)] sm:h-auto sm:py-1.5">
+            <a href="#top" className="inline-flex items-center sm:rounded-full sm:bg-white/95 sm:border sm:border-border/80 sm:p-1 sm:shadow-sm sm:transition-transform sm:hover:-translate-y-0.5">
+              <div className="flex items-center justify-center sm:h-8 sm:w-8 sm:rounded-full sm:bg-primary/10 sm:border sm:border-primary/20 lg:h-10 lg:w-10">
+                <img src="/Logo.png" alt="POGON" className="h-7 w-auto sm:h-6 lg:h-8" />
               </div>
             </a>
 
-            <div className="hidden md:flex flex-1 items-center justify-center gap-8 text-sm uppercase tracking-wider text-foreground/70">
+            <div className="hidden md:flex flex-1 items-center justify-center gap-4 text-xs uppercase tracking-wider text-foreground/70">
               <a href="#modeli" className="transition-colors hover:text-foreground">{ui.navModels}</a>
               <a href="#tehnologija" className="transition-colors hover:text-foreground">{ui.navTechnology}</a>
               <a href="#iskustva" className="transition-colors hover:text-foreground">{ui.navReviews}</a>
             </div>
 
-            <div className="hidden md:flex items-center gap-3">
-              <button className="inline-flex items-center justify-center bg-primary text-primary-foreground px-6 py-2 rounded-full hover:bg-primary/90 transition-all text-sm uppercase tracking-wider font-medium">{copy.buyNow}</button>
-              <button onClick={() => setLang('sr')} className={`rounded-full border px-3 py-1 text-sm ${lang === 'sr' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>SR</button>
-              <button onClick={() => setLang('en')} className={`rounded-full border px-3 py-1 text-sm ${lang === 'en' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>EN</button>
+            <div className="hidden md:flex items-center gap-1.5">
+              <button className="inline-flex items-center justify-center bg-primary text-primary-foreground px-3 py-1 rounded-full hover:bg-primary/90 transition-all text-xs uppercase tracking-wider font-medium">{copy.buyNow}</button>
+              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>SR</button>
+              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>EN</button>
             </div>
 
-            <div className="flex items-center md:hidden gap-1.5">
-              <button onClick={() => setLang('sr')} className={`rounded-full border px-3 py-1 text-sm ${lang === 'sr' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>SR</button>
-              <button onClick={() => setLang('en')} className={`rounded-full border px-3 py-1 text-sm ${lang === 'en' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>EN</button>
+            <div className="flex items-center md:hidden gap-1">
+              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>SR</button>
+              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>EN</button>
             </div>
           </div>
         </div>
@@ -674,9 +674,9 @@ export default function App() {
                     <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white text-sm lg:hidden">
                       <div className="font-semibold">{copy.clickSpecs}</div>
                     </div>
-                    <div className={`absolute inset-0 bg-black/90 p-6 flex flex-col justify-between transition-all duration-300 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                    <div className={`absolute inset-0 bg-black/90 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-300 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
                       <div>
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-3">
                           <span className="text-xs uppercase tracking-[0.35em] text-white/80">{ui.specs}</span>
                           <button
                             type="button"
@@ -686,13 +686,13 @@ export default function App() {
                             {copy.close}
                           </button>
                         </div>
-                        <ul className="space-y-3 text-sm leading-relaxed list-disc pl-5 text-white/90">
+                        <ul className="space-y-2 text-sm leading-relaxed list-disc pl-5 text-white/90">
                           {model.points.map((point, index) => (
                             <li key={index}>{point}</li>
                           ))}
                         </ul>
                       </div>
-                      <div className="text-[0.8rem] text-white/70">{copy.clickHide}</div>
+                      <div className="text-[0.75rem] text-white/70">{copy.clickHide}</div>
                     </div>
                   </div>
                 </div>
