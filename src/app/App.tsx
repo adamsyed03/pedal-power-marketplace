@@ -462,6 +462,7 @@ export default function App() {
       image: { src: '/Cargo%20Main.png', alt: 'Pogon Cargo electric bike main product photo' },
       gallery: [
         { src: '/Cargo%20Main.png', alt: 'Pogon Cargo main product photo' },
+        { src: '/Cargo%20fold.png', alt: 'Pogon Cargo folded product photo' },
         { src: '/Cargo%201.png', alt: 'Pogon Cargo product photo 1' },
         { src: '/Cargo%202.png', alt: 'Pogon Cargo product photo 2' },
       ],
