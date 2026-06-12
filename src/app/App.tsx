@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram } from 'lucide-react';
+import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const homeCopyEn = {
@@ -75,6 +75,9 @@ export default function App() {
   const [lang, setLang] = useState<'en' | 'sr'>('sr');
   const [activeSpecs, setActiveSpecs] = useState<string | null>(null);
   const [activeProduct, setActiveProduct] = useState(0);
+  const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
+  const [activeLightboxProduct, setActiveLightboxProduct] = useState<string | null>(null);
+  const [isLightboxZoomed, setIsLightboxZoomed] = useState(false);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
   const pageRootRef = useRef<HTMLDivElement | null>(null);
   const scrollLockTimeout = useRef<number | null>(null);
@@ -387,7 +390,13 @@ export default function App() {
       name: 'Glide',
       badgeKey: 'bestSeller' as const,
       badgeClass: 'bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold uppercase',
-      image: { src: '/Excellent 1.png', alt: 'Glide bike' },
+      image: { src: '/Glide%20main.png', alt: 'Pogon Glide electric bike main product photo' },
+      gallery: [
+        { src: '/Glide%20main.png', alt: 'Pogon Glide main product photo' },
+        { src: '/Glide%201.png', alt: 'Pogon Glide product photo 1' },
+        { src: '/Glide%202.png', alt: 'Pogon Glide product photo 2' },
+        { src: '/Glide%204.png', alt: 'Pogon Glide product photo 4' },
+      ],
       description: copy.glideDescription,
       monthlyPrice: '17,000 RSD',
       price: '170,000 RSD',
@@ -415,7 +424,13 @@ export default function App() {
       name: 'Core',
       badgeKey: 'recommended' as const,
       badgeClass: 'bg-primary-foreground text-primary px-3 py-1 rounded-full text-xs font-bold uppercase',
-      image: { src: '/Core Codifice.png', alt: 'Core bike' },
+      image: { src: '/Core%20main.png', alt: 'Pogon Core electric bike main product photo' },
+      gallery: [
+        { src: '/Core%20main.png', alt: 'Pogon Core main product photo' },
+        { src: '/Core%201.png', alt: 'Pogon Core product photo 1' },
+        { src: '/Core%202.png', alt: 'Pogon Core product photo 2' },
+        { src: '/Core%203.png', alt: 'Pogon Core product photo 3' },
+      ],
       description: copy.coreDescription,
       monthlyPrice: '14,000 RSD',
       price: '140,000 RSD',
@@ -444,7 +459,12 @@ export default function App() {
       name: 'Cargo',
       badgeKey: 'newBadge' as const,
       badgeClass: 'bg-card text-foreground px-3 py-1 rounded-full text-xs font-bold uppercase border border-border',
-      image: { src: '/CargoCodifice.png', alt: 'Cargo bike' },
+      image: { src: '/Cargo%20Main.png', alt: 'Pogon Cargo electric bike main product photo' },
+      gallery: [
+        { src: '/Cargo%20Main.png', alt: 'Pogon Cargo main product photo' },
+        { src: '/Cargo%201.png', alt: 'Pogon Cargo product photo 1' },
+        { src: '/Cargo%202.png', alt: 'Pogon Cargo product photo 2' },
+      ],
       description: copy.cargoDescription,
       monthlyPrice: '12,000 RSD',
       price: '120,000 RSD',
@@ -469,6 +489,20 @@ export default function App() {
     },
   ];
 
+  const lightboxModel = bikeModels.find((model) => model.key === activeLightboxProduct);
+  const lightboxGallery = lightboxModel && 'gallery' in lightboxModel ? lightboxModel.gallery : undefined;
+  const lightboxIndex = lightboxModel ? activeGalleryImages[lightboxModel.key] ?? 0 : 0;
+  const lightboxImage = lightboxGallery?.[lightboxIndex];
+  const setLightboxImage = (index: number) => {
+    if (!lightboxModel || !lightboxGallery) return;
+    setActiveGalleryImages((current) => ({ ...current, [lightboxModel.key]: index }));
+    setIsLightboxZoomed(false);
+  };
+  const closeLightbox = () => {
+    setActiveLightboxProduct(null);
+    setIsLightboxZoomed(false);
+  };
+
   return (
     <div ref={pageRootRef} className="min-h-screen bg-background overflow-x-hidden sm:overflow-x-visible px-4 sm:px-0">
       <style>{`
@@ -482,6 +516,13 @@ export default function App() {
         }
         .review-marquee > * {
           flex: 0 0 auto;
+        }
+        @keyframes swipe-hint {
+          0%, 100% { transform: translateX(0); opacity: 0.7; }
+          50% { transform: translateX(0.9rem); opacity: 1; }
+        }
+        .swipe-hint-dot {
+          animation: swipe-hint 1.25s ease-in-out infinite;
         }
         @media (max-width: 639px) {
           .review-card {
@@ -643,13 +684,45 @@ export default function App() {
             </p>
           </div>
 
+          <div className="mb-4 flex items-center justify-center lg:hidden">
+            <div className="inline-flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 text-[0.65rem] font-bold uppercase tracking-[0.22em] text-foreground/70 shadow-sm">
+              <span aria-hidden="true">‹</span>
+              <span className="relative h-2 w-10 overflow-hidden rounded-full bg-foreground/10">
+                <span className="swipe-hint-dot absolute left-1 top-1/2 h-1.5 w-4 -translate-y-1/2 rounded-full bg-primary"></span>
+              </span>
+              <span aria-hidden="true">›</span>
+              <span>{lang === 'sr' ? 'Prevuci' : 'Drag'}</span>
+            </div>
+          </div>
+
           <div className="relative">
             <div
               ref={productScrollRef}
               onScroll={handleProductScroll}
               className="grid grid-flow-col auto-cols-[minmax(calc(100vw-5rem),calc(78vw))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-8 snap-x snap-mandatory scroll-smooth"
             >
-              {bikeModels.map((model) => (
+              {bikeModels.map((model) => {
+                const gallery = 'gallery' in model ? model.gallery : undefined;
+                const defaultGalleryIndex = gallery?.findIndex((image) => image.src === model.image.src) ?? -1;
+                const selectedGalleryIndex = gallery
+                  ? activeGalleryImages[model.key] ?? Math.max(defaultGalleryIndex, 0)
+                  : 0;
+                const setGalleryImage = (index: number) => {
+                  if (!gallery) return;
+                  setActiveGalleryImages((current) => ({ ...current, [model.key]: index }));
+                };
+                const selectedImage = gallery ? gallery[selectedGalleryIndex] : model.image;
+                const handleImagePanelClick = () => {
+                  if (gallery) {
+                    setActiveLightboxProduct(model.key);
+                    setIsLightboxZoomed(false);
+                    return;
+                  }
+
+                  setActiveSpecs(activeSpecs === model.key ? null : model.key);
+                };
+
+                return (
                 <div
                   key={model.key}
                   className={`group snap-center sm:snap-start min-w-[calc(66vw)] sm:min-w-[18rem] lg:min-w-auto overflow-hidden rounded-3xl transition-all duration-300 ${model.isFeatured ? 'bg-primary text-primary-foreground border-2 border-primary shadow-2xl hover:-translate-y-2 hover:shadow-2xl' : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2'}`}
@@ -657,24 +730,65 @@ export default function App() {
                 <div className="relative overflow-hidden rounded-t-3xl">
                   {model.isFeatured ? <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80"></div> : null}
                   <div
-                    className="aspect-[3/2] lg:aspect-[4/3] overflow-hidden relative bg-white cursor-pointer group lg:pointer-events-none"
-                    onClick={() => setActiveSpecs(activeSpecs === model.key ? null : model.key)}
+                    className="aspect-[3/2] lg:aspect-[4/3] overflow-hidden relative bg-black cursor-pointer group"
+                    onClick={handleImagePanelClick}
                   >
                     <ImageWithFallback
-                      src={model.image.src}
-                      alt={model.image.alt}
-                      className={model.key === 'glide' ? 
-                        'w-full h-full object-cover group-hover:scale-105 transition-transform duration-500' :
-                        'w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500'
-                      }
+                      src={selectedImage.src}
+                      alt={selectedImage.alt}
+                      loading="lazy"
+                      className="relative z-10 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className={`absolute top-4 right-4 ${model.badgeClass}`}>
+                    {gallery ? (
+                      <div className="absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 items-center justify-between">
+                        <button
+                          type="button"
+                          aria-label={`Previous ${model.name} photo`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setGalleryImage((selectedGalleryIndex - 1 + gallery.length) % gallery.length);
+                          }}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65"
+                        >
+                          ‹
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Next ${model.name} photo`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setGalleryImage((selectedGalleryIndex + 1) % gallery.length);
+                          }}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65"
+                        >
+                          ›
+                        </button>
+                      </div>
+                    ) : null}
+                    {gallery ? (
+                      <button
+                        type="button"
+                        aria-label={`Zoom ${model.name} photo`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setActiveLightboxProduct(model.key);
+                          setIsLightboxZoomed(false);
+                        }}
+                        className="absolute bottom-4 right-4 z-30 hidden h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65 sm:inline-flex"
+                      >
+                        <ZoomIn className="size-5" />
+                      </button>
+                    ) : null}
+                    <div className={`absolute top-4 right-4 z-20 ${model.badgeClass}`}>
                       {copy[model.badgeKey]}
                     </div>
-                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white text-sm lg:hidden">
-                      <div className="font-semibold">{copy.clickSpecs}</div>
+                    <div className="absolute inset-x-0 bottom-0 z-20 p-4 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white lg:hidden">
+                      <div className="text-2xl font-black leading-none">{model.name}</div>
+                      <div className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+                        {gallery ? `${selectedGalleryIndex + 1} / ${gallery.length}` : copy.clickSpecs}
+                      </div>
                     </div>
-                    <div className={`absolute inset-0 bg-black/90 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-300 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                    <div className={`absolute inset-0 z-30 bg-black/90 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-300 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
                       <div>
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-xs uppercase tracking-[0.35em] text-white/80">{ui.specs}</span>
@@ -695,6 +809,31 @@ export default function App() {
                       <div className="text-[0.75rem] text-white/70">{copy.clickHide}</div>
                     </div>
                   </div>
+                  {gallery ? (
+                    <div className="relative z-40 flex gap-2 overflow-x-auto border-t border-border bg-white p-2.5 shadow-inner">
+                      {gallery.map((image, index) => (
+                        <button
+                          key={image.src}
+                          type="button"
+                          aria-label={`Show ${model.name} photo ${index + 1}`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setGalleryImage(index);
+                          }}
+                          className={`aspect-square w-16 flex-none overflow-hidden rounded-2xl border bg-white p-1 shadow-sm ring-offset-2 ring-offset-white transition-all sm:w-20 ${
+                            selectedGalleryIndex === index ? 'border-primary ring-2 ring-primary' : 'border-border hover:border-primary/60 hover:ring-2 hover:ring-primary/30'
+                          }`}
+                        >
+                          <ImageWithFallback
+                            src={image.src}
+                            alt={image.alt}
+                            loading="lazy"
+                            className="h-full w-full rounded-xl object-cover object-center transition-transform duration-300 hover:scale-105"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="p-4 sm:p-6 lg:p-8">
                   <h3 className={`hidden lg:block text-2xl font-bold mb-2 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{model.name}</h3>
@@ -748,7 +887,8 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            ))}
+                );
+              })}
           </div>
           <div className="lg:hidden mt-4 px-6">
             <div className="flex items-center justify-between gap-3 text-foreground/70 text-xs uppercase tracking-[0.25em]">
@@ -989,6 +1129,116 @@ export default function App() {
           </motion.div>
         </div>
       </section>
+
+      {lightboxModel && lightboxGallery && lightboxImage ? (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col bg-black/95 text-white"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${lightboxModel.name} photo viewer`}
+          onClick={closeLightbox}
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-6">
+            <div>
+              <div className="text-lg font-black leading-none">{lightboxModel.name}</div>
+              <div className="mt-1 text-xs uppercase tracking-[0.25em] text-white/55">
+                {lightboxIndex + 1} / {lightboxGallery.length}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setIsLightboxZoomed((current) => !current);
+                }}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
+                aria-label={isLightboxZoomed ? 'Reset zoom' : 'Zoom image'}
+              >
+                <ZoomIn className="size-5" />
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  closeLightbox();
+                }}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
+                aria-label="Close photo viewer"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-5 sm:px-16">
+            <button
+              type="button"
+              aria-label={`Previous ${lightboxModel.name} photo`}
+              onClick={(event) => {
+                event.stopPropagation();
+                setLightboxImage((lightboxIndex - 1 + lightboxGallery.length) % lightboxGallery.length);
+              }}
+              className="absolute left-3 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white shadow-xl backdrop-blur-sm transition-colors hover:bg-white/20 sm:left-6"
+            >
+              <ChevronLeft className="size-6" />
+            </button>
+
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                setIsLightboxZoomed((current) => !current);
+              }}
+              className={`flex h-full w-full items-center justify-center overflow-auto rounded-2xl ${isLightboxZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
+              aria-label={isLightboxZoomed ? 'Reset zoom' : 'Zoom image'}
+            >
+              <ImageWithFallback
+                src={lightboxImage.src}
+                alt={lightboxImage.alt}
+                className={`h-full w-full object-cover object-center transition-transform duration-300 ${isLightboxZoomed ? 'scale-150' : 'scale-100'}`}
+              />
+            </button>
+
+            <button
+              type="button"
+              aria-label={`Next ${lightboxModel.name} photo`}
+              onClick={(event) => {
+                event.stopPropagation();
+                setLightboxImage((lightboxIndex + 1) % lightboxGallery.length);
+              }}
+              className="absolute right-3 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white shadow-xl backdrop-blur-sm transition-colors hover:bg-white/20 sm:right-6"
+            >
+              <ChevronRight className="size-6" />
+            </button>
+          </div>
+
+          <div className="border-t border-white/10 px-4 py-3 sm:px-6">
+            <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto">
+              {lightboxGallery.map((image, index) => (
+                <button
+                  key={`lightbox-${image.src}`}
+                  type="button"
+                  aria-label={`Show ${lightboxModel.name} photo ${index + 1}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setLightboxImage(index);
+                  }}
+                  className={`aspect-square w-16 flex-none overflow-hidden rounded-xl bg-white transition-all sm:w-20 ${
+                    lightboxIndex === index ? 'ring-2 ring-primary' : 'opacity-65 ring-1 ring-white/20 hover:opacity-100'
+                  }`}
+                >
+                  <ImageWithFallback
+                    src={image.src}
+                    alt={image.alt}
+                    className="h-full w-full object-cover object-center"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-8 sm:py-16 bg-muted/20">
