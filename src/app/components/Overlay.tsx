@@ -1,0 +1,108 @@
+'use client';
+
+import { ArrowRight } from 'lucide-react';
+import { motion, MotionValue, useMotionValue, useTransform } from 'motion/react';
+
+type HeroCopy = {
+  badge: string;
+  heroTitle: string;
+  heroSub: string;
+  heroPrimary: string;
+  heroSecondary: string;
+  range: string;
+  power: string;
+  topSpeed: string;
+  fromText: string;
+};
+
+type OverlayProps = {
+  scrollProgress?: MotionValue<number>;
+  copy?: HeroCopy;
+  buildWhatsappLink?: (text: string) => string;
+};
+
+const fallbackCopy: HeroCopy = {
+  badge: 'Pravljeno za ulice Srbije',
+  heroTitle: 'Pokreni se',
+  heroSub: 'Električni bicikli za grad, tempo i planove koji ne čekaju.',
+  heroPrimary: 'Pogledaj modele',
+  heroSecondary: 'Zakaži test vožnju',
+  range: 'Domet',
+  power: 'Snaga',
+  topSpeed: 'Maks. brzina',
+  fromText: 'od',
+};
+
+export function Overlay({ scrollProgress, copy = fallbackCopy, buildWhatsappLink }: OverlayProps) {
+  const fallbackProgress = useMotionValue(0);
+  const progress = scrollProgress ?? fallbackProgress;
+  const opacity = useTransform(progress, [0, 0.08, 0.86, 1], [1, 1, 0.94, 0.7]);
+  const badgeOpacity = useTransform(progress, [0, 0.05], [0, 1]);
+  const badgeY = useTransform(progress, [0, 0.05], [14, 0]);
+  const titleOpacity = useTransform(progress, [0.06, 0.16], [0, 1]);
+  const titleY = useTransform(progress, [0.06, 0.16], [18, 0]);
+  const copyOpacity = useTransform(progress, [0.15, 0.25], [0, 1]);
+  const copyY = useTransform(progress, [0.15, 0.25], [16, 0]);
+  const statsOpacity = useTransform(progress, [0.25, 0.38, 0.82, 1], [0, 1, 1, 0.58]);
+  const statsY = useTransform(progress, [0.25, 0.38], [18, 0]);
+  const ctaOpacity = useTransform(progress, [0.38, 0.5, 0.86, 1], [0, 1, 1, 0.65]);
+  const ctaY = useTransform(progress, [0.38, 0.5], [16, 0]);
+  const whatsappHref = buildWhatsappLink?.('Zanima me test vožnja za Pogon.') ?? '#modeli';
+
+  return (
+    <motion.div
+      style={{ opacity }}
+      className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-6 pt-20 text-white"
+    >
+      <motion.div
+        className="mx-auto flex w-full max-w-5xl flex-col items-center text-center"
+      >
+        <motion.div
+          style={{ opacity: badgeOpacity, y: badgeY }}
+          className="mb-5 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-black shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-xl"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-[#65c900]" />
+          {copy.badge}
+        </motion.div>
+        <motion.h1
+          style={{ opacity: titleOpacity, y: titleY }}
+          className="max-w-4xl text-7xl font-black uppercase leading-[0.88] tracking-normal text-white lg:text-8xl xl:text-9xl"
+        >
+          {copy.heroTitle}
+        </motion.h1>
+        <motion.p
+          style={{ opacity: copyOpacity, y: copyY }}
+          className="mt-7 max-w-xl text-lg font-light leading-relaxed text-white/72"
+        >
+          {copy.heroSub}
+        </motion.p>
+
+        <motion.div
+          style={{ opacity: statsOpacity, y: statsY }}
+          className="pointer-events-auto mt-10 grid w-full max-w-3xl grid-cols-3 gap-4 rounded-3xl border border-white/10 bg-black/30 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl"
+        >
+          {[
+            ['90km', copy.range],
+            [`${copy.fromText} 250w`, copy.power],
+            [`${copy.fromText} 25km/h`, copy.topSpeed],
+          ].map(([value, label]) => (
+            <div key={label} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5">
+              <div className="text-3xl font-black leading-none">{value}</div>
+              <div className="mt-2 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-white/45">{label}</div>
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.div style={{ opacity: ctaOpacity, y: ctaY }} className="pointer-events-auto mt-7 flex gap-3">
+          <a href="#modeli" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-black transition-transform hover:scale-[1.03]">
+            {copy.heroPrimary}
+            <ArrowRight className="size-4" />
+          </a>
+          <a href={whatsappHref} target={buildWhatsappLink ? '_blank' : undefined} rel={buildWhatsappLink ? 'noreferrer' : undefined} className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-xl transition-colors hover:bg-white/15">
+            {copy.heroSecondary}
+          </a>
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+}

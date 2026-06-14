@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
 import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ScrollyCanvas } from './components/ScrollyCanvas';
+import { Overlay } from './components/Overlay';
 
 const homeCopyEn = {
   heroTitle: 'Get moving',
@@ -75,6 +77,7 @@ export default function App() {
   const [lang, setLang] = useState<'en' | 'sr'>('sr');
   const [activeSpecs, setActiveSpecs] = useState<string | null>(null);
   const [activeProduct, setActiveProduct] = useState(0);
+  const [activeTechnologyCard, setActiveTechnologyCard] = useState<number | null>(null);
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
   const [activeLightboxProduct, setActiveLightboxProduct] = useState<string | null>(null);
   const [isLightboxZoomed, setIsLightboxZoomed] = useState(false);
@@ -310,25 +313,7 @@ export default function App() {
       window.clearTimeout(scrollLockTimeout.current);
     }
     scrollLockTimeout.current = window.setTimeout(() => {
-      if (window.matchMedia('(max-width: 1023px)').matches) {
-        updateActiveProduct();
-        const container = productScrollRef.current;
-        if (container) {
-          const children = Array.from(container.children) as HTMLElement[];
-          const center = container.scrollLeft + container.clientWidth / 2;
-          let nearestIndex = 0;
-          let nearestDistance = Infinity;
-          children.forEach((child, index) => {
-            const childCenter = child.offsetLeft + child.clientWidth / 2;
-            const distance = Math.abs(center - childCenter);
-            if (distance < nearestDistance) {
-              nearestDistance = distance;
-              nearestIndex = index;
-            }
-          });
-          snapToProduct(nearestIndex);
-        }
-      }
+      updateActiveProduct();
     }, 100);
   };
 
@@ -533,37 +518,43 @@ export default function App() {
         }
       `}</style>
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-xl border-b border-border/10">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-2.5">
-          <div className="w-full flex h-8 items-center justify-between gap-2 rounded-full border border-border/50 bg-background/95 px-2 shadow-[0_15px_40px_rgba(15,23,42,0.08)] sm:h-auto sm:py-1.5">
-            <a href="#top" className="inline-flex items-center sm:rounded-full sm:bg-white/95 sm:border sm:border-border/80 sm:p-1 sm:shadow-sm sm:transition-transform sm:hover:-translate-y-0.5">
-              <div className="flex items-center justify-center sm:h-8 sm:w-8 sm:rounded-full sm:bg-primary/10 sm:border sm:border-primary/20 lg:h-10 lg:w-10">
-                <img src="/Logo.png" alt="POGON" className="h-7 w-auto sm:h-6 lg:h-8" />
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent">
+        <div className="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-2.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-1.5">
+          <div className="w-full flex h-8 items-center justify-between gap-2 rounded-full border border-black/10 bg-white/90 px-2 shadow-[0_15px_40px_rgba(0,0,0,0.12)] backdrop-blur-md sm:h-auto sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:h-9 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
+            <a href="#top" aria-label="Back to home" className="inline-flex items-center rounded-full bg-white px-3 py-1 shadow-sm transition-transform hover:-translate-y-0.5 sm:px-4 sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
+              <div className="flex items-center justify-center">
+                <img src="/Logo.png" alt="POGON" className="h-7 w-auto opacity-100 sm:h-9 lg:h-10 [@media_(orientation:landscape)_and_(max-height:520px)]:h-6" />
               </div>
             </a>
 
-            <div className="hidden md:flex flex-1 items-center justify-center gap-4 text-xs uppercase tracking-wider text-foreground/70">
-              <a href="#modeli" className="transition-colors hover:text-foreground">{ui.navModels}</a>
-              <a href="#tehnologija" className="transition-colors hover:text-foreground">{ui.navTechnology}</a>
-              <a href="#iskustva" className="transition-colors hover:text-foreground">{ui.navReviews}</a>
+            <div className="hidden md:flex flex-1 items-center justify-center gap-4 text-xs uppercase tracking-wider text-black/65">
+              <a href="#modeli" className="transition-colors hover:text-black">{ui.navModels}</a>
+              <a href="#tehnologija" className="transition-colors hover:text-black">{ui.navTechnology}</a>
+              <a href="#iskustva" className="transition-colors hover:text-black">{ui.navReviews}</a>
             </div>
 
             <div className="hidden md:flex items-center gap-1.5">
-              <button className="inline-flex items-center justify-center bg-primary text-primary-foreground px-3 py-1 rounded-full hover:bg-primary/90 transition-all text-xs uppercase tracking-wider font-medium">{copy.buyNow}</button>
-              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>SR</button>
-              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>EN</button>
+              <button className="inline-flex items-center justify-center rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs font-medium uppercase tracking-wider text-black/75 transition-all hover:bg-black/10">{copy.buyNow}</button>
+              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SR</button>
+              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>EN</button>
             </div>
 
             <div className="flex items-center md:hidden gap-1">
-              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>SR</button>
-              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground/70 hover:text-foreground'}`}>EN</button>
+              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SR</button>
+              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>EN</button>
             </div>
           </div>
         </div>
       </nav>
 
+      <div className="hidden lg:block">
+        <ScrollyCanvas frameCount={60}>
+          <Overlay copy={copy} buildWhatsappLink={buildWhatsappLink} />
+        </ScrollyCanvas>
+      </div>
+
       {/* Hero Section */}
-      <section className="relative min-h-auto lg:min-h-[calc(100vh-5rem)] flex items-center justify-center overflow-hidden pt-10 sm:pt-14 lg:pt-20">
+      <section className="relative flex min-h-auto items-center justify-center overflow-hidden pt-10 sm:pt-14 lg:hidden">
         {/* Animated background */}
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/10"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(0,0,0,0.05)_0%,transparent_50%)]"></div>
@@ -674,8 +665,8 @@ export default function App() {
       </section>
 
       {/* Product Showcase */}
-      <section id="modeli" className="pt-12 pb-24 sm:pt-16 sm:pb-28 lg:py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 to-background"></div>
+      <section id="modeli" className="relative overflow-hidden bg-background pt-12 pb-24 text-foreground sm:pt-16 sm:pb-28 lg:py-32">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-accent/20"></div>
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-14 md:mb-20">
             <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4">{copy.premiumSeries}</div>
@@ -700,7 +691,7 @@ export default function App() {
             <div
               ref={productScrollRef}
               onScroll={handleProductScroll}
-              className="grid grid-flow-col auto-cols-[minmax(calc(100vw-5rem),calc(78vw))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-8 snap-x snap-mandatory scroll-smooth"
+              className="grid grid-flow-col auto-cols-[minmax(calc(100vw-5rem),calc(78vw))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-8 snap-x snap-mandatory overscroll-contain"
             >
               {bikeModels.map((model) => {
                 const gallery = 'gallery' in model ? model.gallery : undefined;
@@ -789,7 +780,7 @@ export default function App() {
                         {gallery ? `${selectedGalleryIndex + 1} / ${gallery.length}` : copy.clickSpecs}
                       </div>
                     </div>
-                    <div className={`absolute inset-0 z-30 bg-black/90 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-300 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                    <div className={`absolute inset-0 z-30 bg-black/95 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-200 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
                       <div>
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-xs uppercase tracking-[0.35em] text-white/80">{ui.specs}</span>
@@ -811,7 +802,7 @@ export default function App() {
                     </div>
                   </div>
                   {gallery ? (
-                    <div className="relative z-40 flex gap-2 overflow-x-auto border-t border-border bg-white p-2.5 shadow-inner">
+                    <div className="relative z-40 hidden sm:flex gap-2 overflow-x-auto border-t border-border bg-white p-2.5 shadow-inner">
                       {gallery.map((image, index) => (
                         <button
                           key={image.src}
@@ -928,7 +919,52 @@ export default function App() {
             <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4">{ui.innovation}</div>
             <h2 className="mx-auto max-w-[12ch] text-3xl font-black leading-[1.04] tracking-tight sm:text-4xl md:max-w-none md:text-6xl">{ui.technologyTitle}</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 gap-4 lg:hidden">
+            {[
+              { icon: Battery, card: ui.technologyCards[0] },
+              { icon: Zap, card: ui.technologyCards[1] },
+              { icon: Gauge, card: ui.technologyCards[2] },
+              { icon: Shield, card: ui.technologyCards[3] },
+            ].map(({ icon: Icon, card }, index) => {
+              const isActive = activeTechnologyCard === index;
+
+              return (
+                <motion.button
+                  key={card.title}
+                  type="button"
+                  initial={{ opacity: 0, y: 22, scale: 0.96 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.35 }}
+                  transition={{ duration: 0.45, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                  onClick={() => setActiveTechnologyCard(isActive ? null : index)}
+                  aria-expanded={isActive}
+                  className={`min-h-[13rem] rounded-3xl border p-5 text-left shadow-sm transition-all ${
+                    isActive ? 'border-primary/50 bg-card shadow-lg' : 'border-border bg-card'
+                  }`}
+                >
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5">
+                    <Icon className="size-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold leading-tight">{card.title}</h3>
+                  <motion.div
+                    initial={false}
+                    animate={{ height: isActive ? 'auto' : 0, opacity: isActive ? 1 : 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="overflow-hidden"
+                  >
+                    <p className="pt-4 text-sm leading-relaxed text-foreground/60">
+                      {card.body}
+                    </p>
+                  </motion.div>
+                  <div className="mt-4 text-[0.62rem] font-bold uppercase tracking-[0.22em] text-foreground/35">
+                    {isActive ? copy.close : copy.clickSpecs}
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+
+          <div className="hidden lg:grid lg:grid-cols-4 gap-4 sm:gap-6">
             <div className="bg-card p-10 rounded-3xl border border-border hover:border-primary/50 transition-all group">
               <div className="bg-gradient-to-br from-primary/20 to-primary/5 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Battery className="size-8 text-primary" />
