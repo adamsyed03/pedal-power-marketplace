@@ -864,14 +864,21 @@ export default function App() {
                         </div>
                       ))}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => openLeadModal(`purchase-${model.name}`)}
+                      className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full transition-all font-semibold uppercase text-[0.65rem] sm:text-sm tracking-wider lg:hidden ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                    >
+                      {copy.buyNow}
+                      <ArrowRight className="size-3" />
+                    </button>
                     <a
                       href={buildWhatsappLink(`Zanima me kupovina ${model.name} modela.`)}
                       target="_blank"
                       rel="noreferrer"
-                      className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full transition-all font-semibold uppercase text-[0.65rem] sm:text-sm tracking-wider ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90 lg:bg-primary-foreground lg:text-primary' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                      className={`hidden w-full items-center justify-center gap-2 py-3 rounded-full transition-all font-semibold uppercase text-sm tracking-wider lg:inline-flex ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                     >
                       {copy.buyNow}
-                      <ArrowRight className="size-3 lg:hidden" />
                     </a>
                     <button
                       type="button"
@@ -1353,7 +1360,12 @@ export default function App() {
         isOpen={leadModalSource !== null}
         lang={lang}
         source={leadModalSource ?? 'unknown'}
-        whatsappHref={buildWhatsappLink(lang === 'sr' ? 'Zdravo, želim da zakažem test vožnju.' : 'Hi, I want to book a test ride.')}
+        intent={leadModalSource?.startsWith('purchase-') ? 'purchase' : 'test-ride'}
+        whatsappHref={buildWhatsappLink(
+          leadModalSource?.startsWith('purchase-')
+            ? (lang === 'sr' ? `Zdravo, zanima me kupovina ${leadModalSource.replace('purchase-', '')} modela.` : `Hi, I am interested in buying the ${leadModalSource.replace('purchase-', '')} model.`)
+            : (lang === 'sr' ? 'Zdravo, želim da zakažem test vožnju.' : 'Hi, I want to book a test ride.')
+        )}
         onClose={closeLeadModal}
       />
     </div>
