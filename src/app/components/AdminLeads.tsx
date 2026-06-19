@@ -1,32 +1,57 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Check, Download, Lock, LogOut, RefreshCw, Users } from 'lucide-react';
-import { fetchLeads, Lead, signInAdmin, SUPABASE_ADMIN_EMAIL, updateLead } from '../../lib/supabase';
+import { AdminSession, fetchLeads, Lead, refreshAdminSession, signInAdmin, SUPABASE_ADMIN_EMAIL, updateLead } from '../../lib/supabase';
 
-const ADMIN_TOKEN_KEY = 'pogon_supabase_admin_token';
+const ADMIN_SESSION_KEY = 'pogon_supabase_admin_session';
 const escapeCsv = (value: string) => `"${String(value).replace(/"/g, '""')}"`;
 
+const readStoredSession = (): AdminSession | null => {
+  try {
+    const value = localStorage.getItem(ADMIN_SESSION_KEY);
+    return value ? JSON.parse(value) as AdminSession : null;
+  } catch {
+    localStorage.removeItem(ADMIN_SESSION_KEY);
+    return null;
+  }
+};
+
+const storeSession = (session: AdminSession) => {
+  localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(session));
+};
+
 export function AdminLeads() {
-  const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem(ADMIN_TOKEN_KEY) ?? '');
+  const [session, setSession] = useState<AdminSession | null>(readStoredSession);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [saveState, setSaveState] = useState<Record<string, 'saving' | 'saved' | 'error'>>({});
 
+  const getActiveSession = useCallback(async () => {
+    if (!session) throw new Error('No admin session.');
+    if (session.expires_at * 1000 > Date.now() + 60_000) return session;
+
+    const renewed = await refreshAdminSession(session.refresh_token);
+    storeSession(renewed);
+    setSession(renewed);
+    return renewed;
+  }, [session]);
+
   const refresh = useCallback(async () => {
-    if (!accessToken) return;
+    if (!session) return;
     setLoading(true);
     try {
-      setLeads(await fetchLeads(accessToken));
+      const activeSession = await getActiveSession();
+      setLeads(await fetchLeads(activeSession.access_token));
       setLoginError('');
     } catch {
-      sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-      setAccessToken('');
-      setLoginError('Session expired. Please log in again.');
+      localStorage.removeItem(ADMIN_SESSION_KEY);
+      setSession(null);
+      setLoginError('Your login could not be renewed. Please log in again.');
     } finally {
       setLoading(false);
     }
-  }, [accessToken]);
+  }, [getActiveSession, session]);
 
   useEffect(() => { void refresh(); }, [refresh]);
 
@@ -35,9 +60,9 @@ export function AdminLeads() {
     setLoading(true);
     setLoginError('');
     try {
-      const token = await signInAdmin(password);
-      sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
-      setAccessToken(token);
+      const newSession = await signInAdmin(password);
+      storeSession(newSession);
+      setSession(newSession);
       setPassword('');
     } catch {
       setLoginError('Incorrect password or the Supabase admin user has not been created yet.');
@@ -47,8 +72,8 @@ export function AdminLeads() {
   };
 
   const logout = () => {
-    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-    setAccessToken('');
+    localStorage.removeItem(ADMIN_SESSION_KEY);
+    setSession(null);
     setLeads([]);
   };
 
@@ -62,7 +87,8 @@ export function AdminLeads() {
   ) => {
     setSaveState((current) => ({ ...current, [id]: 'saving' }));
     try {
-      await updateLead(accessToken, id, changes);
+      const activeSession = await getActiveSession();
+      await updateLead(activeSession.access_token, id, changes);
       setSaveState((current) => ({ ...current, [id]: 'saved' }));
       window.setTimeout(() => setSaveState((current) => {
         const next = { ...current };
@@ -91,7 +117,7 @@ export function AdminLeads() {
     URL.revokeObjectURL(url);
   };
 
-  if (!accessToken) {
+  if (!session) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f4f4f2] p-4 text-[#111]">
         <section className="w-full max-w-sm rounded-3xl border border-black/10 bg-white p-7 shadow-xl sm:p-9">

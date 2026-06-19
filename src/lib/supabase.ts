@@ -16,6 +16,12 @@ export type Lead = {
   comment: string | null;
 };
 
+export type AdminSession = {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+};
+
 const request = async (path: string, init: RequestInit = {}, accessToken = SUPABASE_KEY) => {
   const response = await fetch(`${SUPABASE_URL}${path}`, {
     ...init,
@@ -43,13 +49,20 @@ export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at'>) => {
   });
 };
 
-export const signInAdmin = async (password: string) => {
+export const signInAdmin = async (password: string): Promise<AdminSession> => {
   const response = await request('/auth/v1/token?grant_type=password', {
     method: 'POST',
     body: JSON.stringify({ email: SUPABASE_ADMIN_EMAIL, password }),
   });
-  const session = await response.json();
-  return session.access_token as string;
+  return response.json() as Promise<AdminSession>;
+};
+
+export const refreshAdminSession = async (refreshToken: string): Promise<AdminSession> => {
+  const response = await request('/auth/v1/token?grant_type=refresh_token', {
+    method: 'POST',
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+  return response.json() as Promise<AdminSession>;
 };
 
 export const fetchLeads = async (accessToken: string) => {
