@@ -142,6 +142,13 @@ export function ScrollyCanvas({ children, frameCount = 60 }: ScrollyCanvasProps)
           className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500 ${isCanvasReady ? 'opacity-0' : 'opacity-100'}`}
         />
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+        <div className="pointer-events-none absolute bottom-[6%] right-[4%] z-[5] flex h-28 w-64 items-center justify-center rounded-2xl bg-black/75 shadow-lg backdrop-blur-sm sm:h-32 sm:w-72">
+          <img
+            src="/Logo.png"
+            alt="POGON"
+            className="h-full w-full scale-[1.35] object-contain brightness-0 invert"
+          />
+        </div>
         <div className="absolute inset-0 z-10">
           {overlay}
         </div>

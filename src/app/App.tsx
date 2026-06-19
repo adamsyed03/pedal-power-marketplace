@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
 import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ScrollyCanvas } from './components/ScrollyCanvas';
 import { Overlay } from './components/Overlay';
+import { LeadContactModal } from './components/LeadContactModal';
+import { AdminLeads } from './components/AdminLeads';
 
 const homeCopyEn = {
   heroTitle: 'Get moving',
@@ -81,6 +83,7 @@ export default function App() {
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
   const [activeLightboxProduct, setActiveLightboxProduct] = useState<string | null>(null);
   const [isLightboxZoomed, setIsLightboxZoomed] = useState(false);
+  const [leadModalSource, setLeadModalSource] = useState<string | null>(null);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
   const pageRootRef = useRef<HTMLDivElement | null>(null);
   const scrollLockTimeout = useRef<number | null>(null);
@@ -157,6 +160,8 @@ export default function App() {
       };
   const whatsappNumber = '381631505003';
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
+  const closeLeadModal = useCallback(() => setLeadModalSource(null), []);
+  const openLeadModal = (source: string) => setLeadModalSource(source);
   const footerSupportMessages = lang === 'sr'
     ? [
         'Zdravo, želim da zakažem test vožnju.',
@@ -489,6 +494,10 @@ export default function App() {
     setIsLightboxZoomed(false);
   };
 
+  if (new URLSearchParams(window.location.search).get('admin') === '1') {
+    return <AdminLeads />;
+  }
+
   return (
     <div ref={pageRootRef} className="min-h-screen bg-background overflow-x-hidden sm:overflow-x-visible px-4 sm:px-0">
       <style>{`
@@ -549,7 +558,7 @@ export default function App() {
 
       <div className="hidden lg:block">
         <ScrollyCanvas frameCount={60}>
-          <Overlay copy={copy} buildWhatsappLink={buildWhatsappLink} />
+          <Overlay copy={copy} onBookTestRide={() => openLeadModal('desktop-hero')} />
         </ScrollyCanvas>
       </div>
 
@@ -603,13 +612,11 @@ export default function App() {
                   {copy.heroPrimary}
                   <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                 </a>
-                <a href={buildWhatsappLink('Zanima me test vožnja za Pogon.')}
-                  target="_blank"
-                  rel="noreferrer"
+                <button type="button" onClick={() => openLeadModal('mobile-hero')}
                   className="w-full sm:w-auto inline-flex items-center justify-center border-2 border-border px-6 sm:px-8 py-3 rounded-full hover:bg-accent transition-all text-xs sm:text-sm uppercase tracking-wider font-semibold"
                 >
                   {copy.heroSecondary}
-                </a>
+                </button>
               </div>
 
               <div className="grid grid-cols-3 gap-3 pt-10 border-t border-border/50">
@@ -866,16 +873,15 @@ export default function App() {
                       {copy.buyNow}
                       <ArrowRight className="size-3 lg:hidden" />
                     </a>
-                    <a
-                      href={buildWhatsappLink('Zanima me test vožnja za Pogon.')}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => openLeadModal(`model-${model.name}`)}
                       className={`mt-2 w-full inline-flex items-center justify-center rounded-full border py-3 text-[0.65rem] font-semibold uppercase tracking-wider lg:hidden ${
                         model.isFeatured ? 'border-white/35 text-primary-foreground' : 'border-border text-foreground'
                       }`}
                     >
                       {copy.heroSecondary}
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1140,13 +1146,11 @@ export default function App() {
                 {copy.finalPrimary}
                 <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
               </a>
-              <a href={buildWhatsappLink('Zdravo, zainteresovan sam za dodatne informacije o Pogonu.')}
-                target="_blank"
-                rel="noreferrer"
+              <button type="button" onClick={() => openLeadModal('final-cta')}
                 className="inline-flex items-center justify-center border-2 border-border px-12 py-5 rounded-full hover:bg-accent transition-all text-base uppercase tracking-wider font-bold"
               >
                 {copy.finalSecondary}
-              </a>
+              </button>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-foreground/60">
@@ -1308,9 +1312,11 @@ export default function App() {
               <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-foreground/60">
                 {ui.footerSupportLinks.map((item, index) => (
                   <li key={item}>
-                    <a href={buildWhatsappLink(footerSupportMessages[index])} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">
-                      {item}
-                    </a>
+                    {index === 0 ? (
+                      <button type="button" onClick={() => openLeadModal('footer-test-ride')} className="hover:text-foreground transition-colors">{item}</button>
+                    ) : (
+                      <a href={buildWhatsappLink(footerSupportMessages[index])} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">{item}</a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -1342,6 +1348,14 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      <LeadContactModal
+        isOpen={leadModalSource !== null}
+        lang={lang}
+        source={leadModalSource ?? 'unknown'}
+        whatsappHref={buildWhatsappLink(lang === 'sr' ? 'Zdravo, želim da zakažem test vožnju.' : 'Hi, I want to book a test ride.')}
+        onClose={closeLeadModal}
+      />
     </div>
   );
 }

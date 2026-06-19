@@ -18,7 +18,7 @@ type HeroCopy = {
 type OverlayProps = {
   scrollProgress?: MotionValue<number>;
   copy?: HeroCopy;
-  buildWhatsappLink?: (text: string) => string;
+  onBookTestRide?: () => void;
 };
 
 const fallbackCopy: HeroCopy = {
@@ -33,7 +33,7 @@ const fallbackCopy: HeroCopy = {
   fromText: 'od',
 };
 
-export function Overlay({ scrollProgress, copy = fallbackCopy, buildWhatsappLink }: OverlayProps) {
+export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide }: OverlayProps) {
   const fallbackProgress = useMotionValue(0);
   const progress = scrollProgress ?? fallbackProgress;
   const opacity = useTransform(progress, [0, 0.08, 0.86, 1], [1, 1, 0.94, 0.7]);
@@ -47,8 +47,6 @@ export function Overlay({ scrollProgress, copy = fallbackCopy, buildWhatsappLink
   const statsY = useTransform(progress, [0.25, 0.38], [18, 0]);
   const ctaOpacity = useTransform(progress, [0.38, 0.5, 0.86, 1], [0, 1, 1, 0.65]);
   const ctaY = useTransform(progress, [0.38, 0.5], [16, 0]);
-  const whatsappHref = buildWhatsappLink?.('Zanima me test vožnja za Pogon.') ?? '#modeli';
-
   return (
     <motion.div
       style={{ opacity }}
@@ -98,9 +96,9 @@ export function Overlay({ scrollProgress, copy = fallbackCopy, buildWhatsappLink
             {copy.heroPrimary}
             <ArrowRight className="size-4" />
           </a>
-          <a href={whatsappHref} target={buildWhatsappLink ? '_blank' : undefined} rel={buildWhatsappLink ? 'noreferrer' : undefined} className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-xl transition-colors hover:bg-white/15">
+          <button type="button" onClick={onBookTestRide} className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-xl transition-colors hover:bg-white/15">
             {copy.heroSecondary}
-          </a>
+          </button>
         </motion.div>
       </motion.div>
     </motion.div>
