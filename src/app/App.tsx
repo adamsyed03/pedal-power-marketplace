@@ -83,6 +83,7 @@ export default function App() {
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
   const [activeLightboxProduct, setActiveLightboxProduct] = useState<string | null>(null);
   const [isLightboxZoomed, setIsLightboxZoomed] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
   const [leadModalSource, setLeadModalSource] = useState<string | null>(null);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
   const pageRootRef = useRef<HTMLDivElement | null>(null);
@@ -162,6 +163,14 @@ export default function App() {
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
   const closeLeadModal = useCallback(() => setLeadModalSource(null), []);
   const openLeadModal = (source: string) => setLeadModalSource(source);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const updateViewport = () => setIsDesktop(mediaQuery.matches);
+    updateViewport();
+    mediaQuery.addEventListener('change', updateViewport);
+    return () => mediaQuery.removeEventListener('change', updateViewport);
+  }, []);
   const footerSupportMessages = lang === 'sr'
     ? [
         'Zdravo, želim da zakažem test vožnju.',
@@ -380,12 +389,12 @@ export default function App() {
       name: 'Glide',
       badgeKey: 'bestSeller' as const,
       badgeClass: 'bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold uppercase',
-      image: { src: '/Glide%20main.png', alt: 'Pogon Glide electric bike main product photo' },
+      image: { src: '/Glide%20main.jpg', alt: 'Pogon Glide electric bike main product photo' },
       gallery: [
-        { src: '/Glide%20main.png', alt: 'Pogon Glide main product photo' },
-        { src: '/Glide%201.png', alt: 'Pogon Glide product photo 1' },
-        { src: '/Glide%202.png', alt: 'Pogon Glide product photo 2' },
-        { src: '/Glide%204.png', alt: 'Pogon Glide product photo 4' },
+        { src: '/Glide%20main.jpg', alt: 'Pogon Glide main product photo' },
+        { src: '/Glide%201.jpg', alt: 'Pogon Glide product photo 1' },
+        { src: '/Glide%202.jpg', alt: 'Pogon Glide product photo 2' },
+        { src: '/Glide%204.jpg', alt: 'Pogon Glide product photo 4' },
       ],
       description: copy.glideDescription,
       monthlyPrice: '17,000 RSD',
@@ -414,12 +423,12 @@ export default function App() {
       name: 'Core',
       badgeKey: 'recommended' as const,
       badgeClass: 'bg-primary-foreground text-primary px-3 py-1 rounded-full text-xs font-bold uppercase',
-      image: { src: '/Cargo%20Main.png', alt: 'Pogon Core electric bike main product photo' },
+      image: { src: '/Cargo%20Main.jpg', alt: 'Pogon Core electric bike main product photo' },
       gallery: [
-        { src: '/Cargo%20Main.png', alt: 'Pogon Core main product photo' },
-        { src: '/Cargo%20fold.png', alt: 'Pogon Core folded product photo' },
-        { src: '/Cargo%201.png', alt: 'Pogon Core product photo 1' },
-        { src: '/Cargo%202.png', alt: 'Pogon Core product photo 2' },
+        { src: '/Cargo%20Main.jpg', alt: 'Pogon Core main product photo' },
+        { src: '/Cargo%20fold.jpg', alt: 'Pogon Core folded product photo' },
+        { src: '/Cargo%201.jpg', alt: 'Pogon Core product photo 1' },
+        { src: '/Cargo%202.jpg', alt: 'Pogon Core product photo 2' },
       ],
       description: copy.coreDescription,
       monthlyPrice: '14,000 RSD',
@@ -449,12 +458,12 @@ export default function App() {
       name: 'Cargo',
       badgeKey: 'newBadge' as const,
       badgeClass: 'bg-card text-foreground px-3 py-1 rounded-full text-xs font-bold uppercase border border-border',
-      image: { src: '/Core%20main.png', alt: 'Pogon Cargo electric bike main product photo' },
+      image: { src: '/Core%20main.jpg', alt: 'Pogon Cargo electric bike main product photo' },
       gallery: [
-        { src: '/Core%20main.png', alt: 'Pogon Cargo main product photo' },
-        { src: '/Core%201.png', alt: 'Pogon Cargo product photo 1' },
-        { src: '/Core%202.png', alt: 'Pogon Cargo product photo 2' },
-        { src: '/Core%203.png', alt: 'Pogon Cargo product photo 3' },
+        { src: '/Core%20main.jpg', alt: 'Pogon Cargo main product photo' },
+        { src: '/Core%201.jpg', alt: 'Pogon Cargo product photo 1' },
+        { src: '/Core%202.jpg', alt: 'Pogon Cargo product photo 2' },
+        { src: '/Core%203.jpg', alt: 'Pogon Cargo product photo 3' },
       ],
       description: copy.cargoDescription,
       monthlyPrice: '12,000 RSD',
@@ -556,13 +565,16 @@ export default function App() {
         </div>
       </nav>
 
-      <div className="hidden lg:block">
+      {isDesktop && (
+      <div>
         <ScrollyCanvas frameCount={60}>
           <Overlay copy={copy} onBookTestRide={() => openLeadModal('desktop-hero')} />
         </ScrollyCanvas>
       </div>
+      )}
 
       {/* Hero Section */}
+      {!isDesktop && (
       <section className="relative flex min-h-auto items-center justify-center overflow-hidden pt-10 sm:pt-14 lg:hidden">
         {/* Animated background */}
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/10"></div>
@@ -650,7 +662,7 @@ export default function App() {
               <div className="absolute -inset-4 bg-gradient-to-br from-primary/30 via-primary/20 to-transparent rounded-[3rem] blur-3xl"></div>
               <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-border/50 shadow-2xl">
                 <ImageWithFallback
-                  src="/Excellent4.jpeg"
+                  src="/Excellent4.optimized.jpg"
                   alt="POGON e-bicikl"
                   className="w-full h-full object-cover"
                 />
@@ -670,6 +682,7 @@ export default function App() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Product Showcase */}
       <section id="modeli" className="relative overflow-hidden bg-background pt-12 pb-24 text-foreground sm:pt-16 sm:pb-28 lg:py-32">
@@ -1060,8 +1073,9 @@ export default function App() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="relative rounded-3xl overflow-hidden group aspect-[4/3]">
               <ImageWithFallback
-                src="/Excellent%202.png"
+                src="/Excellent%202.jpg"
                 alt="Urban ride"
+                loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
@@ -1074,8 +1088,9 @@ export default function App() {
 
             <div className="relative rounded-3xl overflow-hidden group aspect-[4/3]">
               <ImageWithFallback
-                src="/Excellent%203.png"
+                src="/Excellent%203.jpg"
                 alt="Freedom of movement"
+                loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">

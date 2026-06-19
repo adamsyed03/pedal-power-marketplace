@@ -178,7 +178,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
               </label>
               {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
               <button type="submit" disabled={!isFormValid} className="w-full rounded-full bg-white px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-black transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:scale-100">
-                {isSerbian ? 'Pozovite me' : 'Call me'}
+                {isSerbian ? 'Nastavi' : 'Continue'}
               </button>
               <p className="text-center text-[0.68rem] leading-relaxed text-white/30">
                 {isSerbian ? 'Vaše podatke koristimo samo da vas kontaktiramo u vezi sa Pogon biciklima.' : 'We only use your details to contact you about Pogon bikes.'}

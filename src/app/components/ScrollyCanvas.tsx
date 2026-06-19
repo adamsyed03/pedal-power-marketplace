@@ -10,7 +10,7 @@ type ScrollyCanvasProps = {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-const framePath = (index: number) => `/sequence/ezgif-frame-${String(index + 1).padStart(3, '0')}.png`;
+const framePath = (index: number) => `/sequence/ezgif-frame-${String(index + 1).padStart(3, '0')}.jpg`;
 
 export function ScrollyCanvas({ children, frameCount = 60 }: ScrollyCanvasProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -18,6 +18,7 @@ export function ScrollyCanvas({ children, frameCount = 60 }: ScrollyCanvasProps)
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const frameRequestRef = useRef(0);
   const currentFrameRef = useRef(0);
+  const targetFrameRef = useRef(0);
   const fallbackSrc = framePath(0);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const scrollProgress = useMotionValue(0);
@@ -78,28 +79,43 @@ export function ScrollyCanvas({ children, frameCount = 60 }: ScrollyCanvasProps)
     const frameIndex = Math.min(frameCount - 1, Math.floor(progress * (frameCount - 1)));
 
     scrollProgress.set(progress);
+    targetFrameRef.current = frameIndex;
     drawFrame(frameIndex);
   }, [drawFrame, frameCount, scrollProgress]);
 
   useEffect(() => {
     let cancelled = false;
+    let nextFrame = 1;
+    imagesRef.current = [];
 
-    frames.forEach((src, index) => {
+    const loadFrame = (index: number) => new Promise<void>((resolve) => {
+      const src = frames[index];
       const image = new Image();
       image.decoding = 'async';
-
+      image.fetchPriority = index === 0 ? 'high' : 'low';
       image.onload = () => {
-        if (cancelled) return;
-        imagesRef.current[index] = image;
-        if (index === 0) {
-          drawFrame(0);
-          window.requestAnimationFrame(() => drawFrame(0));
+        if (!cancelled) {
+          imagesRef.current[index] = image;
+          if (index === 0 || index === targetFrameRef.current) drawFrame(index);
         }
+        resolve();
       };
       image.onerror = () => {
         console.warn(`Failed to load scrolly frame: ${src}`);
+        resolve();
       };
       image.src = src;
+    });
+
+    const loadWorker = async () => {
+      while (!cancelled && nextFrame < frames.length) {
+        const index = nextFrame++;
+        await loadFrame(index);
+      }
+    };
+
+    void loadFrame(0).then(() => {
+      if (!cancelled) void Promise.all(Array.from({ length: 4 }, loadWorker));
     });
 
     return () => {
@@ -139,6 +155,7 @@ export function ScrollyCanvas({ children, frameCount = 60 }: ScrollyCanvasProps)
           src={fallbackSrc}
           alt=""
           aria-hidden="true"
+          fetchPriority="high"
           className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500 ${isCanvasReady ? 'opacity-0' : 'opacity-100'}`}
         />
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
