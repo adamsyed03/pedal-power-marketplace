@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Download, RefreshCw, Users } from 'lucide-react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { Download, Lock, LogOut, RefreshCw, Users } from 'lucide-react';
 
 type StoredLead = {
   id: string;
@@ -11,6 +11,8 @@ type StoredLead = {
 };
 
 const STORAGE_KEY = 'pogon_test_ride_leads';
+const ADMIN_SESSION_KEY = 'pogon_admin_authenticated';
+const ADMIN_PASSWORD = 'ide!pogon!';
 
 const readLeads = (): StoredLead[] => {
   try {
@@ -26,14 +28,36 @@ const readLeads = (): StoredLead[] => {
 const escapeCsv = (value: string) => `"${String(value).replace(/"/g, '""')}"`;
 
 export function AdminLeads() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [leads, setLeads] = useState<StoredLead[]>([]);
   const refresh = useCallback(() => setLeads(readLeads()), []);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     refresh();
     window.addEventListener('storage', refresh);
     return () => window.removeEventListener('storage', refresh);
-  }, [refresh]);
+  }, [isAuthenticated, refresh]);
+
+  const handleLogin = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (password !== ADMIN_PASSWORD) {
+      setLoginError('Incorrect password.');
+      return;
+    }
+    sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
+    setIsAuthenticated(true);
+    setPassword('');
+    setLoginError('');
+  };
+
+  const logout = () => {
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    setIsAuthenticated(false);
+    setLeads([]);
+  };
 
   const exportCsv = () => {
     const rows = [
@@ -59,6 +83,29 @@ export function AdminLeads() {
     URL.revokeObjectURL(url);
   };
 
+  if (!isAuthenticated) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#f4f4f2] p-4 text-[#111]">
+        <section className="w-full max-w-sm rounded-3xl border border-black/10 bg-white p-7 shadow-xl sm:p-9">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-black text-[#7fff00]">
+            <Lock className="size-5" />
+          </div>
+          <h1 className="mt-6 text-3xl font-black tracking-tight">Pogon Admin</h1>
+          <p className="mt-2 text-sm text-black/50">Enter the admin password to view test-ride leads.</p>
+          <form onSubmit={handleLogin} className="mt-7 space-y-4">
+            <label className="block text-xs font-bold uppercase tracking-wider text-black/55">
+              Password
+              <input autoFocus type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" className="mt-2 w-full rounded-xl border border-black/15 bg-black/[0.025] px-4 py-3 text-base font-normal normal-case tracking-normal outline-none transition-colors focus:border-black/50" />
+            </label>
+            {loginError && <p role="alert" className="text-sm font-medium text-red-600">{loginError}</p>}
+            <button type="submit" className="w-full rounded-full bg-black px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-white transition-transform hover:scale-[1.02]">Log in</button>
+          </form>
+          <a href="/" className="mt-6 block text-center text-sm font-bold text-black/40 hover:text-black">← Back to website</a>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#f4f4f2] px-4 py-8 text-[#111] sm:px-8 lg:px-12">
       <div className="mx-auto max-w-7xl">
@@ -77,6 +124,9 @@ export function AdminLeads() {
             </button>
             <button type="button" onClick={exportCsv} disabled={!leads.length} className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-35">
               <Download className="size-4" /> Export CSV
+            </button>
+            <button type="button" onClick={logout} aria-label="Log out" className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white px-4 py-3 text-sm font-bold transition-colors hover:bg-black/5">
+              <LogOut className="size-4" /> <span className="hidden sm:inline">Log out</span>
             </button>
           </div>
         </header>
