@@ -9,10 +9,11 @@ type ScrollyCanvasProps = {
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const sourceFrameCount = 60;
 
 const framePath = (index: number) => `/sequence/ezgif-frame-${String(index + 1).padStart(3, '0')}.jpg`;
 
-export function ScrollyCanvas({ children, frameCount = 60 }: ScrollyCanvasProps) {
+export function ScrollyCanvas({ children, frameCount = 30 }: ScrollyCanvasProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
@@ -23,7 +24,13 @@ export function ScrollyCanvas({ children, frameCount = 60 }: ScrollyCanvasProps)
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const scrollProgress = useMotionValue(0);
 
-  const frames = useMemo(() => Array.from({ length: frameCount }, (_, index) => framePath(index)), [frameCount]);
+  const frames = useMemo(
+    () => Array.from({ length: frameCount }, (_, index) => {
+      const sourceIndex = Math.round((index * (sourceFrameCount - 1)) / Math.max(1, frameCount - 1));
+      return framePath(sourceIndex);
+    }),
+    [frameCount],
+  );
 
   const sizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -85,6 +92,7 @@ export function ScrollyCanvas({ children, frameCount = 60 }: ScrollyCanvasProps)
 
   useEffect(() => {
     let cancelled = false;
+    let preloadTimer = 0;
     let nextFrame = 1;
     imagesRef.current = [];
 
@@ -115,11 +123,16 @@ export function ScrollyCanvas({ children, frameCount = 60 }: ScrollyCanvasProps)
     };
 
     void loadFrame(0).then(() => {
-      if (!cancelled) void Promise.all(Array.from({ length: 4 }, loadWorker));
+      if (!cancelled) {
+        preloadTimer = window.setTimeout(() => {
+          if (!cancelled) void Promise.all(Array.from({ length: 2 }, loadWorker));
+        }, 600);
+      }
     });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(preloadTimer);
     };
   }, [drawFrame, frames]);
 

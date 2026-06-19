@@ -552,7 +552,7 @@ export default function App() {
             </div>
 
             <div className="hidden md:flex items-center gap-1.5">
-              <button className="inline-flex items-center justify-center rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs font-medium uppercase tracking-wider text-black/75 transition-all hover:bg-black/10">{copy.buyNow}</button>
+              <button type="button" onClick={() => openLeadModal('purchase-general')} className="inline-flex items-center justify-center rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs font-medium uppercase tracking-wider text-black/75 transition-all hover:bg-black/10">{copy.buyNow}</button>
               <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SR</button>
               <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>EN</button>
             </div>
@@ -567,7 +567,7 @@ export default function App() {
 
       {isDesktop && (
       <div>
-        <ScrollyCanvas frameCount={60}>
+        <ScrollyCanvas frameCount={30}>
           <Overlay copy={copy} onBookTestRide={() => openLeadModal('desktop-hero')} />
         </ScrollyCanvas>
       </div>
@@ -880,19 +880,11 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => openLeadModal(`purchase-${model.name}`)}
-                      className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full transition-all font-semibold uppercase text-[0.65rem] sm:text-sm tracking-wider lg:hidden ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                      className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full transition-all font-semibold uppercase text-[0.65rem] sm:text-sm tracking-wider ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                     >
                       {copy.buyNow}
                       <ArrowRight className="size-3" />
                     </button>
-                    <a
-                      href={buildWhatsappLink(`Zanima me kupovina ${model.name} modela.`)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={`hidden w-full items-center justify-center gap-2 py-3 rounded-full transition-all font-semibold uppercase text-sm tracking-wider lg:inline-flex ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
-                    >
-                      {copy.buyNow}
-                    </a>
                     <button
                       type="button"
                       onClick={() => openLeadModal(`model-${model.name}`)}

@@ -1,5 +1,6 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, MessageCircle, Phone, X } from 'lucide-react';
+import { submitLead } from '../../lib/supabase';
 
 type LeadContactModalProps = {
   isOpen: boolean;
@@ -9,17 +10,6 @@ type LeadContactModalProps = {
   whatsappHref: string;
   onClose: () => void;
 };
-
-type StoredLead = {
-  id: string;
-  name: string;
-  phone: string;
-  source: string;
-  language: 'en' | 'sr';
-  createdAt: string;
-};
-
-const STORAGE_KEY = 'pogon_test_ride_leads';
 
 const getLocalPhoneDigits = (value: string) => {
   let digits = value.replace(/\D/g, '');
@@ -38,6 +28,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const phoneInputRef = useRef<HTMLInputElement | null>(null);
   const isSerbian = lang === 'sr';
   const isPurchase = intent === 'purchase';
@@ -52,6 +43,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
     setPhone('');
     setError('');
     setSubmitted(false);
+    setIsSubmitting(false);
     const handleEscape = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
@@ -59,7 +51,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
 
   if (!isOpen) return null;
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const cleanName = name.trim();
     const cleanPhone = `+381 ${formatLocalPhone(phone)}`;
@@ -69,23 +61,15 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
       return;
     }
 
-    const lead: StoredLead = {
-      id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      name: cleanName,
-      phone: cleanPhone,
-      source,
-      language: lang,
-      createdAt: new Date().toISOString(),
-    };
-
     try {
-      const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
-      const leads = Array.isArray(existing) ? existing : [];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...leads, lead]));
+      setIsSubmitting(true);
+      await submitLead({ name: cleanName, phone: cleanPhone, source, language: lang });
       setSubmitted(true);
       setError('');
     } catch {
       setError(isSerbian ? 'Čuvanje trenutno nije uspelo. Pokušajte putem WhatsApp-a.' : 'We could not save your details. Please try WhatsApp.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -177,8 +161,8 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                 </span>
               </label>
               {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
-              <button type="submit" disabled={!isFormValid} className="w-full rounded-full bg-white px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-black transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:scale-100">
-                {isSerbian ? 'Nastavi' : 'Continue'}
+              <button type="submit" disabled={!isFormValid || isSubmitting} className="w-full rounded-full bg-white px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-black transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:scale-100">
+                {isSubmitting ? (isSerbian ? 'Čuvanje…' : 'Saving…') : (isSerbian ? 'Nastavi' : 'Continue')}
               </button>
               <p className="text-center text-[0.68rem] leading-relaxed text-white/30">
                 {isSerbian ? 'Vaše podatke koristimo samo da vas kontaktiramo u vezi sa Pogon biciklima.' : 'We only use your details to contact you about Pogon bikes.'}
