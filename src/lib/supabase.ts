@@ -42,10 +42,13 @@ const request = async (path: string, init: RequestInit = {}, accessToken = SUPAB
 };
 
 export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at'>) => {
+  // Keep public submissions compatible with databases that have not yet had
+  // the optional CRM columns applied.
+  const { name, phone, source, language } = lead;
   await request('/rest/v1/leads', {
     method: 'POST',
     headers: { Prefer: 'return=minimal' },
-    body: JSON.stringify(lead),
+    body: JSON.stringify({ name, phone, source, language }),
   });
 };
 
