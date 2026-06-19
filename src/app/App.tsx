@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X } from 'lucide-react';
+import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X, MessageCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ScrollyCanvas } from './components/ScrollyCanvas';
 import { Overlay } from './components/Overlay';
@@ -85,6 +85,7 @@ export default function App() {
   const [isLightboxZoomed, setIsLightboxZoomed] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
   const [leadModalSource, setLeadModalSource] = useState<string | null>(null);
+  const [isContactWidgetOpen, setIsContactWidgetOpen] = useState(false);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
   const pageRootRef = useRef<HTMLDivElement | null>(null);
   const scrollLockTimeout = useRef<number | null>(null);
@@ -539,9 +540,10 @@ export default function App() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         <div className="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-2.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-1.5">
           <div className="w-full flex h-8 items-center justify-between gap-2 rounded-full border border-black/10 bg-white/90 px-2 shadow-[0_15px_40px_rgba(0,0,0,0.12)] backdrop-blur-md sm:h-auto sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:h-9 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
-            <a href="#top" aria-label="Back to home" className="inline-flex items-center rounded-full bg-white px-3 py-1 shadow-sm transition-transform hover:-translate-y-0.5 sm:px-4 sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
+            <a href="#top" aria-label="Back to home" className="relative inline-flex h-8 w-28 items-center rounded-full bg-white shadow-sm transition-transform hover:-translate-y-0.5 sm:h-auto sm:w-auto sm:px-4 sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
               <div className="flex items-center justify-center">
-                <img src="/Logo.png" alt="POGON" className="h-7 w-auto opacity-100 sm:h-9 lg:h-10 [@media_(orientation:landscape)_and_(max-height:520px)]:h-6" />
+                <img src="/Logo.png" alt="POGON" className="pointer-events-none absolute left-1/2 top-1/2 h-20 w-36 -translate-x-1/2 -translate-y-1/2 object-cover object-center sm:hidden" />
+                <img src="/Logo.png" alt="POGON" className="hidden h-9 w-auto opacity-100 sm:block lg:h-10 [@media_(orientation:landscape)_and_(max-height:520px)]:h-6" />
               </div>
             </a>
 
@@ -598,10 +600,10 @@ export default function App() {
 
               <div className="space-y-4">
                 {lang === 'sr' ? (
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[0.95] tracking-tight">
-                    Pokreni{' '}
-                    <span className="relative inline-block pb-2">
-                      se
+                  <h1 className="whitespace-nowrap text-[clamp(2.45rem,11.5vw,3.4rem)] sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-[0.9] tracking-[-0.06em] sm:leading-[0.95] sm:tracking-tight">
+                    <span>Pokreni</span>{' '}
+                    <span className="relative inline-block pb-2 tracking-[-0.04em] sm:tracking-tight">
+                      Se
                       <span className="absolute bottom-0 left-0 h-1 w-full bg-primary" aria-hidden="true"></span>
                     </span>
                   </h1>
@@ -1363,13 +1365,38 @@ export default function App() {
         </div>
       </footer>
 
+      <div className="fixed bottom-4 right-4 z-[70] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+        {isContactWidgetOpen && (
+          <div className="w-[min(20rem,calc(100vw-2rem))] rounded-3xl border border-black/10 bg-white p-5 text-black shadow-[0_24px_70px_rgba(0,0,0,0.2)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#65c900]">POGON</p>
+                <h3 className="mt-1 text-lg font-black">{lang === 'sr' ? 'Tu smo da pomognemo' : 'We’re here to help'}</h3>
+              </div>
+              <button type="button" onClick={() => setIsContactWidgetOpen(false)} aria-label={lang === 'sr' ? 'Zatvori' : 'Close'} className="rounded-full p-1.5 text-black/40 hover:bg-black/5 hover:text-black"><X className="size-4" /></button>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-black/55">{lang === 'sr' ? 'Razgovarajte sa Pogon stručnjakom i pronađite pravi bicikl za vas.' : 'Talk with a Pogon specialist and find the right bike for you.'}</p>
+            <button type="button" onClick={() => { setIsContactWidgetOpen(false); openLeadModal('specialist-contact'); }} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]">
+              <MessageCircle className="size-4 text-[#7fff00]" />
+              {lang === 'sr' ? 'Zakaži razgovor' : 'Book a call'}
+            </button>
+          </div>
+        )}
+        <button type="button" onClick={() => setIsContactWidgetOpen((current) => !current)} aria-expanded={isContactWidgetOpen} className="group inline-flex items-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-bold text-white shadow-[0_12px_35px_rgba(0,0,0,0.3)] transition-transform hover:scale-[1.04] sm:px-5">
+          <span className="flex size-8 items-center justify-center rounded-full bg-[#7fff00] text-black"><MessageCircle className="size-4" /></span>
+          <span>{lang === 'sr' ? 'Kontaktirajte nas' : 'Contact us'}</span>
+        </button>
+      </div>
+
       <LeadContactModal
         isOpen={leadModalSource !== null}
         lang={lang}
         source={leadModalSource ?? 'unknown'}
-        intent={leadModalSource?.startsWith('purchase-') ? 'purchase' : 'test-ride'}
+        intent={leadModalSource?.startsWith('purchase-') ? 'purchase' : leadModalSource === 'specialist-contact' ? 'consultation' : 'test-ride'}
         whatsappHref={buildWhatsappLink(
-          leadModalSource?.startsWith('purchase-')
+          leadModalSource === 'specialist-contact'
+            ? (lang === 'sr' ? 'Zdravo, želeo/la bih da razgovaram sa Pogon stručnjakom.' : 'Hi, I would like to speak with a Pogon specialist.')
+            : leadModalSource?.startsWith('purchase-')
             ? (lang === 'sr' ? `Zdravo, zanima me kupovina ${leadModalSource.replace('purchase-', '')} modela.` : `Hi, I am interested in buying the ${leadModalSource.replace('purchase-', '')} model.`)
             : (lang === 'sr' ? 'Zdravo, želim da zakažem test vožnju.' : 'Hi, I want to book a test ride.')
         )}

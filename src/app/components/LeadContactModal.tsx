@@ -6,7 +6,7 @@ type LeadContactModalProps = {
   isOpen: boolean;
   lang: 'en' | 'sr';
   source: string;
-  intent?: 'test-ride' | 'purchase';
+  intent?: 'test-ride' | 'purchase' | 'consultation';
   whatsappHref: string;
   onClose: () => void;
 };
@@ -32,6 +32,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
   const phoneInputRef = useRef<HTMLInputElement | null>(null);
   const isSerbian = lang === 'sr';
   const isPurchase = intent === 'purchase';
+  const isConsultation = intent === 'consultation';
   const isNameValid = name.trim().length >= 2;
   const localPhoneDigits = getLocalPhoneDigits(phone);
   const isPhoneValid = localPhoneDigits.length >= 8;
@@ -63,7 +64,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
 
     try {
       setIsSubmitting(true);
-      await submitLead({ name: cleanName, phone: cleanPhone, source, language: lang });
+      await submitLead({ name: cleanName, phone: cleanPhone, source, language: lang, city: null, country: null, date_contacted: null, comment: null });
       setSubmitted(true);
       setError('');
     } catch {
@@ -84,7 +85,9 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
           <div className="py-8 text-center">
             <CheckCircle2 className="mx-auto mb-5 size-12 text-[#7fff00]" />
             <h2 id="lead-modal-title" className="text-2xl font-black">{isSerbian ? 'Hvala!' : 'Thank you!'}</h2>
-            <p className="mt-3 text-white/65">{isPurchase
+            <p className="mt-3 text-white/65">{isConsultation
+              ? (isSerbian ? 'Naš stručnjak će vas uskoro kontaktirati.' : 'One of our specialists will contact you soon.')
+              : isPurchase
               ? (isSerbian ? 'Javićemo vam se uskoro sa svim informacijama o kupovini.' : 'We will call you soon with the purchase details.')
               : (isSerbian ? 'Javićemo vam se uskoro da dogovorimo test vožnju.' : 'We will call you soon to arrange your test ride.')}</p>
             <button type="button" onClick={onClose} className="mt-7 rounded-full bg-white px-7 py-3 text-sm font-bold uppercase tracking-wider text-black">
@@ -94,7 +97,9 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
         ) : (
           <>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7fff00]">POGON</p>
-            <h2 id="lead-modal-title" className="mt-2 pr-10 text-2xl font-black">{isPurchase
+            <h2 id="lead-modal-title" className="mt-2 pr-10 text-2xl font-black">{isConsultation
+              ? (isSerbian ? 'Zakažite razgovor sa stručnjakom' : 'Book a call with a specialist')
+              : isPurchase
               ? (isSerbian ? 'Zainteresovani ste za kupovinu?' : 'Interested in buying?')
               : (isSerbian ? 'Zakaži test vožnju' : 'Book a test ride')}</h2>
             <p className="mt-2 text-sm leading-relaxed text-white/60">{isSerbian ? 'Izaberite kako želite da vas kontaktiramo.' : 'Choose how you would like to get in touch.'}</p>

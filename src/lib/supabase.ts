@@ -10,6 +10,10 @@ export type Lead = {
   source: string;
   language: 'en' | 'sr';
   created_at: string;
+  city: string | null;
+  country: string | null;
+  date_contacted: string | null;
+  comment: string | null;
 };
 
 const request = async (path: string, init: RequestInit = {}, accessToken = SUPABASE_KEY) => {
@@ -50,9 +54,25 @@ export const signInAdmin = async (password: string) => {
 
 export const fetchLeads = async (accessToken: string) => {
   const response = await request(
-    '/rest/v1/leads?select=id,name,phone,source,language,created_at&order=created_at.desc',
+    '/rest/v1/leads?select=id,name,phone,source,language,created_at,city,country,date_contacted,comment&order=created_at.desc',
     { method: 'GET' },
     accessToken,
   );
   return response.json() as Promise<Lead[]>;
+};
+
+export const updateLead = async (
+  accessToken: string,
+  id: string,
+  changes: Partial<Pick<Lead, 'city' | 'country' | 'date_contacted' | 'comment'>>,
+) => {
+  await request(
+    `/rest/v1/leads?id=eq.${encodeURIComponent(id)}`,
+    {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify(changes),
+    },
+    accessToken,
+  );
 };

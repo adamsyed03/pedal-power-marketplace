@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { Download, Lock, LogOut, RefreshCw, Users } from 'lucide-react';
-import { fetchLeads, Lead, signInAdmin, SUPABASE_ADMIN_EMAIL } from '../../lib/supabase';
+import { Check, Download, Lock, LogOut, RefreshCw, Users } from 'lucide-react';
+import { fetchLeads, Lead, signInAdmin, SUPABASE_ADMIN_EMAIL, updateLead } from '../../lib/supabase';
 
 const ADMIN_TOKEN_KEY = 'pogon_supabase_admin_token';
 const escapeCsv = (value: string) => `"${String(value).replace(/"/g, '""')}"`;
@@ -11,6 +11,7 @@ export function AdminLeads() {
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [saveState, setSaveState] = useState<Record<string, 'saving' | 'saved' | 'error'>>({});
 
   const refresh = useCallback(async () => {
     if (!accessToken) return;
@@ -51,12 +52,34 @@ export function AdminLeads() {
     setLeads([]);
   };
 
+  const editLead = (id: string, changes: Partial<Lead>) => {
+    setLeads((current) => current.map((lead) => lead.id === id ? { ...lead, ...changes } : lead));
+  };
+
+  const saveLeadField = async (
+    id: string,
+    changes: Partial<Pick<Lead, 'city' | 'country' | 'date_contacted' | 'comment'>>,
+  ) => {
+    setSaveState((current) => ({ ...current, [id]: 'saving' }));
+    try {
+      await updateLead(accessToken, id, changes);
+      setSaveState((current) => ({ ...current, [id]: 'saved' }));
+      window.setTimeout(() => setSaveState((current) => {
+        const next = { ...current };
+        delete next[id];
+        return next;
+      }), 1800);
+    } catch {
+      setSaveState((current) => ({ ...current, [id]: 'error' }));
+    }
+  };
+
   const exportCsv = () => {
     const rows = [
-      ['Name', 'Phone', 'Date', 'Time', 'Source', 'Language'],
+      ['Name', 'Phone', 'Submitted date', 'Submitted time', 'City', 'Country', 'Date contacted', 'Comment', 'Source', 'Language'],
       ...leads.map((lead) => {
         const submitted = new Date(lead.created_at);
-        return [lead.name, lead.phone, submitted.toLocaleDateString('sr-RS'), submitted.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' }), lead.source, lead.language.toUpperCase()];
+        return [lead.name, lead.phone, submitted.toLocaleDateString('sr-RS'), submitted.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' }), lead.city ?? '', lead.country ?? '', lead.date_contacted ?? '', lead.comment ?? '', lead.source, lead.language.toUpperCase()];
       }),
     ];
     const csv = rows.map((row) => row.map(escapeCsv).join(',')).join('\n');
@@ -95,7 +118,7 @@ export function AdminLeads() {
         <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-black px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white"><Users className="size-4 text-[#7fff00]" />Admin</div>
-            <h1 className="text-4xl font-black tracking-tight sm:text-5xl">Customer leads</h1>
+            <h1 className="text-4xl font-black tracking-tight sm:text-5xl">Sales CRM</h1>
             <p className="mt-2 text-sm text-black/55">Shared Supabase database · {leads.length} {leads.length === 1 ? 'lead' : 'leads'}</p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -110,10 +133,20 @@ export function AdminLeads() {
             <div className="px-6 py-20 text-center"><Users className="mx-auto size-10 text-black/20" /><h2 className="mt-4 text-xl font-bold">No leads yet</h2><p className="mt-2 text-sm text-black/45">New submissions from every device will appear here.</p></div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] border-collapse text-left">
-                <thead><tr className="border-b border-black/10 bg-black/[0.025] text-[0.68rem] uppercase tracking-[0.16em] text-black/45"><th className="px-6 py-4">Name</th><th className="px-6 py-4">Phone number</th><th className="px-6 py-4">Date</th><th className="px-6 py-4">Time</th><th className="px-6 py-4">Source</th><th className="px-6 py-4">Language</th></tr></thead>
+              <table className="w-full min-w-[1480px] border-collapse text-left">
+                <thead><tr className="border-b border-black/10 bg-black/[0.025] text-[0.68rem] uppercase tracking-[0.16em] text-black/45"><th className="px-5 py-4">Name</th><th className="px-5 py-4">Phone</th><th className="px-5 py-4">Submitted</th><th className="px-5 py-4">City</th><th className="px-5 py-4">Country</th><th className="px-5 py-4">Date contacted</th><th className="px-5 py-4">Comment</th><th className="px-5 py-4">Source</th><th className="px-5 py-4">Save</th></tr></thead>
                 <tbody>{leads.map((lead) => { const submitted = new Date(lead.created_at); return (
-                  <tr key={lead.id} className="border-b border-black/[0.07] last:border-0 hover:bg-black/[0.02]"><td className="px-6 py-5 font-bold">{lead.name}</td><td className="px-6 py-5"><a href={`tel:${lead.phone}`} className="font-medium text-black/70 hover:text-black">{lead.phone}</a></td><td className="px-6 py-5 text-sm text-black/60">{submitted.toLocaleDateString('sr-RS')}</td><td className="px-6 py-5 text-sm text-black/60">{submitted.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</td><td className="px-6 py-5"><span className="rounded-full bg-black/5 px-3 py-1.5 text-xs text-black/60">{lead.source}</span></td><td className="px-6 py-5 text-xs font-bold text-black/45">{lead.language.toUpperCase()}</td></tr>
+                  <tr key={lead.id} className="border-b border-black/[0.07] align-top last:border-0 hover:bg-black/[0.02]">
+                    <td className="px-5 py-5"><div className="font-bold">{lead.name}</div><div className="mt-1 text-[0.65rem] font-bold text-black/35">{lead.language.toUpperCase()}</div></td>
+                    <td className="px-5 py-5"><a href={`tel:${lead.phone}`} className="font-medium text-black/70 hover:text-black">{lead.phone}</a></td>
+                    <td className="px-5 py-5 text-sm text-black/60"><div>{submitted.toLocaleDateString('sr-RS')}</div><div className="mt-1 text-xs text-black/35">{submitted.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</div></td>
+                    <td className="px-3 py-3"><input value={lead.city ?? ''} onChange={(event) => editLead(lead.id, { city: event.target.value })} onBlur={() => void saveLeadField(lead.id, { city: lead.city?.trim() || null })} placeholder="Add city" className="w-full rounded-xl border border-black/10 bg-black/[0.025] px-3 py-2.5 text-sm outline-none focus:border-black/30 focus:bg-white" /></td>
+                    <td className="px-3 py-3"><input value={lead.country ?? ''} onChange={(event) => editLead(lead.id, { country: event.target.value })} onBlur={() => void saveLeadField(lead.id, { country: lead.country?.trim() || null })} placeholder="Add country" className="w-full rounded-xl border border-black/10 bg-black/[0.025] px-3 py-2.5 text-sm outline-none focus:border-black/30 focus:bg-white" /></td>
+                    <td className="px-3 py-3"><input type="date" value={lead.date_contacted ?? ''} onChange={(event) => { editLead(lead.id, { date_contacted: event.target.value || null }); void saveLeadField(lead.id, { date_contacted: event.target.value || null }); }} className="w-full rounded-xl border border-black/10 bg-black/[0.025] px-3 py-2.5 text-sm outline-none focus:border-black/30 focus:bg-white" /></td>
+                    <td className="px-3 py-3"><textarea value={lead.comment ?? ''} onChange={(event) => editLead(lead.id, { comment: event.target.value })} onBlur={() => void saveLeadField(lead.id, { comment: lead.comment?.trim() || null })} placeholder="Add sales note…" rows={2} className="w-full min-w-64 resize-y rounded-xl border border-black/10 bg-black/[0.025] px-3 py-2.5 text-sm outline-none focus:border-black/30 focus:bg-white" /></td>
+                    <td className="px-5 py-5"><span className="rounded-full bg-black/5 px-3 py-1.5 text-xs text-black/60">{lead.source}</span></td>
+                    <td className="px-5 py-5 text-xs font-bold"><span className={`inline-flex items-center gap-1.5 ${saveState[lead.id] === 'error' ? 'text-red-600' : 'text-black/40'}`}>{saveState[lead.id] === 'saving' && <RefreshCw className="size-3.5 animate-spin" />}{saveState[lead.id] === 'saved' && <Check className="size-3.5 text-green-600" />}{saveState[lead.id] === 'saving' ? 'Saving' : saveState[lead.id] === 'saved' ? 'Saved' : saveState[lead.id] === 'error' ? 'Retry' : 'Auto'}</span></td>
+                  </tr>
                 ); })}</tbody>
               </table>
             </div>
