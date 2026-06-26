@@ -94,6 +94,7 @@ export default function App() {
   const [popupPhone, setPopupPhone] = useState('');
   const [popupSubmitted, setPopupSubmitted] = useState(false);
   const [popupSubmitting, setPopupSubmitting] = useState(false);
+  const [popupError, setPopupError] = useState('');
   const popupShownRef = useRef(false);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
   const pageRootRef = useRef<HTMLDivElement | null>(null);
@@ -493,11 +494,18 @@ export default function App() {
   const handlePopupSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const digits = popupPhone.replace(/\D/g, '').replace(/^0+/, '');
-    if (digits.length < 8) return;
+    if (digits.length < 6) {
+      setPopupError(lang === 'sr' ? 'Unesite ispravan broj telefona.' : 'Enter a valid phone number.');
+      return;
+    }
+    setPopupError('');
     setPopupSubmitting(true);
     try {
-      await submitLead({ name: 'Popup lead', phone: `+381${digits}`, source: 'lead-popup', language: lang, city: null, country: null, date_contacted: null, comment: null });
-    } catch { /* optimistic */ }
+      await Promise.race([
+        submitLead({ name: 'Popup lead', phone: `+381${digits}`, source: 'lead-popup', language: lang, city: null, country: null, date_contacted: null, comment: null }),
+        new Promise<void>((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000)),
+      ]);
+    } catch { /* show success regardless */ }
     setPopupSubmitting(false);
     setPopupSubmitted(true);
   };
@@ -675,76 +683,140 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+            transition={{ duration: 0.22 }}
+            className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center bg-black/75 backdrop-blur-md sm:p-4"
             onMouseDown={(e) => e.target === e.currentTarget && closeLeadPopup()}
           >
             <motion.div
-              initial={{ opacity: 0, y: 28, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16, scale: 0.97 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl sm:p-8"
+              initial={{ opacity: 0, y: 80 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 60 }}
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+              className="relative w-full max-w-sm overflow-hidden rounded-t-[2rem] bg-[#0c0c0c] shadow-[0_-20px_80px_rgba(0,0,0,0.7)] sm:rounded-[2rem] sm:shadow-[0_30px_90px_rgba(0,0,0,0.7)]"
             >
-              <button type="button" onClick={closeLeadPopup} aria-label={lang === 'sr' ? 'Zatvori' : 'Close'} className="absolute right-4 top-4 rounded-full p-2 text-black/35 hover:bg-black/5 hover:text-black transition-colors">
-                <X className="size-4" />
-              </button>
-              {popupSubmitted ? (
-                <div className="py-4 text-center">
-                  <CheckCircle2 className="mx-auto mb-3 size-10 text-primary" />
-                  <h2 className="text-xl font-black mb-2">{lang === 'sr' ? 'Hvala!' : 'Thank you!'}</h2>
-                  <p className="text-sm text-black/55">{lang === 'sr' ? 'Javljamo se uskoro.' : 'We\'ll be in touch soon.'}</p>
-                  <button type="button" onClick={closeLeadPopup} className="mt-5 rounded-full bg-black px-7 py-3 text-sm font-bold text-white uppercase tracking-wider">
-                    {lang === 'sr' ? 'Zatvori' : 'Close'}
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primary mb-2">POGON</p>
-                  <h2 className="text-2xl font-black mb-2">{lang === 'sr' ? 'Hoćeš test vožnju?' : 'Want a test ride?'}</h2>
-                  <p className="text-sm leading-relaxed text-black/55 mb-5">
-                    {lang === 'sr'
-                      ? 'Ostavi broj i pozvaćemo te da dogovorimo termin. Bez obaveze.'
-                      : 'Leave your number and we\'ll call to arrange a slot. No commitment.'}
-                  </p>
-                  <form onSubmit={handlePopupSubmit} className="space-y-3">
-                    <div className="flex items-center overflow-hidden rounded-xl border border-black/15 focus-within:border-primary transition-colors">
-                      <span className="pl-3 pr-2 text-sm font-semibold text-black/40 shrink-0 select-none">+381</span>
-                      <input
-                        type="tel"
-                        inputMode="numeric"
-                        autoComplete="tel-national"
-                        value={popupPhone}
-                        onChange={(e) => setPopupPhone(e.target.value)}
-                        placeholder={lang === 'sr' ? 'Broj telefona' : 'Phone number'}
-                        className="flex-1 py-3 pr-3 text-base outline-none bg-transparent placeholder:text-black/30"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={popupSubmitting}
-                      className="w-full rounded-full bg-black py-3.5 text-sm font-bold text-white uppercase tracking-wider disabled:opacity-50 hover:bg-black/85 active:scale-[0.98] transition-all"
-                    >
-                      {popupSubmitting ? '…' : (lang === 'sr' ? 'Pozovite me' : 'Call me')}
-                    </button>
-                  </form>
-                  <div className="relative my-4 flex items-center gap-3 text-[0.65rem] text-black/30">
-                    <div className="h-px flex-1 bg-black/10" />
-                    {lang === 'sr' ? 'ili' : 'or'}
-                    <div className="h-px flex-1 bg-black/10" />
-                  </div>
-                  <a
-                    href={whatsappHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => { handleWhatsappClick('popup'); closeLeadPopup(); }}
-                    className="flex items-center justify-center gap-2 w-full rounded-full bg-[#25D366] py-3.5 text-sm font-bold text-black uppercase tracking-wider hover:bg-[#22c55e] active:scale-[0.98] transition-all"
+              {/* Green top bar */}
+              <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-[#7fff00] to-transparent" />
+
+              <div className="px-6 pb-8 pt-6 sm:px-8">
+                <button
+                  type="button"
+                  onClick={closeLeadPopup}
+                  aria-label={lang === 'sr' ? 'Zatvori' : 'Close'}
+                  className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <X className="size-4" />
+                </button>
+
+                {popupSubmitted ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="py-8 text-center"
                   >
-                    <MessageCircle className="size-4" />
-                    {lang === 'sr' ? 'Piši nam na WhatsApp' : 'Message us on WhatsApp'}
-                  </a>
-                </>
-              )}
+                    <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#7fff00]/15 ring-1 ring-[#7fff00]/30">
+                      <CheckCircle2 className="size-8 text-[#7fff00]" />
+                    </div>
+                    <h2 className="text-2xl font-black text-white">{lang === 'sr' ? 'Hvala!' : 'Thank you!'}</h2>
+                    <p className="mt-2 text-sm text-white/40">{lang === 'sr' ? 'Javićemo ti se uskoro.' : "We'll be in touch soon."}</p>
+                    <button type="button" onClick={closeLeadPopup} className="mt-7 rounded-full border border-white/15 px-8 py-3 text-sm font-bold text-white/60 transition-colors hover:bg-white/5 hover:text-white">
+                      {lang === 'sr' ? 'Zatvori' : 'Close'}
+                    </button>
+                  </motion.div>
+                ) : (
+                  <>
+                    {/* Logo */}
+                    <motion.img
+                      src="/Logo.png"
+                      alt="POGON"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.08 }}
+                      className="mb-6 h-9 w-auto brightness-0 invert"
+                    />
+
+                    {/* Headline */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.13 }}
+                      className="mb-5"
+                    >
+                      <h2 className="text-[2rem] font-black leading-[1.1] text-white">
+                        {lang === 'sr' ? (
+                          <><span>Hoćeš</span><br /><span className="text-[#7fff00]">test vožnju?</span></>
+                        ) : (
+                          <><span>Want a</span><br /><span className="text-[#7fff00]">test ride?</span></>
+                        )}
+                      </h2>
+                      <p className="mt-2.5 text-sm leading-relaxed text-white/40">
+                        {lang === 'sr'
+                          ? 'Ostavi broj — pozvaćemo te da dogovorimo termin. Bez obaveze kupovine.'
+                          : "Leave your number — we'll call to arrange a slot. No purchase required."}
+                      </p>
+                    </motion.div>
+
+                    {/* Form */}
+                    <motion.form
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.18 }}
+                      onSubmit={handlePopupSubmit}
+                      noValidate
+                      className="space-y-2.5"
+                    >
+                      <div className={`flex items-center overflow-hidden rounded-2xl border bg-white/[0.06] transition-all ${popupError ? 'border-red-400/60' : 'border-white/10 focus-within:border-[#7fff00]/50'}`}>
+                        <span className="select-none pl-4 pr-1 text-sm font-bold text-white/25">+381</span>
+                        <span className="select-none text-white/10">|</span>
+                        <input
+                          type="tel"
+                          inputMode="numeric"
+                          autoComplete="tel-national"
+                          value={popupPhone}
+                          onChange={(e) => { setPopupPhone(e.target.value); setPopupError(''); }}
+                          placeholder={lang === 'sr' ? 'Broj telefona' : 'Phone number'}
+                          className="flex-1 bg-transparent py-4 pl-3 pr-4 text-base text-white outline-none placeholder:text-white/20"
+                        />
+                      </div>
+                      {popupError && <p className="text-xs text-red-400">{popupError}</p>}
+                      <button
+                        type="submit"
+                        disabled={popupSubmitting}
+                        className="w-full rounded-2xl bg-[#7fff00] py-4 text-sm font-black uppercase tracking-wider text-black transition-all hover:bg-[#b2ff4d] active:scale-[0.98] disabled:opacity-60"
+                      >
+                        {popupSubmitting ? '…' : (lang === 'sr' ? 'Pozovite me' : 'Call me')}
+                      </button>
+                    </motion.form>
+
+                    {/* Divider */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.23 }}
+                      className="my-4 flex items-center gap-3"
+                    >
+                      <div className="h-px flex-1 bg-white/8" />
+                      <span className="text-[0.6rem] font-bold uppercase tracking-widest text-white/20">{lang === 'sr' ? 'ili' : 'or'}</span>
+                      <div className="h-px flex-1 bg-white/8" />
+                    </motion.div>
+
+                    {/* WhatsApp */}
+                    <motion.a
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.25 }}
+                      href={whatsappHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => { handleWhatsappClick('popup'); closeLeadPopup(); }}
+                      className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 text-sm font-bold text-white/70 transition-all hover:bg-white/10 hover:text-white active:scale-[0.98]"
+                    >
+                      <MessageCircle className="size-4 text-[#25D366]" />
+                      {lang === 'sr' ? 'Piši nam na WhatsApp' : 'Message us on WhatsApp'}
+                    </motion.a>
+                  </>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -811,18 +883,20 @@ export default function App() {
 
       {/* Hero Section */}
       {!isDesktop && (
-      <section className="relative flex min-h-auto items-center justify-center overflow-hidden pt-10 sm:pt-14 lg:hidden">
-        {/* Animated background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/10"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(0,0,0,0.05)_0%,transparent_50%)]"></div>
+      <section className="relative flex items-center justify-center pt-10 pb-10 sm:pt-14 sm:pb-12 lg:hidden">
+        {/* Background — overflow clipped here only so absolute badges aren't clipped */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/10"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(0,0,0,0.05)_0%,transparent_50%)]"></div>
+        </div>
 
-        <div className="relative max-w-7xl mx-auto px-6 py-12 sm:py-16 lg:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-center">
+        <div className="relative w-full max-w-lg mx-auto px-5">
+          <div className="grid grid-cols-1 gap-8 items-center">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="space-y-6 text-center lg:text-left max-w-xl mx-auto lg:mx-0"
+              transition={{ duration: 0.4 }}
+              className="space-y-5 text-center"
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-full text-sm">
                 <span className="relative flex size-2">
@@ -834,9 +908,9 @@ export default function App() {
 
               <div className="space-y-4">
                 {lang === 'sr' ? (
-                  <h1 className="whitespace-nowrap text-[clamp(2.45rem,11.5vw,3.4rem)] sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-[0.9] tracking-[-0.06em] sm:leading-[0.95] sm:tracking-tight">
-                    <span>Pokreni</span>{' '}
-                    <span className="relative inline-block pb-2 tracking-[-0.04em] sm:tracking-tight">
+                  <h1 className="text-[clamp(2.1rem,13vw,3.4rem)] font-black uppercase leading-[0.9] tracking-[-0.05em]">
+                    <span>Pokreni </span>
+                    <span className="relative inline-block pb-2">
                       Se
                       <span className="absolute bottom-0 left-0 h-1 w-full bg-primary" aria-hidden="true"></span>
                     </span>
@@ -909,28 +983,24 @@ export default function App() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.42, delay: 0.1 }}
+              className="relative mt-2"
             >
-              <div className="absolute -inset-4 bg-gradient-to-br from-primary/30 via-primary/20 to-transparent rounded-[3rem] blur-3xl"></div>
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-border/50 shadow-2xl">
+              <div className="absolute -inset-3 bg-gradient-to-br from-primary/25 via-primary/15 to-transparent rounded-3xl blur-2xl pointer-events-none"></div>
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-border/50 shadow-xl">
                 <ImageWithFallback
                   src="/Excellent4.optimized.jpg"
                   alt="POGON e-bicikl"
+                  loading="eager"
                   className="w-full h-full object-cover"
                 />
-              </div>
-              {/* Floating badges */}
-              <div className="absolute -bottom-6 -left-6 bg-card border border-border rounded-2xl p-4 shadow-xl backdrop-blur-xl">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-3 rounded-xl">
-                    <Star className="size-6 fill-primary stroke-primary" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">4.9</div>
-                  </div>
+                {/* Rating badge — inside the image corner, no negative positioning */}
+                <div className="absolute bottom-3 left-3 flex items-center gap-2.5 rounded-xl bg-white/90 backdrop-blur-sm border border-border/30 px-3 py-2 shadow-lg">
+                  <Star className="size-4 fill-primary stroke-primary shrink-0" />
+                  <span className="text-sm font-black">4.9</span>
+                  <span className="text-xs text-foreground/50 font-medium">rating</span>
                 </div>
               </div>
             </motion.div>
