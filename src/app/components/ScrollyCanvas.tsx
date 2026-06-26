@@ -13,7 +13,7 @@ const sourceFrameCount = 60;
 
 const framePath = (index: number) => `/sequence/ezgif-frame-${String(index + 1).padStart(3, '0')}.jpg`;
 
-export function ScrollyCanvas({ children, frameCount = 30 }: ScrollyCanvasProps) {
+export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);

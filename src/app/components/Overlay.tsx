@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
+import { CalendarCheck, Phone } from 'lucide-react';
 import { motion, MotionValue, useMotionValue, useTransform } from 'motion/react';
 
 type HeroCopy = {
@@ -19,21 +19,23 @@ type OverlayProps = {
   scrollProgress?: MotionValue<number>;
   copy?: HeroCopy;
   onBookTestRide?: () => void;
+  phoneHref?: string;
+  onPhoneClick?: () => void;
 };
 
 const fallbackCopy: HeroCopy = {
   badge: 'Pravljeno za ulice Srbije',
   heroTitle: 'Pokreni se',
   heroSub: 'Električni bicikli za grad, tempo i planove koji ne čekaju.',
-  heroPrimary: 'Pogledaj modele',
-  heroSecondary: 'Zakaži test vožnju',
+  heroPrimary: 'Zakaži test vožnju',
+  heroSecondary: 'Pozovi nas',
   range: 'Domet',
   power: 'Snaga',
   topSpeed: 'Maks. brzina',
   fromText: 'od',
 };
 
-export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide }: OverlayProps) {
+export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide, phoneHref = 'tel:+381631505003', onPhoneClick }: OverlayProps) {
   const fallbackProgress = useMotionValue(0);
   const progress = scrollProgress ?? fallbackProgress;
   const opacity = useTransform(progress, [0, 0.08, 0.86, 1], [1, 1, 0.94, 0.7]);
@@ -92,13 +94,14 @@ export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide }:
         </motion.div>
 
         <motion.div style={{ opacity: ctaOpacity, y: ctaY }} className="pointer-events-auto mt-7 flex gap-3">
-          <a href="#modeli" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-black transition-transform hover:scale-[1.03]">
+          <button type="button" onClick={onBookTestRide} className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-black transition-transform hover:scale-[1.03] active:scale-[0.98]">
+            <CalendarCheck className="size-4" />
             {copy.heroPrimary}
-            <ArrowRight className="size-4" />
-          </a>
-          <button type="button" onClick={onBookTestRide} className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-xl transition-colors hover:bg-white/15">
-            {copy.heroSecondary}
           </button>
+          <a href={phoneHref} onClick={onPhoneClick} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-xl transition-colors hover:bg-white/15 active:scale-[0.98]">
+            <Phone className="size-4" />
+            {copy.heroSecondary}
+          </a>
         </motion.div>
       </motion.div>
     </motion.div>

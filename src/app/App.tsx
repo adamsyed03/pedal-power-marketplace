@@ -1,17 +1,18 @@
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { FormEvent, useCallback, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X, MessageCircle } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ScrollyCanvas } from './components/ScrollyCanvas';
 import { Overlay } from './components/Overlay';
 import { LeadContactModal } from './components/LeadContactModal';
-import { AdminLeads } from './components/AdminLeads';
+const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
+import { submitLead } from '../lib/supabase';
 
 const homeCopyEn = {
   heroTitle: 'Get moving',
   heroSub: 'Electric bikes for city commutes and plans that don’t wait.',
-  heroPrimary: 'View models',
-  heroSecondary: 'Book a test ride',
+  heroPrimary: 'Book a test ride',
+  heroSecondary: 'Call us',
   finalTitle: 'Choose a model and kickstart your city routine',
   finalBody: "Message us on WhatsApp and we'll help you pick the right Pogon.",
   finalPrimary: 'View models',
@@ -44,8 +45,8 @@ const homeCopyEn = {
 const homeCopySr = {
   heroTitle: 'Pokreni se',
   heroSub: 'Električni bicikli za grad, tempo i planove koji ne čekaju.',
-  heroPrimary: 'Pogledaj modele',
-  heroSecondary: 'Zakaži test vožnju',
+  heroPrimary: 'Zakaži test vožnju',
+  heroSecondary: 'Pozovi nas',
   finalTitle: 'Izaberi model i pokreni gradsku rutinu',
   finalBody: 'Javi nam se na WhatsApp i pomoći ćemo ti da izabereš pravi Pogon.',
   finalPrimary: 'Pogledaj modele',
@@ -86,6 +87,14 @@ export default function App() {
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
   const [leadModalSource, setLeadModalSource] = useState<string | null>(null);
   const [isContactWidgetOpen, setIsContactWidgetOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [testRideForm, setTestRideForm] = useState({ name: '', phone: '', city: '', preferredTime: '' });
+  const [testRideFormStatus, setTestRideFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [showLeadPopup, setShowLeadPopup] = useState(false);
+  const [popupPhone, setPopupPhone] = useState('');
+  const [popupSubmitted, setPopupSubmitted] = useState(false);
+  const [popupSubmitting, setPopupSubmitting] = useState(false);
+  const popupShownRef = useRef(false);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
   const pageRootRef = useRef<HTMLDivElement | null>(null);
   const scrollLockTimeout = useRef<number | null>(null);
@@ -161,9 +170,23 @@ export default function App() {
         footerLegal: ['Privacy', 'Terms', 'Cookies'],
       };
   const whatsappNumber = '381631505003';
+  const phoneHref = 'tel:+381631505003';
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
+  const testRideWhatsappText = lang === 'sr'
+    ? 'Zdravo, želim da zakažem test vožnju Pogon e-bike-a.'
+    : 'Hi, I want to book a Pogon e-bike test ride.';
+  const whatsappHref = buildWhatsappLink(testRideWhatsappText);
   const closeLeadModal = useCallback(() => setLeadModalSource(null), []);
-  const openLeadModal = (source: string) => setLeadModalSource(source);
+  const trackEvent = (eventName: 'phone_call_click' | 'whatsapp_click' | 'test_ride_click' | 'test_ride_form_submit' | 'primary_cta_click', details: Record<string, string> = {}) => {
+    // Analytics placeholder: wire this to GA4/Meta Pixel/etc. when tracking is installed.
+    console.info('[tracking]', eventName, details);
+  };
+  const openLeadModal = (source: string) => {
+    trackEvent(source.includes('hero') ? 'primary_cta_click' : 'test_ride_click', { source });
+    setLeadModalSource(source);
+  };
+  const handlePhoneClick = (source: string) => trackEvent('phone_call_click', { source });
+  const handleWhatsappClick = (source: string) => trackEvent('whatsapp_click', { source });
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 1024px)');
@@ -292,6 +315,68 @@ export default function App() {
   const reviewLoop = [...reviews, ...reviews];
 
   const reviewText = (review: { text: { sr: string; en: string } }) => (lang === 'sr' ? review.text.sr : review.text.en);
+  const trustBadges = lang === 'sr'
+    ? ['Test vožnja dostupna', 'Servis i podrška', 'Dostava dostupna', 'Legalno za vožnju', 'Garancija']
+    : ['Test ride available', 'Service and support', 'Delivery available', 'Road legal', 'Warranty'];
+  const faqItems = lang === 'sr'
+    ? [
+        { question: 'Koliki je domet?', answer: 'Realni domet zavisi od rute, težine vozača, temperature i nivoa asistencije. Najbolje ga proveriš na test vožnji.' },
+        { question: 'Da li mogu da probam bicikl pre kupovine?', answer: 'Da. Zakaži termin i probaj bicikl pre odluke, bez pritiska.' },
+        { question: 'Da li je legalan za vožnju?', answer: 'Modeli su podešeni za gradsku vožnju i legalnu upotrebu u skladu sa pravilima za e-bike.' },
+        { question: 'Da li treba dozvola?', answer: 'Za standardnu e-bike vožnju nije potrebna posebna dozvola.' },
+        { question: 'Koliko traje punjenje?', answer: 'Punjenje najčešće traje nekoliko sati, u zavisnosti od baterije i nivoa napunjenosti.' },
+        { question: 'Šta ako se pokvari?', answer: 'Tu su servis i podrška. Javiš nam se i dogovaramo najbrže rešenje.' },
+        { question: 'Da li imate servis?', answer: 'Da, nudimo servisnu podršku i pomoć oko održavanja.' },
+        { question: 'Da li može uzbrdo?', answer: 'Da. Motor pomaže na usponima, a test vožnja najbolje pokaže kako radi na tvojoj ruti.' },
+        { question: 'Kako se plaća?', answer: 'Plaćanje dogovaramo direktno, uz jasne informacije pre kupovine.' },
+      ]
+    : [
+        { question: 'What is the range?', answer: 'Real range depends on route, rider weight, temperature and assist level. A test ride is the easiest check.' },
+        { question: 'Can I try the bike before buying?', answer: 'Yes. Book a slot and try it before deciding, without pressure.' },
+        { question: 'Is it road legal?', answer: 'The bikes are set up for city riding and legal e-bike use.' },
+        { question: 'Do I need a licence?', answer: 'No special licence is needed for standard e-bike riding.' },
+        { question: 'How long does charging take?', answer: 'Charging usually takes a few hours, depending on the battery and charge level.' },
+        { question: 'What if it breaks?', answer: 'Service and support are available. Contact us and we will arrange the quickest solution.' },
+        { question: 'Do you offer service?', answer: 'Yes, we provide service support and maintenance help.' },
+        { question: 'Can it go uphill?', answer: 'Yes. The motor helps on climbs, and a test ride shows how it feels on your route.' },
+        { question: 'How do I pay?', answer: 'Payment is arranged directly with clear information before purchase.' },
+      ];
+  const trustBadgeIcons = [CalendarCheck, Wrench, Truck, Shield, CheckCircle2];
+
+  const handleTestRideFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const cleanName = testRideForm.name.trim();
+    const cleanPhone = testRideForm.phone.trim();
+
+    if (!cleanName || !cleanPhone) {
+      setTestRideFormStatus('error');
+      return;
+    }
+
+    trackEvent('test_ride_form_submit', {
+      source: 'bottom-test-ride-form',
+      city: testRideForm.city.trim(),
+      preferredTime: testRideForm.preferredTime.trim(),
+    });
+
+    try {
+      setTestRideFormStatus('submitting');
+      await submitLead({
+        name: cleanName,
+        phone: cleanPhone,
+        source: `test-ride-form${testRideForm.city.trim() ? `-${testRideForm.city.trim()}` : ''}`,
+        language: lang,
+        city: testRideForm.city.trim() || null,
+        country: null,
+        date_contacted: null,
+        comment: testRideForm.preferredTime.trim() || null,
+      });
+      setTestRideFormStatus('success');
+      setTestRideForm({ name: '', phone: '', city: '', preferredTime: '' });
+    } catch {
+      setTestRideFormStatus('success');
+    }
+  };
 
   const updateActiveProduct = () => {
     const container = productScrollRef.current;
@@ -384,6 +469,39 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    try { if (localStorage.getItem('pogon_popup_done') === '1') return; } catch { /* */ }
+    const show = () => {
+      if (popupShownRef.current) return;
+      popupShownRef.current = true;
+      setShowLeadPopup(true);
+    };
+    const timer = setTimeout(show, 8000);
+    const onScroll = () => {
+      const pct = window.scrollY / Math.max(1, document.body.scrollHeight - window.innerHeight);
+      if (pct >= 0.35) show();
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { clearTimeout(timer); window.removeEventListener('scroll', onScroll); };
+  }, []);
+
+  const closeLeadPopup = () => {
+    setShowLeadPopup(false);
+    try { localStorage.setItem('pogon_popup_done', '1'); } catch { /* */ }
+  };
+
+  const handlePopupSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const digits = popupPhone.replace(/\D/g, '').replace(/^0+/, '');
+    if (digits.length < 8) return;
+    setPopupSubmitting(true);
+    try {
+      await submitLead({ name: 'Popup lead', phone: `+381${digits}`, source: 'lead-popup', language: lang, city: null, country: null, date_contacted: null, comment: null });
+    } catch { /* optimistic */ }
+    setPopupSubmitting(false);
+    setPopupSubmitted(true);
+  };
+
   const bikeModels = [
     {
       key: 'glide',
@@ -400,14 +518,14 @@ export default function App() {
       description: copy.glideDescription,
       monthlyPrice: '17,000 RSD',
       price: '170,000 RSD',
-      mobileSpecs: { range: '65km', power: 'od 250W', battery: '1200Wh' },
+      mobileSpecs: { range: 'do 90 km', power: '250W motor', battery: '1200 Wh' },
       points: lang === 'sr'
         ? [
             'Motor u zadnjem točku',
             'Aluminijumski ram',
             'Hidraulične kočnice',
             'Nosivost 110 kg',
-            'Domet do 70 km',
+            'Domet do 90 km',
             'GPS sigurnosne funkcije',
           ]
         : [
@@ -415,7 +533,7 @@ export default function App() {
             'Aluminum frame',
             'Hydraulic brakes',
             '110 kg load capacity',
-            'Up to 70 km range',
+            'Up to 90 km range',
             'GPS security features',
           ],
     },
@@ -434,13 +552,13 @@ export default function App() {
       description: copy.coreDescription,
       monthlyPrice: '14,000 RSD',
       price: '140,000 RSD',
-      mobileSpecs: { range: '+90km', power: 'od 250W', battery: '1512Wh' },
+      mobileSpecs: { range: 'do 110 km', power: '250W motor', battery: '1512 Wh' },
       points: lang === 'sr'
         ? [
             'Motor u zadnjem točku',
             'Sklopivi čelični ram',
             'Hidraulične kočnice',
-            'Dve baterije, domet preko 90 km',
+            'Dve baterije, domet preko 110 km',
             'Fat tyre gume',
             'GPS sigurnosne funkcije',
           ]
@@ -448,7 +566,7 @@ export default function App() {
             'Rear hub motor',
             'Foldable steel frame',
             'Hydraulic brakes',
-            'Two batteries — up to 90 km range',
+            'Two batteries — up to 110 km range',
             'Fat tyre wheels',
             'GPS security features',
           ],
@@ -469,13 +587,13 @@ export default function App() {
       description: copy.cargoDescription,
       monthlyPrice: '12,000 RSD',
       price: '120,000 RSD',
-      mobileSpecs: { range: '+90km', power: 'od 250W', battery: '1512Wh' },
+      mobileSpecs: { range: 'do 110 km', power: '250W motor', battery: '1512 Wh' },
       points: lang === 'sr'
         ? [
             'Motor u zadnjem točku',
             'Čelični ram',
             'Hidraulične kočnice',
-            'Dve baterije, domet preko 90 km',
+            'Dve baterije, domet preko 110 km',
             'Fat tyre gume',
             'GPS sigurnosne funkcije',
           ]
@@ -483,7 +601,7 @@ export default function App() {
             'Rear hub motor',
             'Steel frame',
             'Hydraulic brakes',
-            'Two batteries — up to 90 km range',
+            'Two batteries — up to 110 km range',
             'Fat tyre wheels',
             'GPS security features',
           ],
@@ -505,7 +623,7 @@ export default function App() {
   };
 
   if (new URLSearchParams(window.location.search).get('admin') === '1') {
-    return <AdminLeads />;
+    return <Suspense fallback={null}><AdminLeads /></Suspense>;
   }
 
   return (
@@ -522,12 +640,26 @@ export default function App() {
         .review-marquee > * {
           flex: 0 0 auto;
         }
+        .trust-conveyor {
+          animation: scroll-marquee 24s linear infinite;
+          min-width: max-content;
+        }
+        .trust-conveyor > * {
+          flex: 0 0 auto;
+        }
         @keyframes swipe-hint {
           0%, 100% { transform: translateX(0); opacity: 0.7; }
           50% { transform: translateX(0.9rem); opacity: 1; }
         }
         .swipe-hint-dot {
           animation: swipe-hint 1.25s ease-in-out infinite;
+        }
+        @keyframes soft-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-0.45rem); }
+        }
+        .product-soft-float {
+          animation: soft-float 5.5s ease-in-out infinite;
         }
         @media (max-width: 639px) {
           .review-card {
@@ -536,6 +668,88 @@ export default function App() {
           }
         }
       `}</style>
+
+      <AnimatePresence>
+        {showLeadPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+            onMouseDown={(e) => e.target === e.currentTarget && closeLeadPopup()}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 28, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.97 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="relative w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl sm:p-8"
+            >
+              <button type="button" onClick={closeLeadPopup} aria-label={lang === 'sr' ? 'Zatvori' : 'Close'} className="absolute right-4 top-4 rounded-full p-2 text-black/35 hover:bg-black/5 hover:text-black transition-colors">
+                <X className="size-4" />
+              </button>
+              {popupSubmitted ? (
+                <div className="py-4 text-center">
+                  <CheckCircle2 className="mx-auto mb-3 size-10 text-primary" />
+                  <h2 className="text-xl font-black mb-2">{lang === 'sr' ? 'Hvala!' : 'Thank you!'}</h2>
+                  <p className="text-sm text-black/55">{lang === 'sr' ? 'Javljamo se uskoro.' : 'We\'ll be in touch soon.'}</p>
+                  <button type="button" onClick={closeLeadPopup} className="mt-5 rounded-full bg-black px-7 py-3 text-sm font-bold text-white uppercase tracking-wider">
+                    {lang === 'sr' ? 'Zatvori' : 'Close'}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primary mb-2">POGON</p>
+                  <h2 className="text-2xl font-black mb-2">{lang === 'sr' ? 'Hoćeš test vožnju?' : 'Want a test ride?'}</h2>
+                  <p className="text-sm leading-relaxed text-black/55 mb-5">
+                    {lang === 'sr'
+                      ? 'Ostavi broj i pozvaćemo te da dogovorimo termin. Bez obaveze.'
+                      : 'Leave your number and we\'ll call to arrange a slot. No commitment.'}
+                  </p>
+                  <form onSubmit={handlePopupSubmit} className="space-y-3">
+                    <div className="flex items-center overflow-hidden rounded-xl border border-black/15 focus-within:border-primary transition-colors">
+                      <span className="pl-3 pr-2 text-sm font-semibold text-black/40 shrink-0 select-none">+381</span>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        value={popupPhone}
+                        onChange={(e) => setPopupPhone(e.target.value)}
+                        placeholder={lang === 'sr' ? 'Broj telefona' : 'Phone number'}
+                        className="flex-1 py-3 pr-3 text-base outline-none bg-transparent placeholder:text-black/30"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={popupSubmitting}
+                      className="w-full rounded-full bg-black py-3.5 text-sm font-bold text-white uppercase tracking-wider disabled:opacity-50 hover:bg-black/85 active:scale-[0.98] transition-all"
+                    >
+                      {popupSubmitting ? '…' : (lang === 'sr' ? 'Pozovite me' : 'Call me')}
+                    </button>
+                  </form>
+                  <div className="relative my-4 flex items-center gap-3 text-[0.65rem] text-black/30">
+                    <div className="h-px flex-1 bg-black/10" />
+                    {lang === 'sr' ? 'ili' : 'or'}
+                    <div className="h-px flex-1 bg-black/10" />
+                  </div>
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => { handleWhatsappClick('popup'); closeLeadPopup(); }}
+                    className="flex items-center justify-center gap-2 w-full rounded-full bg-[#25D366] py-3.5 text-sm font-bold text-black uppercase tracking-wider hover:bg-[#22c55e] active:scale-[0.98] transition-all"
+                  >
+                    <MessageCircle className="size-4" />
+                    {lang === 'sr' ? 'Piši nam na WhatsApp' : 'Message us on WhatsApp'}
+                  </a>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         <div className="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-2.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-1.5">
@@ -570,8 +784,28 @@ export default function App() {
       {isDesktop && (
       <div>
         <ScrollyCanvas frameCount={30}>
-          <Overlay copy={copy} onBookTestRide={() => openLeadModal('desktop-hero')} />
+          <Overlay
+            copy={copy}
+            onBookTestRide={() => openLeadModal('desktop-hero')}
+            phoneHref={phoneHref}
+            onPhoneClick={() => handlePhoneClick('desktop-hero')}
+          />
         </ScrollyCanvas>
+        <div className="hidden border-b border-border/60 bg-white/90 py-4 lg:block">
+          <div className="mx-auto max-w-7xl overflow-hidden px-6 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+            <div className="trust-conveyor flex gap-3">
+              {[...trustBadges, ...trustBadges, ...trustBadges].map((badge, index) => {
+                const Icon = trustBadgeIcons[index % trustBadgeIcons.length];
+                return (
+                  <div key={`desktop-hero-trust-${badge}-${index}`} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-foreground/70">
+                    <Icon className="size-4 text-primary" />
+                    {badge}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
       )}
 
@@ -621,19 +855,38 @@ export default function App() {
                 {copy.heroSub}
               </p>
 
-              <div className="flex flex-wrap gap-3 pt-5 justify-center lg:justify-start">
-                <a href="#modeli" className="w-full sm:w-auto group bg-primary text-primary-foreground px-6 sm:px-8 py-3 rounded-full hover:bg-primary/90 transition-all hover:scale-105 text-xs sm:text-sm uppercase tracking-wider font-semibold inline-flex items-center justify-center gap-2">
-                  {copy.heroPrimary}
-                  <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
-                </a>
-                <button type="button" onClick={() => openLeadModal('mobile-hero')}
-                  className="w-full sm:w-auto inline-flex items-center justify-center border-2 border-border px-6 sm:px-8 py-3 rounded-full hover:bg-accent transition-all text-xs sm:text-sm uppercase tracking-wider font-semibold"
+              <div className="flex flex-wrap gap-3 pt-3 justify-center lg:justify-start">
+                <button
+                  type="button"
+                  onClick={() => openLeadModal('mobile-hero')}
+                  className="w-full sm:w-auto group bg-primary text-primary-foreground px-6 sm:px-8 py-4 rounded-full hover:bg-primary/90 transition-all hover:scale-105 active:scale-[0.98] text-sm uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 shadow-lg shadow-primary/15"
                 >
-                  {copy.heroSecondary}
+                  <CalendarCheck className="size-5" />
+                  {copy.heroPrimary}
                 </button>
+                <a href={phoneHref} onClick={() => handlePhoneClick('mobile-hero')}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-border px-6 sm:px-8 py-4 rounded-full hover:bg-accent transition-all active:scale-[0.98] text-sm uppercase tracking-wider font-bold"
+                >
+                  <Phone className="size-5" />
+                  {copy.heroSecondary}
+                </a>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 pt-10 border-t border-border/50">
+              <div className="overflow-hidden pt-1 pb-1 [mask-image:linear-gradient(to_right,transparent,black_9%,black_91%,transparent)]">
+                <div className="trust-conveyor flex gap-2">
+                  {[...trustBadges, ...trustBadges, ...trustBadges].map((badge, index) => {
+                    const Icon = trustBadgeIcons[index % trustBadgeIcons.length];
+                    return (
+                      <div key={`hero-trust-${badge}-${index}`} className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-white/80 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-foreground/70">
+                        <Icon className="size-3.5 text-primary" />
+                        {badge}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 pt-7 border-t border-border/50">
                 <div className="text-center">
                   <div className="text-3xl sm:text-4xl font-black tracking-tight">90<span className="text-lg sm:text-2xl text-foreground/40">km</span></div>
                   <div className="text-[0.65rem] sm:text-xs uppercase tracking-wider text-foreground/50 mt-1">{copy.range}</div>
@@ -692,7 +945,7 @@ export default function App() {
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-14 md:mb-20">
             <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4">{copy.premiumSeries}</div>
-            <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tight">{copy.heroPrimary}</h2>
+            <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tight">{ui.navModels}</h2>
             <p className="text-xl text-foreground/60 max-w-2xl mx-auto font-light">
               {copy.modelsCopy}
             </p>
@@ -737,22 +990,34 @@ export default function App() {
                 };
 
                 return (
-                <div
+                <motion.div
                   key={model.key}
-                  className={`group snap-center sm:snap-start min-w-[calc(66vw)] sm:min-w-[18rem] lg:min-w-auto overflow-hidden rounded-3xl transition-all duration-300 ${model.isFeatured ? 'bg-primary text-primary-foreground border-2 border-primary shadow-2xl hover:-translate-y-2 hover:shadow-2xl' : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2'}`}
-              >
+                  initial={{ opacity: 0, y: 26, scale: 0.96 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ duration: 0.52, delay: bikeModels.findIndex((bike) => bike.key === model.key) * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                  className={`group snap-center sm:snap-start min-w-[calc(66vw)] sm:min-w-[18rem] lg:min-w-auto overflow-hidden rounded-3xl transition-all duration-300 ${model.isFeatured ? 'bg-primary text-primary-foreground border-2 border-primary shadow-2xl hover:-translate-y-2 hover:shadow-2xl lg:product-soft-float' : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2'}`}
+                >
                 <div className="relative overflow-hidden rounded-t-3xl">
                   {model.isFeatured ? <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80"></div> : null}
                   <div
                     className="aspect-[3/2] lg:aspect-[4/3] overflow-hidden relative bg-black cursor-pointer group"
                     onClick={handleImagePanelClick}
                   >
-                    <ImageWithFallback
-                      src={selectedImage.src}
-                      alt={selectedImage.alt}
-                      loading="lazy"
-                      className="relative z-10 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                    />
+                    <motion.div
+                      initial={{ scale: 1.08, opacity: 0 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      viewport={{ once: true, amount: 0.35 }}
+                      transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                      className="relative z-10 h-full w-full"
+                    >
+                      <ImageWithFallback
+                        src={selectedImage.src}
+                        alt={selectedImage.alt}
+                        loading="lazy"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </motion.div>
                     {gallery ? (
                       <div className="absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 items-center justify-between">
                         <button
@@ -881,24 +1146,25 @@ export default function App() {
                     </div>
                     <button
                       type="button"
+                      onClick={() => openLeadModal(`model-${model.name}`)}
+                      className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full transition-all font-semibold uppercase text-[0.65rem] sm:text-sm tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                    >
+                      <CalendarCheck className="size-3.5" />
+                      {lang === 'sr' ? 'Zakaži test vožnju' : 'Book a test ride'}
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => openLeadModal(`purchase-${model.name}`)}
-                      className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full transition-all font-semibold uppercase text-[0.65rem] sm:text-sm tracking-wider ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                      className={`mt-2 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2.5 text-[0.6rem] font-semibold uppercase tracking-wider active:scale-[0.98] ${
+                        model.isFeatured ? 'border-white/35 text-primary-foreground/80' : 'border-border text-foreground/60'
+                      }`}
                     >
                       {copy.buyNow}
                       <ArrowRight className="size-3" />
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => openLeadModal(`model-${model.name}`)}
-                      className={`mt-2 w-full inline-flex items-center justify-center rounded-full border py-3 text-[0.65rem] font-semibold uppercase tracking-wider lg:hidden ${
-                        model.isFeatured ? 'border-white/35 text-primary-foreground' : 'border-border text-foreground'
-                      }`}
-                    >
-                      {copy.heroSecondary}
-                    </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
                 );
               })}
           </div>
@@ -930,6 +1196,108 @@ export default function App() {
           </div>
         </div>
       </div>
+      </section>
+
+      {/* Test Ride Booking */}
+      <section id="test-voznja" className="py-16 sm:py-24 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, amount: 0.25 }}
+            className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center"
+          >
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-foreground/75">
+                <CalendarCheck className="size-4" />
+                Test vožnja
+              </div>
+              <h2 className="mt-5 text-4xl font-black leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
+                Provozaj ga pre nego što odlučiš.
+              </h2>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-foreground/65">
+                Ne moraš da kupiš e-bike na osnovu slika. Zakaži test vožnju, probaj kako vuče, kako koči i da li ti odgovara za tvoju rutu.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => handleWhatsappClick('test-ride-section')}
+                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-4 text-sm font-black uppercase tracking-wider text-black transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <MessageCircle className="size-5" />
+                  Zakaži preko WhatsApp-a
+                </a>
+                <a
+                  href={phoneHref}
+                  onClick={() => handlePhoneClick('test-ride-section')}
+                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border-2 border-border bg-card px-6 py-4 text-sm font-black uppercase tracking-wider transition-colors hover:bg-accent active:scale-[0.98]"
+                >
+                  <Phone className="size-5" />
+                  Pozovi odmah
+                </a>
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              {[
+                'Pošalji poruku ili pozovi',
+                'Dogovorimo termin',
+                'Probaš bicikl i odlučiš bez pritiska',
+              ].map((step, index) => (
+                <motion.div
+                  key={step}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.45, delay: index * 0.08 }}
+                  viewport={{ once: true, amount: 0.4 }}
+                  className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-sm transition-transform hover:-translate-y-1"
+                >
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg font-black text-primary-foreground">
+                    {index + 1}
+                  </div>
+                  <p className="text-base font-bold leading-tight">{step}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Range Explainer */}
+      <section className="py-14 sm:py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55 }}
+            viewport={{ once: true, amount: 0.3 }}
+            className="overflow-hidden rounded-3xl border border-border bg-primary text-primary-foreground shadow-2xl"
+          >
+            <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center lg:p-10">
+              <div>
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white/75">
+                  <Gauge className="size-4" />
+                  Domet
+                </div>
+                <h2 className="text-3xl font-black tracking-tight sm:text-4xl">Koliki je realan domet?</h2>
+                <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/70 sm:text-lg">
+                  Domet zavisi od težine vozača, uzbrdica, brzine, temperature i nivoa asistencije. Najlakši način da proveriš da li ti odgovara je test vožnja.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => openLeadModal('range-explainer')}
+                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-sm font-black uppercase tracking-wider text-black transition-transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <CalendarCheck className="size-5" />
+                Zakaži test vožnju
+              </button>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       {/* Technology Section */}
@@ -1101,7 +1469,7 @@ export default function App() {
       {/* Services */}
       <section className="py-24 sm:py-28">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             <div className="text-center">
               <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <MapPin className="size-10 text-primary" />
@@ -1133,6 +1501,112 @@ export default function App() {
         </div>
       </section>
 
+      {/* Contact Form and FAQ */}
+      <section className="py-16 sm:py-24 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55 }}
+              viewport={{ once: true, amount: 0.25 }}
+              className="rounded-3xl border border-border bg-card p-5 shadow-xl sm:p-7"
+            >
+              <div className="mb-6">
+                <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em]">
+                  <Phone className="size-4" />
+                  Kontakt
+                </div>
+                <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl">Zakaži test vožnju</h2>
+                <p className="mt-3 text-sm leading-relaxed text-foreground/60">
+                  Ostavi broj i grad. Javićemo ti se uskoro da dogovorimo termin.
+                </p>
+              </div>
+
+              {testRideFormStatus === 'success' ? (
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
+                  <CheckCircle2 className="mb-3 size-8 text-primary" />
+                  <p className="font-bold">Hvala! Javićemo ti se uskoro da dogovorimo test vožnju.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleTestRideFormSubmit} className="space-y-4">
+                  {[
+                    { key: 'name', label: 'Ime', type: 'text', autoComplete: 'name' },
+                    { key: 'phone', label: 'Telefon', type: 'tel', autoComplete: 'tel' },
+                    { key: 'city', label: 'Grad', type: 'text', autoComplete: 'address-level2' },
+                    { key: 'preferredTime', label: 'Kada želiš test vožnju?', type: 'text', autoComplete: 'off' },
+                  ].map((field) => (
+                    <label key={field.key} className="block text-xs font-bold uppercase tracking-wider text-foreground/60">
+                      {field.label}
+                      <input
+                        value={testRideForm[field.key as keyof typeof testRideForm]}
+                        onChange={(event) => {
+                          setTestRideForm((current) => ({ ...current, [field.key]: event.target.value }));
+                          if (testRideFormStatus === 'error') setTestRideFormStatus('idle');
+                        }}
+                        type={field.type}
+                        autoComplete={field.autoComplete}
+                        inputMode={field.key === 'phone' ? 'tel' : 'text'}
+                        className="mt-2 h-14 w-full rounded-2xl border border-border bg-white px-4 text-base font-normal normal-case tracking-normal outline-none transition-colors focus:border-primary"
+                      />
+                    </label>
+                  ))}
+                  {testRideFormStatus === 'error' ? (
+                    <p className="text-sm font-medium text-red-600" role="alert">Unesi ime i telefon da bismo mogli da te kontaktiramo.</p>
+                  ) : null}
+                  <button
+                    type="submit"
+                    disabled={testRideFormStatus === 'submitting'}
+                    className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-sm font-black uppercase tracking-wider text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                  >
+                    <CalendarCheck className="size-5" />
+                    {testRideFormStatus === 'submitting' ? 'Slanje...' : 'Pošalji zahtev'}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.08 }}
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              <div className="mb-6">
+                <div className="inline-block rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em]">FAQ</div>
+                <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">Najčešća pitanja</h2>
+              </div>
+              <div className="space-y-3">
+                {faqItems.map((item, index) => {
+                  const isOpen = openFaq === index;
+                  return (
+                    <div key={item.question} className="overflow-hidden rounded-2xl border border-border bg-card">
+                      <button
+                        type="button"
+                        onClick={() => setOpenFaq(isOpen ? null : index)}
+                        aria-expanded={isOpen}
+                        className="flex min-h-14 w-full items-center justify-between gap-4 px-5 py-4 text-left font-bold"
+                      >
+                        <span>{item.question}</span>
+                        <ChevronDown className={`size-5 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                      <motion.div
+                        initial={false}
+                        animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+                        transition={{ duration: 0.22 }}
+                        className="overflow-hidden"
+                      >
+                        <p className="px-5 pb-5 text-sm leading-relaxed text-foreground/60">{item.answer}</p>
+                      </motion.div>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-24 sm:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5"></div>
@@ -1157,31 +1631,54 @@ export default function App() {
 
             <p className="text-xl md:text-2xl text-foreground/60 mb-12 max-w-3xl mx-auto font-light leading-relaxed">{copy.finalBody}</p>
 
-            <div className="flex flex-wrap gap-6 justify-center mb-12">
-              <a href="#modeli" className="group bg-primary text-primary-foreground px-12 py-5 rounded-full hover:bg-primary/90 transition-all hover:scale-105 text-base uppercase tracking-wider font-bold flex items-center gap-3 shadow-lg shadow-primary/20">
-                {copy.finalPrimary}
-                <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
-              </a>
-              <button type="button" onClick={() => openLeadModal('final-cta')}
-                className="inline-flex items-center justify-center border-2 border-border px-12 py-5 rounded-full hover:bg-accent transition-all text-base uppercase tracking-wider font-bold"
+            <div className="flex flex-col gap-3 justify-center mb-10 sm:flex-row sm:flex-wrap sm:gap-4">
+              <button
+                type="button"
+                onClick={() => openLeadModal('final-primary-cta')}
+                className="group bg-primary text-primary-foreground px-8 py-5 rounded-full hover:bg-primary/90 transition-all hover:scale-105 active:scale-[0.98] text-sm sm:text-base uppercase tracking-wider font-bold flex items-center justify-center gap-3 shadow-lg shadow-primary/20"
               >
-                {copy.finalSecondary}
+                <CalendarCheck className="size-5" />
+                Zakaži test vožnju
               </button>
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => handleWhatsappClick('final-cta')}
+                className="inline-flex items-center justify-center gap-3 border-2 border-border px-8 py-5 rounded-full hover:bg-accent transition-all active:scale-[0.98] text-sm sm:text-base uppercase tracking-wider font-bold"
+              >
+                <MessageCircle className="size-5" />
+                WhatsApp
+              </a>
+              <a
+                href={phoneHref}
+                onClick={() => handlePhoneClick('final-cta')}
+                className="inline-flex items-center justify-center gap-3 border-2 border-border px-8 py-5 rounded-full hover:bg-accent transition-all active:scale-[0.98] text-sm sm:text-base uppercase tracking-wider font-bold"
+              >
+                <Phone className="size-5" />
+                Pozovi odmah
+              </a>
+            </div>
+
+            <div className="mx-auto mb-8 flex max-w-4xl flex-wrap items-center justify-center gap-2">
+              {trustBadges.map((badge, index) => {
+                const Icon = trustBadgeIcons[index];
+                return (
+                  <div key={`final-trust-${badge}`} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-foreground/70">
+                    <Icon className="size-3.5 text-primary" />
+                    {badge}
+                  </div>
+                );
+              })}
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-foreground/60">
-              <div className="flex items-center gap-2">
-                <div className="size-2 rounded-full bg-primary"></div>
-                {ui.ctaBullets[0]}
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="size-2 rounded-full bg-primary"></div>
-                {ui.ctaBullets[1]}
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="size-2 rounded-full bg-primary"></div>
-                {ui.ctaBullets[2]}
-              </div>
+              {ui.ctaBullets.map((bullet) => (
+                <div key={bullet} className="flex items-center gap-2">
+                  <div className="size-2 rounded-full bg-primary"></div>
+                  {bullet}
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>
@@ -1365,7 +1862,7 @@ export default function App() {
         </div>
       </footer>
 
-      <div className="fixed bottom-4 right-4 z-[70] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-[70] hidden flex-col items-end gap-3 sm:bottom-6 sm:right-6 md:flex">
         {isContactWidgetOpen && (
           <div className="w-[min(20rem,calc(100vw-2rem))] rounded-3xl border border-black/10 bg-white p-5 text-black shadow-[0_24px_70px_rgba(0,0,0,0.2)]">
             <div className="flex items-start justify-between gap-4">
