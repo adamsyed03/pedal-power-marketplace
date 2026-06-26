@@ -7,6 +7,7 @@ import { Overlay } from './components/Overlay';
 import { LeadContactModal } from './components/LeadContactModal';
 const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
 import { submitLead } from '../lib/supabase';
+import { trackEvent } from '../lib/analytics';
 
 const homeCopyEn = {
   heroTitle: 'Get moving',
@@ -178,10 +179,6 @@ export default function App() {
     : 'Hi, I want to book a Pogon e-bike test ride.';
   const whatsappHref = buildWhatsappLink(testRideWhatsappText);
   const closeLeadModal = useCallback(() => setLeadModalSource(null), []);
-  const trackEvent = (eventName: 'phone_call_click' | 'whatsapp_click' | 'test_ride_click' | 'test_ride_form_submit' | 'primary_cta_click', details: Record<string, string> = {}) => {
-    // Analytics placeholder: wire this to GA4/Meta Pixel/etc. when tracking is installed.
-    console.info('[tracking]', eventName, details);
-  };
   const openLeadModal = (source: string) => {
     trackEvent(source.includes('hero') ? 'primary_cta_click' : 'test_ride_click', { source });
     setLeadModalSource(source);
