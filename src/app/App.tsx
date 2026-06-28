@@ -1128,10 +1128,12 @@ export default function App() {
                     <div className={`absolute top-4 right-4 z-20 ${model.badgeClass}`}>
                       {copy[model.badgeKey]}
                     </div>
-                    <div className="absolute inset-x-0 bottom-0 z-20 p-4 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white lg:hidden">
-                      <div className="text-2xl font-black leading-none">{model.name}</div>
-                      <div className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
-                        {gallery ? `${selectedGalleryIndex + 1} / ${gallery.length}` : copy.clickSpecs}
+                    <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-4 pb-4 pt-14 text-white lg:hidden">
+                      <div className="max-w-[78%] text-left">
+                        <div className="text-2xl font-black leading-none drop-shadow-md">{model.name}</div>
+                        <div className="mt-2 text-2xl font-black leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</div>
+                        <div className="mt-1 text-[0.55rem] font-bold uppercase tracking-[0.18em] text-white/70">{copy.perMonth}</div>
+                        <div className="mt-1 text-[0.68rem] font-semibold text-white/65">{model.price}</div>
                       </div>
                     </div>
                     <div className={`absolute inset-0 z-30 bg-black/95 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-200 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>

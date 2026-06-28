@@ -1,6 +1,7 @@
 import posthog from 'posthog-js';
 
 export type AnalyticsEvent =
+  | 'site_loaded'
   | 'phone_call_click'
   | 'whatsapp_click'
   | 'test_ride_click'
@@ -21,6 +22,15 @@ export const initAnalytics = () => {
     defaults: '2026-05-30',
     capture_pageview: true,
     person_profiles: 'identified_only',
+    disable_session_recording: false,
+    session_recording: {
+      maskAllInputs: true,
+    },
+    loaded: (posthogInstance) => {
+      posthogInstance.capture('site_loaded', {
+        source: 'posthog_js_init',
+      });
+    },
   });
 };
 
