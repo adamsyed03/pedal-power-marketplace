@@ -2,6 +2,7 @@
 
 import { cloneElement, isValidElement, ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMotionValue } from 'motion/react';
+import { publicAsset } from '../../lib/assets';
 
 type ScrollyCanvasProps = {
   children: ReactNode;
@@ -11,7 +12,7 @@ type ScrollyCanvasProps = {
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const sourceFrameCount = 60;
 
-const framePath = (index: number) => `/sequence/ezgif-frame-${String(index + 1).padStart(3, '0')}.jpg`;
+const framePath = (index: number) => publicAsset(`sequence/ezgif-frame-${String(index + 1).padStart(3, '0')}.jpg`);
 
 export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -174,7 +175,7 @@ export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps)
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
         <div className="pointer-events-none absolute bottom-[6%] right-[4%] z-[5] flex h-28 w-64 items-center justify-center rounded-2xl bg-black/75 shadow-lg backdrop-blur-sm sm:h-32 sm:w-72">
           <img
-            src="/Logo.png"
+            src={publicAsset('Logo.png')}
             alt="POGON"
             className="h-full w-full scale-[1.35] object-contain brightness-0 invert"
           />

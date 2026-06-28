@@ -8,6 +8,7 @@ import { LeadContactModal } from './components/LeadContactModal';
 const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
 import { submitLead } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
+import { publicAsset } from '../lib/assets';
 
 const homeCopyEn = {
   heroTitle: 'Get moving',
@@ -513,12 +514,12 @@ export default function App() {
       name: 'Glide',
       badgeKey: 'bestSeller' as const,
       badgeClass: 'bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold uppercase',
-      image: { src: '/Glide%20main.jpg', alt: 'Pogon Glide electric bike main product photo' },
+      image: { src: publicAsset('Glide main.jpg'), alt: 'Pogon Glide electric bike main product photo' },
       gallery: [
-        { src: '/Glide%20main.jpg', alt: 'Pogon Glide main product photo' },
-        { src: '/Glide%201.jpg', alt: 'Pogon Glide product photo 1' },
-        { src: '/Glide%202.jpg', alt: 'Pogon Glide product photo 2' },
-        { src: '/Glide%204.jpg', alt: 'Pogon Glide product photo 4' },
+        { src: publicAsset('Glide main.jpg'), alt: 'Pogon Glide main product photo' },
+        { src: publicAsset('Glide 1.jpg'), alt: 'Pogon Glide product photo 1' },
+        { src: publicAsset('Glide 2.jpg'), alt: 'Pogon Glide product photo 2' },
+        { src: publicAsset('Glide 4.jpg'), alt: 'Pogon Glide product photo 4' },
       ],
       description: copy.glideDescription,
       monthlyPrice: '17,000 RSD',
@@ -547,12 +548,12 @@ export default function App() {
       name: 'Core',
       badgeKey: 'recommended' as const,
       badgeClass: 'bg-primary-foreground text-primary px-3 py-1 rounded-full text-xs font-bold uppercase',
-      image: { src: '/Cargo%20Main.jpg', alt: 'Pogon Core electric bike main product photo' },
+      image: { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core electric bike main product photo' },
       gallery: [
-        { src: '/Cargo%20Main.jpg', alt: 'Pogon Core main product photo' },
-        { src: '/Cargo%20fold.jpg', alt: 'Pogon Core folded product photo' },
-        { src: '/Cargo%201.jpg', alt: 'Pogon Core product photo 1' },
-        { src: '/Cargo%202.jpg', alt: 'Pogon Core product photo 2' },
+        { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core main product photo' },
+        { src: publicAsset('Cargo fold.jpg'), alt: 'Pogon Core folded product photo' },
+        { src: publicAsset('Cargo 1.jpg'), alt: 'Pogon Core product photo 1' },
+        { src: publicAsset('Cargo 2.jpg'), alt: 'Pogon Core product photo 2' },
       ],
       description: copy.coreDescription,
       monthlyPrice: '14,000 RSD',
@@ -582,12 +583,12 @@ export default function App() {
       name: 'Cargo',
       badgeKey: 'newBadge' as const,
       badgeClass: 'bg-card text-foreground px-3 py-1 rounded-full text-xs font-bold uppercase border border-border',
-      image: { src: '/Core%20main.jpg', alt: 'Pogon Cargo electric bike main product photo' },
+      image: { src: publicAsset('Core main.jpg'), alt: 'Pogon Cargo electric bike main product photo' },
       gallery: [
-        { src: '/Core%20main.jpg', alt: 'Pogon Cargo main product photo' },
-        { src: '/Core%201.jpg', alt: 'Pogon Cargo product photo 1' },
-        { src: '/Core%202.jpg', alt: 'Pogon Cargo product photo 2' },
-        { src: '/Core%203.jpg', alt: 'Pogon Cargo product photo 3' },
+        { src: publicAsset('Core main.jpg'), alt: 'Pogon Cargo main product photo' },
+        { src: publicAsset('Core 1.jpg'), alt: 'Pogon Cargo product photo 1' },
+        { src: publicAsset('Core 2.jpg'), alt: 'Pogon Cargo product photo 2' },
+        { src: publicAsset('Core 3.jpg'), alt: 'Pogon Cargo product photo 3' },
       ],
       description: copy.cargoDescription,
       monthlyPrice: '12,000 RSD',
@@ -724,7 +725,7 @@ export default function App() {
                   <>
                     {/* Logo */}
                     <motion.img
-                      src="/Logo.png"
+                      src={publicAsset('Logo.png')}
                       alt="POGON"
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -825,8 +826,8 @@ export default function App() {
           <div className="w-full flex h-8 items-center justify-between gap-2 rounded-full border border-black/10 bg-white/90 px-2 shadow-[0_15px_40px_rgba(0,0,0,0.12)] backdrop-blur-md sm:h-auto sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:h-9 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
             <a href="#top" aria-label="Back to home" className="relative inline-flex h-8 w-28 items-center rounded-full bg-white shadow-sm transition-transform hover:-translate-y-0.5 sm:h-auto sm:w-auto sm:px-4 sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
               <div className="flex items-center justify-center">
-                <img src="/Logo.png" alt="POGON" className="pointer-events-none absolute left-1/2 top-1/2 h-20 w-36 -translate-x-1/2 -translate-y-1/2 object-cover object-center sm:hidden" />
-                <img src="/Logo.png" alt="POGON" className="hidden h-9 w-auto opacity-100 sm:block lg:h-10 [@media_(orientation:landscape)_and_(max-height:520px)]:h-6" />
+                <img src={publicAsset('Logo.png')} alt="POGON" className="pointer-events-none absolute left-1/2 top-1/2 h-20 w-36 -translate-x-1/2 -translate-y-1/2 object-cover object-center sm:hidden" />
+                <img src={publicAsset('Logo.png')} alt="POGON" className="hidden h-9 w-auto opacity-100 sm:block lg:h-10 [@media_(orientation:landscape)_and_(max-height:520px)]:h-6" />
               </div>
             </a>
 
@@ -988,7 +989,7 @@ export default function App() {
               <div className="absolute -inset-3 bg-gradient-to-br from-primary/25 via-primary/15 to-transparent rounded-3xl blur-2xl pointer-events-none"></div>
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-border/50 shadow-xl">
                 <ImageWithFallback
-                  src="/Excellent4.optimized.jpg"
+                  src={publicAsset('Excellent4.optimized.jpg')}
                   alt="POGON e-bicikl"
                   loading="eager"
                   className="w-full h-full object-cover"
@@ -1504,7 +1505,7 @@ export default function App() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="relative rounded-3xl overflow-hidden group aspect-[4/3]">
               <ImageWithFallback
-                src="/Excellent%202.jpg"
+                src={publicAsset('Excellent 2.jpg')}
                 alt="Urban ride"
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -1519,7 +1520,7 @@ export default function App() {
 
             <div className="relative rounded-3xl overflow-hidden group aspect-[4/3]">
               <ImageWithFallback
-                src="/Excellent%203.jpg"
+                src={publicAsset('Excellent 3.jpg')}
                 alt="Freedom of movement"
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -1870,7 +1871,7 @@ export default function App() {
             <div className="col-span-3 md:col-span-2">
               <div className="flex items-center justify-between gap-4 mb-4 md:block md:mb-6">
                 <div className="relative">
-                  <img src="/Logo.png" alt="POGON" className="h-12 w-auto sm:h-20" />
+                  <img src={publicAsset('Logo.png')} alt="POGON" className="h-12 w-auto sm:h-20" />
                 </div>
                 <a href="https://instagram.com/pogonrs" target="_blank" rel="noreferrer" aria-label="Pogon Instagram" className="size-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors md:mt-6">
                   <Instagram className="size-5" />
