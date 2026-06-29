@@ -1,7 +1,7 @@
 import { FormEvent, useCallback, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { ScrollyCanvas } from './components/ScrollyCanvas';
 import { Overlay } from './components/Overlay';
 import { LeadContactModal } from './components/LeadContactModal';
@@ -78,6 +78,57 @@ const homeCopySr = {
   customerReviews: 'Glasovi Naših Vozača',
 };
 
+function ScrollColorWord({
+  word,
+  index,
+  total,
+  progress,
+  isLast,
+}: {
+  word: string;
+  index: number;
+  total: number;
+  progress: ReturnType<typeof useScroll>['scrollYProgress'];
+  isLast: boolean;
+}) {
+  const start = index / total;
+  const end = Math.min(1, start + 0.18);
+  const color = useTransform(progress, [start, end], ['rgba(3,2,19,0.18)', 'rgba(3,2,19,1)']);
+
+  return (
+    <motion.span style={{ color }} className="inline-block">
+      {word}
+      {isLast ? '' : '\u00a0'}
+    </motion.span>
+  );
+}
+
+function ScrollColorSentence({ text }: { text: string }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const words = text.split(' ');
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start 82%', 'end 42%'],
+  });
+
+  return (
+    <div ref={ref} className="mx-auto max-w-3xl">
+      <p className="text-balance text-[1.35rem] font-black leading-[1.08] tracking-tight sm:text-3xl lg:text-4xl">
+        {words.map((word, index) => (
+          <ScrollColorWord
+            key={`${word}-${index}`}
+            word={word}
+            index={index}
+            total={words.length}
+            progress={scrollYProgress}
+            isLast={index === words.length - 1}
+          />
+        ))}
+      </p>
+    </div>
+  );
+}
+
 export default function App() {
   const [lang, setLang] = useState<'en' | 'sr'>('sr');
   const [activeSpecs, setActiveSpecs] = useState<string | null>(null);
@@ -97,12 +148,56 @@ export default function App() {
   const [popupSubmitted, setPopupSubmitted] = useState(false);
   const [popupSubmitting, setPopupSubmitting] = useState(false);
   const [popupError, setPopupError] = useState('');
+  const [isRangeCalculatorOpen, setIsRangeCalculatorOpen] = useState(false);
+  const [rangeCalculator, setRangeCalculator] = useState({
+    riderKg: 80,
+    averageSpeed: 22,
+    voltage: 48,
+    ampHours: 25,
+    chemistry: 'lithium' as 'lithium' | 'lead',
+  });
   const popupShownRef = useRef(false);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
   const pageRootRef = useRef<HTMLDivElement | null>(null);
   const scrollLockTimeout = useRef<number | null>(null);
   const pageScrollTimeout = useRef<number | null>(null);
   const copy = lang === 'sr' ? homeCopySr : homeCopyEn;
+  const batteryWh = Math.round(rangeCalculator.voltage * rangeCalculator.ampHours);
+  const chemistryFactor = rangeCalculator.chemistry === 'lead' ? 0.5 : 0.9;
+  const batteryHealth = 0.8;
+  const usableBatteryWh = Math.round(batteryWh * chemistryFactor * batteryHealth);
+  const legalMotorWatts = 250;
+  const bikeKg = 40;
+  const cargoKg = 0;
+  const temperatureC = 20;
+  const totalWeightKg = rangeCalculator.riderKg + bikeKg + cargoKg;
+  const extraWeightKg = Math.max(0, totalWeightKg - 100);
+  const weightPenalty = extraWeightKg * 0.045;
+  const speedPenalty = rangeCalculator.averageSpeed > 20
+    ? (rangeCalculator.averageSpeed - 20) * 0.3
+    : rangeCalculator.averageSpeed < 16
+    ? (16 - rangeCalculator.averageSpeed) * 0.15
+    : 0;
+  const temperaturePenalty = (temperatureC < 10 ? 1 : 0) + (temperatureC < 0 ? 2.2 : 0);
+  const assistBaseWhPerKm = 7.5;
+  const whPerKm = Math.max(
+    7,
+    Math.min(
+      assistBaseWhPerKm
+      + weightPenalty
+      + speedPenalty
+      + temperaturePenalty,
+      25,
+    ),
+  );
+  const estimatedRangeKm = Math.max(1, Math.round(usableBatteryWh / whPerKm));
+  const rangeLowKm = Math.max(1, Math.round(usableBatteryWh / (whPerKm * 1.15)));
+  const rangeHighKm = Math.max(1, Math.round(usableBatteryWh / (whPerKm * 0.9)));
+  const fullAssistHours = usableBatteryWh / legalMotorWatts;
+  const updateRangeCalculator = (key: 'riderKg' | 'averageSpeed' | 'voltage' | 'ampHours', value: number) => {
+    if (!Number.isFinite(value)) return;
+    setRangeCalculator((current) => ({ ...current, [key]: value }));
+  };
   const ui = lang === 'sr'
     ? {
         navModels: 'Modeli',
@@ -113,7 +208,7 @@ export default function App() {
         technologyTitle: 'Tehnologija Koja Pokreće',
         technologyCards: [
           { title: 'Napredna Baterija', body: 'Samsung SDI ćelije sa inteligentnim BMS sistemom za optimalnu autonomiju' },
-          { title: 'Bafang Motor', body: 'Premium mid-drive motor sa 160Nm obrtnog momenta' },
+          { title: 'Bafang Motor', body: 'Premium mid-drive motor sa 45Nm obrtnog momenta' },
           { title: 'Smart Kontrola', body: 'Kolor displej sa GPS navigacijom i praćenjem performansi' },
           { title: 'Sigurnost', body: 'Shimano hidraulične kočnice i integrisani LED svetlosni sistem' },
         ],
@@ -147,7 +242,7 @@ export default function App() {
         technologyTitle: 'Technology That Moves You',
         technologyCards: [
           { title: 'Advanced Battery', body: 'Samsung SDI cells with an intelligent BMS system for optimal range' },
-          { title: 'Bafang Motor', body: 'Premium mid-drive motor with 160Nm of torque' },
+          { title: 'Bafang Motor', body: 'Premium mid-drive motor with 45Nm of torque' },
           { title: 'Smart Control', body: 'Color display with GPS navigation and performance tracking' },
           { title: 'Safety', body: 'Shimano hydraulic brakes and an integrated LED lighting system' },
         ],
@@ -218,6 +313,9 @@ export default function App() {
         'Hi, I am interested in careers at Pogon.',
         'Hi, I am interested in the Pogon blog.',
       ];
+  const preModelsSentence = lang === 'sr'
+    ? 'Pogon je e-bike za gradsku rutinu: stabilan, udoban i spreman da proveriš vožnju pre nego što odlučiš.'
+    : 'Pogon is an e-bike for city routines: stable, comfortable and ready to test before you decide.';
   const reviews = [
     {
       name: 'Vuk Rankovic',
@@ -469,7 +567,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    try { if (localStorage.getItem('pogon_popup_done') === '1') return; } catch { /* */ }
+    const popupStorageKey = window.matchMedia('(min-width: 768px)').matches
+      ? 'pogon_popup_done_desktop'
+      : 'pogon_popup_done_mobile';
+    try { localStorage.removeItem('pogon_popup_done'); } catch { /* */ }
+    try { if (localStorage.getItem(popupStorageKey) === '1') return; } catch { /* */ }
     const show = () => {
       if (popupShownRef.current) return;
       popupShownRef.current = true;
@@ -486,7 +588,10 @@ export default function App() {
 
   const closeLeadPopup = () => {
     setShowLeadPopup(false);
-    try { localStorage.setItem('pogon_popup_done', '1'); } catch { /* */ }
+    const popupStorageKey = window.matchMedia('(min-width: 768px)').matches
+      ? 'pogon_popup_done_desktop'
+      : 'pogon_popup_done_mobile';
+    try { localStorage.setItem(popupStorageKey, '1'); } catch { /* */ }
   };
 
   const handlePopupSubmit = async (e: FormEvent) => {
@@ -524,14 +629,14 @@ export default function App() {
       description: copy.glideDescription,
       monthlyPrice: '17,000 RSD',
       price: '170,000 RSD',
-      mobileSpecs: { range: 'do 90 km', power: '250W motor', battery: '1200 Wh' },
+      mobileSpecs: { range: '100 km', power: '250W motor', battery: '1200 Wh' },
       points: lang === 'sr'
         ? [
             'Motor u zadnjem točku',
             'Aluminijumski ram',
             'Hidraulične kočnice',
             'Nosivost 110 kg',
-            'Domet do 90 km',
+            'Domet 100 km',
             'GPS sigurnosne funkcije',
           ]
         : [
@@ -539,7 +644,7 @@ export default function App() {
             'Aluminum frame',
             'Hydraulic brakes',
             '110 kg load capacity',
-            'Up to 90 km range',
+            'Up to 100 km range',
             'GPS security features',
           ],
     },
@@ -558,7 +663,7 @@ export default function App() {
       description: copy.coreDescription,
       monthlyPrice: '14,000 RSD',
       price: '140,000 RSD',
-      mobileSpecs: { range: 'do 110 km', power: '250W motor', battery: '1512 Wh' },
+      mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: lang === 'sr'
         ? [
             'Motor u zadnjem točku',
@@ -593,7 +698,7 @@ export default function App() {
       description: copy.cargoDescription,
       monthlyPrice: '12,000 RSD',
       price: '120,000 RSD',
-      mobileSpecs: { range: 'do 110 km', power: '250W motor', battery: '1512 Wh' },
+      mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: lang === 'sr'
         ? [
             'Motor u zadnjem točku',
@@ -881,7 +986,7 @@ export default function App() {
 
       {/* Hero Section */}
       {!isDesktop && (
-      <section className="relative flex items-center justify-center pt-10 pb-10 sm:pt-14 sm:pb-12 lg:hidden">
+      <section className="relative flex touch-pan-y items-center justify-center pt-10 pb-10 sm:pt-14 sm:pb-12 lg:hidden">
         {/* Background — overflow clipped here only so absolute badges aren't clipped */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/10"></div>
@@ -1007,8 +1112,19 @@ export default function App() {
       </section>
       )}
 
+      {/* Product Intro */}
+      <section className="relative overflow-hidden bg-background px-4 py-6 text-foreground sm:px-6 sm:py-8 lg:py-9">
+        <div className="mx-auto max-w-7xl">
+          <ScrollColorSentence
+            text={lang === 'sr'
+              ? 'Upoznaj električni bicikl koji podiže standard u Srbiji. Sa vrhunskim komponentima, snažnom asistencijom i najmodernijim tehničkim karakteristikama'
+              : 'Meet the electric bike raising the standard in Serbia. With premium components, strong assistance, and modern technical features, Pogon is made for riders who want quality they can feel on every ride.'}
+          />
+        </div>
+      </section>
+
       {/* Product Showcase */}
-      <section id="modeli" className="relative overflow-hidden bg-background pt-12 pb-24 text-foreground sm:pt-16 sm:pb-28 lg:py-20">
+      <section id="modeli" className="relative overflow-hidden bg-background pt-8 pb-24 text-foreground sm:pt-10 sm:pb-28 lg:pt-12 lg:pb-20">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-accent/20"></div>
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-14 md:mb-20 lg:mb-10">
@@ -1034,7 +1150,7 @@ export default function App() {
             <div
               ref={productScrollRef}
               onScroll={handleProductScroll}
-              className="grid grid-flow-col auto-cols-[minmax(calc(100vw-5rem),calc(78vw))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-5 snap-x snap-mandatory overscroll-contain"
+              className="grid grid-flow-col auto-cols-[minmax(14.5rem,calc(100vw-7rem))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 sm:auto-cols-[18rem] lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-5 snap-x snap-mandatory"
             >
               {bikeModels.map((model) => {
                 const gallery = 'gallery' in model ? model.gallery : undefined;
@@ -1064,12 +1180,12 @@ export default function App() {
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true, amount: 0.25 }}
                   transition={{ duration: 0.52, delay: bikeModels.findIndex((bike) => bike.key === model.key) * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                  className={`group snap-center sm:snap-start min-w-[calc(66vw)] sm:min-w-[18rem] lg:min-w-auto overflow-hidden rounded-3xl transition-all duration-300 ${model.isFeatured ? 'bg-primary text-primary-foreground border-2 border-primary shadow-2xl hover:-translate-y-2 hover:shadow-2xl lg:product-soft-float' : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2'}`}
+                  className={`group snap-center sm:snap-start min-w-0 overflow-hidden rounded-3xl transition-all duration-300 ${model.isFeatured ? 'bg-primary text-primary-foreground border-2 border-primary shadow-2xl hover:-translate-y-2 hover:shadow-2xl lg:product-soft-float' : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2'}`}
                 >
                 <div className="relative overflow-hidden rounded-t-3xl">
                   {model.isFeatured ? <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80"></div> : null}
                   <div
-                    className="aspect-[3/2] overflow-hidden relative bg-black cursor-pointer group"
+                    className="aspect-[5/4] overflow-hidden relative bg-black cursor-pointer group lg:aspect-[3/2]"
                     onClick={handleImagePanelClick}
                   >
                     <motion.div
@@ -1129,12 +1245,12 @@ export default function App() {
                     <div className={`absolute top-4 right-4 z-20 ${model.badgeClass}`}>
                       {copy[model.badgeKey]}
                     </div>
-                    <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-4 pb-4 pt-14 text-white lg:hidden">
+                    <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3.5 pb-3 pt-12 text-white lg:hidden">
                       <div className="max-w-[78%] text-left">
-                        <div className="text-2xl font-black leading-none drop-shadow-md">{model.name}</div>
-                        <div className="mt-2 text-2xl font-black leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</div>
+                        <div className="text-xl font-black leading-none drop-shadow-md">{model.name}</div>
+                        <div className="mt-1.5 text-xl font-black leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</div>
                         <div className="mt-1 text-[0.55rem] font-bold uppercase tracking-[0.18em] text-white/70">{copy.perMonth}</div>
-                        <div className="mt-1 text-[0.68rem] font-semibold text-white/65">{model.price}</div>
+                        <div className="mt-0.5 text-[0.62rem] font-semibold text-white/65">{model.price}</div>
                       </div>
                     </div>
                     <div className={`absolute inset-0 z-30 bg-black/95 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-200 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
@@ -1159,7 +1275,7 @@ export default function App() {
                     </div>
                   </div>
                   {gallery ? (
-                    <div className="relative z-40 hidden sm:flex gap-2 overflow-x-auto border-t border-border bg-white p-2.5 lg:p-2 shadow-inner">
+                    <div className="relative z-40 flex gap-1.5 overflow-x-auto border-t border-border bg-white p-1.5 shadow-inner lg:p-2">
                       {gallery.map((image, index) => (
                         <button
                           key={image.src}
@@ -1169,7 +1285,7 @@ export default function App() {
                             event.stopPropagation();
                             setGalleryImage(index);
                           }}
-                          className={`aspect-square w-16 flex-none overflow-hidden rounded-2xl border bg-white p-1 shadow-sm ring-offset-2 ring-offset-white transition-all sm:w-20 lg:w-14 lg:rounded-xl ${
+                          className={`aspect-square w-12 flex-none overflow-hidden rounded-xl border bg-white p-0.5 shadow-sm ring-offset-2 ring-offset-white transition-all sm:w-14 lg:w-14 ${
                             selectedGalleryIndex === index ? 'border-primary ring-2 ring-primary' : 'border-border hover:border-primary/60 hover:ring-2 hover:ring-primary/30'
                           }`}
                         >
@@ -1177,22 +1293,22 @@ export default function App() {
                             src={image.src}
                             alt={image.alt}
                             loading="lazy"
-                            className="h-full w-full rounded-xl object-cover object-center transition-transform duration-300 hover:scale-105"
+                            className="h-full w-full rounded-lg object-cover object-center transition-transform duration-300 hover:scale-105"
                           />
                         </button>
                       ))}
                     </div>
                   ) : null}
                 </div>
-                <div className="p-4 sm:p-6 lg:p-5">
+                <div className="p-3 sm:p-4 lg:p-5">
                   <h3 className={`hidden lg:block text-xl font-bold mb-1.5 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{model.name}</h3>
-                  <div className="hidden lg:grid grid-cols-3 gap-x-4 gap-y-2 mb-4 text-[0.82rem] leading-snug">
+                  <div className="hidden lg:grid grid-cols-2 gap-x-7 gap-y-2.5 mb-4 text-[0.9rem] font-medium leading-snug">
                     {model.points.map((point, index) => (
                       <div
                         key={`${model.key}-desktop-point-${index}`}
-                        className={`flex min-h-[2.35rem] items-start gap-2 ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}
+                        className={`flex min-h-[2.05rem] items-start gap-2.5 ${model.isFeatured ? 'text-primary-foreground/88' : 'text-foreground/70'}`}
                       >
-                        <span className={`mt-[0.42rem] size-1.5 shrink-0 rounded-full ${model.isFeatured ? 'bg-primary-foreground/65' : 'bg-foreground/45'}`} />
+                        <span className={`mt-[0.48rem] size-1.5 shrink-0 rounded-full ${model.isFeatured ? 'bg-primary-foreground/75' : 'bg-primary/75'}`} />
                         <span>{point}</span>
                       </div>
                     ))}
@@ -1201,7 +1317,7 @@ export default function App() {
                     <div className={`hidden lg:block text-3xl font-black mb-0.5 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>{model.monthlyPrice}</div>
                     <div className={`hidden lg:block text-[0.65rem] uppercase tracking-wider mb-1.5 ${model.isFeatured ? 'text-white/80' : 'text-foreground/50'}`}>{copy.perMonth}</div>
                     <div className={`hidden lg:block text-xs mb-3 ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>{model.price}</div>
-                    <div className="mb-4 grid grid-cols-3 gap-2 lg:hidden">
+                    <div className="mb-3 grid grid-cols-3 gap-1.5 lg:hidden">
                       {[
                         { value: model.mobileSpecs.range, label: copy.range },
                         { value: model.mobileSpecs.power, label: copy.power },
@@ -1209,11 +1325,11 @@ export default function App() {
                       ].map((spec) => (
                         <div
                           key={`${model.key}-${spec.label}`}
-                          className={`rounded-2xl border px-2 py-3 text-center ${
+                          className={`rounded-xl border px-1.5 py-2 text-center ${
                             model.isFeatured ? 'border-white/25 bg-white/10' : 'border-border bg-background/80'
                           }`}
                         >
-                          <div className={`text-base font-black leading-none ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{spec.value}</div>
+                          <div className={`text-sm font-black leading-none ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{spec.value}</div>
                           <div className={`mt-1 text-[0.5rem] uppercase tracking-wider ${model.isFeatured ? 'text-white/70' : 'text-foreground/45'}`}>{spec.label}</div>
                         </div>
                       ))}
@@ -1221,7 +1337,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => openLeadModal(`model-${model.name}`)}
-                      className={`w-full inline-flex items-center justify-center gap-2 py-3 lg:py-2.5 rounded-full transition-all font-semibold uppercase text-[0.65rem] sm:text-sm lg:text-xs tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                      className={`w-full inline-flex items-center justify-center gap-2 py-2.5 lg:py-2.5 rounded-full transition-all font-semibold uppercase text-[0.62rem] sm:text-xs lg:text-xs tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                     >
                       <CalendarCheck className="size-3.5" />
                       {lang === 'sr' ? 'Zakaži test vožnju' : 'Book a test ride'}
@@ -1229,7 +1345,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => openLeadModal(`purchase-${model.name}`)}
-                      className={`mt-2 lg:mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2.5 lg:py-2 text-[0.6rem] font-semibold uppercase tracking-wider active:scale-[0.98] ${
+                      className={`mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 lg:py-2 text-[0.56rem] font-semibold uppercase tracking-wider active:scale-[0.98] ${
                         model.isFeatured ? 'border-white/35 text-primary-foreground/80' : 'border-border text-foreground/60'
                       }`}
                     >
@@ -1285,13 +1401,15 @@ export default function App() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-foreground/75">
                 <CalendarCheck className="size-4" />
-                Test vožnja
+                {lang === 'sr' ? 'Test vožnja' : 'Test ride'}
               </div>
               <h2 className="mt-5 text-4xl font-black leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-                Provozaj ga pre nego što odlučiš.
+                {lang === 'sr' ? 'Provozaj ga pre nego što odlučiš.' : 'Ride it before you decide.'}
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-foreground/65">
-                Ne moraš da kupiš e-bike na osnovu slika. Zakaži test vožnju, probaj kako vuče, kako koči i da li ti odgovara za tvoju rutu.
+                {lang === 'sr'
+                  ? 'Ne moraš da kupiš e-bike na osnovu slika. Zakaži test vožnju, probaj kako vuče, kako koči i da li ti odgovara za tvoju rutu.'
+                  : 'You do not have to choose an e-bike from photos alone. Book a test ride, feel the pull and braking, and see if it fits your route.'}
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <a
@@ -1302,7 +1420,7 @@ export default function App() {
                   className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-4 text-sm font-black uppercase tracking-wider text-black transition-transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <MessageCircle className="size-5" />
-                  Zakaži preko WhatsApp-a
+                  {lang === 'sr' ? 'Zakaži preko WhatsApp-a' : 'Book on WhatsApp'}
                 </a>
                 <a
                   href={phoneHref}
@@ -1310,16 +1428,16 @@ export default function App() {
                   className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border-2 border-border bg-card px-6 py-4 text-sm font-black uppercase tracking-wider transition-colors hover:bg-accent active:scale-[0.98]"
                 >
                   <Phone className="size-5" />
-                  Pozovi odmah
+                  {lang === 'sr' ? 'Pozovi odmah' : 'Call now'}
                 </a>
               </div>
             </div>
 
             <div className="grid gap-3">
               {[
-                'Pošalji poruku ili pozovi',
-                'Dogovorimo termin',
-                'Probaš bicikl i odlučiš bez pritiska',
+                ...(lang === 'sr'
+                  ? ['Pošalji poruku ili pozovi', 'Dogovorimo termin', 'Probaš bicikl i odlučiš bez pritiska']
+                  : ['Send a message or call', 'We arrange a time', 'Try the bike and decide without pressure']),
               ].map((step, index) => (
                 <motion.div
                   key={step}
@@ -1354,20 +1472,24 @@ export default function App() {
               <div>
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white/75">
                   <Gauge className="size-4" />
-                  Domet
+                  {copy.range}
                 </div>
-                <h2 className="text-3xl font-black tracking-tight sm:text-4xl">Koliki je realan domet?</h2>
+                <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
+                  {lang === 'sr' ? 'Koliki je realan domet?' : 'What is the real range?'}
+                </h2>
                 <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/70 sm:text-lg">
-                  Domet zavisi od težine vozača, uzbrdica, brzine, temperature i nivoa asistencije. Najlakši način da proveriš da li ti odgovara je test vožnja.
+                  {lang === 'sr'
+                    ? 'Domet zavisi od kapaciteta baterije, težine vozača i prosečne brzine. Otvori kalkulator i proveri okvirnu procenu za svoju vožnju.'
+                    : 'Range depends on battery capacity, rider weight, and average speed. Open the calculator to check an estimate for your ride.'}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => openLeadModal('range-explainer')}
+                onClick={() => setIsRangeCalculatorOpen(true)}
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-sm font-black uppercase tracking-wider text-black transition-transform hover:scale-[1.02] active:scale-[0.98]"
               >
-                <CalendarCheck className="size-5" />
-                Zakaži test vožnju
+                <Calculator className="size-5" />
+                {lang === 'sr' ? 'Saznaj više' : 'Learn more'}
               </button>
             </div>
           </motion.div>
@@ -1589,26 +1711,32 @@ export default function App() {
               <div className="mb-6">
                 <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em]">
                   <Phone className="size-4" />
-                  Kontakt
+                  {lang === 'sr' ? 'Kontakt' : 'Contact'}
                 </div>
-                <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl">Zakaži test vožnju</h2>
+                <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
+                  {lang === 'sr' ? 'Zakaži test vožnju' : 'Book a test ride'}
+                </h2>
                 <p className="mt-3 text-sm leading-relaxed text-foreground/60">
-                  Ostavi broj i grad. Javićemo ti se uskoro da dogovorimo termin.
+                  {lang === 'sr'
+                    ? 'Ostavi broj i grad. Javićemo ti se uskoro da dogovorimo termin.'
+                    : 'Leave your number and city. We will contact you soon to arrange a time.'}
                 </p>
               </div>
 
               {testRideFormStatus === 'success' ? (
                 <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
                   <CheckCircle2 className="mb-3 size-8 text-primary" />
-                  <p className="font-bold">Hvala! Javićemo ti se uskoro da dogovorimo test vožnju.</p>
+                  <p className="font-bold">
+                    {lang === 'sr' ? 'Hvala! Javićemo ti se uskoro da dogovorimo test vožnju.' : 'Thank you! We will contact you soon to arrange your test ride.'}
+                  </p>
                 </div>
               ) : (
                 <form onSubmit={handleTestRideFormSubmit} className="space-y-4">
                   {[
-                    { key: 'name', label: 'Ime', type: 'text', autoComplete: 'name' },
-                    { key: 'phone', label: 'Telefon', type: 'tel', autoComplete: 'tel' },
-                    { key: 'city', label: 'Grad', type: 'text', autoComplete: 'address-level2' },
-                    { key: 'preferredTime', label: 'Kada želiš test vožnju?', type: 'text', autoComplete: 'off' },
+                    { key: 'name', label: lang === 'sr' ? 'Ime' : 'Name', type: 'text', autoComplete: 'name' },
+                    { key: 'phone', label: lang === 'sr' ? 'Telefon' : 'Phone', type: 'tel', autoComplete: 'tel' },
+                    { key: 'city', label: lang === 'sr' ? 'Grad' : 'City', type: 'text', autoComplete: 'address-level2' },
+                    { key: 'preferredTime', label: lang === 'sr' ? 'Kada želiš test vožnju?' : 'When would you like a test ride?', type: 'text', autoComplete: 'off' },
                   ].map((field) => (
                     <label key={field.key} className="block text-xs font-bold uppercase tracking-wider text-foreground/60">
                       {field.label}
@@ -1626,7 +1754,9 @@ export default function App() {
                     </label>
                   ))}
                   {testRideFormStatus === 'error' ? (
-                    <p className="text-sm font-medium text-red-600" role="alert">Unesi ime i telefon da bismo mogli da te kontaktiramo.</p>
+                    <p className="text-sm font-medium text-red-600" role="alert">
+                      {lang === 'sr' ? 'Unesi ime i telefon da bismo mogli da te kontaktiramo.' : 'Enter your name and phone so we can contact you.'}
+                    </p>
                   ) : null}
                   <button
                     type="submit"
@@ -1634,7 +1764,9 @@ export default function App() {
                     className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-sm font-black uppercase tracking-wider text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                   >
                     <CalendarCheck className="size-5" />
-                    {testRideFormStatus === 'submitting' ? 'Slanje...' : 'Pošalji zahtev'}
+                    {testRideFormStatus === 'submitting'
+                      ? (lang === 'sr' ? 'Slanje...' : 'Sending...')
+                      : (lang === 'sr' ? 'Pošalji zahtev' : 'Send request')}
                   </button>
                 </form>
               )}
@@ -1648,7 +1780,9 @@ export default function App() {
             >
               <div className="mb-6">
                 <div className="inline-block rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em]">FAQ</div>
-                <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">Najčešća pitanja</h2>
+                <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+                  {lang === 'sr' ? 'Najčešća pitanja' : 'Frequently asked questions'}
+                </h2>
               </div>
               <div className="space-y-3">
                 {faqItems.map((item, index) => {
@@ -1712,7 +1846,7 @@ export default function App() {
                 className="group bg-primary text-primary-foreground px-8 py-5 rounded-full hover:bg-primary/90 transition-all hover:scale-105 active:scale-[0.98] text-sm sm:text-base uppercase tracking-wider font-bold flex items-center justify-center gap-3 shadow-lg shadow-primary/20"
               >
                 <CalendarCheck className="size-5" />
-                Zakaži test vožnju
+                {copy.heroPrimary}
               </button>
               <a
                 href={whatsappHref}
@@ -1730,7 +1864,7 @@ export default function App() {
                 className="inline-flex items-center justify-center gap-3 border-2 border-border px-8 py-5 rounded-full hover:bg-accent transition-all active:scale-[0.98] text-sm sm:text-base uppercase tracking-wider font-bold"
               >
                 <Phone className="size-5" />
-                Pozovi odmah
+                {lang === 'sr' ? 'Pozovi odmah' : 'Call now'}
               </a>
             </div>
 
@@ -1958,6 +2092,206 @@ export default function App() {
           <span>{lang === 'sr' ? 'Kontaktirajte nas' : 'Contact us'}</span>
         </button>
       </div>
+
+      <AnimatePresence>
+        {isRangeCalculatorOpen ? (
+          <motion.div
+            className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-2 backdrop-blur-md sm:p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="range-calculator-title"
+            onMouseDown={(event) => event.target === event.currentTarget && setIsRangeCalculatorOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 28, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 18, scale: 0.97 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              className="relative max-h-[calc(100dvh-1rem)] w-full max-w-4xl overflow-y-auto rounded-3xl border border-white/10 bg-[#080812] text-white shadow-[0_28px_90px_rgba(0,0,0,0.55)] sm:max-h-[calc(100dvh-2rem)]"
+            >
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-[#7fff00] to-transparent" />
+              <button
+                type="button"
+                onClick={() => setIsRangeCalculatorOpen(false)}
+                aria-label={lang === 'sr' ? 'Zatvori' : 'Close'}
+                className="absolute right-4 top-4 z-10 rounded-full bg-white/8 p-2 text-white/55 transition-colors hover:bg-white/14 hover:text-white"
+              >
+                <X className="size-5" />
+              </button>
+
+              <div className="grid gap-0 md:grid-cols-[0.86fr_1.14fr]">
+                <div className="border-b border-white/10 p-4 sm:p-5 md:border-b-0 md:border-r">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.18em] text-white/70">
+                    <Calculator className="size-4 text-[#7fff00]" />
+                    {lang === 'sr' ? 'Kalkulator dometa' : 'Range calculator'}
+                  </div>
+                  <h2 id="range-calculator-title" className="mt-3 text-2xl font-black leading-tight tracking-tight sm:text-3xl">
+                    {lang === 'sr' ? 'Kako se računa Wh i realan domet?' : 'How Wh and real range are calculated'}
+                  </h2>
+                  <p className="mt-3 text-xs leading-relaxed text-white/60 sm:text-sm [@media_(max-height:720px)]:hidden">
+                    {lang === 'sr'
+                      ? 'Kapacitet baterije je V x Ah = Wh.'
+                      : 'Battery capacity is V x Ah = Wh.'}
+                  </p>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3 sm:p-4">
+                      <div className="text-[0.62rem] font-bold uppercase tracking-[0.22em] text-white/40">Wh</div>
+                      <div className="mt-1 text-3xl font-black sm:text-4xl">{batteryWh}</div>
+                      <div className="mt-1 text-xs text-white/45">{usableBatteryWh} {lang === 'sr' ? 'upotrebljivo' : 'usable'} Wh</div>
+                    </div>
+                    <div className="rounded-2xl border border-[#7fff00]/25 bg-[#7fff00]/10 p-3 sm:p-4">
+                      <div className="text-[0.62rem] font-bold uppercase tracking-[0.22em] text-[#b7ff72]/70">{lang === 'sr' ? 'Procena' : 'Estimate'}</div>
+                      <div className="mt-1 text-3xl font-black text-[#7fff00] sm:text-4xl">{estimatedRangeKm}</div>
+                      <div className="mt-1 text-xs text-white/50">{rangeLowKm}-{rangeHighKm} km</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-sm text-white/55">
+                    <div className="flex items-center justify-between gap-3">
+                      <span>{lang === 'sr' ? 'Motor' : 'Motor'}</span>
+                      <span className="font-black text-white">{legalMotorWatts}W</span>
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div className="h-full w-full rounded-full bg-[#7fff00]" />
+                    </div>
+                    <p className="mt-2 text-[0.7rem] leading-relaxed text-white/42 [@media_(max-height:720px)]:hidden">
+                      {lang === 'sr'
+                        ? 'Snaga motora ostaje zaključana na 250W jer je to standardni legalni limit za e-bike.'
+                        : 'Motor power stays locked at 250W because that is the standard legal e-bike limit.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-5">
+                  <div className="grid gap-2 sm:gap-3">
+                    <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.045] p-2">
+                      {[
+                        { key: 'lithium' as const, label: 'Lithium-ion' },
+                        { key: 'lead' as const, label: 'Lead-acid' },
+                      ].map((option) => {
+                        const isSelected = rangeCalculator.chemistry === option.key;
+                        return (
+                          <button
+                            key={option.key}
+                            type="button"
+                            onClick={() => setRangeCalculator((current) => ({ ...current, chemistry: option.key }))}
+                            className={`rounded-xl px-3 py-2 text-left transition-all ${
+                              isSelected ? 'bg-[#7fff00] text-black' : 'bg-white/[0.06] text-white/60 hover:bg-white/10 hover:text-white'
+                            }`}
+                          >
+                            <div className="text-xs font-black leading-none">{option.label}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {[
+                      {
+                        key: 'riderKg' as const,
+                        label: lang === 'sr' ? 'Težina vozača' : 'Rider weight',
+                        suffix: 'kg',
+                        min: 45,
+                        max: 130,
+                        step: 1,
+                      },
+                      {
+                        key: 'averageSpeed' as const,
+                        label: lang === 'sr' ? 'Prosečna brzina' : 'Average speed',
+                        suffix: 'km/h',
+                        min: 12,
+                        max: 40,
+                        step: 1,
+                      },
+                      {
+                        key: 'voltage' as const,
+                        label: lang === 'sr' ? 'Napon baterije' : 'Battery voltage',
+                        suffix: 'V',
+                        min: 36,
+                        max: 60,
+                        step: 1,
+                      },
+                      {
+                        key: 'ampHours' as const,
+                        label: lang === 'sr' ? 'Kapacitet baterije' : 'Battery amp-hours',
+                        suffix: 'Ah',
+                        min: 8,
+                        max: 35,
+                        step: 1,
+                      },
+                    ].map((field) => (
+                      <label key={field.key} className="rounded-2xl border border-white/10 bg-white/[0.045] p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xs font-bold text-white/78 sm:text-sm">{field.label}</span>
+                          <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-black text-white sm:text-sm">
+                            {rangeCalculator[field.key]} {field.suffix}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={field.min}
+                          max={field.max}
+                          step={field.step}
+                          value={rangeCalculator[field.key]}
+                          onChange={(event) => updateRangeCalculator(field.key, Number(event.target.value))}
+                          className="mt-3 h-1.5 w-full accent-[#7fff00]"
+                        />
+                        <div className="mt-2 flex items-center gap-3">
+                          <input
+                            type="number"
+                            min={field.min}
+                            max={field.max}
+                            step={field.step}
+                            value={rangeCalculator[field.key]}
+                            onChange={(event) => updateRangeCalculator(field.key, Number(event.target.value))}
+                            className="h-9 w-24 rounded-xl border border-white/10 bg-black/25 px-3 text-sm font-bold text-white outline-none transition-colors focus:border-[#7fff00]/60"
+                          />
+                          <span className="text-[0.68rem] font-medium text-white/38">
+                            {field.min} - {field.max} {field.suffix}
+                          </span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Potrošnja' : 'Use'}</div>
+                      <div className="mt-1 text-xl font-black sm:text-2xl">{whPerKm.toFixed(1)}</div>
+                      <div className="text-xs text-white/40">Wh/km</div>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Asist.' : 'Assist'}</div>
+                      <div className="mt-1 text-xl font-black sm:text-2xl">{fullAssistHours.toFixed(1)}h</div>
+                      <div className="text-xs text-white/40">@ 250W</div>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Formula' : 'Formula'}</div>
+                      <div className="mt-1 text-base font-black sm:text-lg">V x Ah</div>
+                      <div className="text-xs text-white/40">= Wh</div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRangeCalculatorOpen(false);
+                      openLeadModal('range-calculator-test-ride');
+                    }}
+                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#7fff00] px-5 py-3 text-xs font-black uppercase tracking-wider text-black transition-transform hover:scale-[1.015] active:scale-[0.98] sm:min-h-12 sm:text-sm"
+                  >
+                    <CalendarCheck className="size-5" />
+                    {copy.heroPrimary}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <LeadContactModal
         isOpen={leadModalSource !== null}
