@@ -1008,13 +1008,13 @@ export default function App() {
       )}
 
       {/* Product Showcase */}
-      <section id="modeli" className="relative overflow-hidden bg-background pt-12 pb-24 text-foreground sm:pt-16 sm:pb-28 lg:py-32">
+      <section id="modeli" className="relative overflow-hidden bg-background pt-12 pb-24 text-foreground sm:pt-16 sm:pb-28 lg:py-20">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-accent/20"></div>
         <div className="relative max-w-7xl mx-auto px-6">
-          <div className="text-center mb-14 md:mb-20">
-            <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4">{copy.premiumSeries}</div>
-            <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tight">{ui.navModels}</h2>
-            <p className="text-xl text-foreground/60 max-w-2xl mx-auto font-light">
+          <div className="text-center mb-14 md:mb-20 lg:mb-10">
+            <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4 lg:mb-3">{copy.premiumSeries}</div>
+            <h2 className="text-5xl md:text-6xl lg:text-5xl font-black mb-6 lg:mb-3 tracking-tight">{ui.navModels}</h2>
+            <p className="text-xl lg:text-base text-foreground/60 max-w-2xl mx-auto font-light">
               {copy.modelsCopy}
             </p>
           </div>
@@ -1034,7 +1034,7 @@ export default function App() {
             <div
               ref={productScrollRef}
               onScroll={handleProductScroll}
-              className="grid grid-flow-col auto-cols-[minmax(calc(100vw-5rem),calc(78vw))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-8 snap-x snap-mandatory overscroll-contain"
+              className="grid grid-flow-col auto-cols-[minmax(calc(100vw-5rem),calc(78vw))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-5 snap-x snap-mandatory overscroll-contain"
             >
               {bikeModels.map((model) => {
                 const gallery = 'gallery' in model ? model.gallery : undefined;
@@ -1069,7 +1069,7 @@ export default function App() {
                 <div className="relative overflow-hidden rounded-t-3xl">
                   {model.isFeatured ? <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80"></div> : null}
                   <div
-                    className="aspect-[3/2] lg:aspect-[4/3] overflow-hidden relative bg-black cursor-pointer group"
+                    className="aspect-[3/2] overflow-hidden relative bg-black cursor-pointer group"
                     onClick={handleImagePanelClick}
                   >
                     <motion.div
@@ -1159,7 +1159,7 @@ export default function App() {
                     </div>
                   </div>
                   {gallery ? (
-                    <div className="relative z-40 hidden sm:flex gap-2 overflow-x-auto border-t border-border bg-white p-2.5 shadow-inner">
+                    <div className="relative z-40 hidden sm:flex gap-2 overflow-x-auto border-t border-border bg-white p-2.5 lg:p-2 shadow-inner">
                       {gallery.map((image, index) => (
                         <button
                           key={image.src}
@@ -1169,7 +1169,7 @@ export default function App() {
                             event.stopPropagation();
                             setGalleryImage(index);
                           }}
-                          className={`aspect-square w-16 flex-none overflow-hidden rounded-2xl border bg-white p-1 shadow-sm ring-offset-2 ring-offset-white transition-all sm:w-20 ${
+                          className={`aspect-square w-16 flex-none overflow-hidden rounded-2xl border bg-white p-1 shadow-sm ring-offset-2 ring-offset-white transition-all sm:w-20 lg:w-14 lg:rounded-xl ${
                             selectedGalleryIndex === index ? 'border-primary ring-2 ring-primary' : 'border-border hover:border-primary/60 hover:ring-2 hover:ring-primary/30'
                           }`}
                         >
@@ -1184,19 +1184,23 @@ export default function App() {
                     </div>
                   ) : null}
                 </div>
-                <div className="p-4 sm:p-6 lg:p-8">
-                  <h3 className={`hidden lg:block text-2xl font-bold mb-2 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{model.name}</h3>
-                  <ul className="hidden lg:block space-y-3 mb-6 text-sm list-disc pl-5">
+                <div className="p-4 sm:p-6 lg:p-5">
+                  <h3 className={`hidden lg:block text-xl font-bold mb-1.5 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{model.name}</h3>
+                  <div className="hidden lg:grid grid-cols-3 gap-x-4 gap-y-2 mb-4 text-[0.82rem] leading-snug">
                     {model.points.map((point, index) => (
-                      <li key={index} className={model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}>
-                        {point}
-                      </li>
+                      <div
+                        key={`${model.key}-desktop-point-${index}`}
+                        className={`flex min-h-[2.35rem] items-start gap-2 ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}
+                      >
+                        <span className={`mt-[0.42rem] size-1.5 shrink-0 rounded-full ${model.isFeatured ? 'bg-primary-foreground/65' : 'bg-foreground/45'}`} />
+                        <span>{point}</span>
+                      </div>
                     ))}
-                  </ul>
-                  <div className={`pt-2 lg:pt-6 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
-                    <div className={`hidden lg:block text-5xl font-black mb-1 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>{model.monthlyPrice}</div>
-                    <div className={`hidden lg:block text-xs uppercase tracking-wider mb-3 ${model.isFeatured ? 'text-white/80' : 'text-foreground/50'}`}>{copy.perMonth}</div>
-                    <div className={`hidden lg:block text-sm mb-4 ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>{model.price}</div>
+                  </div>
+                  <div className={`pt-2 lg:pt-4 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
+                    <div className={`hidden lg:block text-3xl font-black mb-0.5 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>{model.monthlyPrice}</div>
+                    <div className={`hidden lg:block text-[0.65rem] uppercase tracking-wider mb-1.5 ${model.isFeatured ? 'text-white/80' : 'text-foreground/50'}`}>{copy.perMonth}</div>
+                    <div className={`hidden lg:block text-xs mb-3 ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>{model.price}</div>
                     <div className="mb-4 grid grid-cols-3 gap-2 lg:hidden">
                       {[
                         { value: model.mobileSpecs.range, label: copy.range },
@@ -1217,7 +1221,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => openLeadModal(`model-${model.name}`)}
-                      className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full transition-all font-semibold uppercase text-[0.65rem] sm:text-sm tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                      className={`w-full inline-flex items-center justify-center gap-2 py-3 lg:py-2.5 rounded-full transition-all font-semibold uppercase text-[0.65rem] sm:text-sm lg:text-xs tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                     >
                       <CalendarCheck className="size-3.5" />
                       {lang === 'sr' ? 'Zakaži test vožnju' : 'Book a test ride'}
@@ -1225,7 +1229,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => openLeadModal(`purchase-${model.name}`)}
-                      className={`mt-2 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2.5 text-[0.6rem] font-semibold uppercase tracking-wider active:scale-[0.98] ${
+                      className={`mt-2 lg:mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2.5 lg:py-2 text-[0.6rem] font-semibold uppercase tracking-wider active:scale-[0.98] ${
                         model.isFeatured ? 'border-white/35 text-primary-foreground/80' : 'border-border text-foreground/60'
                       }`}
                     >
