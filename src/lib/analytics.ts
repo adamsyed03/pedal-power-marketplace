@@ -8,9 +8,11 @@ export type AnalyticsEvent =
   | 'test_ride_form_submit'
   | 'primary_cta_click';
 
-const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
+const fallbackPosthogKey = 'phc_AsUGwDMvHs5gKmH5ayPcu2kWPFHRijRJD4fq43CoE56e';
+const posthogKey = import.meta.env.VITE_POSTHOG_KEY || fallbackPosthogKey;
 const posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
 const isBrowser = typeof window !== 'undefined';
+const posthogKeySource = import.meta.env.VITE_POSTHOG_KEY ? 'env' : 'fallback';
 
 type AnalyticsWindow = Window & {
   posthog?: typeof posthog;
@@ -19,6 +21,10 @@ type AnalyticsWindow = Window & {
     keyPresent: boolean;
     host: string;
     initialized: boolean;
+    keySource: 'env' | 'fallback';
+    sessionId?: string;
+    sessionRecordingStarted?: boolean;
+    sessionReplayUrl?: string;
   };
 };
 
@@ -32,6 +38,7 @@ export const initAnalytics = () => {
   analyticsWindow.__pogonAnalytics = {
     packageLoaded: true,
     keyPresent: Boolean(posthogKey),
+    keySource: posthogKeySource,
     host: posthogHost,
     initialized: false,
   };
@@ -50,17 +57,42 @@ export const initAnalytics = () => {
     person_profiles: 'identified_only',
     disable_session_recording: false,
     session_recording: {
+      enabled: true,
       maskAllInputs: true,
     },
     loaded: (posthogInstance) => {
       analyticsWindow.__pogonAnalytics = {
         packageLoaded: true,
         keyPresent: true,
+        keySource: posthogKeySource,
         host: posthogHost,
         initialized: true,
+        sessionId: posthogInstance.get_session_id(),
+        sessionRecordingStarted: posthogInstance.sessionRecordingStarted(),
+        sessionReplayUrl: posthogInstance.get_session_replay_url(),
       };
+      posthogInstance.startSessionRecording(true);
+      window.setTimeout(() => {
+        analyticsWindow.__pogonAnalytics = {
+          packageLoaded: true,
+          keyPresent: true,
+          keySource: posthogKeySource,
+          host: posthogHost,
+          initialized: true,
+          sessionId: posthogInstance.get_session_id(),
+          sessionRecordingStarted: posthogInstance.sessionRecordingStarted(),
+          sessionReplayUrl: posthogInstance.get_session_replay_url(),
+        };
+        posthogInstance.capture('session_replay_debug', {
+          source: 'posthog_js_init',
+          keySource: posthogKeySource,
+          sessionRecordingStarted: String(posthogInstance.sessionRecordingStarted()),
+          sessionReplayUrl: posthogInstance.get_session_replay_url(),
+        });
+      }, 1500);
       posthogInstance.capture('site_loaded', {
         source: 'posthog_js_init',
+        keySource: posthogKeySource,
       });
     },
   });
