@@ -1516,35 +1516,35 @@ export default function App() {
       </section>
 
       {/* Savings Quiz */}
-      <section className="bg-white px-4 py-8 text-black sm:px-6 sm:py-10">
+      <section className="bg-white px-3 py-6 text-black sm:px-6 sm:py-10">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55 }}
           viewport={{ once: true, amount: 0.25 }}
-          className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5 lg:p-6"
+          className="mx-auto max-w-5xl rounded-2xl border border-black/10 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-5 lg:p-6"
         >
-          <div className="grid gap-4 lg:grid-cols-[1fr_0.78fr] lg:items-end">
+          <div className="grid gap-3 sm:gap-4 lg:grid-cols-[1fr_0.78fr] lg:items-end">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-black px-3 py-1.5 text-[0.6rem] font-black uppercase tracking-[0.16em] text-white">
+              <div className="inline-flex items-center gap-2 rounded-full bg-black px-2.5 py-1.5 text-[0.58rem] font-black uppercase tracking-[0.14em] text-white sm:px-3 sm:text-[0.6rem]">
                 <Car className="size-3.5" />
                 {lang === 'sr' ? 'Automobil' : 'Car'}
               </div>
-              <h2 className="mt-4 max-w-xl text-2xl font-black leading-[1.03] tracking-tight sm:text-4xl">
+              <h2 className="mt-3 max-w-xl text-xl font-black leading-[1.05] tracking-tight sm:mt-4 sm:text-4xl">
                 {lang === 'sr' ? 'Koliko ostaje u d\u017eepu?' : 'How much stays in your pocket?'}
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/60 sm:text-base">
+              <p className="mt-2 max-w-xl text-xs leading-relaxed text-black/60 sm:mt-3 sm:text-base">
                 {lang === 'sr'
                   ? 'Unesi svoju dnevnu vo\u017enju i cenu goriva. Dobija\u0161 brzu procenu razlike izme\u0111u automobila i Pogon e-bicikla.'
                   : 'Enter your daily ride and fuel cost. Get a quick estimate of the difference between a car and a Pogon e-bike.'}
               </p>
             </div>
-            <div className="rounded-2xl bg-black p-4 text-center text-white">
+            <div className="rounded-2xl bg-black p-3 text-center text-white sm:p-4">
               <div className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-white/50">
                 {lang === 'sr' ? 'Godi\u0161nja u\u0161teda' : 'Yearly savings'}
               </div>
-              <div className="mt-2 text-3xl font-black leading-none sm:text-4xl">{formatRsd(yearlySavings)}</div>
-              <div className="mt-3 grid grid-cols-2 gap-3 border-t border-white/10 pt-3 text-xs sm:text-sm">
+              <div className="mt-2 text-2xl font-black leading-none sm:text-4xl">{formatRsd(yearlySavings)}</div>
+              <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3 text-[0.7rem] sm:gap-3 sm:text-sm">
                 <div>
                   <div className="text-white/45">{lang === 'sr' ? 'Mese\u010dno' : 'Monthly'}</div>
                   <div className="mt-1 font-black">{formatRsd(monthlySavings)}</div>
@@ -1557,8 +1557,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div className="grid gap-4">
+          <div className="mt-4 grid gap-4 sm:mt-6 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="grid gap-3 sm:gap-4">
               {[
                 {
                   key: 'dailyKm' as const,
@@ -1585,9 +1585,9 @@ export default function App() {
                   step: 0.5,
                 },
               ].map((field) => (
-                <label key={field.key} className="block border-t border-black/10 pt-3 first:border-t-0 first:pt-0">
+                <label key={field.key} className="block border-t border-black/10 pt-2.5 first:border-t-0 first:pt-0 sm:pt-3">
                   <div className="mb-2 flex items-center justify-between gap-4">
-                    <span className="text-xs font-black uppercase tracking-[0.08em] text-black/60 sm:text-sm">{field.label}</span>
+                    <span className="text-[0.7rem] font-black uppercase tracking-[0.08em] text-black/60 sm:text-sm">{field.label}</span>
                     <span className="text-sm font-black sm:text-base">
                       {savingsQuiz[field.key]} {field.suffix}
                     </span>
@@ -1605,7 +1605,7 @@ export default function App() {
               ))}
             </div>
             <div className="flex h-full flex-col justify-center gap-2 sm:flex-row sm:items-center lg:w-56 lg:flex-col">
-              <a href="#modeli" className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-black px-5 text-xs font-black uppercase tracking-wider text-white transition-transform hover:scale-[1.01] active:scale-[0.99] sm:text-sm">
+              <a href="#modeli" className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-black px-5 text-xs font-black uppercase tracking-wider text-white transition-transform hover:scale-[1.01] active:scale-[0.99] sm:min-h-12 sm:text-sm">
                 {lang === 'sr' ? 'Istra\u017ei modele' : 'Explore models'}
               </a>
               <p className="text-center text-[0.7rem] leading-relaxed text-black/45 sm:text-left lg:text-center">
@@ -2374,7 +2374,7 @@ export default function App() {
       <AnimatePresence>
         {isRangeCalculatorOpen ? (
           <motion.div
-            className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-2 backdrop-blur-md sm:p-4"
+            className="fixed inset-0 z-[95] flex items-center justify-center bg-black/70 p-1 backdrop-blur-md sm:p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -2389,55 +2389,55 @@ export default function App() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 18, scale: 0.97 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="relative h-[calc(100dvh-1rem)] w-full overflow-y-auto rounded-3xl border border-white/10 bg-[#080812] text-white shadow-[0_28px_90px_rgba(0,0,0,0.55)] sm:h-auto sm:max-h-[calc(100dvh-2rem)] md:h-[80dvh] md:w-[80vw] md:max-w-none md:overflow-hidden"
+              className="relative h-[calc(100dvh-0.5rem)] w-full overflow-y-auto rounded-2xl border border-white/10 bg-[#080812] text-white shadow-[0_28px_90px_rgba(0,0,0,0.55)] sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:rounded-3xl lg:h-[80dvh] lg:w-[80vw] lg:max-w-none lg:overflow-hidden"
             >
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/55 to-transparent" />
               <button
                 type="button"
                 onClick={() => setIsRangeCalculatorOpen(false)}
                 aria-label={lang === 'sr' ? 'Zatvori' : 'Close'}
-                className="absolute right-4 top-4 z-10 rounded-full bg-white/8 p-2 text-white/55 transition-colors hover:bg-white/14 hover:text-white"
+                className="absolute right-2 top-2 z-10 rounded-full bg-white/8 p-1.5 text-white/55 transition-colors hover:bg-white/14 hover:text-white sm:right-4 sm:top-4 sm:p-2"
               >
-                <X className="size-5" />
+                <X className="size-4 sm:size-5" />
               </button>
 
-              <div className="grid min-h-full gap-0 md:h-full md:grid-cols-[0.78fr_1.22fr]">
-                <div className="border-b border-white/10 p-3 sm:p-5 md:flex md:h-full md:flex-col md:border-b-0 md:border-r md:p-[clamp(1.5rem,2vw,2.5rem)]">
-                  <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-[0.56rem] font-bold uppercase tracking-[0.16em] text-white/70 sm:text-[0.62rem]">
-                    <Calculator className="size-4 text-white" />
+              <div className="grid min-h-full gap-0 lg:h-full lg:grid-cols-[0.78fr_1.22fr]">
+                <div className="border-b border-white/10 p-2 sm:p-5 lg:flex lg:h-full lg:flex-col lg:border-b-0 lg:border-r lg:p-[clamp(1.5rem,2vw,2.5rem)]">
+                  <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/8 px-2.5 py-1 text-[0.52rem] font-bold uppercase tracking-[0.14em] text-white/70 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[0.62rem]">
+                    <Calculator className="size-3.5 text-white sm:size-4" />
                     {lang === 'sr' ? 'Kalkulator dometa' : 'Range calculator'}
                   </div>
-                  <h2 id="range-calculator-title" className="mt-2 pr-10 text-xl font-black leading-tight tracking-tight sm:mt-3 sm:text-3xl md:mt-5 md:pr-0 md:text-[clamp(2rem,2.9vw,3.6rem)]">
+                  <h2 id="range-calculator-title" className="mt-1.5 pr-9 text-base font-black leading-tight tracking-tight sm:mt-3 sm:text-3xl lg:mt-5 lg:pr-0 lg:text-[clamp(2rem,2.9vw,3.6rem)]">
                     {lang === 'sr' ? 'Kako se računa Wh i realan domet?' : 'How Wh and real range are calculated'}
                   </h2>
-                  <p className="mt-2 text-xs leading-relaxed text-white/60 sm:mt-3 sm:text-sm md:mt-5 md:text-base [@media_(max-height:720px)]:hidden">
+                  <p className="mt-2 hidden text-xs leading-relaxed text-white/60 sm:mt-3 sm:text-sm lg:mt-5 lg:block lg:text-base">
                     {lang === 'sr'
                       ? 'Kapacitet baterije je V x Ah = Wh.'
                       : 'Battery capacity is V x Ah = Wh.'}
                   </p>
 
-                  <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:gap-3 md:mt-8 md:gap-4">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3 md:p-5">
+                  <div className="mt-2 grid grid-cols-2 gap-1.5 sm:mt-4 sm:gap-3 lg:mt-8 lg:gap-4">
+                    <div className="rounded-xl border border-white/10 bg-white/[0.06] p-2 sm:rounded-2xl sm:p-3 lg:p-5">
                       <div className="text-[0.56rem] font-bold uppercase tracking-[0.18em] text-white/40 sm:text-[0.62rem]">Wh</div>
-                      <div className="mt-1 text-2xl font-black sm:text-4xl md:text-[clamp(2.5rem,4vw,4.5rem)]">{batteryWh}</div>
-                      <div className="mt-1 text-xs text-white/45">{usableBatteryWh} {lang === 'sr' ? 'upotrebljivo' : 'usable'} Wh</div>
+                      <div className="mt-1 text-xl font-black sm:text-4xl lg:text-[clamp(2.5rem,4vw,4.5rem)]">{batteryWh}</div>
+                      <div className="mt-0.5 text-[0.68rem] text-white/45 sm:text-xs">{usableBatteryWh} {lang === 'sr' ? 'upotrebljivo' : 'usable'} Wh</div>
                     </div>
-                    <div className="rounded-2xl border border-white/20 bg-white/[0.09] p-3 md:p-5">
+                    <div className="rounded-xl border border-white/20 bg-white/[0.09] p-2 sm:rounded-2xl sm:p-3 lg:p-5">
                       <div className="text-[0.56rem] font-bold uppercase tracking-[0.18em] text-white/55 sm:text-[0.62rem]">{lang === 'sr' ? 'Procena' : 'Estimate'}</div>
-                      <div className="mt-1 text-2xl font-black text-white sm:text-4xl md:text-[clamp(2.5rem,4vw,4.5rem)]">{estimatedRangeKm}</div>
-                      <div className="mt-1 text-xs text-white/50">{rangeLowKm}-{rangeHighKm} km</div>
+                      <div className="mt-1 text-xl font-black text-white sm:text-4xl lg:text-[clamp(2.5rem,4vw,4.5rem)]">{estimatedRangeKm}</div>
+                      <div className="mt-0.5 text-[0.68rem] text-white/50 sm:text-xs">{rangeLowKm}-{rangeHighKm} km</div>
                     </div>
                   </div>
 
-                  <div className="mt-2 rounded-2xl border border-white/10 bg-black/20 p-2.5 text-xs text-white/55 sm:mt-3 sm:p-3 sm:text-sm md:mt-auto md:p-5">
-                    <div className="flex items-center justify-between gap-3">
+                  <div className="hidden">
+                    <div className="flex items-center justify-start gap-2 lg:justify-between lg:gap-3">
                       <span>{lang === 'sr' ? 'Motor' : 'Motor'}</span>
                       <span className="font-black text-white">{legalMotorWatts}W</span>
                     </div>
-                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                    <div className="mt-2 hidden h-1.5 overflow-hidden rounded-full bg-white/10 lg:block">
                       <div className="h-full w-full rounded-full bg-white" />
                     </div>
-                    <p className="mt-2 text-[0.7rem] leading-relaxed text-white/42 [@media_(max-height:720px)]:hidden">
+                    <p className="mt-1 hidden text-[0.65rem] leading-relaxed text-white/42 lg:block">
                       {lang === 'sr'
                         ? 'Snaga motora ostaje zaključana na 250W jer je to standardni legalni limit za e-bike.'
                         : 'Motor power stays locked at 250W because that is the standard legal e-bike limit.'}
@@ -2445,9 +2445,9 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="p-3 sm:p-5 md:flex md:h-full md:min-h-0 md:flex-col md:p-[clamp(1.5rem,2vw,2.5rem)]">
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-2 md:gap-4">
-                    <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.045] p-2 md:col-span-2 md:p-3">
+                <div className="p-2 sm:p-5 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:p-[clamp(1.5rem,2vw,2.5rem)]">
+                  <div className="grid grid-cols-1 items-start gap-1.5 sm:gap-2 lg:grid-cols-2 lg:gap-4">
+                    <div className="grid grid-cols-2 items-start gap-1.5 self-start rounded-xl border border-white/10 bg-white/[0.045] p-1 sm:gap-2 sm:rounded-2xl sm:p-2 lg:col-span-2 lg:p-3">
                       {[
                         { key: 'lithium' as const, label: 'Lithium-ion' },
                         { key: 'lead' as const, label: 'Lead-acid' },
@@ -2458,11 +2458,11 @@ export default function App() {
                             key={option.key}
                             type="button"
                             onClick={() => setRangeCalculator((current) => ({ ...current, chemistry: option.key }))}
-                            className={`rounded-xl px-2.5 py-2 text-left transition-all ${
+                            className={`h-8 rounded-lg px-2 py-1 text-center transition-all sm:h-9 sm:rounded-xl sm:px-2.5 sm:py-2 lg:h-10 lg:text-left ${
                               isSelected ? 'bg-white text-black' : 'bg-white/[0.06] text-white/60 hover:bg-white/10 hover:text-white'
                             }`}
                           >
-                            <div className="text-xs font-black leading-none md:text-sm">{option.label}</div>
+                            <div className="text-[0.68rem] font-black leading-none sm:text-xs lg:text-sm">{option.label}</div>
                           </button>
                         );
                       })}
@@ -2501,10 +2501,10 @@ export default function App() {
                         step: 1,
                       },
                     ].map((field) => (
-                      <label key={field.key} className="rounded-2xl border border-white/10 bg-white/[0.045] p-2.5 sm:p-3 md:p-5">
+                      <label key={field.key} className="rounded-xl border border-white/10 bg-white/[0.045] p-1.5 sm:rounded-2xl sm:p-2 lg:p-5">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[0.72rem] font-bold leading-tight text-white/78 sm:text-sm md:text-base">{field.label}</span>
-                          <span className="rounded-full bg-white/10 px-2 py-1 text-[0.68rem] font-black text-white sm:text-sm">
+                          <span className="text-[0.66rem] font-bold leading-tight text-white/78 sm:text-xs lg:text-base">{field.label}</span>
+                          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[0.62rem] font-black text-white sm:px-2 sm:py-1 sm:text-xs lg:text-sm">
                             {rangeCalculator[field.key]} {field.suffix}
                           </span>
                         </div>
@@ -2515,9 +2515,9 @@ export default function App() {
                           step={field.step}
                           value={rangeCalculator[field.key]}
                           onChange={(event) => updateRangeCalculator(field.key, Number(event.target.value))}
-                          className="mt-2 h-1.5 w-full accent-white md:mt-5"
+                          className="mt-1.5 h-1.5 w-full accent-white sm:mt-2 lg:mt-5"
                         />
-                        <div className="mt-2 flex items-center gap-2 md:mt-4">
+                        <div className="mt-2 hidden items-center gap-2 lg:flex lg:mt-4">
                           <input
                             type="number"
                             min={field.min}
@@ -2535,21 +2535,21 @@ export default function App() {
                     ))}
                   </div>
 
-                  <div className="mt-2 grid grid-cols-3 gap-2 sm:mt-3 sm:gap-3 md:mt-auto md:gap-4">
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-2.5 sm:p-3 md:p-4">
+                  <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:mt-2 sm:gap-2 lg:mt-auto lg:gap-4">
+                    <div className="rounded-xl border border-white/10 bg-black/20 p-1.5 sm:rounded-2xl sm:p-2 lg:p-4">
                       <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Potrošnja' : 'Use'}</div>
-                      <div className="mt-1 text-xl font-black sm:text-2xl">{whPerKm.toFixed(1)}</div>
-                      <div className="text-xs text-white/40">Wh/km</div>
+                      <div className="mt-0.5 text-base font-black sm:mt-1 sm:text-xl lg:text-2xl">{whPerKm.toFixed(1)}</div>
+                      <div className="text-[0.6rem] text-white/40 sm:text-xs">Wh/km</div>
                     </div>
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-2.5 sm:p-3 md:p-4">
-                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Rad' : 'Runtime'}</div>
-                      <div className="mt-1 text-xl font-black sm:text-2xl">{fullAssistHours.toFixed(1)}h</div>
-                      <div className="text-xs text-white/40">@ 250W</div>
+                    <div className="rounded-xl border border-white/10 bg-black/20 p-1.5 sm:rounded-2xl sm:p-2 lg:p-4">
+                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Motor' : 'Motor'}</div>
+                      <div className="mt-0.5 text-base font-black sm:mt-1 sm:text-xl lg:text-2xl">{legalMotorWatts}W</div>
+                      <div className="text-[0.6rem] text-white/40 sm:text-xs">{lang === 'sr' ? 'limit' : 'limit'}</div>
                     </div>
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-2.5 sm:p-3 md:p-4">
+                    <div className="rounded-xl border border-white/10 bg-black/20 p-1.5 sm:rounded-2xl sm:p-2 lg:p-4">
                       <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Formula' : 'Formula'}</div>
-                      <div className="mt-1 text-base font-black sm:text-lg">V x Ah</div>
-                      <div className="text-xs text-white/40">= Wh</div>
+                      <div className="mt-0.5 text-xs font-black sm:mt-1 sm:text-base lg:text-lg">V x Ah</div>
+                      <div className="text-[0.6rem] text-white/40 sm:text-xs">= Wh</div>
                     </div>
                   </div>
 
@@ -2559,9 +2559,9 @@ export default function App() {
                       setIsRangeCalculatorOpen(false);
                       openLeadModal('range-calculator-test-ride');
                     }}
-                    className="mt-2 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-black uppercase tracking-wider text-black transition-transform hover:scale-[1.015] active:scale-[0.98] hover:bg-white/90 sm:mt-3 sm:min-h-12 sm:text-sm"
+                    className="mt-1.5 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-2 text-[0.7rem] font-black uppercase tracking-wider text-black transition-transform hover:scale-[1.015] active:scale-[0.98] hover:bg-white/90 sm:mt-3 sm:min-h-12 sm:text-sm"
                   >
-                    <CalendarCheck className="size-5" />
+                    <CalendarCheck className="size-4 sm:size-5" />
                     {copy.heroPrimary}
                   </button>
                 </div>
