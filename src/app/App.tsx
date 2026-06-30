@@ -1150,7 +1150,7 @@ export default function App() {
             <div
               ref={productScrollRef}
               onScroll={handleProductScroll}
-              className="grid grid-flow-col auto-cols-[minmax(14.5rem,calc(100vw-7rem))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 sm:auto-cols-[18rem] lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-5 snap-x snap-mandatory"
+              className="grid grid-flow-col auto-cols-[minmax(17.5rem,calc(100vw-3rem))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 sm:auto-cols-[21rem] lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-5 snap-x snap-mandatory"
             >
               {bikeModels.map((model) => {
                 const gallery = 'gallery' in model ? model.gallery : undefined;
@@ -1185,7 +1185,7 @@ export default function App() {
                 <div className="relative overflow-hidden rounded-t-3xl">
                   {model.isFeatured ? <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80"></div> : null}
                   <div
-                    className="aspect-[5/4] overflow-hidden relative bg-black cursor-pointer group lg:aspect-[3/2]"
+                    className="aspect-[4/5] overflow-hidden relative bg-black cursor-pointer group sm:aspect-[5/4] lg:aspect-[3/2]"
                     onClick={handleImagePanelClick}
                   >
                     <motion.div
@@ -1952,13 +1952,13 @@ export default function App() {
                 event.stopPropagation();
                 setIsLightboxZoomed((current) => !current);
               }}
-              className={`flex h-full w-full items-center justify-center overflow-auto rounded-2xl ${isLightboxZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
+              className={`flex h-full w-full items-center justify-center overflow-auto rounded-2xl bg-black ${isLightboxZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
               aria-label={isLightboxZoomed ? 'Reset zoom' : 'Zoom image'}
             >
               <ImageWithFallback
                 src={lightboxImage.src}
                 alt={lightboxImage.alt}
-                className={`h-full w-full object-cover object-center transition-transform duration-300 ${isLightboxZoomed ? 'scale-150' : 'scale-100'}`}
+                className={`max-h-full max-w-full object-contain object-center transition-transform duration-300 ${isLightboxZoomed ? 'scale-110' : 'scale-100'}`}
               />
             </button>
 
@@ -2021,9 +2021,9 @@ export default function App() {
             <div>
               <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 sm:mb-4">{ui.footerProducts}</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-foreground/60">
-                <li><a href="#" className="hover:text-foreground transition-colors">POGON Urban</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">POGON Pro</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">POGON Sport</a></li>
+                <li><a href="#modeli" className="hover:text-foreground transition-colors">Glide</a></li>
+                <li><a href="#modeli" className="hover:text-foreground transition-colors">Core</a></li>
+                <li><a href="#modeli" className="hover:text-foreground transition-colors">Cargo</a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">{ui.footerCompare}</a></li>
               </ul>
             </div>

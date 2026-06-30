@@ -21,7 +21,8 @@ export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps)
   const frameRequestRef = useRef(0);
   const currentFrameRef = useRef(0);
   const targetFrameRef = useRef(0);
-  const fallbackSrc = framePath(0);
+  const fallbackSrc = publicAsset('Excellent4.optimized.jpg');
+  const sequenceFallbackSrc = framePath(0);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const scrollProgress = useMotionValue(0);
 
@@ -167,6 +168,13 @@ export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps)
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         <img
           src={fallbackSrc}
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-100"
+        />
+        <img
+          src={sequenceFallbackSrc}
           alt=""
           aria-hidden="true"
           fetchPriority="high"
