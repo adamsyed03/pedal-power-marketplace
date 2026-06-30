@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator } from 'lucide-react';
+import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { ScrollyCanvas } from './components/ScrollyCanvas';
 import { Overlay } from './components/Overlay';
@@ -136,7 +136,7 @@ export default function App() {
   const [activeTechnologyCard, setActiveTechnologyCard] = useState<number | null>(null);
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
   const [activeLightboxProduct, setActiveLightboxProduct] = useState<string | null>(null);
-  const [isLightboxZoomed, setIsLightboxZoomed] = useState(false);
+  const [lightboxZoom, setLightboxZoom] = useState(1);
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
   const [leadModalSource, setLeadModalSource] = useState<string | null>(null);
   const [isContactWidgetOpen, setIsContactWidgetOpen] = useState(false);
@@ -155,6 +155,11 @@ export default function App() {
     voltage: 48,
     ampHours: 25,
     chemistry: 'lithium' as 'lithium' | 'lead',
+  });
+  const [savingsQuiz, setSavingsQuiz] = useState({
+    dailyKm: 20,
+    fuelPrice: 200,
+    fuelConsumption: 9,
   });
   const popupShownRef = useRef(false);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
@@ -198,6 +203,16 @@ export default function App() {
     if (!Number.isFinite(value)) return;
     setRangeCalculator((current) => ({ ...current, [key]: value }));
   };
+  const updateSavingsQuiz = (key: 'dailyKm' | 'fuelPrice' | 'fuelConsumption', value: number) => {
+    if (!Number.isFinite(value)) return;
+    setSavingsQuiz((current) => ({ ...current, [key]: value }));
+  };
+  const dailyFuelCost = (savingsQuiz.dailyKm * savingsQuiz.fuelConsumption * savingsQuiz.fuelPrice) / 100;
+  const dailyElectricCost = savingsQuiz.dailyKm * 0.5;
+  const monthlySavings = Math.max(0, Math.round((dailyFuelCost - dailyElectricCost) * 30));
+  const yearlySavings = Math.max(0, Math.round((dailyFuelCost - dailyElectricCost) * 365));
+  const yearlyCo2Kg = Math.max(0, Math.round((savingsQuiz.dailyKm * 365 * savingsQuiz.fuelConsumption * 2.31) / 100));
+  const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS').format(value)} RSD`;
   const ui = lang === 'sr'
     ? {
         navModels: 'Modeli',
@@ -723,14 +738,18 @@ export default function App() {
   const lightboxGallery = lightboxModel && 'gallery' in lightboxModel ? lightboxModel.gallery : undefined;
   const lightboxIndex = lightboxModel ? activeGalleryImages[lightboxModel.key] ?? 0 : 0;
   const lightboxImage = lightboxGallery?.[lightboxIndex];
+  const canZoomOut = lightboxZoom > 1;
+  const canZoomIn = lightboxZoom < 2;
+  const zoomLightboxIn = () => setLightboxZoom((current) => Math.min(2, Number((current + 0.25).toFixed(2))));
+  const zoomLightboxOut = () => setLightboxZoom((current) => Math.max(1, Number((current - 0.25).toFixed(2))));
   const setLightboxImage = (index: number) => {
     if (!lightboxModel || !lightboxGallery) return;
     setActiveGalleryImages((current) => ({ ...current, [lightboxModel.key]: index }));
-    setIsLightboxZoomed(false);
+    setLightboxZoom(1);
   };
   const closeLightbox = () => {
     setActiveLightboxProduct(null);
-    setIsLightboxZoomed(false);
+    setLightboxZoom(1);
   };
 
   if (new URLSearchParams(window.location.search).get('admin') === '1') {
@@ -1166,7 +1185,7 @@ export default function App() {
                 const handleImagePanelClick = () => {
                   if (gallery) {
                     setActiveLightboxProduct(model.key);
-                    setIsLightboxZoomed(false);
+                    setLightboxZoom(1);
                     return;
                   }
 
@@ -1235,7 +1254,7 @@ export default function App() {
                         onClick={(event) => {
                           event.stopPropagation();
                           setActiveLightboxProduct(model.key);
-                          setIsLightboxZoomed(false);
+                          setLightboxZoom(1);
                         }}
                         className="absolute bottom-4 right-4 z-30 hidden h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65 sm:inline-flex"
                       >
@@ -1494,6 +1513,231 @@ export default function App() {
             </div>
           </motion.div>
         </div>
+      </section>
+
+      {/* Savings Quiz */}
+      <section className="bg-white px-4 py-8 text-black sm:px-6 sm:py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55 }}
+          viewport={{ once: true, amount: 0.25 }}
+          className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5 lg:p-6"
+        >
+          <div className="grid gap-4 lg:grid-cols-[1fr_0.78fr] lg:items-end">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-black px-3 py-1.5 text-[0.6rem] font-black uppercase tracking-[0.16em] text-white">
+                <Car className="size-3.5" />
+                {lang === 'sr' ? 'Automobil' : 'Car'}
+              </div>
+              <h2 className="mt-4 max-w-xl text-2xl font-black leading-[1.03] tracking-tight sm:text-4xl">
+                {lang === 'sr' ? 'Koliko ostaje u d\u017eepu?' : 'How much stays in your pocket?'}
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/60 sm:text-base">
+                {lang === 'sr'
+                  ? 'Unesi svoju dnevnu vo\u017enju i cenu goriva. Dobija\u0161 brzu procenu razlike izme\u0111u automobila i Pogon e-bicikla.'
+                  : 'Enter your daily ride and fuel cost. Get a quick estimate of the difference between a car and a Pogon e-bike.'}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-black p-4 text-center text-white">
+              <div className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-white/50">
+                {lang === 'sr' ? 'Godi\u0161nja u\u0161teda' : 'Yearly savings'}
+              </div>
+              <div className="mt-2 text-3xl font-black leading-none sm:text-4xl">{formatRsd(yearlySavings)}</div>
+              <div className="mt-3 grid grid-cols-2 gap-3 border-t border-white/10 pt-3 text-xs sm:text-sm">
+                <div>
+                  <div className="text-white/45">{lang === 'sr' ? 'Mese\u010dno' : 'Monthly'}</div>
+                  <div className="mt-1 font-black">{formatRsd(monthlySavings)}</div>
+                </div>
+                <div>
+                  <div className="text-white/45">CO2</div>
+                  <div className="mt-1 font-black">{new Intl.NumberFormat('sr-RS').format(yearlyCo2Kg)} kg</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="grid gap-4">
+              {[
+                {
+                  key: 'dailyKm' as const,
+                  label: lang === 'sr' ? 'Kilometara dnevno' : 'Daily kilometers',
+                  suffix: 'km',
+                  min: 1,
+                  max: 100,
+                  step: 1,
+                },
+                {
+                  key: 'fuelPrice' as const,
+                  label: lang === 'sr' ? 'Cena goriva' : 'Fuel price',
+                  suffix: 'RSD',
+                  min: 100,
+                  max: 300,
+                  step: 5,
+                },
+                {
+                  key: 'fuelConsumption' as const,
+                  label: lang === 'sr' ? 'Potro\u0161nja auta' : 'Car consumption',
+                  suffix: 'L/100km',
+                  min: 3,
+                  max: 15,
+                  step: 0.5,
+                },
+              ].map((field) => (
+                <label key={field.key} className="block border-t border-black/10 pt-3 first:border-t-0 first:pt-0">
+                  <div className="mb-2 flex items-center justify-between gap-4">
+                    <span className="text-xs font-black uppercase tracking-[0.08em] text-black/60 sm:text-sm">{field.label}</span>
+                    <span className="text-sm font-black sm:text-base">
+                      {savingsQuiz[field.key]} {field.suffix}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={field.min}
+                    max={field.max}
+                    step={field.step}
+                    value={savingsQuiz[field.key]}
+                    onChange={(event) => updateSavingsQuiz(field.key, Number(event.target.value))}
+                    className="h-1.5 w-full accent-black"
+                  />
+                </label>
+              ))}
+            </div>
+            <div className="flex h-full flex-col justify-center gap-2 sm:flex-row sm:items-center lg:w-56 lg:flex-col">
+              <a href="#modeli" className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-black px-5 text-xs font-black uppercase tracking-wider text-white transition-transform hover:scale-[1.01] active:scale-[0.99] sm:text-sm">
+                {lang === 'sr' ? 'Istra\u017ei modele' : 'Explore models'}
+              </a>
+              <p className="text-center text-[0.7rem] leading-relaxed text-black/45 sm:text-left lg:text-center">
+                {lang === 'sr'
+                  ? '* Struja je ra\u010dunata okvirno kao 0.5 RSD/km.'
+                  : '* Electricity is estimated at roughly 0.5 RSD/km.'}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Legacy Savings Quiz */}
+      <section className="hidden">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55 }}
+          viewport={{ once: true, amount: 0.25 }}
+          className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-[0.72fr_1.28fr]"
+        >
+          <div className="flex flex-col justify-between overflow-hidden rounded-[2rem] bg-black p-6 text-white shadow-xl sm:p-8 lg:min-h-[34rem]">
+            <div>
+              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[0.65rem] font-black uppercase tracking-[0.18em] text-white/60">
+                <Car className="size-4" />
+                {lang === 'sr' ? 'Automobil' : 'Car'}
+              </div>
+              <h2 className="mt-6 max-w-[10ch] text-4xl font-black leading-[0.96] tracking-tight sm:text-5xl">
+                {lang === 'sr' ? 'Izra\u010dunaj u\u0161tedu bez naga\u0111anja' : 'Calculate savings without guessing'}
+              </h2>
+              <p className="mt-5 max-w-md text-base leading-relaxed text-white/65">
+                {lang === 'sr'
+                  ? 'Podesi svakodnevnu vo\u017enju i cenu goriva. Kalkulator odmah prikazuje koliko prelazak na Pogon mo\u017ee da promeni mese\u010dni i godi\u0161nji tro\u0161ak.'
+                  : 'Adjust your daily ride and fuel price. The calculator shows how switching to Pogon can change monthly and yearly running costs.'}
+              </p>
+            </div>
+            <div className="mt-8 rounded-3xl border border-white/10 bg-white px-5 py-4 text-black">
+              <div className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-black/45">
+                {lang === 'sr' ? 'Procena' : 'Estimate'}
+              </div>
+              <div className="mt-1 text-2xl font-black leading-none">{formatRsd(yearlySavings)}</div>
+              <div className="mt-1 text-xs text-black/50">{lang === 'sr' ? 'godi\u0161nje' : 'per year'}</div>
+            </div>
+          </div>
+          <div className="rounded-[2rem] border border-black/10 bg-white p-5 shadow-xl sm:p-6 lg:p-8">
+          <div className="hidden">
+            <div>
+              <div className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-2xl border border-black/10 bg-white px-5 text-base font-black text-black sm:w-auto sm:text-lg">
+                <Car className="size-5" />
+                {lang === 'sr' ? 'Automobil' : 'Car'}
+              </div>
+              <h2 className="sr-only">
+                {lang === 'sr' ? 'Koliko možeš da uštediš?' : 'How much can you save?'}
+              </h2>
+            </div>
+            <a href="#modeli" className="hidden">
+              {lang === 'sr' ? 'Modeli' : 'Models'}
+            </a>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            {[
+              {
+                key: 'dailyKm' as const,
+                label: lang === 'sr' ? 'Koliko km dnevno voziš?' : 'How many km do you ride daily?',
+                suffix: 'km',
+                min: 1,
+                max: 100,
+                step: 1,
+              },
+              {
+                key: 'fuelPrice' as const,
+                label: lang === 'sr' ? 'Cena goriva po litru' : 'Fuel price per liter',
+                suffix: 'RSD',
+                min: 100,
+                max: 300,
+                step: 5,
+              },
+              {
+                key: 'fuelConsumption' as const,
+                label: lang === 'sr' ? 'Potrošnja goriva' : 'Fuel consumption',
+                suffix: 'L/100km',
+                min: 3,
+                max: 15,
+                step: 0.5,
+              },
+            ].map((field) => (
+              <label key={field.key} className="block rounded-2xl border border-black/10 bg-[#f7f7f4] p-4">
+                <div className="mb-3 flex items-center justify-between gap-4">
+                  <span className="text-sm font-black leading-tight sm:text-base">{field.label}</span>
+                  <span className="shrink-0 rounded-full bg-black px-3 py-1 text-sm font-black text-white">
+                    {savingsQuiz[field.key]} {field.suffix}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={field.min}
+                  max={field.max}
+                  step={field.step}
+                  value={savingsQuiz[field.key]}
+                  onChange={(event) => updateSavingsQuiz(field.key, Number(event.target.value))}
+                  className="h-2 w-full accent-black"
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-black/10 bg-[#f7f7f4] p-4 text-center">
+              <div className="text-sm text-black/55">{lang === 'sr' ? 'Mesečna ušteda' : 'Monthly savings'}</div>
+              <div className="mt-4 text-xl font-black">{formatRsd(monthlySavings)}</div>
+            </div>
+            <div className="rounded-2xl bg-black p-4 text-center text-white">
+              <div className="text-sm text-white/65">{lang === 'sr' ? 'Godišnja ušteda' : 'Yearly savings'}</div>
+              <div className="mt-2 text-3xl font-black leading-tight sm:text-4xl">{formatRsd(yearlySavings)}</div>
+            </div>
+            <div className="rounded-2xl border border-black/10 bg-[#f7f7f4] p-4 text-center">
+              <div className="text-sm text-black/55">{lang === 'sr' ? 'CO2 manje godišnje' : 'Less CO2 yearly'}</div>
+              <div className="mt-4 text-xl font-black">{new Intl.NumberFormat('sr-RS').format(yearlyCo2Kg)} kg</div>
+            </div>
+          </div>
+
+          <p className="mt-5 text-center text-xs text-black/50 sm:text-sm">
+            {lang === 'sr'
+              ? '* Cena struje za punjenje električnog vozila ~0.5 RSD/km'
+              : '* Electricity cost for charging an electric vehicle ~0.5 RSD/km'}
+          </p>
+          <a href="#modeli" className="mt-5 inline-flex min-h-14 w-full items-center justify-center rounded-full bg-black px-6 text-sm font-black uppercase tracking-wider text-white transition-transform hover:scale-[1.01] active:scale-[0.99]">
+            {lang === 'sr' ? 'Istra\u017ei na\u0161e modele' : 'Explore our models'}
+          </a>
+          </div>
+        </motion.div>
       </section>
 
       {/* Technology Section */}
@@ -1908,16 +2152,45 @@ export default function App() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <div className="flex items-center rounded-full border border-white/20 bg-white/10 p-1">
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    zoomLightboxOut();
+                  }}
+                  disabled={!canZoomOut}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35"
+                  aria-label="Zoom out"
+                >
+                  <ZoomOut className="size-4" />
+                </button>
+                <div className="min-w-14 text-center text-xs font-black tabular-nums text-white/75">
+                  {Math.round(lightboxZoom * 100)}%
+                </div>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    zoomLightboxIn();
+                  }}
+                  disabled={!canZoomIn}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35"
+                  aria-label="Zoom in"
+                >
+                  <ZoomIn className="size-4" />
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  setIsLightboxZoomed((current) => !current);
+                  setLightboxZoom(1);
                 }}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
-                aria-label={isLightboxZoomed ? 'Reset zoom' : 'Zoom image'}
+                aria-label="Reset zoom"
               >
-                <ZoomIn className="size-5" />
+                <RotateCcw className="size-5" />
               </button>
               <button
                 type="button"
@@ -1950,15 +2223,20 @@ export default function App() {
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                setIsLightboxZoomed((current) => !current);
+                if (canZoomIn) {
+                  zoomLightboxIn();
+                } else {
+                  setLightboxZoom(1);
+                }
               }}
-              className={`flex h-full w-full items-center justify-center overflow-auto rounded-2xl bg-black ${isLightboxZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
-              aria-label={isLightboxZoomed ? 'Reset zoom' : 'Zoom image'}
+              className={`flex h-full w-full items-center justify-center overflow-auto rounded-2xl bg-black ${canZoomIn ? 'cursor-zoom-in' : 'cursor-zoom-out'}`}
+              aria-label={canZoomIn ? 'Zoom image' : 'Reset zoom'}
             >
               <ImageWithFallback
                 src={lightboxImage.src}
                 alt={lightboxImage.alt}
-                className={`max-h-full max-w-full object-contain object-center transition-transform duration-300 ${isLightboxZoomed ? 'scale-110' : 'scale-100'}`}
+                className="max-h-full max-w-full object-contain object-center transition-transform duration-300"
+                style={{ transform: `scale(${lightboxZoom})` }}
               />
             </button>
 
