@@ -1,5 +1,5 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { Check, Download, Lock, LogOut, RefreshCw, Users } from 'lucide-react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { CalendarCheck, Check, Download, Lock, LogOut, RefreshCw, Target, Users } from 'lucide-react';
 import { AdminSession, fetchLeads, Lead, refreshAdminSession, signInAdmin, SUPABASE_ADMIN_EMAIL, updateLead } from '../../lib/supabase';
 
 const ADMIN_SESSION_KEY = 'pogon_supabase_admin_session';
@@ -26,6 +26,19 @@ export function AdminLeads() {
   const [loading, setLoading] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [saveState, setSaveState] = useState<Record<string, 'saving' | 'saved' | 'error'>>({});
+  const totals = useMemo(() => {
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const contacted = leads.filter((lead) => Boolean(lead.date_contacted)).length;
+    const newToday = leads.filter((lead) => new Date(lead.created_at).getTime() >= startOfToday).length;
+
+    return [
+      { label: 'Total leads', value: leads.length.toLocaleString('sr-RS'), icon: Users },
+      { label: 'New today', value: newToday.toLocaleString('sr-RS'), icon: Target },
+      { label: 'Contacted', value: contacted.toLocaleString('sr-RS'), icon: CalendarCheck },
+      { label: 'Open follow-ups', value: Math.max(0, leads.length - contacted).toLocaleString('sr-RS'), icon: RefreshCw },
+    ];
+  }, [leads]);
 
   const getActiveSession = useCallback(async () => {
     if (!session) throw new Error('No admin session.');
@@ -153,6 +166,20 @@ export function AdminLeads() {
             <button type="button" onClick={logout} className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white px-4 py-3 text-sm font-bold"><LogOut className="size-4" /><span className="hidden sm:inline">Log out</span></button>
           </div>
         </header>
+
+        <section className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {totals.map(({ label, value, icon: Icon }) => (
+            <div key={label} className="flex min-h-28 items-center justify-between rounded-2xl border border-black/10 bg-white px-5 py-4 shadow-sm">
+              <div>
+                <div className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/40">{label}</div>
+                <div className="mt-2 text-4xl font-black tracking-tight text-black">{value}</div>
+              </div>
+              <div className="flex size-11 items-center justify-center rounded-2xl bg-black text-[#7fff00]">
+                <Icon className="size-5" />
+              </div>
+            </div>
+          ))}
+        </section>
 
         <section className="overflow-hidden rounded-3xl border border-black/10 bg-white shadow-sm">
           {!loading && leads.length === 0 ? (
