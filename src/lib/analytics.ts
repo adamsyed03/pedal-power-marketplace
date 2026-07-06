@@ -6,7 +6,8 @@ export type AnalyticsEvent =
   | 'whatsapp_click'
   | 'test_ride_click'
   | 'test_ride_form_submit'
-  | 'primary_cta_click';
+  | 'primary_cta_click'
+  | 'savings_quiz_route_view';
 
 const fallbackPosthogKey = 'phc_AsUGwDMvHs5gKmH5ayPcu2kWPFHRijRJD4fq43CoE56e';
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY || fallbackPosthogKey;
