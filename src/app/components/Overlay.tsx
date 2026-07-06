@@ -4,7 +4,6 @@ import { CalendarCheck, Phone } from 'lucide-react';
 import { motion, MotionValue, useMotionValue, useTransform } from 'motion/react';
 
 type HeroCopy = {
-  badge: string;
   heroTitle: string;
   heroSub: string;
   heroPrimary: string;
@@ -24,7 +23,6 @@ type OverlayProps = {
 };
 
 const fallbackCopy: HeroCopy = {
-  badge: 'Pravljeno za ulice Srbije',
   heroTitle: 'Pokreni se',
   heroSub: 'Električni bicikli za grad, tempo i planove koji ne čekaju.',
   heroPrimary: 'Zakaži test vožnju',
@@ -39,8 +37,6 @@ export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide, p
   const fallbackProgress = useMotionValue(0);
   const progress = scrollProgress ?? fallbackProgress;
   const opacity = useTransform(progress, [0, 0.08, 0.86, 1], [1, 1, 0.94, 0.7]);
-  const badgeOpacity = useTransform(progress, [0, 0.05], [0, 1]);
-  const badgeY = useTransform(progress, [0, 0.05], [14, 0]);
   const titleOpacity = useTransform(progress, [0.06, 0.16], [0, 1]);
   const titleY = useTransform(progress, [0.06, 0.16], [18, 0]);
   const copyOpacity = useTransform(progress, [0.15, 0.25], [0, 1]);
@@ -57,13 +53,6 @@ export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide, p
       <motion.div
         className="mx-auto flex w-full max-w-5xl flex-col items-center text-center"
       >
-        <motion.div
-          style={{ opacity: badgeOpacity, y: badgeY }}
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-black shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-xl"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-[#65c900]" />
-          {copy.badge}
-        </motion.div>
         <motion.h1
           style={{ opacity: titleOpacity, y: titleY }}
           className="max-w-4xl text-7xl font-black uppercase leading-[0.88] tracking-normal text-white lg:text-8xl xl:text-9xl"

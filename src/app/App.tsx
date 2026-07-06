@@ -26,6 +26,8 @@ const homeCopyEn = {
   recommended: 'Recommended',
   newBadge: 'New',
   buyNow: 'Buy now',
+  onSaleBadge: 'On sale',
+  youSave: 'You save',
   glideDescription: 'A comfortable, reliable electric city bike for everyday use.',
   coreDescription: 'A foldable fat‑tyre city model for extra comfort and control.',
   cargoDescription: 'A compact fat‑tyre work bike for urban transport and deliveries.',
@@ -60,6 +62,8 @@ const homeCopySr = {
   recommended: 'Preporučeno',
   newBadge: 'Novo',
   buyNow: 'Kupi Sada',
+  onSaleBadge: 'Na akciji',
+  youSave: 'Uštedite',
   glideDescription: 'Gradski e-bicikl za udobnu i pouzdanu vožnju svaki dan.',
   coreDescription: 'Skalabilni foldable model sa debelim gumama za kontrolu i stil.',
   cargoDescription: 'Kompaktan radni e-bicikl za gradske dostave i nošenje tereta.',
@@ -163,10 +167,12 @@ export default function App() {
   });
   const popupShownRef = useRef(false);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
+  const savingsQuizRef = useRef<HTMLElement | null>(null);
   const pageRootRef = useRef<HTMLDivElement | null>(null);
   const scrollLockTimeout = useRef<number | null>(null);
   const pageScrollTimeout = useRef<number | null>(null);
   const copy = lang === 'sr' ? homeCopySr : homeCopyEn;
+  const isSavingsQuizRoute = window.location.pathname.replace(/\/+$/, '') === '/kviz';
   const batteryWh = Math.round(rangeCalculator.voltage * rangeCalculator.ampHours);
   const chemistryFactor = rangeCalculator.chemistry === 'lead' ? 0.5 : 0.9;
   const batteryHealth = 0.8;
@@ -304,6 +310,18 @@ export default function App() {
     mediaQuery.addEventListener('change', updateViewport);
     return () => mediaQuery.removeEventListener('change', updateViewport);
   }, []);
+
+  useEffect(() => {
+    if (!isSavingsQuizRoute) return;
+
+    const scrollTimeout = window.setTimeout(() => {
+      savingsQuizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      savingsQuizRef.current?.focus({ preventScroll: true });
+      trackEvent('savings_quiz_route_view', { path: window.location.pathname });
+    }, 250);
+
+    return () => window.clearTimeout(scrollTimeout);
+  }, [isSavingsQuizRoute]);
   const footerSupportMessages = lang === 'sr'
     ? [
         'Zdravo, želim da zakažem test vožnju.',
@@ -676,8 +694,12 @@ export default function App() {
         { src: publicAsset('Cargo 2.jpg'), alt: 'Pogon Core product photo 2' },
       ],
       description: copy.coreDescription,
-      monthlyPrice: '14,000 RSD',
-      price: '140,000 RSD',
+      monthlyPrice: '12,500 RSD',
+      price: '125,000 RSD',
+      originalMonthlyPrice: '14,000 RSD',
+      originalPrice: '140,000 RSD',
+      savingsAmount: '15,000 RSD',
+      onSale: true,
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: lang === 'sr'
         ? [
@@ -1264,12 +1286,31 @@ export default function App() {
                     <div className={`absolute top-4 right-4 z-20 ${model.badgeClass}`}>
                       {copy[model.badgeKey]}
                     </div>
+                    {model.onSale ? (
+                      <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-red-600 to-orange-500 px-3 py-1 text-xs font-black uppercase tracking-wide text-white shadow-[0_0_0_3px_rgba(255,255,255,0.15)] animate-pulse">
+                        <Zap className="size-3 fill-white" />
+                        {copy.onSaleBadge}
+                      </div>
+                    ) : null}
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3.5 pb-3 pt-12 text-white lg:hidden">
                       <div className="max-w-[78%] text-left">
                         <div className="text-xl font-black leading-none drop-shadow-md">{model.name}</div>
-                        <div className="mt-1.5 text-xl font-black leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</div>
+                        <div className="mt-1.5 flex items-baseline gap-2">
+                          <span className="text-xl font-black leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</span>
+                          {model.onSale ? (
+                            <span className="text-xs font-semibold text-white/55 line-through">{model.originalMonthlyPrice}</span>
+                          ) : null}
+                        </div>
                         <div className="mt-1 text-[0.55rem] font-bold uppercase tracking-[0.18em] text-white/70">{copy.perMonth}</div>
-                        <div className="mt-0.5 text-[0.62rem] font-semibold text-white/65">{model.price}</div>
+                        <div className="mt-0.5 flex items-center gap-1.5 text-[0.62rem] font-semibold text-white/65">
+                          {model.onSale ? <span className="line-through opacity-60">{model.originalPrice}</span> : null}
+                          <span className={model.onSale ? 'font-bold text-white' : ''}>{model.price}</span>
+                        </div>
+                        {model.onSale ? (
+                          <div className="mt-1 inline-flex items-center rounded-full bg-orange-500/90 px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-white shadow">
+                            {copy.youSave} {model.savingsAmount}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                     <div className={`absolute inset-0 z-30 bg-black/95 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-200 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
@@ -1333,9 +1374,22 @@ export default function App() {
                     ))}
                   </div>
                   <div className={`pt-2 lg:pt-4 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
-                    <div className={`hidden lg:block text-3xl font-black mb-0.5 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>{model.monthlyPrice}</div>
+                    <div className={`hidden lg:flex items-baseline gap-2 mb-0.5 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>
+                      <span className="text-3xl font-black">{model.monthlyPrice}</span>
+                      {model.onSale ? (
+                        <span className={`text-base font-semibold line-through ${model.isFeatured ? 'text-white/50' : 'text-foreground/40'}`}>{model.originalMonthlyPrice}</span>
+                      ) : null}
+                    </div>
                     <div className={`hidden lg:block text-[0.65rem] uppercase tracking-wider mb-1.5 ${model.isFeatured ? 'text-white/80' : 'text-foreground/50'}`}>{copy.perMonth}</div>
-                    <div className={`hidden lg:block text-xs mb-3 ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>{model.price}</div>
+                    <div className={`hidden lg:flex items-center gap-1.5 text-xs ${model.onSale ? 'mb-2' : 'mb-3'} ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
+                      {model.onSale ? <span className="line-through opacity-60">{model.originalPrice}</span> : null}
+                      <span className={model.onSale ? 'font-bold' : ''}>{model.price}</span>
+                    </div>
+                    {model.onSale ? (
+                      <div className="hidden lg:inline-flex items-center rounded-full bg-orange-500/90 px-2.5 py-0.5 mb-3 text-[0.6rem] font-bold uppercase tracking-wide text-white shadow">
+                        {copy.youSave} {model.savingsAmount}
+                      </div>
+                    ) : null}
                     <div className="mb-3 grid grid-cols-3 gap-1.5 lg:hidden">
                       {[
                         { value: model.mobileSpecs.range, label: copy.range },
@@ -1516,7 +1570,7 @@ export default function App() {
       </section>
 
       {/* Savings Quiz */}
-      <section className="bg-white px-3 py-6 text-black sm:px-6 sm:py-10">
+      <section id="kviz" ref={savingsQuizRef} tabIndex={-1} className="scroll-mt-24 bg-white px-3 py-6 text-black outline-none sm:px-6 sm:py-10">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
