@@ -7,20 +7,12 @@ interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElemen
 
 export function ImageWithFallback({ src, alt, className, ...props }: ImageWithFallbackProps) {
   const [error, setError] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState(src);
 
   useEffect(() => {
     setError(false);
-    setCurrentSrc(src);
   }, [src]);
 
   const handleError = () => {
-    const decoded = decodeURI(currentSrc);
-    if (decoded !== currentSrc) {
-      setCurrentSrc(decoded);
-      return;
-    }
-
     setError(true);
   };
 
@@ -34,7 +26,7 @@ export function ImageWithFallback({ src, alt, className, ...props }: ImageWithFa
 
   return (
     <img
-      src={currentSrc}
+      src={src}
       alt={alt}
       className={className}
       onError={handleError}

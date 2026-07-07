@@ -4,7 +4,7 @@ import { submitLead } from '../../lib/supabase';
 
 type LeadContactModalProps = {
   isOpen: boolean;
-  lang: 'en' | 'sr';
+  lang: 'en' | 'sr' | 'ru';
   source: string;
   intent?: 'test-ride' | 'purchase' | 'consultation';
   whatsappHref: string;
@@ -30,7 +30,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const phoneInputRef = useRef<HTMLInputElement | null>(null);
-  const isSerbian = lang === 'sr';
+  const tr = (translations: Record<typeof lang, string>) => translations[lang];
   const isPurchase = intent === 'purchase';
   const isConsultation = intent === 'consultation';
   const isNameValid = name.trim().length >= 2;
@@ -58,7 +58,11 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
     const cleanPhone = `+381 ${formatLocalPhone(phone)}`;
 
     if (!isFormValid) {
-      setError(isSerbian ? 'Unesite ime i ispravan broj telefona.' : 'Enter your name and a valid phone number.');
+      setError(tr({
+        sr: 'Unesite ime i ispravan broj telefona.',
+        en: 'Enter your name and a valid phone number.',
+        ru: 'Введите имя и корректный номер телефона.',
+      }));
       return;
     }
 
@@ -68,7 +72,11 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
       setSubmitted(true);
       setError('');
     } catch {
-      setError(isSerbian ? 'Čuvanje trenutno nije uspelo. Pokušajte putem WhatsApp-a.' : 'We could not save your details. Please try WhatsApp.');
+      setError(tr({
+        sr: 'Čuvanje trenutno nije uspelo. Pokušajte putem WhatsApp-a.',
+        en: 'We could not save your details. Please try WhatsApp.',
+        ru: 'Не удалось сохранить данные. Попробуйте через WhatsApp.',
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -77,47 +85,47 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <div className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-white/10 bg-[#111] p-6 text-white shadow-2xl sm:p-8">
-        <button type="button" onClick={onClose} aria-label={isSerbian ? 'Zatvori' : 'Close'} className="absolute right-4 top-4 rounded-full p-2 text-white/55 transition-colors hover:bg-white/10 hover:text-white">
+        <button type="button" onClick={onClose} aria-label={tr({ sr: 'Zatvori', en: 'Close', ru: 'Закрыть' })} className="absolute right-4 top-4 rounded-full p-2 text-white/55 transition-colors hover:bg-white/10 hover:text-white">
           <X className="size-5" />
         </button>
 
         {submitted ? (
           <div className="py-8 text-center">
             <CheckCircle2 className="mx-auto mb-5 size-12 text-[#7fff00]" />
-            <h2 id="lead-modal-title" className="text-2xl font-black">{isSerbian ? 'Hvala!' : 'Thank you!'}</h2>
+            <h2 id="lead-modal-title" className="text-2xl font-black">{tr({ sr: 'Hvala!', en: 'Thank you!', ru: 'Спасибо!' })}</h2>
             <p className="mt-3 text-white/65">{isConsultation
-              ? (isSerbian ? 'Naš stručnjak će vas uskoro kontaktirati.' : 'One of our specialists will contact you soon.')
+              ? tr({ sr: 'Naš stručnjak će vas uskoro kontaktirati.', en: 'One of our specialists will contact you soon.', ru: 'Наш специалист скоро свяжется с вами.' })
               : isPurchase
-              ? (isSerbian ? 'Javićemo vam se uskoro sa svim informacijama o kupovini.' : 'We will call you soon with the purchase details.')
-              : (isSerbian ? 'Javićemo vam se uskoro da dogovorimo test vožnju.' : 'We will call you soon to arrange your test ride.')}</p>
+              ? tr({ sr: 'Javićemo vam se uskoro sa svim informacijama o kupovini.', en: 'We will call you soon with the purchase details.', ru: 'Мы скоро свяжемся с вами и расскажем детали покупки.' })
+              : tr({ sr: 'Javićemo vam se uskoro da dogovorimo test vožnju.', en: 'We will call you soon to arrange your test ride.', ru: 'Мы скоро позвоним, чтобы договориться о тест-драйве.' })}</p>
             <button type="button" onClick={onClose} className="mt-7 rounded-full bg-white px-7 py-3 text-sm font-bold uppercase tracking-wider text-black">
-              {isSerbian ? 'Završi' : 'Done'}
+              {tr({ sr: 'Završi', en: 'Done', ru: 'Готово' })}
             </button>
           </div>
         ) : (
           <>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7fff00]">POGON</p>
             <h2 id="lead-modal-title" className="mt-2 pr-10 text-2xl font-black">{isConsultation
-              ? (isSerbian ? 'Zakažite razgovor sa stručnjakom' : 'Book a call with a specialist')
+              ? tr({ sr: 'Zakažite razgovor sa stručnjakom', en: 'Book a call with a specialist', ru: 'Записаться на разговор со специалистом' })
               : isPurchase
-              ? (isSerbian ? 'Zainteresovani ste za kupovinu?' : 'Interested in buying?')
-              : (isSerbian ? 'Zakaži test vožnju' : 'Book a test ride')}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-white/60">{isSerbian ? 'Izaberite kako želite da vas kontaktiramo.' : 'Choose how you would like to get in touch.'}</p>
+              ? tr({ sr: 'Zainteresovani ste za kupovinu?', en: 'Interested in buying?', ru: 'Интересует покупка?' })
+              : tr({ sr: 'Zakaži test vožnju', en: 'Book a test ride', ru: 'Записаться на тест-драйв' })}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-white/60">{tr({ sr: 'Izaberite kako želite da vas kontaktiramo.', en: 'Choose how you would like to get in touch.', ru: 'Выберите, как вам удобнее связаться.' })}</p>
 
             <a href={whatsappHref} target="_blank" rel="noreferrer" className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3.5 text-sm font-bold text-black transition-transform hover:scale-[1.02]">
               <MessageCircle className="size-5" />
-              {isSerbian ? 'Nastavi putem WhatsApp-a' : 'Continue with WhatsApp'}
+              {tr({ sr: 'Nastavi putem WhatsApp-a', en: 'Continue with WhatsApp', ru: 'Продолжить через WhatsApp' })}
             </a>
 
             <div className="my-6 flex items-center gap-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-white/35">
               <span className="h-px flex-1 bg-white/10" />
-              {isSerbian ? 'ili ostavite broj' : 'or leave your number'}
+              {tr({ sr: 'ili ostavite broj', en: 'or leave your number', ru: 'или оставьте номер' })}
               <span className="h-px flex-1 bg-white/10" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
-                {isSerbian ? 'Ime' : 'Name'}
+                {tr({ sr: 'Ime', en: 'Name', ru: 'Имя' })}
                 <div className="relative mt-2">
                   <input
                     autoFocus
@@ -132,13 +140,13 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                     enterKeyHint="next"
                     autoComplete="name"
                     className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-4 pr-11 text-base font-normal normal-case tracking-normal text-white outline-none transition-all placeholder:text-white/25 focus:border-[#7fff00]/60 focus:bg-white/[0.07]"
-                    placeholder={isSerbian ? 'Vaše ime' : 'Your name'}
+                    placeholder={tr({ sr: 'Vaše ime', en: 'Your name', ru: 'Ваше имя' })}
                   />
                   {isNameValid && <CheckCircle2 className="absolute right-4 top-1/2 size-5 -translate-y-1/2 text-[#7fff00]" aria-hidden="true" />}
                 </div>
               </label>
               <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
-                {isSerbian ? 'Broj telefona' : 'Phone number'}
+                {tr({ sr: 'Broj telefona', en: 'Phone number', ru: 'Номер телефона' })}
                 <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-white/5 transition-all focus-within:border-[#7fff00]/60 focus-within:bg-white/[0.07]">
                   <div className="flex shrink-0 items-center gap-2 border-r border-white/10 px-3.5 py-3 text-base font-semibold text-white">
                     <span aria-hidden="true">🇷🇸</span>
@@ -162,15 +170,25 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                   </div>
                 </div>
                 <span id="phone-help" className="mt-2 block text-[0.68rem] font-normal normal-case tracking-normal text-white/35">
-                  {isSerbian ? 'Unesite broj bez početne nule — mi ćemo dodati pozivni broj.' : 'Enter the number without the leading zero — we add the country code.'}
+                  {tr({
+                    sr: 'Unesite broj bez početne nule — mi ćemo dodati pozivni broj.',
+                    en: 'Enter the number without the leading zero — we add the country code.',
+                    ru: 'Введите номер без начального нуля — код страны мы добавим сами.',
+                  })}
                 </span>
               </label>
               {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
               <button type="submit" disabled={!isFormValid || isSubmitting} className="w-full rounded-full bg-white px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-black transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:scale-100">
-                {isSubmitting ? (isSerbian ? 'Čuvanje…' : 'Saving…') : (isSerbian ? 'Nastavi' : 'Continue')}
+                {isSubmitting
+                  ? tr({ sr: 'Čuvanje…', en: 'Saving…', ru: 'Сохранение…' })
+                  : tr({ sr: 'Nastavi', en: 'Continue', ru: 'Продолжить' })}
               </button>
               <p className="text-center text-[0.68rem] leading-relaxed text-white/30">
-                {isSerbian ? 'Vaše podatke koristimo samo da vas kontaktiramo u vezi sa Pogon biciklima.' : 'We only use your details to contact you about Pogon bikes.'}
+                {tr({
+                  sr: 'Vaše podatke koristimo samo da vas kontaktiramo u vezi sa Pogon biciklima.',
+                  en: 'We only use your details to contact you about Pogon bikes.',
+                  ru: 'Мы используем ваши данные только для связи по поводу велосипедов Pogon.',
+                })}
               </p>
             </form>
           </>

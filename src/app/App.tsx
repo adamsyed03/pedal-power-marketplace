@@ -10,6 +10,9 @@ import { submitLead } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
 import { publicAsset } from '../lib/assets';
 
+type Language = 'en' | 'sr' | 'ru';
+type Localized<T> = Record<Language, T>;
+
 const homeCopyEn = {
   heroTitle: 'Get moving',
   heroSub: 'Electric bikes for city commutes and plans that don’t wait.',
@@ -82,6 +85,48 @@ const homeCopySr = {
   customerReviews: 'Glasovi Naših Vozača',
 };
 
+const homeCopyRu = {
+  heroTitle: 'Двигайся свободно',
+  heroSub: 'Электровелосипеды для города, ежедневных поездок и планов без ожидания.',
+  heroPrimary: 'Записаться на тест-драйв',
+  heroSecondary: 'Позвонить нам',
+  finalTitle: 'Выберите модель и начните новый городской ритм',
+  finalBody: 'Напишите нам в WhatsApp, и мы поможем выбрать подходящий Pogon.',
+  finalPrimary: 'Смотреть модели',
+  finalSecondary: 'Написать в WhatsApp',
+  badge: 'Создано для улиц Сербии',
+  premiumSeries: 'Премиальная серия',
+  modelsCopy: 'Три модели. Одна идея. Больше свободы каждый день.',
+  bestSeller: 'Хит продаж',
+  recommended: 'Рекомендуем',
+  newBadge: 'Новинка',
+  buyNow: 'Купить сейчас',
+  onSaleBadge: 'Акция',
+  youSave: 'Экономия',
+  glideDescription: 'Комфортный и надежный городской электровелосипед на каждый день.',
+  coreDescription: 'Складная городская модель с широкими шинами для комфорта и контроля.',
+  cargoDescription: 'Компактный рабочий электровелосипед для городских поездок и доставок.',
+  rearHub: 'Задний мотор-колесо',
+  range: 'Запас хода',
+  motor: 'Мотор',
+  weight: 'Вес',
+  fromText: 'от',
+  upTo: 'До',
+  power: 'Мощность',
+  topSpeed: 'Макс. скорость',
+  clickSpecs: 'Нажмите для характеристик',
+  close: 'Закрыть',
+  clickHide: 'Нажмите еще раз, чтобы скрыть',
+  perMonth: 'в месяц',
+  customerReviews: 'Отзывы наших райдеров',
+};
+
+const homeCopy: Localized<typeof homeCopyEn> = {
+  en: homeCopyEn,
+  sr: homeCopySr,
+  ru: homeCopyRu,
+};
+
 function ScrollColorWord({
   word,
   index,
@@ -134,7 +179,7 @@ function ScrollColorSentence({ text }: { text: string }) {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<'en' | 'sr'>('sr');
+  const [lang, setLang] = useState<Language>('sr');
   const [activeSpecs, setActiveSpecs] = useState<string | null>(null);
   const [activeProduct, setActiveProduct] = useState(0);
   const [activeTechnologyCard, setActiveTechnologyCard] = useState<number | null>(null);
@@ -171,7 +216,8 @@ export default function App() {
   const pageRootRef = useRef<HTMLDivElement | null>(null);
   const scrollLockTimeout = useRef<number | null>(null);
   const pageScrollTimeout = useRef<number | null>(null);
-  const copy = lang === 'sr' ? homeCopySr : homeCopyEn;
+  const copy = homeCopy[lang];
+  const tr = <T,>(translations: Localized<T>) => translations[lang];
   const isSavingsQuizRoute = window.location.pathname.replace(/\/+$/, '') === '/kviz';
   const batteryWh = Math.round(rangeCalculator.voltage * rangeCalculator.ampHours);
   const chemistryFactor = rangeCalculator.chemistry === 'lead' ? 0.5 : 0.9;
@@ -219,8 +265,8 @@ export default function App() {
   const yearlySavings = Math.max(0, Math.round((dailyFuelCost - dailyElectricCost) * 365));
   const yearlyCo2Kg = Math.max(0, Math.round((savingsQuiz.dailyKm * 365 * savingsQuiz.fuelConsumption * 2.31) / 100));
   const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS').format(value)} RSD`;
-  const ui = lang === 'sr'
-    ? {
+  const ui = tr({
+    sr: {
         navModels: 'Modeli',
         navTechnology: 'Tehnologija',
         navReviews: 'Iskustva',
@@ -253,8 +299,8 @@ export default function App() {
         footerCompanyLinks: ['O Nama', 'Kontakt', 'Karijera', 'Blog'],
         copyright: 'Sva prava zadržana.',
         footerLegal: ['Privatnost', 'Uslovi', 'Kolačići'],
-      }
-    : {
+      },
+    en: {
         navModels: 'Models',
         navTechnology: 'Technology',
         navReviews: 'Reviews',
@@ -287,13 +333,50 @@ export default function App() {
         footerCompanyLinks: ['About Us', 'Contact', 'Careers', 'Blog'],
         copyright: 'All rights reserved.',
         footerLegal: ['Privacy', 'Terms', 'Cookies'],
-      };
+      },
+    ru: {
+        navModels: 'Модели',
+        navTechnology: 'Технологии',
+        navReviews: 'Отзывы',
+        specs: 'Характеристики',
+        innovation: 'Инновации',
+        technologyTitle: 'Технологии, которые двигают вас',
+        technologyCards: [
+          { title: 'Продвинутая батарея', body: 'Элементы Samsung SDI и интеллектуальная BMS-система для оптимального запаса хода' },
+          { title: 'Мотор Bafang', body: 'Премиальный mid-drive мотор с крутящим моментом 45 Нм' },
+          { title: 'Умное управление', body: 'Цветной дисплей с GPS-навигацией и отслеживанием показателей' },
+          { title: 'Безопасность', body: 'Гидравлические тормоза Shimano и встроенная LED-система освещения' },
+        ],
+        reviewsEyebrow: 'Отзывы',
+        lifestyleCards: [
+          { title: 'Городское приключение', body: 'Город становится вашим маршрутом' },
+          { title: 'Свобода движения', body: 'Без ограничений и компромиссов' },
+        ],
+        services: [
+          { title: 'GPS-системы безопасности', body: 'Умная защита и безопасность во время каждой поездки' },
+          { title: 'Гарантия 2 года', body: 'Расширенная гарантия на все компоненты и бесплатный сервис в первый год' },
+          { title: 'Тест-драйв', body: 'Запишитесь на бесплатный тест-драйв в наших шоурумах в Белграде и Нови-Саде' },
+        ],
+        ctaBullets: ['GPS-системы безопасности', 'Гарантия 2 года', 'Гибкая рассрочка'],
+        footerBody: 'Лидеры в премиальных электровелосипедах. Меняем городскую мобильность по одной поездке за раз.',
+        footerProducts: 'Продукты',
+        footerCompare: 'Сравнить модели',
+        footerSupport: 'Поддержка',
+        footerSupportLinks: ['Тест-драйв', 'Сервис', 'Гарантия'],
+        footerCompany: 'Компания',
+        footerCompanyLinks: ['О нас', 'Контакт', 'Карьера', 'Блог'],
+        copyright: 'Все права защищены.',
+        footerLegal: ['Конфиденциальность', 'Условия', 'Cookies'],
+      },
+  });
   const whatsappNumber = '381631505003';
   const phoneHref = 'tel:+381631505003';
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
-  const testRideWhatsappText = lang === 'sr'
-    ? 'Zdravo, želim da zakažem test vožnju Pogon e-bike-a.'
-    : 'Hi, I want to book a Pogon e-bike test ride.';
+  const testRideWhatsappText = tr({
+    sr: 'Zdravo, želim da zakažem test vožnju Pogon e-bike-a.',
+    en: 'Hi, I want to book a Pogon e-bike test ride.',
+    ru: 'Здравствуйте, хочу записаться на тест-драйв электровелосипеда Pogon.',
+  });
   const whatsappHref = buildWhatsappLink(testRideWhatsappText);
   const closeLeadModal = useCallback(() => setLeadModalSource(null), []);
   const openLeadModal = (source: string) => {
@@ -322,33 +405,48 @@ export default function App() {
 
     return () => window.clearTimeout(scrollTimeout);
   }, [isSavingsQuizRoute]);
-  const footerSupportMessages = lang === 'sr'
-    ? [
+  const footerSupportMessages = tr({
+    sr: [
         'Zdravo, želim da zakažem test vožnju.',
         'Zdravo, zanima me servis za Pogon bicikl.',
         'Zdravo, imam pitanje oko garancije za Pogon.',
-      ]
-    : [
+      ],
+    en: [
         'Hi, I want to book a test ride.',
         'Hi, I have a question about Pogon service.',
         'Hi, I have a question about the Pogon warranty.',
-      ];
-  const footerCompanyMessages = lang === 'sr'
-    ? [
+      ],
+    ru: [
+        'Здравствуйте, хочу записаться на тест-драйв.',
+        'Здравствуйте, меня интересует сервис для велосипеда Pogon.',
+        'Здравствуйте, у меня вопрос по гарантии Pogon.',
+      ],
+  });
+  const footerCompanyMessages = tr({
+    sr: [
         'Zdravo, želim da saznam više o Pogonu.',
         'Zdravo, želim da kontaktiram Pogon tim.',
         'Zdravo, zanima me karijera u Pogonu.',
         'Zdravo, zanima me Pogon blog.',
-      ]
-    : [
+      ],
+    en: [
         'Hi, I want to learn more about Pogon.',
         'Hi, I want to contact the Pogon team.',
         'Hi, I am interested in careers at Pogon.',
         'Hi, I am interested in the Pogon blog.',
-      ];
-  const preModelsSentence = lang === 'sr'
-    ? 'Pogon je e-bike za gradsku rutinu: stabilan, udoban i spreman da proveriš vožnju pre nego što odlučiš.'
-    : 'Pogon is an e-bike for city routines: stable, comfortable and ready to test before you decide.';
+      ],
+    ru: [
+        'Здравствуйте, хочу узнать больше о Pogon.',
+        'Здравствуйте, хочу связаться с командой Pogon.',
+        'Здравствуйте, меня интересует работа в Pogon.',
+        'Здравствуйте, меня интересует блог Pogon.',
+      ],
+  });
+  const preModelsSentence = tr({
+    sr: 'Pogon je e-bike za gradsku rutinu: stabilan, udoban i spreman da proveriš vožnju pre nego što odlučiš.',
+    en: 'Pogon is an e-bike for city routines: stable, comfortable and ready to test before you decide.',
+    ru: 'Pogon — электровелосипед для городского ритма: стабильный, удобный и готовый к тестовой поездке перед решением.',
+  });
   const reviews = [
     {
       name: 'Vuk Rankovic',
@@ -357,6 +455,7 @@ export default function App() {
       text: {
         sr: 'Ovaj Pogon model je totalno promenio moje gradske vožnje — tiho, snažno i pouzdano.',
         en: 'This Pogon model totally changed my city rides — quiet, powerful and reliable.',
+        ru: 'Эта модель Pogon полностью изменила мои поездки по городу — тихая, мощная и надежная.',
       },
     },
     {
@@ -366,6 +465,7 @@ export default function App() {
       text: {
         sr: 'Brza dostava, sjajan osećaj na putu i odlična podrška. Preporučujem svima.',
         en: 'Fast delivery, great ride feel and excellent support. I recommend it to everyone.',
+        ru: 'Быстрая доставка, отличные ощущения на дороге и прекрасная поддержка. Рекомендую всем.',
       },
     },
     {
@@ -375,6 +475,7 @@ export default function App() {
       text: {
         sr: 'Savršeno uklopljen u gradski ritam, dobro drži put i baterija traje dugo.',
         en: 'Perfectly matched to the city rhythm, handles well and the battery lasts long.',
+        ru: 'Идеально подходит для городского ритма, хорошо держит дорогу, а батареи хватает надолго.',
       },
     },
     {
@@ -384,6 +485,7 @@ export default function App() {
       text: {
         sr: 'Mekano ubrzanje, stabilnost i lep dizajn. Najbolja kupovina ove godine.',
         en: 'Smooth acceleration, stability and great design. Best purchase this year.',
+        ru: 'Плавный разгон, устойчивость и красивый дизайн. Лучшая покупка в этом году.',
       },
     },
     {
@@ -393,6 +495,7 @@ export default function App() {
       text: {
         sr: 'Vožnja je sada zabavna, bez gužvi i bez stresa. Pogon je odličan izbor.',
         en: 'Riding is fun now, no traffic lines and no stress. Pogon is an excellent choice.',
+        ru: 'Теперь поездки стали приятными: без пробок и стресса. Pogon — отличный выбор.',
       },
     },
     {
@@ -402,6 +505,7 @@ export default function App() {
       text: {
         sr: 'Odličan odnos cene i kvaliteta. Svaki dan sa osmehom idem na posao.',
         en: 'Great value for money. Now I go to work with a smile every day.',
+        ru: 'Отличное соотношение цены и качества. Каждый день еду на работу с улыбкой.',
       },
     },
     {
@@ -411,6 +515,7 @@ export default function App() {
       text: {
         sr: 'Vozilo je veoma stabilno, samo bi voleo da ima još jedan mod vožnje.',
         en: 'The bike is very stable, I just wish it had one more riding mode.',
+        ru: 'Велосипед очень стабильный, хотелось бы только еще один режим езды.',
       },
     },
     {
@@ -420,6 +525,7 @@ export default function App() {
       text: {
         sr: 'Bicikl je odličan, samo je malo teži za žene pri nošenju uz stepenice.',
         en: 'The bike is excellent, just a bit heavy for women when carrying it up stairs.',
+        ru: 'Велосипед отличный, просто немного тяжеловат, если нести его по лестнице.',
       },
     },
     {
@@ -429,6 +535,7 @@ export default function App() {
       text: {
         sr: 'Dizajn je fenomenalan, a komponente solidne. Jedino je sedište moglo biti mekše.',
         en: 'The design is phenomenal and components are solid. Only the seat could be softer.',
+        ru: 'Дизайн прекрасный, компоненты хорошие. Только сиденье могло бы быть мягче.',
       },
     },
     {
@@ -438,18 +545,21 @@ export default function App() {
       text: {
         sr: 'Lagan za upravljanje i brz. Malo je težak za nošenje stepenicama.',
         en: 'Easy to handle and fast. A bit heavy for carrying up stairs.',
+        ru: 'Легко управляется и быстро едет. Немного тяжеловат для переноски по лестнице.',
       },
     },
   ];
 
   const reviewLoop = [...reviews, ...reviews];
 
-  const reviewText = (review: { text: { sr: string; en: string } }) => (lang === 'sr' ? review.text.sr : review.text.en);
-  const trustBadges = lang === 'sr'
-    ? ['Test vožnja dostupna', 'Servis i podrška', 'Dostava dostupna', 'Legalno za vožnju', 'Garancija']
-    : ['Test ride available', 'Service and support', 'Delivery available', 'Road legal', 'Warranty'];
-  const faqItems = lang === 'sr'
-    ? [
+  const reviewText = (review: { text: Localized<string> }) => review.text[lang];
+  const trustBadges = tr({
+    sr: ['Test vožnja dostupna', 'Servis i podrška', 'Dostava dostupna', 'Legalno za vožnju', 'Garancija'],
+    en: ['Test ride available', 'Service and support', 'Delivery available', 'Road legal', 'Warranty'],
+    ru: ['Тест-драйв доступен', 'Сервис и поддержка', 'Доставка доступна', 'Легально для дорог', 'Гарантия'],
+  });
+  const faqItems = tr({
+    sr: [
         { question: 'Koliki je domet?', answer: 'Realni domet zavisi od rute, težine vozača, temperature i nivoa asistencije. Najbolje ga proveriš na test vožnji.' },
         { question: 'Da li mogu da probam bicikl pre kupovine?', answer: 'Da. Zakaži termin i probaj bicikl pre odluke, bez pritiska.' },
         { question: 'Da li je legalan za vožnju?', answer: 'Modeli su podešeni za gradsku vožnju i legalnu upotrebu u skladu sa pravilima za e-bike.' },
@@ -459,8 +569,8 @@ export default function App() {
         { question: 'Da li imate servis?', answer: 'Da, nudimo servisnu podršku i pomoć oko održavanja.' },
         { question: 'Da li može uzbrdo?', answer: 'Da. Motor pomaže na usponima, a test vožnja najbolje pokaže kako radi na tvojoj ruti.' },
         { question: 'Kako se plaća?', answer: 'Plaćanje dogovaramo direktno, uz jasne informacije pre kupovine.' },
-      ]
-    : [
+      ],
+    en: [
         { question: 'What is the range?', answer: 'Real range depends on route, rider weight, temperature and assist level. A test ride is the easiest check.' },
         { question: 'Can I try the bike before buying?', answer: 'Yes. Book a slot and try it before deciding, without pressure.' },
         { question: 'Is it road legal?', answer: 'The bikes are set up for city riding and legal e-bike use.' },
@@ -470,7 +580,19 @@ export default function App() {
         { question: 'Do you offer service?', answer: 'Yes, we provide service support and maintenance help.' },
         { question: 'Can it go uphill?', answer: 'Yes. The motor helps on climbs, and a test ride shows how it feels on your route.' },
         { question: 'How do I pay?', answer: 'Payment is arranged directly with clear information before purchase.' },
-      ];
+      ],
+    ru: [
+        { question: 'Какой запас хода?', answer: 'Реальный запас хода зависит от маршрута, веса райдера, температуры и уровня ассистента. Лучше всего проверить это на тест-драйве.' },
+        { question: 'Можно попробовать велосипед перед покупкой?', answer: 'Да. Запишитесь на удобное время и попробуйте велосипед перед решением, без давления.' },
+        { question: 'Он легален для езды по дорогам?', answer: 'Модели настроены для городской езды и легального использования как e-bike.' },
+        { question: 'Нужны ли права?', answer: 'Для стандартной езды на электровелосипеде специальные права не нужны.' },
+        { question: 'Сколько длится зарядка?', answer: 'Обычно зарядка занимает несколько часов, в зависимости от батареи и уровня заряда.' },
+        { question: 'Что делать, если он сломается?', answer: 'Есть сервис и поддержка. Свяжитесь с нами, и мы организуем самое быстрое решение.' },
+        { question: 'У вас есть сервис?', answer: 'Да, мы предлагаем сервисную поддержку и помощь с обслуживанием.' },
+        { question: 'Он едет в гору?', answer: 'Да. Мотор помогает на подъемах, а тест-драйв лучше всего покажет ощущения на вашем маршруте.' },
+        { question: 'Как происходит оплата?', answer: 'Оплату согласуем напрямую, с понятной информацией до покупки.' },
+      ],
+  });
   const trustBadgeIcons = [CalendarCheck, Wrench, Truck, Shield, CheckCircle2];
 
   const handleTestRideFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -631,7 +753,11 @@ export default function App() {
     e.preventDefault();
     const digits = popupPhone.replace(/\D/g, '').replace(/^0+/, '');
     if (digits.length < 6) {
-      setPopupError(lang === 'sr' ? 'Unesite ispravan broj telefona.' : 'Enter a valid phone number.');
+      setPopupError(tr({
+        sr: 'Unesite ispravan broj telefona.',
+        en: 'Enter a valid phone number.',
+        ru: 'Введите корректный номер телефона.',
+      }));
       return;
     }
     setPopupError('');
@@ -663,16 +789,16 @@ export default function App() {
       monthlyPrice: '17,000 RSD',
       price: '170,000 RSD',
       mobileSpecs: { range: '100 km', power: '250W motor', battery: '1200 Wh' },
-      points: lang === 'sr'
-        ? [
+      points: tr({
+        sr: [
             'Motor u zadnjem točku',
             'Aluminijumski ram',
             'Hidraulične kočnice',
             'Nosivost 110 kg',
             'Domet 100 km',
             'GPS sigurnosne funkcije',
-          ]
-        : [
+          ],
+        en: [
             'Rear hub motor',
             'Aluminum frame',
             'Hydraulic brakes',
@@ -680,6 +806,15 @@ export default function App() {
             'Up to 100 km range',
             'GPS security features',
           ],
+        ru: [
+            'Задний мотор-колесо',
+            'Алюминиевая рама',
+            'Гидравлические тормоза',
+            'Грузоподъемность 110 кг',
+            'Запас хода до 100 км',
+            'GPS-функции безопасности',
+          ],
+      }),
     },
     {
       key: 'core',
@@ -701,16 +836,16 @@ export default function App() {
       savingsAmount: '15,000 RSD',
       onSale: true,
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
-      points: lang === 'sr'
-        ? [
+      points: tr({
+        sr: [
             'Motor u zadnjem točku',
             'Sklopivi čelični ram',
             'Hidraulične kočnice',
             'Dve baterije, domet preko 110 km',
             'Fat tyre gume',
             'GPS sigurnosne funkcije',
-          ]
-        : [
+          ],
+        en: [
             'Rear hub motor',
             'Foldable steel frame',
             'Hydraulic brakes',
@@ -718,6 +853,15 @@ export default function App() {
             'Fat tyre wheels',
             'GPS security features',
           ],
+        ru: [
+            'Задний мотор-колесо',
+            'Складная стальная рама',
+            'Гидравлические тормоза',
+            'Две батареи, запас хода более 110 км',
+            'Широкие fat tyre шины',
+            'GPS-функции безопасности',
+          ],
+      }),
       isFeatured: true,
     },
     {
@@ -736,16 +880,16 @@ export default function App() {
       monthlyPrice: '12,000 RSD',
       price: '120,000 RSD',
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
-      points: lang === 'sr'
-        ? [
+      points: tr({
+        sr: [
             'Motor u zadnjem točku',
             'Čelični ram',
             'Hidraulične kočnice',
             'Dve baterije, domet preko 110 km',
             'Fat tyre gume',
             'GPS sigurnosne funkcije',
-          ]
-        : [
+          ],
+        en: [
             'Rear hub motor',
             'Steel frame',
             'Hydraulic brakes',
@@ -753,6 +897,15 @@ export default function App() {
             'Fat tyre wheels',
             'GPS security features',
           ],
+        ru: [
+            'Задний мотор-колесо',
+            'Стальная рама',
+            'Гидравлические тормоза',
+            'Две батареи, запас хода более 110 км',
+            'Широкие fat tyre шины',
+            'GPS-функции безопасности',
+          ],
+      }),
     },
   ];
 
@@ -845,7 +998,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={closeLeadPopup}
-                  aria-label={lang === 'sr' ? 'Zatvori' : 'Close'}
+                  aria-label={copy.close}
                   className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   <X className="size-4" />
@@ -861,10 +1014,10 @@ export default function App() {
                     <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#7fff00]/15 ring-1 ring-[#7fff00]/30">
                       <CheckCircle2 className="size-8 text-[#7fff00]" />
                     </div>
-                    <h2 className="text-2xl font-black text-white">{lang === 'sr' ? 'Hvala!' : 'Thank you!'}</h2>
-                    <p className="mt-2 text-sm text-white/40">{lang === 'sr' ? 'Javićemo ti se uskoro.' : "We'll be in touch soon."}</p>
+                    <h2 className="text-2xl font-black text-white">{tr({ sr: 'Hvala!', en: 'Thank you!', ru: 'Спасибо!' })}</h2>
+                    <p className="mt-2 text-sm text-white/40">{tr({ sr: 'Javićemo ti se uskoro.', en: "We'll be in touch soon.", ru: 'Мы скоро свяжемся с вами.' })}</p>
                     <button type="button" onClick={closeLeadPopup} className="mt-7 rounded-full border border-white/15 px-8 py-3 text-sm font-bold text-white/60 transition-colors hover:bg-white/5 hover:text-white">
-                      {lang === 'sr' ? 'Zatvori' : 'Close'}
+                      {copy.close}
                     </button>
                   </motion.div>
                 ) : (
@@ -889,14 +1042,18 @@ export default function App() {
                       <h2 className="text-[2rem] font-black leading-[1.1] text-white">
                         {lang === 'sr' ? (
                           <><span>Hoćeš</span><br /><span className="text-[#7fff00]">test vožnju?</span></>
+                        ) : lang === 'ru' ? (
+                          <><span>Хотите</span><br /><span className="text-[#7fff00]">тест-драйв?</span></>
                         ) : (
                           <><span>Want a</span><br /><span className="text-[#7fff00]">test ride?</span></>
                         )}
                       </h2>
                       <p className="mt-2.5 text-sm leading-relaxed text-white/40">
-                        {lang === 'sr'
-                          ? 'Ostavi broj — pozvaćemo te da dogovorimo termin. Bez obaveze kupovine.'
-                          : "Leave your number — we'll call to arrange a slot. No purchase required."}
+                        {tr({
+                          sr: 'Ostavi broj — pozvaćemo te da dogovorimo termin. Bez obaveze kupovine.',
+                          en: "Leave your number — we'll call to arrange a slot. No purchase required.",
+                          ru: 'Оставьте номер — мы позвоним и договоримся о времени. Покупка не обязательна.',
+                        })}
                       </p>
                     </motion.div>
 
@@ -918,7 +1075,7 @@ export default function App() {
                           autoComplete="tel-national"
                           value={popupPhone}
                           onChange={(e) => { setPopupPhone(e.target.value); setPopupError(''); }}
-                          placeholder={lang === 'sr' ? 'Broj telefona' : 'Phone number'}
+                          placeholder={tr({ sr: 'Broj telefona', en: 'Phone number', ru: 'Номер телефона' })}
                           className="flex-1 bg-transparent py-4 pl-3 pr-4 text-base text-white outline-none placeholder:text-white/20"
                         />
                       </div>
@@ -928,7 +1085,7 @@ export default function App() {
                         disabled={popupSubmitting}
                         className="w-full rounded-2xl bg-[#7fff00] py-4 text-sm font-black uppercase tracking-wider text-black transition-all hover:bg-[#b2ff4d] active:scale-[0.98] disabled:opacity-60"
                       >
-                        {popupSubmitting ? '…' : (lang === 'sr' ? 'Pozovite me' : 'Call me')}
+                        {popupSubmitting ? '…' : tr({ sr: 'Pozovite me', en: 'Call me', ru: 'Позвоните мне' })}
                       </button>
                     </motion.form>
 
@@ -940,7 +1097,7 @@ export default function App() {
                       className="my-4 flex items-center gap-3"
                     >
                       <div className="h-px flex-1 bg-white/8" />
-                      <span className="text-[0.6rem] font-bold uppercase tracking-widest text-white/20">{lang === 'sr' ? 'ili' : 'or'}</span>
+                      <span className="text-[0.6rem] font-bold uppercase tracking-widest text-white/20">{tr({ sr: 'ili', en: 'or', ru: 'или' })}</span>
                       <div className="h-px flex-1 bg-white/8" />
                     </motion.div>
 
@@ -956,7 +1113,7 @@ export default function App() {
                       className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 text-sm font-bold text-white/70 transition-all hover:bg-white/10 hover:text-white active:scale-[0.98]"
                     >
                       <MessageCircle className="size-4 text-[#25D366]" />
-                      {lang === 'sr' ? 'Piši nam na WhatsApp' : 'Message us on WhatsApp'}
+                      {tr({ sr: 'Piši nam na WhatsApp', en: 'Message us on WhatsApp', ru: 'Написать в WhatsApp' })}
                     </motion.a>
                   </>
                 )}
@@ -987,11 +1144,13 @@ export default function App() {
               <button type="button" onClick={() => openLeadModal('purchase-general')} className="inline-flex items-center justify-center rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs font-medium uppercase tracking-wider text-black/75 transition-all hover:bg-black/10">{copy.buyNow}</button>
               <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SR</button>
               <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>EN</button>
+              <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RU</button>
             </div>
 
             <div className="flex items-center md:hidden gap-1">
               <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SR</button>
               <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>EN</button>
+              <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RU</button>
             </div>
           </div>
         </div>
@@ -1157,9 +1316,11 @@ export default function App() {
       <section className="relative overflow-hidden bg-background px-4 py-6 text-foreground sm:px-6 sm:py-8 lg:py-9">
         <div className="mx-auto max-w-7xl">
           <ScrollColorSentence
-            text={lang === 'sr'
-              ? 'Upoznaj električni bicikl koji podiže standard u Srbiji. Sa vrhunskim komponentima, snažnom asistencijom i najmodernijim tehničkim karakteristikama'
-              : 'Meet the electric bike raising the standard in Serbia. With premium components, strong assistance, and modern technical features, Pogon is made for riders who want quality they can feel on every ride.'}
+            text={tr({
+              sr: 'Upoznaj električni bicikl koji podiže standard u Srbiji. Sa vrhunskim komponentima, snažnom asistencijom i najmodernijim tehničkim karakteristikama',
+              en: 'Meet the electric bike raising the standard in Serbia. With premium components, strong assistance, and modern technical features, Pogon is made for riders who want quality they can feel on every ride.',
+              ru: 'Познакомьтесь с электровелосипедом, который задает новый стандарт в Сербии. Премиальные компоненты, мощная ассистенция и современные технические решения для качества, которое ощущается в каждой поездке.',
+            })}
           />
         </div>
       </section>
@@ -1183,7 +1344,7 @@ export default function App() {
                 <span className="swipe-hint-dot absolute left-1 top-1/2 h-1.5 w-4 -translate-y-1/2 rounded-full bg-primary"></span>
               </span>
               <span aria-hidden="true">›</span>
-              <span>{lang === 'sr' ? 'Prevuci' : 'Drag'}</span>
+              <span>{tr({ sr: 'Prevuci', en: 'Drag', ru: 'Листайте' })}</span>
             </div>
           </div>
 
@@ -1394,7 +1555,7 @@ export default function App() {
                       {[
                         { value: model.mobileSpecs.range, label: copy.range },
                         { value: model.mobileSpecs.power, label: copy.power },
-                        { value: model.mobileSpecs.battery, label: lang === 'sr' ? 'Baterija' : 'Battery' },
+                        { value: model.mobileSpecs.battery, label: tr({ sr: 'Baterija', en: 'Battery', ru: 'Батарея' }) },
                       ].map((spec) => (
                         <div
                           key={`${model.key}-${spec.label}`}
@@ -1413,7 +1574,7 @@ export default function App() {
                       className={`w-full inline-flex items-center justify-center gap-2 py-2.5 lg:py-2.5 rounded-full transition-all font-semibold uppercase text-[0.62rem] sm:text-xs lg:text-xs tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                     >
                       <CalendarCheck className="size-3.5" />
-                      {lang === 'sr' ? 'Zakaži test vožnju' : 'Book a test ride'}
+                      {copy.heroPrimary}
                     </button>
                     <button
                       type="button"
@@ -1474,15 +1635,17 @@ export default function App() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-foreground/75">
                 <CalendarCheck className="size-4" />
-                {lang === 'sr' ? 'Test vožnja' : 'Test ride'}
+                {tr({ sr: 'Test vožnja', en: 'Test ride', ru: 'Тест-драйв' })}
               </div>
               <h2 className="mt-5 text-4xl font-black leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-                {lang === 'sr' ? 'Provozaj ga pre nego što odlučiš.' : 'Ride it before you decide.'}
+                {tr({ sr: 'Provozaj ga pre nego što odlučiš.', en: 'Ride it before you decide.', ru: 'Прокатитесь перед решением.' })}
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-foreground/65">
-                {lang === 'sr'
-                  ? 'Ne moraš da kupiš e-bike na osnovu slika. Zakaži test vožnju, probaj kako vuče, kako koči i da li ti odgovara za tvoju rutu.'
-                  : 'You do not have to choose an e-bike from photos alone. Book a test ride, feel the pull and braking, and see if it fits your route.'}
+                {tr({
+                  sr: 'Ne moraš da kupiš e-bike na osnovu slika. Zakaži test vožnju, probaj kako vuče, kako koči i da li ti odgovara za tvoju rutu.',
+                  en: 'You do not have to choose an e-bike from photos alone. Book a test ride, feel the pull and braking, and see if it fits your route.',
+                  ru: 'Не нужно выбирать e-bike только по фотографиям. Запишитесь на тест-драйв, почувствуйте тягу и торможение и проверьте, подходит ли он для вашего маршрута.',
+                })}
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <a
@@ -1493,7 +1656,7 @@ export default function App() {
                   className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-4 text-sm font-black uppercase tracking-wider text-black transition-transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <MessageCircle className="size-5" />
-                  {lang === 'sr' ? 'Zakaži preko WhatsApp-a' : 'Book on WhatsApp'}
+                  {tr({ sr: 'Zakaži preko WhatsApp-a', en: 'Book on WhatsApp', ru: 'Записаться через WhatsApp' })}
                 </a>
                 <a
                   href={phoneHref}
@@ -1501,16 +1664,18 @@ export default function App() {
                   className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border-2 border-border bg-card px-6 py-4 text-sm font-black uppercase tracking-wider transition-colors hover:bg-accent active:scale-[0.98]"
                 >
                   <Phone className="size-5" />
-                  {lang === 'sr' ? 'Pozovi odmah' : 'Call now'}
+                  {tr({ sr: 'Pozovi odmah', en: 'Call now', ru: 'Позвонить сейчас' })}
                 </a>
               </div>
             </div>
 
             <div className="grid gap-3">
               {[
-                ...(lang === 'sr'
-                  ? ['Pošalji poruku ili pozovi', 'Dogovorimo termin', 'Probaš bicikl i odlučiš bez pritiska']
-                  : ['Send a message or call', 'We arrange a time', 'Try the bike and decide without pressure']),
+                ...tr({
+                  sr: ['Pošalji poruku ili pozovi', 'Dogovorimo termin', 'Probaš bicikl i odlučiš bez pritiska'],
+                  en: ['Send a message or call', 'We arrange a time', 'Try the bike and decide without pressure'],
+                  ru: ['Напишите или позвоните', 'Согласуем удобное время', 'Пробуете велосипед и решаете без давления'],
+                }),
               ].map((step, index) => (
                 <motion.div
                   key={step}
@@ -1548,12 +1713,14 @@ export default function App() {
                   {copy.range}
                 </div>
                 <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
-                  {lang === 'sr' ? 'Koliki je realan domet?' : 'What is the real range?'}
+                  {tr({ sr: 'Koliki je realan domet?', en: 'What is the real range?', ru: 'Какой реальный запас хода?' })}
                 </h2>
                 <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/70 sm:text-lg">
-                  {lang === 'sr'
-                    ? 'Domet zavisi od kapaciteta baterije, težine vozača i prosečne brzine. Otvori kalkulator i proveri okvirnu procenu za svoju vožnju.'
-                    : 'Range depends on battery capacity, rider weight, and average speed. Open the calculator to check an estimate for your ride.'}
+                  {tr({
+                    sr: 'Domet zavisi od kapaciteta baterije, težine vozača i prosečne brzine. Otvori kalkulator i proveri okvirnu procenu za svoju vožnju.',
+                    en: 'Range depends on battery capacity, rider weight, and average speed. Open the calculator to check an estimate for your ride.',
+                    ru: 'Запас хода зависит от емкости батареи, веса райдера и средней скорости. Откройте калькулятор и получите примерную оценку для вашей поездки.',
+                  })}
                 </p>
               </div>
               <button
@@ -1562,7 +1729,7 @@ export default function App() {
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-sm font-black uppercase tracking-wider text-black transition-transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Calculator className="size-5" />
-                {lang === 'sr' ? 'Saznaj više' : 'Learn more'}
+                {tr({ sr: 'Saznaj više', en: 'Learn more', ru: 'Узнать больше' })}
               </button>
             </div>
           </motion.div>
@@ -1582,25 +1749,27 @@ export default function App() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-black px-2.5 py-1.5 text-[0.58rem] font-black uppercase tracking-[0.14em] text-white sm:px-3 sm:text-[0.6rem]">
                 <Car className="size-3.5" />
-                {lang === 'sr' ? 'Automobil' : 'Car'}
+                {tr({ sr: 'Automobil', en: 'Car', ru: 'Автомобиль' })}
               </div>
               <h2 className="mt-3 max-w-xl text-xl font-black leading-[1.05] tracking-tight sm:mt-4 sm:text-4xl">
-                {lang === 'sr' ? 'Koliko ostaje u d\u017eepu?' : 'How much stays in your pocket?'}
+                {tr({ sr: 'Koliko ostaje u d\u017eepu?', en: 'How much stays in your pocket?', ru: 'Сколько остается в кармане?' })}
               </h2>
               <p className="mt-2 max-w-xl text-xs leading-relaxed text-black/60 sm:mt-3 sm:text-base">
-                {lang === 'sr'
-                  ? 'Unesi svoju dnevnu vo\u017enju i cenu goriva. Dobija\u0161 brzu procenu razlike izme\u0111u automobila i Pogon e-bicikla.'
-                  : 'Enter your daily ride and fuel cost. Get a quick estimate of the difference between a car and a Pogon e-bike.'}
+                {tr({
+                  sr: 'Unesi svoju dnevnu vo\u017enju i cenu goriva. Dobija\u0161 brzu procenu razlike izme\u0111u automobila i Pogon e-bicikla.',
+                  en: 'Enter your daily ride and fuel cost. Get a quick estimate of the difference between a car and a Pogon e-bike.',
+                  ru: 'Введите ежедневный пробег и цену топлива. Получите быструю оценку разницы между автомобилем и электровелосипедом Pogon.',
+                })}
               </p>
             </div>
             <div className="rounded-2xl bg-black p-3 text-center text-white sm:p-4">
               <div className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-white/50">
-                {lang === 'sr' ? 'Godi\u0161nja u\u0161teda' : 'Yearly savings'}
+                {tr({ sr: 'Godi\u0161nja u\u0161teda', en: 'Yearly savings', ru: 'Экономия в год' })}
               </div>
               <div className="mt-2 text-2xl font-black leading-none sm:text-4xl">{formatRsd(yearlySavings)}</div>
               <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3 text-[0.7rem] sm:gap-3 sm:text-sm">
                 <div>
-                  <div className="text-white/45">{lang === 'sr' ? 'Mese\u010dno' : 'Monthly'}</div>
+                  <div className="text-white/45">{tr({ sr: 'Mese\u010dno', en: 'Monthly', ru: 'В месяц' })}</div>
                   <div className="mt-1 font-black">{formatRsd(monthlySavings)}</div>
                 </div>
                 <div>
@@ -1616,7 +1785,7 @@ export default function App() {
               {[
                 {
                   key: 'dailyKm' as const,
-                  label: lang === 'sr' ? 'Kilometara dnevno' : 'Daily kilometers',
+                  label: tr({ sr: 'Kilometara dnevno', en: 'Daily kilometers', ru: 'Километров в день' }),
                   suffix: 'km',
                   min: 1,
                   max: 100,
@@ -1624,7 +1793,7 @@ export default function App() {
                 },
                 {
                   key: 'fuelPrice' as const,
-                  label: lang === 'sr' ? 'Cena goriva' : 'Fuel price',
+                  label: tr({ sr: 'Cena goriva', en: 'Fuel price', ru: 'Цена топлива' }),
                   suffix: 'RSD',
                   min: 100,
                   max: 300,
@@ -1632,7 +1801,7 @@ export default function App() {
                 },
                 {
                   key: 'fuelConsumption' as const,
-                  label: lang === 'sr' ? 'Potro\u0161nja auta' : 'Car consumption',
+                  label: tr({ sr: 'Potro\u0161nja auta', en: 'Car consumption', ru: 'Расход автомобиля' }),
                   suffix: 'L/100km',
                   min: 3,
                   max: 15,
@@ -1660,12 +1829,14 @@ export default function App() {
             </div>
             <div className="flex h-full flex-col justify-center gap-2 sm:flex-row sm:items-center lg:w-56 lg:flex-col">
               <a href="#modeli" className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-black px-5 text-xs font-black uppercase tracking-wider text-white transition-transform hover:scale-[1.01] active:scale-[0.99] sm:min-h-12 sm:text-sm">
-                {lang === 'sr' ? 'Istra\u017ei modele' : 'Explore models'}
+                {tr({ sr: 'Istra\u017ei modele', en: 'Explore models', ru: 'Смотреть модели' })}
               </a>
               <p className="text-center text-[0.7rem] leading-relaxed text-black/45 sm:text-left lg:text-center">
-                {lang === 'sr'
-                  ? '* Struja je ra\u010dunata okvirno kao 0.5 RSD/km.'
-                  : '* Electricity is estimated at roughly 0.5 RSD/km.'}
+                {tr({
+                  sr: '* Struja je ra\u010dunata okvirno kao 0.5 RSD/km.',
+                  en: '* Electricity is estimated at roughly 0.5 RSD/km.',
+                  ru: '* Электроэнергия рассчитана примерно как 0.5 RSD/км.',
+                })}
               </p>
             </div>
           </div>
@@ -1685,23 +1856,25 @@ export default function App() {
             <div>
               <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[0.65rem] font-black uppercase tracking-[0.18em] text-white/60">
                 <Car className="size-4" />
-                {lang === 'sr' ? 'Automobil' : 'Car'}
+                {tr({ sr: 'Automobil', en: 'Car', ru: 'Автомобиль' })}
               </div>
               <h2 className="mt-6 max-w-[10ch] text-4xl font-black leading-[0.96] tracking-tight sm:text-5xl">
-                {lang === 'sr' ? 'Izra\u010dunaj u\u0161tedu bez naga\u0111anja' : 'Calculate savings without guessing'}
+                {tr({ sr: 'Izra\u010dunaj u\u0161tedu bez naga\u0111anja', en: 'Calculate savings without guessing', ru: 'Рассчитайте экономию без догадок' })}
               </h2>
               <p className="mt-5 max-w-md text-base leading-relaxed text-white/65">
-                {lang === 'sr'
-                  ? 'Podesi svakodnevnu vo\u017enju i cenu goriva. Kalkulator odmah prikazuje koliko prelazak na Pogon mo\u017ee da promeni mese\u010dni i godi\u0161nji tro\u0161ak.'
-                  : 'Adjust your daily ride and fuel price. The calculator shows how switching to Pogon can change monthly and yearly running costs.'}
+                {tr({
+                  sr: 'Podesi svakodnevnu vo\u017enju i cenu goriva. Kalkulator odmah prikazuje koliko prelazak na Pogon mo\u017ee da promeni mese\u010dni i godi\u0161nji tro\u0161ak.',
+                  en: 'Adjust your daily ride and fuel price. The calculator shows how switching to Pogon can change monthly and yearly running costs.',
+                  ru: 'Настройте ежедневный пробег и цену топлива. Калькулятор сразу покажет, как переход на Pogon может изменить ежемесячные и годовые расходы.',
+                })}
               </p>
             </div>
             <div className="mt-8 rounded-3xl border border-white/10 bg-white px-5 py-4 text-black">
               <div className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-black/45">
-                {lang === 'sr' ? 'Procena' : 'Estimate'}
+                {tr({ sr: 'Procena', en: 'Estimate', ru: 'Оценка' })}
               </div>
               <div className="mt-1 text-2xl font-black leading-none">{formatRsd(yearlySavings)}</div>
-              <div className="mt-1 text-xs text-black/50">{lang === 'sr' ? 'godi\u0161nje' : 'per year'}</div>
+              <div className="mt-1 text-xs text-black/50">{tr({ sr: 'godi\u0161nje', en: 'per year', ru: 'в год' })}</div>
             </div>
           </div>
           <div className="rounded-[2rem] border border-black/10 bg-white p-5 shadow-xl sm:p-6 lg:p-8">
@@ -1709,14 +1882,14 @@ export default function App() {
             <div>
               <div className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-2xl border border-black/10 bg-white px-5 text-base font-black text-black sm:w-auto sm:text-lg">
                 <Car className="size-5" />
-                {lang === 'sr' ? 'Automobil' : 'Car'}
+                {tr({ sr: 'Automobil', en: 'Car', ru: 'Автомобиль' })}
               </div>
               <h2 className="sr-only">
-                {lang === 'sr' ? 'Koliko možeš da uštediš?' : 'How much can you save?'}
+                {tr({ sr: 'Koliko možeš da uštediš?', en: 'How much can you save?', ru: 'Сколько можно сэкономить?' })}
               </h2>
             </div>
             <a href="#modeli" className="hidden">
-              {lang === 'sr' ? 'Modeli' : 'Models'}
+              {ui.navModels}
             </a>
           </div>
 
@@ -1724,7 +1897,7 @@ export default function App() {
             {[
               {
                 key: 'dailyKm' as const,
-                label: lang === 'sr' ? 'Koliko km dnevno voziš?' : 'How many km do you ride daily?',
+                label: tr({ sr: 'Koliko km dnevno voziš?', en: 'How many km do you ride daily?', ru: 'Сколько км в день вы ездите?' }),
                 suffix: 'km',
                 min: 1,
                 max: 100,
@@ -1732,7 +1905,7 @@ export default function App() {
               },
               {
                 key: 'fuelPrice' as const,
-                label: lang === 'sr' ? 'Cena goriva po litru' : 'Fuel price per liter',
+                label: tr({ sr: 'Cena goriva po litru', en: 'Fuel price per liter', ru: 'Цена топлива за литр' }),
                 suffix: 'RSD',
                 min: 100,
                 max: 300,
@@ -1740,7 +1913,7 @@ export default function App() {
               },
               {
                 key: 'fuelConsumption' as const,
-                label: lang === 'sr' ? 'Potrošnja goriva' : 'Fuel consumption',
+                label: tr({ sr: 'Potrošnja goriva', en: 'Fuel consumption', ru: 'Расход топлива' }),
                 suffix: 'L/100km',
                 min: 3,
                 max: 15,
@@ -1769,26 +1942,28 @@ export default function App() {
 
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-black/10 bg-[#f7f7f4] p-4 text-center">
-              <div className="text-sm text-black/55">{lang === 'sr' ? 'Mesečna ušteda' : 'Monthly savings'}</div>
+              <div className="text-sm text-black/55">{tr({ sr: 'Mesečna ušteda', en: 'Monthly savings', ru: 'Экономия в месяц' })}</div>
               <div className="mt-4 text-xl font-black">{formatRsd(monthlySavings)}</div>
             </div>
             <div className="rounded-2xl bg-black p-4 text-center text-white">
-              <div className="text-sm text-white/65">{lang === 'sr' ? 'Godišnja ušteda' : 'Yearly savings'}</div>
+              <div className="text-sm text-white/65">{tr({ sr: 'Godišnja ušteda', en: 'Yearly savings', ru: 'Экономия в год' })}</div>
               <div className="mt-2 text-3xl font-black leading-tight sm:text-4xl">{formatRsd(yearlySavings)}</div>
             </div>
             <div className="rounded-2xl border border-black/10 bg-[#f7f7f4] p-4 text-center">
-              <div className="text-sm text-black/55">{lang === 'sr' ? 'CO2 manje godišnje' : 'Less CO2 yearly'}</div>
+              <div className="text-sm text-black/55">{tr({ sr: 'CO2 manje godišnje', en: 'Less CO2 yearly', ru: 'Меньше CO2 в год' })}</div>
               <div className="mt-4 text-xl font-black">{new Intl.NumberFormat('sr-RS').format(yearlyCo2Kg)} kg</div>
             </div>
           </div>
 
           <p className="mt-5 text-center text-xs text-black/50 sm:text-sm">
-            {lang === 'sr'
-              ? '* Cena struje za punjenje električnog vozila ~0.5 RSD/km'
-              : '* Electricity cost for charging an electric vehicle ~0.5 RSD/km'}
+            {tr({
+              sr: '* Cena struje za punjenje električnog vozila ~0.5 RSD/km',
+              en: '* Electricity cost for charging an electric vehicle ~0.5 RSD/km',
+              ru: '* Стоимость электроэнергии для зарядки электровелосипеда ~0.5 RSD/км',
+            })}
           </p>
           <a href="#modeli" className="mt-5 inline-flex min-h-14 w-full items-center justify-center rounded-full bg-black px-6 text-sm font-black uppercase tracking-wider text-white transition-transform hover:scale-[1.01] active:scale-[0.99]">
-            {lang === 'sr' ? 'Istra\u017ei na\u0161e modele' : 'Explore our models'}
+            {tr({ sr: 'Istra\u017ei na\u0161e modele', en: 'Explore our models', ru: 'Смотреть наши модели' })}
           </a>
           </div>
         </motion.div>
@@ -2009,15 +2184,17 @@ export default function App() {
               <div className="mb-6">
                 <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em]">
                   <Phone className="size-4" />
-                  {lang === 'sr' ? 'Kontakt' : 'Contact'}
+                  {tr({ sr: 'Kontakt', en: 'Contact', ru: 'Контакт' })}
                 </div>
                 <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
-                  {lang === 'sr' ? 'Zakaži test vožnju' : 'Book a test ride'}
+                  {copy.heroPrimary}
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-foreground/60">
-                  {lang === 'sr'
-                    ? 'Ostavi broj i grad. Javićemo ti se uskoro da dogovorimo termin.'
-                    : 'Leave your number and city. We will contact you soon to arrange a time.'}
+                  {tr({
+                    sr: 'Ostavi broj i grad. Javićemo ti se uskoro da dogovorimo termin.',
+                    en: 'Leave your number and city. We will contact you soon to arrange a time.',
+                    ru: 'Оставьте номер и город. Мы скоро свяжемся, чтобы договориться о времени.',
+                  })}
                 </p>
               </div>
 
@@ -2025,16 +2202,20 @@ export default function App() {
                 <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
                   <CheckCircle2 className="mb-3 size-8 text-primary" />
                   <p className="font-bold">
-                    {lang === 'sr' ? 'Hvala! Javićemo ti se uskoro da dogovorimo test vožnju.' : 'Thank you! We will contact you soon to arrange your test ride.'}
+                    {tr({
+                      sr: 'Hvala! Javićemo ti se uskoro da dogovorimo test vožnju.',
+                      en: 'Thank you! We will contact you soon to arrange your test ride.',
+                      ru: 'Спасибо! Мы скоро свяжемся, чтобы договориться о тест-драйве.',
+                    })}
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleTestRideFormSubmit} className="space-y-4">
                   {[
-                    { key: 'name', label: lang === 'sr' ? 'Ime' : 'Name', type: 'text', autoComplete: 'name' },
-                    { key: 'phone', label: lang === 'sr' ? 'Telefon' : 'Phone', type: 'tel', autoComplete: 'tel' },
-                    { key: 'city', label: lang === 'sr' ? 'Grad' : 'City', type: 'text', autoComplete: 'address-level2' },
-                    { key: 'preferredTime', label: lang === 'sr' ? 'Kada želiš test vožnju?' : 'When would you like a test ride?', type: 'text', autoComplete: 'off' },
+                    { key: 'name', label: tr({ sr: 'Ime', en: 'Name', ru: 'Имя' }), type: 'text', autoComplete: 'name' },
+                    { key: 'phone', label: tr({ sr: 'Telefon', en: 'Phone', ru: 'Телефон' }), type: 'tel', autoComplete: 'tel' },
+                    { key: 'city', label: tr({ sr: 'Grad', en: 'City', ru: 'Город' }), type: 'text', autoComplete: 'address-level2' },
+                    { key: 'preferredTime', label: tr({ sr: 'Kada želiš test vožnju?', en: 'When would you like a test ride?', ru: 'Когда вам удобно пройти тест-драйв?' }), type: 'text', autoComplete: 'off' },
                   ].map((field) => (
                     <label key={field.key} className="block text-xs font-bold uppercase tracking-wider text-foreground/60">
                       {field.label}
@@ -2053,7 +2234,11 @@ export default function App() {
                   ))}
                   {testRideFormStatus === 'error' ? (
                     <p className="text-sm font-medium text-red-600" role="alert">
-                      {lang === 'sr' ? 'Unesi ime i telefon da bismo mogli da te kontaktiramo.' : 'Enter your name and phone so we can contact you.'}
+                      {tr({
+                        sr: 'Unesi ime i telefon da bismo mogli da te kontaktiramo.',
+                        en: 'Enter your name and phone so we can contact you.',
+                        ru: 'Введите имя и телефон, чтобы мы могли связаться с вами.',
+                      })}
                     </p>
                   ) : null}
                   <button
@@ -2063,8 +2248,8 @@ export default function App() {
                   >
                     <CalendarCheck className="size-5" />
                     {testRideFormStatus === 'submitting'
-                      ? (lang === 'sr' ? 'Slanje...' : 'Sending...')
-                      : (lang === 'sr' ? 'Pošalji zahtev' : 'Send request')}
+                      ? tr({ sr: 'Slanje...', en: 'Sending...', ru: 'Отправка...' })
+                      : tr({ sr: 'Pošalji zahtev', en: 'Send request', ru: 'Отправить заявку' })}
                   </button>
                 </form>
               )}
@@ -2079,7 +2264,7 @@ export default function App() {
               <div className="mb-6">
                 <div className="inline-block rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em]">FAQ</div>
                 <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-                  {lang === 'sr' ? 'Najčešća pitanja' : 'Frequently asked questions'}
+                  {tr({ sr: 'Najčešća pitanja', en: 'Frequently asked questions', ru: 'Частые вопросы' })}
                 </h2>
               </div>
               <div className="space-y-3">
@@ -2162,7 +2347,7 @@ export default function App() {
                 className="inline-flex items-center justify-center gap-3 border-2 border-border px-8 py-5 rounded-full hover:bg-accent transition-all active:scale-[0.98] text-sm sm:text-base uppercase tracking-wider font-bold"
               >
                 <Phone className="size-5" />
-                {lang === 'sr' ? 'Pozovi odmah' : 'Call now'}
+                {tr({ sr: 'Pozovi odmah', en: 'Call now', ru: 'Позвонить сейчас' })}
               </a>
             </div>
 
@@ -2408,20 +2593,24 @@ export default function App() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#65c900]">POGON</p>
-                <h3 className="mt-1 text-lg font-black">{lang === 'sr' ? 'Tu smo da pomognemo' : 'We’re here to help'}</h3>
+                <h3 className="mt-1 text-lg font-black">{tr({ sr: 'Tu smo da pomognemo', en: 'We’re here to help', ru: 'Мы рядом, чтобы помочь' })}</h3>
               </div>
-              <button type="button" onClick={() => setIsContactWidgetOpen(false)} aria-label={lang === 'sr' ? 'Zatvori' : 'Close'} className="rounded-full p-1.5 text-black/40 hover:bg-black/5 hover:text-black"><X className="size-4" /></button>
+              <button type="button" onClick={() => setIsContactWidgetOpen(false)} aria-label={copy.close} className="rounded-full p-1.5 text-black/40 hover:bg-black/5 hover:text-black"><X className="size-4" /></button>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-black/55">{lang === 'sr' ? 'Razgovarajte sa Pogon stručnjakom i pronađite pravi bicikl za vas.' : 'Talk with a Pogon specialist and find the right bike for you.'}</p>
+            <p className="mt-3 text-sm leading-relaxed text-black/55">{tr({
+              sr: 'Razgovarajte sa Pogon stručnjakom i pronađite pravi bicikl za vas.',
+              en: 'Talk with a Pogon specialist and find the right bike for you.',
+              ru: 'Поговорите со специалистом Pogon и найдите подходящий велосипед.',
+            })}</p>
             <button type="button" onClick={() => { setIsContactWidgetOpen(false); openLeadModal('specialist-contact'); }} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]">
               <MessageCircle className="size-4 text-[#7fff00]" />
-              {lang === 'sr' ? 'Zakaži razgovor' : 'Book a call'}
+              {tr({ sr: 'Zakaži razgovor', en: 'Book a call', ru: 'Записаться на звонок' })}
             </button>
           </div>
         )}
         <button type="button" onClick={() => setIsContactWidgetOpen((current) => !current)} aria-expanded={isContactWidgetOpen} className="group inline-flex items-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-bold text-white shadow-[0_12px_35px_rgba(0,0,0,0.3)] transition-transform hover:scale-[1.04] sm:px-5">
           <span className="flex size-8 items-center justify-center rounded-full bg-[#7fff00] text-black"><MessageCircle className="size-4" /></span>
-          <span>{lang === 'sr' ? 'Kontaktirajte nas' : 'Contact us'}</span>
+          <span>{tr({ sr: 'Kontaktirajte nas', en: 'Contact us', ru: 'Связаться с нами' })}</span>
         </button>
       </div>
 
@@ -2449,7 +2638,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setIsRangeCalculatorOpen(false)}
-                aria-label={lang === 'sr' ? 'Zatvori' : 'Close'}
+                aria-label={copy.close}
                 className="absolute right-2 top-2 z-10 rounded-full bg-white/8 p-1.5 text-white/55 transition-colors hover:bg-white/14 hover:text-white sm:right-4 sm:top-4 sm:p-2"
               >
                 <X className="size-4 sm:size-5" />
@@ -2459,25 +2648,27 @@ export default function App() {
                 <div className="border-b border-white/10 p-2 sm:p-5 lg:flex lg:h-full lg:flex-col lg:border-b-0 lg:border-r lg:p-[clamp(1.5rem,2vw,2.5rem)]">
                   <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/8 px-2.5 py-1 text-[0.52rem] font-bold uppercase tracking-[0.14em] text-white/70 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[0.62rem]">
                     <Calculator className="size-3.5 text-white sm:size-4" />
-                    {lang === 'sr' ? 'Kalkulator dometa' : 'Range calculator'}
+                    {tr({ sr: 'Kalkulator dometa', en: 'Range calculator', ru: 'Калькулятор запаса хода' })}
                   </div>
                   <h2 id="range-calculator-title" className="mt-1.5 pr-9 text-base font-black leading-tight tracking-tight sm:mt-3 sm:text-3xl lg:mt-5 lg:pr-0 lg:text-[clamp(2rem,2.9vw,3.6rem)]">
-                    {lang === 'sr' ? 'Kako se računa Wh i realan domet?' : 'How Wh and real range are calculated'}
+                    {tr({ sr: 'Kako se računa Wh i realan domet?', en: 'How Wh and real range are calculated', ru: 'Как рассчитываются Wh и реальный запас хода?' })}
                   </h2>
                   <p className="mt-2 hidden text-xs leading-relaxed text-white/60 sm:mt-3 sm:text-sm lg:mt-5 lg:block lg:text-base">
-                    {lang === 'sr'
-                      ? 'Kapacitet baterije je V x Ah = Wh.'
-                      : 'Battery capacity is V x Ah = Wh.'}
+                    {tr({
+                      sr: 'Kapacitet baterije je V x Ah = Wh.',
+                      en: 'Battery capacity is V x Ah = Wh.',
+                      ru: 'Емкость батареи рассчитывается так: V x Ah = Wh.',
+                    })}
                   </p>
 
                   <div className="mt-2 grid grid-cols-2 gap-1.5 sm:mt-4 sm:gap-3 lg:mt-8 lg:gap-4">
                     <div className="rounded-xl border border-white/10 bg-white/[0.06] p-2 sm:rounded-2xl sm:p-3 lg:p-5">
                       <div className="text-[0.56rem] font-bold uppercase tracking-[0.18em] text-white/40 sm:text-[0.62rem]">Wh</div>
                       <div className="mt-1 text-xl font-black sm:text-4xl lg:text-[clamp(2.5rem,4vw,4.5rem)]">{batteryWh}</div>
-                      <div className="mt-0.5 text-[0.68rem] text-white/45 sm:text-xs">{usableBatteryWh} {lang === 'sr' ? 'upotrebljivo' : 'usable'} Wh</div>
+                      <div className="mt-0.5 text-[0.68rem] text-white/45 sm:text-xs">{usableBatteryWh} {tr({ sr: 'upotrebljivo', en: 'usable', ru: 'доступно' })} Wh</div>
                     </div>
                     <div className="rounded-xl border border-white/20 bg-white/[0.09] p-2 sm:rounded-2xl sm:p-3 lg:p-5">
-                      <div className="text-[0.56rem] font-bold uppercase tracking-[0.18em] text-white/55 sm:text-[0.62rem]">{lang === 'sr' ? 'Procena' : 'Estimate'}</div>
+                      <div className="text-[0.56rem] font-bold uppercase tracking-[0.18em] text-white/55 sm:text-[0.62rem]">{tr({ sr: 'Procena', en: 'Estimate', ru: 'Оценка' })}</div>
                       <div className="mt-1 text-xl font-black text-white sm:text-4xl lg:text-[clamp(2.5rem,4vw,4.5rem)]">{estimatedRangeKm}</div>
                       <div className="mt-0.5 text-[0.68rem] text-white/50 sm:text-xs">{rangeLowKm}-{rangeHighKm} km</div>
                     </div>
@@ -2485,16 +2676,18 @@ export default function App() {
 
                   <div className="hidden">
                     <div className="flex items-center justify-start gap-2 lg:justify-between lg:gap-3">
-                      <span>{lang === 'sr' ? 'Motor' : 'Motor'}</span>
+                      <span>{copy.motor}</span>
                       <span className="font-black text-white">{legalMotorWatts}W</span>
                     </div>
                     <div className="mt-2 hidden h-1.5 overflow-hidden rounded-full bg-white/10 lg:block">
                       <div className="h-full w-full rounded-full bg-white" />
                     </div>
                     <p className="mt-1 hidden text-[0.65rem] leading-relaxed text-white/42 lg:block">
-                      {lang === 'sr'
-                        ? 'Snaga motora ostaje zaključana na 250W jer je to standardni legalni limit za e-bike.'
-                        : 'Motor power stays locked at 250W because that is the standard legal e-bike limit.'}
+                      {tr({
+                        sr: 'Snaga motora ostaje zaključana na 250W jer je to standardni legalni limit za e-bike.',
+                        en: 'Motor power stays locked at 250W because that is the standard legal e-bike limit.',
+                        ru: 'Мощность мотора остается ограниченной 250W, потому что это стандартный легальный лимит для e-bike.',
+                      })}
                     </p>
                   </div>
                 </div>
@@ -2524,7 +2717,7 @@ export default function App() {
                     {[
                       {
                         key: 'riderKg' as const,
-                        label: lang === 'sr' ? 'Težina vozača' : 'Rider weight',
+                        label: tr({ sr: 'Težina vozača', en: 'Rider weight', ru: 'Вес райдера' }),
                         suffix: 'kg',
                         min: 45,
                         max: 130,
@@ -2532,7 +2725,7 @@ export default function App() {
                       },
                       {
                         key: 'averageSpeed' as const,
-                        label: lang === 'sr' ? 'Prosečna brzina' : 'Average speed',
+                        label: tr({ sr: 'Prosečna brzina', en: 'Average speed', ru: 'Средняя скорость' }),
                         suffix: 'km/h',
                         min: 12,
                         max: 40,
@@ -2540,7 +2733,7 @@ export default function App() {
                       },
                       {
                         key: 'voltage' as const,
-                        label: lang === 'sr' ? 'Napon baterije' : 'Battery voltage',
+                        label: tr({ sr: 'Napon baterije', en: 'Battery voltage', ru: 'Напряжение батареи' }),
                         suffix: 'V',
                         min: 36,
                         max: 60,
@@ -2548,7 +2741,7 @@ export default function App() {
                       },
                       {
                         key: 'ampHours' as const,
-                        label: lang === 'sr' ? 'Kapacitet baterije' : 'Battery amp-hours',
+                        label: tr({ sr: 'Kapacitet baterije', en: 'Battery amp-hours', ru: 'Емкость батареи' }),
                         suffix: 'Ah',
                         min: 8,
                         max: 35,
@@ -2591,17 +2784,17 @@ export default function App() {
 
                   <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:mt-2 sm:gap-2 lg:mt-auto lg:gap-4">
                     <div className="rounded-xl border border-white/10 bg-black/20 p-1.5 sm:rounded-2xl sm:p-2 lg:p-4">
-                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Potrošnja' : 'Use'}</div>
+                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{tr({ sr: 'Potrošnja', en: 'Use', ru: 'Расход' })}</div>
                       <div className="mt-0.5 text-base font-black sm:mt-1 sm:text-xl lg:text-2xl">{whPerKm.toFixed(1)}</div>
                       <div className="text-[0.6rem] text-white/40 sm:text-xs">Wh/km</div>
                     </div>
                     <div className="rounded-xl border border-white/10 bg-black/20 p-1.5 sm:rounded-2xl sm:p-2 lg:p-4">
-                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Motor' : 'Motor'}</div>
+                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{copy.motor}</div>
                       <div className="mt-0.5 text-base font-black sm:mt-1 sm:text-xl lg:text-2xl">{legalMotorWatts}W</div>
-                      <div className="text-[0.6rem] text-white/40 sm:text-xs">{lang === 'sr' ? 'limit' : 'limit'}</div>
+                      <div className="text-[0.6rem] text-white/40 sm:text-xs">{tr({ sr: 'limit', en: 'limit', ru: 'лимит' })}</div>
                     </div>
                     <div className="rounded-xl border border-white/10 bg-black/20 p-1.5 sm:rounded-2xl sm:p-2 lg:p-4">
-                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{lang === 'sr' ? 'Formula' : 'Formula'}</div>
+                      <div className="text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">{tr({ sr: 'Formula', en: 'Formula', ru: 'Формула' })}</div>
                       <div className="mt-0.5 text-xs font-black sm:mt-1 sm:text-base lg:text-lg">V x Ah</div>
                       <div className="text-[0.6rem] text-white/40 sm:text-xs">= Wh</div>
                     </div>
@@ -2632,10 +2825,22 @@ export default function App() {
         intent={leadModalSource?.startsWith('purchase-') ? 'purchase' : leadModalSource === 'specialist-contact' ? 'consultation' : 'test-ride'}
         whatsappHref={buildWhatsappLink(
           leadModalSource === 'specialist-contact'
-            ? (lang === 'sr' ? 'Zdravo, želeo/la bih da razgovaram sa Pogon stručnjakom.' : 'Hi, I would like to speak with a Pogon specialist.')
+            ? tr({
+                sr: 'Zdravo, želeo/la bih da razgovaram sa Pogon stručnjakom.',
+                en: 'Hi, I would like to speak with a Pogon specialist.',
+                ru: 'Здравствуйте, я хотел(а) бы поговорить со специалистом Pogon.',
+              })
             : leadModalSource?.startsWith('purchase-')
-            ? (lang === 'sr' ? `Zdravo, zanima me kupovina ${leadModalSource.replace('purchase-', '')} modela.` : `Hi, I am interested in buying the ${leadModalSource.replace('purchase-', '')} model.`)
-            : (lang === 'sr' ? 'Zdravo, želim da zakažem test vožnju.' : 'Hi, I want to book a test ride.')
+            ? tr({
+                sr: `Zdravo, zanima me kupovina ${leadModalSource.replace('purchase-', '')} modela.`,
+                en: `Hi, I am interested in buying the ${leadModalSource.replace('purchase-', '')} model.`,
+                ru: `Здравствуйте, меня интересует покупка модели ${leadModalSource.replace('purchase-', '')}.`,
+              })
+            : tr({
+                sr: 'Zdravo, želim da zakažem test vožnju.',
+                en: 'Hi, I want to book a test ride.',
+                ru: 'Здравствуйте, хочу записаться на тест-драйв.',
+              })
         )}
         onClose={closeLeadModal}
       />

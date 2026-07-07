@@ -8,7 +8,7 @@ export type Lead = {
   name: string;
   phone: string;
   source: string;
-  language: 'en' | 'sr';
+  language: 'en' | 'sr' | 'ru';
   created_at: string;
   city: string | null;
   country: string | null;
