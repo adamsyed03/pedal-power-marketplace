@@ -280,10 +280,6 @@ export default function App() {
           { title: 'Sigurnost', body: 'Shimano hidraulične kočnice i integrisani LED svetlosni sistem' },
         ],
         reviewsEyebrow: 'Iskustva',
-        lifestyleCards: [
-          { title: 'Urbana Avantura', body: 'Grad je tvoj teren za igru' },
-          { title: 'Sloboda Pokreta', body: 'Bez granica, bez kompromisa' },
-        ],
         services: [
           { title: 'GPS sigurnosni sistemi', body: 'Pametni sistem za sigurnost i zaštitu tokom svake vožnje' },
           { title: '2 Godine Garancije', body: 'Proširena garancija na sve komponente i besplatni servis prve godine' },
@@ -314,10 +310,6 @@ export default function App() {
           { title: 'Safety', body: 'Shimano hydraulic brakes and an integrated LED lighting system' },
         ],
         reviewsEyebrow: 'Reviews',
-        lifestyleCards: [
-          { title: 'Urban Adventure', body: 'The city is your terrain' },
-          { title: 'Freedom of Movement', body: 'No limits, no compromises' },
-        ],
         services: [
           { title: 'GPS security systems', body: 'Smart security and protection for every ride' },
           { title: '2-Year Warranty', body: 'Extended warranty on all components and free service in the first year' },
@@ -348,10 +340,6 @@ export default function App() {
           { title: 'Безопасность', body: 'Гидравлические тормоза Shimano и встроенная LED-система освещения' },
         ],
         reviewsEyebrow: 'Отзывы',
-        lifestyleCards: [
-          { title: 'Городское приключение', body: 'Город становится вашим маршрутом' },
-          { title: 'Свобода движения', body: 'Без ограничений и компромиссов' },
-        ],
         services: [
           { title: 'GPS-системы безопасности', body: 'Умная защита и безопасность во время каждой поездки' },
           { title: 'Гарантия 2 года', body: 'Расширенная гарантия на все компоненты и бесплатный сервис в первый год' },
@@ -934,7 +922,7 @@ export default function App() {
   }
 
   return (
-    <div ref={pageRootRef} className="min-h-screen bg-background overflow-x-hidden sm:overflow-x-visible px-4 sm:px-0">
+    <div ref={pageRootRef} className="min-h-screen bg-background overflow-x-hidden sm:overflow-x-visible px-4 sm:px-0 pb-[4.75rem] md:pb-0">
       <style>{`
         @keyframes scroll-marquee {
           0% { transform: translateX(0); }
@@ -1273,14 +1261,14 @@ export default function App() {
                 <div className="text-center">
                   <div className="inline-flex items-end gap-1 text-black justify-center">
                     <span className="text-[0.7rem] lowercase tracking-[0.18em] text-foreground/60">{copy.fromText}</span>
-                    <span className="text-3xl sm:text-4xl font-black tracking-tight text-foreground/40">250w</span>
+                    <span className="text-3xl sm:text-4xl font-black tracking-tight">250<span className="text-lg sm:text-2xl text-foreground/40">w</span></span>
                   </div>
                   <div className="text-[0.65rem] sm:text-xs uppercase tracking-wider text-foreground/50 mt-1">{copy.power}</div>
                 </div>
                 <div className="text-center">
                   <div className="inline-flex items-end gap-1 text-black justify-center">
                     <span className="text-[0.7rem] lowercase tracking-[0.18em] text-foreground/60">{copy.fromText}</span>
-                    <span className="text-3xl sm:text-4xl font-black tracking-tight text-foreground/40">25km/h</span>
+                    <span className="text-3xl sm:text-4xl font-black tracking-tight">25<span className="text-lg sm:text-2xl text-foreground/40">km/h</span></span>
                   </div>
                   <div className="text-[0.65rem] sm:text-xs uppercase tracking-wider text-foreground/50 mt-1">{copy.topSpeed}</div>
                 </div>
@@ -1328,13 +1316,13 @@ export default function App() {
       </section>
 
       {/* Product Showcase */}
-      <section id="modeli" className="relative overflow-hidden bg-background pt-8 pb-24 text-foreground sm:pt-10 sm:pb-28 lg:pt-12 lg:pb-20">
+      <section id="modeli" className="relative overflow-hidden bg-background pt-8 pb-14 text-foreground sm:pt-10 sm:pb-28 lg:pt-12 lg:pb-20">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-accent/20"></div>
         <div className="relative max-w-7xl mx-auto px-6">
-          <div className="text-center mb-14 md:mb-20 lg:mb-10">
+          <div className="text-center mb-8 md:mb-20 lg:mb-10">
             <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4 lg:mb-3">{copy.premiumSeries}</div>
-            <h2 className="text-5xl md:text-6xl lg:text-5xl font-black mb-6 lg:mb-3 tracking-tight">{ui.navModels}</h2>
-            <p className="text-xl lg:text-base text-foreground/60 max-w-2xl mx-auto font-light">
+            <h2 className="text-4xl md:text-6xl lg:text-5xl font-black mb-4 md:mb-6 lg:mb-3 tracking-tight">{ui.navModels}</h2>
+            <p className="text-base sm:text-xl lg:text-base text-foreground/60 max-w-2xl mx-auto font-light">
               {copy.modelsCopy}
             </p>
           </div>
@@ -1972,9 +1960,9 @@ export default function App() {
       </section>
 
       {/* Technology Section */}
-      <section id="tehnologija" className="py-20 sm:py-28 lg:py-32 bg-muted/30">
+      <section id="tehnologija" className="py-14 sm:py-28 lg:py-32 bg-muted/30">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+          <div className="text-center mb-8 sm:mb-16 lg:mb-20">
             <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4">{ui.innovation}</div>
             <h2 className="mx-auto max-w-[12ch] text-3xl font-black leading-[1.04] tracking-tight sm:text-4xl md:max-w-none md:text-6xl">{ui.technologyTitle}</h2>
           </div>
@@ -2065,11 +2053,11 @@ export default function App() {
       </section>
 
       {/* Testimonials */}
-      <section id="iskustva" className="py-24 sm:py-28">
+      <section id="iskustva" className="py-14 sm:py-28">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16 sm:mb-20">
+          <div className="text-center mb-8 sm:mb-20">
             <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4">{ui.reviewsEyebrow}</div>
-            <h2 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black mb-5 sm:mb-6 tracking-tight">{copy.customerReviews}</h2>
+            <h2 className="text-3xl sm:text-5xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-6 tracking-tight">{copy.customerReviews}</h2>
           </div>
           <div className="overflow-hidden rounded-[2rem] border border-border/50 bg-background/90">
             <div className="review-marquee flex gap-4 px-6 py-6 min-w-full">
@@ -2100,74 +2088,25 @@ export default function App() {
         </div>
       </section>
 
-      {/* Lifestyle Gallery */}
-      <section className="py-24 sm:py-28 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <div className="relative rounded-3xl overflow-hidden group aspect-[4/3]">
-              <ImageWithFallback
-                src={publicAsset('Excellent 2.jpg')}
-                alt="Urban ride"
-                loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
-                <div className="text-white">
-                  <h3 className="text-2xl font-bold mb-2">{ui.lifestyleCards[0].title}</h3>
-                  <p className="text-white/80">{ui.lifestyleCards[0].body}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative rounded-3xl overflow-hidden group aspect-[4/3]">
-              <ImageWithFallback
-                src={publicAsset('Excellent 3.jpg')}
-                alt="Freedom of movement"
-                loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
-                <div className="text-white">
-                  <h3 className="text-2xl font-bold mb-2">{ui.lifestyleCards[1].title}</h3>
-                  <p className="text-white/80">{ui.lifestyleCards[1].body}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Services */}
-      <section className="py-24 sm:py-28">
+      <section className="py-14 sm:py-28">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
-            <div className="text-center">
-              <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <MapPin className="size-10 text-primary" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-8">
+            {[
+              { icon: MapPin, service: ui.services[0] },
+              { icon: Shield, service: ui.services[1] },
+              { icon: Clock, service: ui.services[2] },
+            ].map(({ icon: Icon, service }) => (
+              <div key={service.title} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 text-left sm:block sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:text-center">
+                <div className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl sm:mx-auto sm:mb-6 sm:h-20 sm:w-20">
+                  <Icon className="size-7 text-primary sm:size-10" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold mb-1 sm:text-xl sm:mb-3">{service.title}</h3>
+                  <p className="text-foreground/60 text-sm">{service.body}</p>
+                </div>
               </div>
-              <h3 className="text-xl font-bold mb-3">{ui.services[0].title}</h3>
-              <p className="text-foreground/60 text-sm">
-                {ui.services[0].body}
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Shield className="size-10 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">{ui.services[1].title}</h3>
-              <p className="text-foreground/60 text-sm">
-                {ui.services[1].body}
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Clock className="size-10 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">{ui.services[2].title}</h3>
-              <p className="text-foreground/60 text-sm">
-                {ui.services[2].body}
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -2301,7 +2240,7 @@ export default function App() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 sm:py-28 relative overflow-hidden">
+      <section className="py-16 sm:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(0,0,0,0.03)_0%,transparent_50%)]"></div>
 
@@ -2320,9 +2259,9 @@ export default function App() {
               <span className="uppercase tracking-wider text-xs font-medium">{copy.badge}</span>
             </div>
 
-            <h2 className="text-5xl md:text-7xl font-black mb-8 tracking-tight leading-none">{copy.finalTitle}</h2>
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-black mb-5 sm:mb-8 tracking-tight leading-[1.02] md:leading-none">{copy.finalTitle}</h2>
 
-            <p className="text-xl md:text-2xl text-foreground/60 mb-12 max-w-3xl mx-auto font-light leading-relaxed">{copy.finalBody}</p>
+            <p className="text-lg sm:text-xl md:text-2xl text-foreground/60 mb-8 sm:mb-12 max-w-3xl mx-auto font-light leading-relaxed">{copy.finalBody}</p>
 
             <div className="flex flex-col gap-3 justify-center mb-10 sm:flex-row sm:flex-wrap sm:gap-4">
               <button
@@ -2614,6 +2553,38 @@ export default function App() {
           <span className="flex size-8 items-center justify-center rounded-full bg-[#7fff00] text-black"><MessageCircle className="size-4" /></span>
           <span>{tr({ sr: 'Kontaktirajte nas', en: 'Contact us', ru: 'Связаться с нами' })}</span>
         </button>
+      </div>
+
+      {/* Mobile sticky CTA bar */}
+      <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-border/60 bg-white/95 px-3 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] backdrop-blur-md md:hidden">
+        <div className="mx-auto flex max-w-lg items-center gap-2">
+          <button
+            type="button"
+            onClick={() => openLeadModal('mobile-sticky-cta')}
+            className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-xs font-black uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]"
+          >
+            <CalendarCheck className="size-4" />
+            {copy.heroPrimary}
+          </button>
+          <a
+            href={phoneHref}
+            onClick={() => handlePhoneClick('mobile-sticky-cta')}
+            aria-label={copy.heroSecondary}
+            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card text-foreground transition-transform active:scale-[0.98]"
+          >
+            <Phone className="size-5" />
+          </a>
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => handleWhatsappClick('mobile-sticky-cta')}
+            aria-label="WhatsApp"
+            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-black transition-transform active:scale-[0.98]"
+          >
+            <MessageCircle className="size-5" />
+          </a>
+        </div>
       </div>
 
       <AnimatePresence>
