@@ -722,6 +722,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (isSavingsQuizRoute) return;
+
     const popupStorageKey = window.matchMedia('(min-width: 768px)').matches
       ? 'pogon_popup_done_desktop'
       : 'pogon_popup_done_mobile';
@@ -739,7 +741,7 @@ export default function App() {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => { clearTimeout(timer); window.removeEventListener('scroll', onScroll); };
-  }, []);
+  }, [isSavingsQuizRoute]);
 
   const closeLeadPopup = () => {
     setShowLeadPopup(false);
