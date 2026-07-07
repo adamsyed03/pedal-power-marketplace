@@ -1759,7 +1759,7 @@ export default function App() {
               <div className="mt-2 text-2xl font-black leading-none sm:text-4xl">{formatRsd(yearlySavings)}</div>
               <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3 text-[0.7rem] sm:gap-3 sm:text-sm">
                 <div>
-                  <div className="text-white/45">{tr({ sr: 'Mese\u010dno', en: 'Monthly', ru: 'В месяц' })}</div>
+                  <div className="text-white/45">{tr({ sr: 'Po mesecu', en: 'Monthly', ru: 'В месяц' })}</div>
                   <div className="mt-1 font-black">{formatRsd(monthlySavings)}</div>
                 </div>
                 <div>
