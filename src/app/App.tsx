@@ -778,14 +778,14 @@ export default function App() {
       description: copy.glideDescription,
       monthlyPrice: '17,000 RSD',
       price: '170,000 RSD',
-      mobileSpecs: { range: '100 km', power: '250W motor', battery: '1200 Wh' },
+      mobileSpecs: { range: '70 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
         sr: [
             'Motor u zadnjem točku',
             'Aluminijumski ram',
             'Hidraulične kočnice',
             'Nosivost 110 kg',
-            'Domet 100 km',
+            'Domet 70 km',
             'GPS sigurnosne funkcije',
           ],
         en: [
@@ -793,7 +793,7 @@ export default function App() {
             'Aluminum frame',
             'Hydraulic brakes',
             '110 kg load capacity',
-            'Up to 100 km range',
+            'Up to 70 km range',
             'GPS security features',
           ],
         ru: [
