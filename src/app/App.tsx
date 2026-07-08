@@ -1255,7 +1255,7 @@ export default function App() {
 
               <div className="grid grid-cols-3 gap-3 pt-7 border-t border-border/50">
                 <div className="text-center">
-                  <div className="text-3xl sm:text-4xl font-black tracking-tight">90<span className="text-lg sm:text-2xl text-foreground/40">km</span></div>
+                  <div className="text-3xl sm:text-4xl font-black tracking-tight">110<span className="text-lg sm:text-2xl text-foreground/40">km</span></div>
                   <div className="text-[0.65rem] sm:text-xs uppercase tracking-wider text-foreground/50 mt-1">{copy.range}</div>
                 </div>
                 <div className="text-center">
