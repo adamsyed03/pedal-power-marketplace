@@ -61,7 +61,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
       setError(tr({
         sr: 'Unesite ime i ispravan broj telefona.',
         en: 'Enter your name and a valid phone number.',
-        ru: 'Введите имя и корректный номер телефона.',
+        ru: 'Введи имя и корректный номер телефона.',
       }));
       return;
     }
@@ -75,7 +75,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
       setError(tr({
         sr: 'Čuvanje trenutno nije uspelo. Pokušajte putem WhatsApp-a.',
         en: 'We could not save your details. Please try WhatsApp.',
-        ru: 'Не удалось сохранить данные. Попробуйте через WhatsApp.',
+        ru: 'Не удалось сохранить данные. Попробуй через WhatsApp.',
       }));
     } finally {
       setIsSubmitting(false);
@@ -94,10 +94,10 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
             <CheckCircle2 className="mx-auto mb-5 size-12 text-[#7fff00]" />
             <h2 id="lead-modal-title" className="text-2xl font-black">{tr({ sr: 'Hvala!', en: 'Thank you!', ru: 'Спасибо!' })}</h2>
             <p className="mt-3 text-white/65">{isConsultation
-              ? tr({ sr: 'Naš stručnjak će vas uskoro kontaktirati.', en: 'One of our specialists will contact you soon.', ru: 'Наш специалист скоро свяжется с вами.' })
+              ? tr({ sr: 'Naš stručnjak će vas uskoro kontaktirati.', en: 'One of our specialists will contact you soon.', ru: 'Наш специалист скоро с тобой свяжется.' })
               : isPurchase
-              ? tr({ sr: 'Javićemo vam se uskoro sa svim informacijama o kupovini.', en: 'We will call you soon with the purchase details.', ru: 'Мы скоро свяжемся с вами и расскажем детали покупки.' })
-              : tr({ sr: 'Javićemo vam se uskoro da dogovorimo test vožnju.', en: 'We will call you soon to arrange your test ride.', ru: 'Мы скоро позвоним, чтобы договориться о тест-драйве.' })}</p>
+              ? tr({ sr: 'Javićemo vam se uskoro sa svim informacijama o kupovini.', en: 'We will call you soon with the purchase details.', ru: 'Скоро свяжемся с тобой и расскажем все детали покупки.' })
+              : tr({ sr: 'Javićemo vam se uskoro da dogovorimo test vožnju.', en: 'We will call you soon to arrange your test ride.', ru: 'Скоро позвоним и договоримся о тест-драйве.' })}</p>
             <button type="button" onClick={onClose} className="mt-7 rounded-full bg-white px-7 py-3 text-sm font-bold uppercase tracking-wider text-black">
               {tr({ sr: 'Završi', en: 'Done', ru: 'Готово' })}
             </button>
@@ -106,11 +106,11 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
           <>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7fff00]">POGON</p>
             <h2 id="lead-modal-title" className="mt-2 pr-10 text-2xl font-black">{isConsultation
-              ? tr({ sr: 'Zakažite razgovor sa stručnjakom', en: 'Book a call with a specialist', ru: 'Записаться на разговор со специалистом' })
+              ? tr({ sr: 'Zakažite razgovor sa stručnjakom', en: 'Book a call with a specialist', ru: 'Запишись на разговор со специалистом' })
               : isPurchase
               ? tr({ sr: 'Zainteresovani ste za kupovinu?', en: 'Interested in buying?', ru: 'Интересует покупка?' })
-              : tr({ sr: 'Zakaži test vožnju', en: 'Book a test ride', ru: 'Записаться на тест-драйв' })}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-white/60">{tr({ sr: 'Izaberite kako želite da vas kontaktiramo.', en: 'Choose how you would like to get in touch.', ru: 'Выберите, как вам удобнее связаться.' })}</p>
+              : tr({ sr: 'Zakaži test vožnju', en: 'Book a test ride', ru: 'Запишись на тест-драйв' })}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-white/60">{tr({ sr: 'Izaberite kako želite da vas kontaktiramo.', en: 'Choose how you would like to get in touch.', ru: 'Выбери, как тебе удобнее связаться.' })}</p>
 
             <a href={whatsappHref} target="_blank" rel="noreferrer" className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3.5 text-sm font-bold text-black transition-transform hover:scale-[1.02]">
               <MessageCircle className="size-5" />
@@ -119,7 +119,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
 
             <div className="my-6 flex items-center gap-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-white/35">
               <span className="h-px flex-1 bg-white/10" />
-              {tr({ sr: 'ili ostavite broj', en: 'or leave your number', ru: 'или оставьте номер' })}
+              {tr({ sr: 'ili ostavite broj', en: 'or leave your number', ru: 'или оставь номер' })}
               <span className="h-px flex-1 bg-white/10" />
             </div>
 
@@ -140,7 +140,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                     enterKeyHint="next"
                     autoComplete="name"
                     className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-4 pr-11 text-base font-normal normal-case tracking-normal text-white outline-none transition-all placeholder:text-white/25 focus:border-[#7fff00]/60 focus:bg-white/[0.07]"
-                    placeholder={tr({ sr: 'Vaše ime', en: 'Your name', ru: 'Ваше имя' })}
+                    placeholder={tr({ sr: 'Vaše ime', en: 'Your name', ru: 'Твоё имя' })}
                   />
                   {isNameValid && <CheckCircle2 className="absolute right-4 top-1/2 size-5 -translate-y-1/2 text-[#7fff00]" aria-hidden="true" />}
                 </div>
@@ -173,7 +173,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                   {tr({
                     sr: 'Unesite broj bez početne nule — mi ćemo dodati pozivni broj.',
                     en: 'Enter the number without the leading zero — we add the country code.',
-                    ru: 'Введите номер без начального нуля — код страны мы добавим сами.',
+                    ru: 'Введи номер без нуля в начале — код страны добавим сами.',
                   })}
                 </span>
               </label>
@@ -187,7 +187,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                 {tr({
                   sr: 'Vaše podatke koristimo samo da vas kontaktiramo u vezi sa Pogon biciklima.',
                   en: 'We only use your details to contact you about Pogon bikes.',
-                  ru: 'Мы используем ваши данные только для связи по поводу велосипедов Pogon.',
+                  ru: 'Твои данные нужны нам только для связи по поводу велосипедов Pogon.',
                 })}
               </p>
             </form>

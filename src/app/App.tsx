@@ -87,11 +87,11 @@ const homeCopySr = {
 
 const homeCopyRu = {
   heroTitle: 'Двигайся свободно',
-  heroSub: 'Электровелосипеды для города, ежедневных поездок и планов без ожидания.',
+  heroSub: 'Электровелосипеды для города, ежедневных поездок и планов, которые не ждут.',
   heroPrimary: 'Записаться на тест-драйв',
   heroSecondary: 'Позвонить нам',
-  finalTitle: 'Выберите модель и начните новый городской ритм',
-  finalBody: 'Напишите нам в WhatsApp, и мы поможем выбрать подходящий Pogon.',
+  finalTitle: 'Выбери модель и запусти свой городской ритм',
+  finalBody: 'Напиши нам в WhatsApp — поможем выбрать подходящий Pogon.',
   finalPrimary: 'Смотреть модели',
   finalSecondary: 'Написать в WhatsApp',
   badge: 'Создано для улиц Сербии',
@@ -103,10 +103,10 @@ const homeCopyRu = {
   buyNow: 'Купить сейчас',
   onSaleBadge: 'Акция',
   youSave: 'Экономия',
-  glideDescription: 'Комфортный и надежный городской электровелосипед на каждый день.',
+  glideDescription: 'Комфортный и надёжный городской электровелосипед на каждый день.',
   coreDescription: 'Складная городская модель с широкими шинами для комфорта и контроля.',
   cargoDescription: 'Компактный рабочий электровелосипед для городских поездок и доставок.',
-  rearHub: 'Задний мотор-колесо',
+  rearHub: 'Заднее мотор-колесо',
   range: 'Запас хода',
   motor: 'Мотор',
   weight: 'Вес',
@@ -114,9 +114,9 @@ const homeCopyRu = {
   upTo: 'До',
   power: 'Мощность',
   topSpeed: 'Макс. скорость',
-  clickSpecs: 'Нажмите для характеристик',
+  clickSpecs: 'Нажми, чтобы увидеть характеристики',
   close: 'Закрыть',
-  clickHide: 'Нажмите еще раз, чтобы скрыть',
+  clickHide: 'Нажми ещё раз, чтобы скрыть',
   perMonth: 'в месяц',
   customerReviews: 'Отзывы наших райдеров',
 };
@@ -332,27 +332,27 @@ export default function App() {
         navReviews: 'Отзывы',
         specs: 'Характеристики',
         innovation: 'Инновации',
-        technologyTitle: 'Технологии, которые двигают вас',
+        technologyTitle: 'Технологии, которые двигают тебя вперёд',
         technologyCards: [
-          { title: 'Продвинутая батарея', body: 'Элементы Samsung SDI и интеллектуальная BMS-система для оптимального запаса хода' },
+          { title: 'Современная батарея', body: 'Ячейки Samsung SDI и умная BMS-система для оптимального запаса хода' },
           { title: 'Мотор Bafang', body: 'Премиальный mid-drive мотор с крутящим моментом 45 Нм' },
           { title: 'Умное управление', body: 'Цветной дисплей с GPS-навигацией и отслеживанием показателей' },
           { title: 'Безопасность', body: 'Гидравлические тормоза Shimano и встроенная LED-система освещения' },
         ],
         reviewsEyebrow: 'Отзывы',
         services: [
-          { title: 'GPS-системы безопасности', body: 'Умная защита и безопасность во время каждой поездки' },
+          { title: 'GPS-системы безопасности', body: 'Умная защита и спокойствие в каждой поездке' },
           { title: 'Гарантия 2 года', body: 'Расширенная гарантия на все компоненты и бесплатный сервис в первый год' },
-          { title: 'Тест-драйв', body: 'Запишитесь на бесплатный тест-драйв в наших шоурумах в Белграде и Нови-Саде' },
+          { title: 'Тест-драйв', body: 'Запишись на бесплатный тест-драйв в наших шоурумах в Белграде и Нови-Саде' },
         ],
         ctaBullets: ['GPS-системы безопасности', 'Гарантия 2 года', 'Гибкая рассрочка'],
-        footerBody: 'Лидеры в премиальных электровелосипедах. Меняем городскую мобильность по одной поездке за раз.',
+        footerBody: 'Лидеры в премиальных электровелосипедах. Меняем городскую мобильность — поездка за поездкой.',
         footerProducts: 'Продукты',
         footerCompare: 'Сравнить модели',
         footerSupport: 'Поддержка',
         footerSupportLinks: ['Тест-драйв', 'Сервис', 'Гарантия'],
         footerCompany: 'Компания',
-        footerCompanyLinks: ['О нас', 'Контакт', 'Карьера', 'Блог'],
+        footerCompanyLinks: ['О нас', 'Контакты', 'Карьера', 'Блог'],
         copyright: 'Все права защищены.',
         footerLegal: ['Конфиденциальность', 'Условия', 'Cookies'],
       },
@@ -363,7 +363,7 @@ export default function App() {
   const testRideWhatsappText = tr({
     sr: 'Zdravo, želim da zakažem test vožnju Pogon e-bike-a.',
     en: 'Hi, I want to book a Pogon e-bike test ride.',
-    ru: 'Здравствуйте, хочу записаться на тест-драйв электровелосипеда Pogon.',
+    ru: 'Привет! Хочу записаться на тест-драйв электровелосипеда Pogon.',
   });
   const whatsappHref = buildWhatsappLink(testRideWhatsappText);
   const closeLeadModal = useCallback(() => setLeadModalSource(null), []);
@@ -405,9 +405,9 @@ export default function App() {
         'Hi, I have a question about the Pogon warranty.',
       ],
     ru: [
-        'Здравствуйте, хочу записаться на тест-драйв.',
-        'Здравствуйте, меня интересует сервис для велосипеда Pogon.',
-        'Здравствуйте, у меня вопрос по гарантии Pogon.',
+        'Привет! Хочу записаться на тест-драйв.',
+        'Привет! Интересует сервис для велосипеда Pogon.',
+        'Привет! Есть вопрос по гарантии Pogon.',
       ],
   });
   const footerCompanyMessages = tr({
@@ -424,16 +424,16 @@ export default function App() {
         'Hi, I am interested in the Pogon blog.',
       ],
     ru: [
-        'Здравствуйте, хочу узнать больше о Pogon.',
-        'Здравствуйте, хочу связаться с командой Pogon.',
-        'Здравствуйте, меня интересует работа в Pogon.',
-        'Здравствуйте, меня интересует блог Pogon.',
+        'Привет! Хочу узнать больше о Pogon.',
+        'Привет! Хочу связаться с командой Pogon.',
+        'Привет! Интересует работа в Pogon.',
+        'Привет! Интересует блог Pogon.',
       ],
   });
   const preModelsSentence = tr({
     sr: 'Pogon je e-bike za gradsku rutinu: stabilan, udoban i spreman da proveriš vožnju pre nego što odlučiš.',
     en: 'Pogon is an e-bike for city routines: stable, comfortable and ready to test before you decide.',
-    ru: 'Pogon — электровелосипед для городского ритма: стабильный, удобный и готовый к тестовой поездке перед решением.',
+    ru: 'Pogon — электровелосипед для городского ритма: устойчивый, удобный и готовый к тест-драйву, прежде чем ты примешь решение.',
   });
   const reviews = [
     {
@@ -443,7 +443,7 @@ export default function App() {
       text: {
         sr: 'Ovaj Pogon model je totalno promenio moje gradske vožnje — tiho, snažno i pouzdano.',
         en: 'This Pogon model totally changed my city rides — quiet, powerful and reliable.',
-        ru: 'Эта модель Pogon полностью изменила мои поездки по городу — тихая, мощная и надежная.',
+        ru: 'Эта модель Pogon полностью изменила мои поездки по городу — тихая, мощная и надёжная.',
       },
     },
     {
@@ -503,7 +503,7 @@ export default function App() {
       text: {
         sr: 'Vozilo je veoma stabilno, samo bi voleo da ima još jedan mod vožnje.',
         en: 'The bike is very stable, I just wish it had one more riding mode.',
-        ru: 'Велосипед очень стабильный, хотелось бы только еще один режим езды.',
+        ru: 'Велосипед очень устойчивый, хотелось бы только ещё один режим езды.',
       },
     },
     {
@@ -544,7 +544,7 @@ export default function App() {
   const trustBadges = tr({
     sr: ['Test vožnja dostupna', 'Servis i podrška', 'Dostava dostupna', 'Legalno za vožnju', 'Garancija'],
     en: ['Test ride available', 'Service and support', 'Delivery available', 'Road legal', 'Warranty'],
-    ru: ['Тест-драйв доступен', 'Сервис и поддержка', 'Доставка доступна', 'Легально для дорог', 'Гарантия'],
+    ru: ['Есть тест-драйв', 'Сервис и поддержка', 'Есть доставка', 'Разрешён на дорогах', 'Гарантия'],
   });
   const faqItems = tr({
     sr: [
@@ -570,15 +570,15 @@ export default function App() {
         { question: 'How do I pay?', answer: 'Payment is arranged directly with clear information before purchase.' },
       ],
     ru: [
-        { question: 'Какой запас хода?', answer: 'Реальный запас хода зависит от маршрута, веса райдера, температуры и уровня ассистента. Лучше всего проверить это на тест-драйве.' },
-        { question: 'Можно попробовать велосипед перед покупкой?', answer: 'Да. Запишитесь на удобное время и попробуйте велосипед перед решением, без давления.' },
-        { question: 'Он легален для езды по дорогам?', answer: 'Модели настроены для городской езды и легального использования как e-bike.' },
-        { question: 'Нужны ли права?', answer: 'Для стандартной езды на электровелосипеде специальные права не нужны.' },
-        { question: 'Сколько длится зарядка?', answer: 'Обычно зарядка занимает несколько часов, в зависимости от батареи и уровня заряда.' },
-        { question: 'Что делать, если он сломается?', answer: 'Есть сервис и поддержка. Свяжитесь с нами, и мы организуем самое быстрое решение.' },
-        { question: 'У вас есть сервис?', answer: 'Да, мы предлагаем сервисную поддержку и помощь с обслуживанием.' },
-        { question: 'Он едет в гору?', answer: 'Да. Мотор помогает на подъемах, а тест-драйв лучше всего покажет ощущения на вашем маршруте.' },
-        { question: 'Как происходит оплата?', answer: 'Оплату согласуем напрямую, с понятной информацией до покупки.' },
+        { question: 'Какой запас хода?', answer: 'Реальный запас хода зависит от маршрута, веса, температуры и уровня поддержки мотора. Проще всего проверить это на тест-драйве.' },
+        { question: 'Можно попробовать велосипед перед покупкой?', answer: 'Да! Запишись на удобное время и попробуй велосипед перед решением — без давления и обязательств.' },
+        { question: 'Он легален для езды по дорогам?', answer: 'Да, модели настроены для городской езды и полностью соответствуют правилам для электровелосипедов.' },
+        { question: 'Нужны ли права?', answer: 'Нет, для обычной езды на электровелосипеде специальные права не нужны.' },
+        { question: 'Сколько длится зарядка?', answer: 'Обычно несколько часов — зависит от батареи и уровня заряда.' },
+        { question: 'А если что-то сломается?', answer: 'Не переживай — у нас есть сервис и поддержка. Напиши нам, и мы быстро всё решим.' },
+        { question: 'У вас есть сервис?', answer: 'Да, мы поможем с обслуживанием и ремонтом.' },
+        { question: 'Он едет в гору?', answer: 'Да! Мотор помогает на подъёмах, а тест-драйв лучше всего покажет, как он ведёт себя на твоём маршруте.' },
+        { question: 'Как оплатить?', answer: 'Оплату согласуем напрямую — вся информация будет понятна до покупки.' },
       ],
   });
   const trustBadgeIcons = [CalendarCheck, Wrench, Truck, Shield, CheckCircle2];
@@ -746,7 +746,7 @@ export default function App() {
       setPopupError(tr({
         sr: 'Unesite ispravan broj telefona.',
         en: 'Enter a valid phone number.',
-        ru: 'Введите корректный номер телефона.',
+        ru: 'Введи корректный номер телефона.',
       }));
       return;
     }
@@ -797,11 +797,11 @@ export default function App() {
             'GPS security features',
           ],
         ru: [
-            'Задний мотор-колесо',
+            'Заднее мотор-колесо',
             'Алюминиевая рама',
             'Гидравлические тормоза',
-            'Грузоподъемность 110 кг',
-            'Запас хода до 100 км',
+            'Грузоподъёмность 110 кг',
+            'Запас хода до 70 км',
             'GPS-функции безопасности',
           ],
       }),
@@ -844,11 +844,11 @@ export default function App() {
             'GPS security features',
           ],
         ru: [
-            'Задний мотор-колесо',
+            'Заднее мотор-колесо',
             'Складная стальная рама',
             'Гидравлические тормоза',
             'Две батареи, запас хода более 110 км',
-            'Широкие fat tyre шины',
+            'Широкие шины fat tyre',
             'GPS-функции безопасности',
           ],
       }),
@@ -888,11 +888,11 @@ export default function App() {
             'GPS security features',
           ],
         ru: [
-            'Задний мотор-колесо',
+            'Заднее мотор-колесо',
             'Стальная рама',
             'Гидравлические тормоза',
             'Две батареи, запас хода более 110 км',
-            'Широкие fat tyre шины',
+            'Широкие шины fat tyre',
             'GPS-функции безопасности',
           ],
       }),
@@ -1005,7 +1005,7 @@ export default function App() {
                       <CheckCircle2 className="size-8 text-[#7fff00]" />
                     </div>
                     <h2 className="text-2xl font-black text-white">{tr({ sr: 'Hvala!', en: 'Thank you!', ru: 'Спасибо!' })}</h2>
-                    <p className="mt-2 text-sm text-white/40">{tr({ sr: 'Javićemo ti se uskoro.', en: "We'll be in touch soon.", ru: 'Мы скоро свяжемся с вами.' })}</p>
+                    <p className="mt-2 text-sm text-white/40">{tr({ sr: 'Javićemo ti se uskoro.', en: "We'll be in touch soon.", ru: 'Скоро свяжемся с тобой.' })}</p>
                     <button type="button" onClick={closeLeadPopup} className="mt-7 rounded-full border border-white/15 px-8 py-3 text-sm font-bold text-white/60 transition-colors hover:bg-white/5 hover:text-white">
                       {copy.close}
                     </button>
@@ -1033,7 +1033,7 @@ export default function App() {
                         {lang === 'sr' ? (
                           <><span>Hoćeš</span><br /><span className="text-[#7fff00]">test vožnju?</span></>
                         ) : lang === 'ru' ? (
-                          <><span>Хотите</span><br /><span className="text-[#7fff00]">тест-драйв?</span></>
+                          <><span>Хочешь</span><br /><span className="text-[#7fff00]">тест-драйв?</span></>
                         ) : (
                           <><span>Want a</span><br /><span className="text-[#7fff00]">test ride?</span></>
                         )}
@@ -1042,7 +1042,7 @@ export default function App() {
                         {tr({
                           sr: 'Ostavi broj — pozvaćemo te da dogovorimo termin. Bez obaveze kupovine.',
                           en: "Leave your number — we'll call to arrange a slot. No purchase required.",
-                          ru: 'Оставьте номер — мы позвоним и договоримся о времени. Покупка не обязательна.',
+                          ru: 'Оставь номер — мы позвоним и договоримся о времени. Никаких обязательств.',
                         })}
                       </p>
                     </motion.div>
@@ -1309,7 +1309,7 @@ export default function App() {
             text={tr({
               sr: 'Upoznaj električni bicikl koji podiže standard u Srbiji. Sa vrhunskim komponentima, snažnom asistencijom i najmodernijim tehničkim karakteristikama',
               en: 'Meet the electric bike raising the standard in Serbia. With premium components, strong assistance, and modern technical features, Pogon is made for riders who want quality they can feel on every ride.',
-              ru: 'Познакомьтесь с электровелосипедом, который задает новый стандарт в Сербии. Премиальные компоненты, мощная ассистенция и современные технические решения для качества, которое ощущается в каждой поездке.',
+              ru: 'Познакомься с электровелосипедом, который задаёт новый стандарт в Сербии. Премиальные компоненты, мощная поддержка мотора и современные технологии — качество, которое чувствуется в каждой поездке.',
             })}
           />
         </div>
@@ -1334,7 +1334,7 @@ export default function App() {
                 <span className="swipe-hint-dot absolute left-1 top-1/2 h-1.5 w-4 -translate-y-1/2 rounded-full bg-primary"></span>
               </span>
               <span aria-hidden="true">›</span>
-              <span>{tr({ sr: 'Prevuci', en: 'Drag', ru: 'Листайте' })}</span>
+              <span>{tr({ sr: 'Prevuci', en: 'Drag', ru: 'Листай' })}</span>
             </div>
           </div>
 
@@ -1628,13 +1628,13 @@ export default function App() {
                 {tr({ sr: 'Test vožnja', en: 'Test ride', ru: 'Тест-драйв' })}
               </div>
               <h2 className="mt-5 text-4xl font-black leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-                {tr({ sr: 'Provozaj ga pre nego što odlučiš.', en: 'Ride it before you decide.', ru: 'Прокатитесь перед решением.' })}
+                {tr({ sr: 'Provozaj ga pre nego što odlučiš.', en: 'Ride it before you decide.', ru: 'Прокатись, прежде чем решать.' })}
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-foreground/65">
                 {tr({
                   sr: 'Ne moraš da kupiš e-bike na osnovu slika. Zakaži test vožnju, probaj kako vuče, kako koči i da li ti odgovara za tvoju rutu.',
                   en: 'You do not have to choose an e-bike from photos alone. Book a test ride, feel the pull and braking, and see if it fits your route.',
-                  ru: 'Не нужно выбирать e-bike только по фотографиям. Запишитесь на тест-драйв, почувствуйте тягу и торможение и проверьте, подходит ли он для вашего маршрута.',
+                  ru: 'Не выбирай электровелосипед только по фотографиям. Запишись на тест-драйв, почувствуй тягу и торможение и проверь, подходит ли он для твоего маршрута.',
                 })}
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -1664,7 +1664,7 @@ export default function App() {
                 ...tr({
                   sr: ['Pošalji poruku ili pozovi', 'Dogovorimo termin', 'Probaš bicikl i odlučiš bez pritiska'],
                   en: ['Send a message or call', 'We arrange a time', 'Try the bike and decide without pressure'],
-                  ru: ['Напишите или позвоните', 'Согласуем удобное время', 'Пробуете велосипед и решаете без давления'],
+                  ru: ['Напиши или позвони', 'Договоримся об удобном времени', 'Пробуешь велосипед и спокойно решаешь'],
                 }),
               ].map((step, index) => (
                 <motion.div
@@ -1709,7 +1709,7 @@ export default function App() {
                   {tr({
                     sr: 'Domet zavisi od kapaciteta baterije, težine vozača i prosečne brzine. Otvori kalkulator i proveri okvirnu procenu za svoju vožnju.',
                     en: 'Range depends on battery capacity, rider weight, and average speed. Open the calculator to check an estimate for your ride.',
-                    ru: 'Запас хода зависит от емкости батареи, веса райдера и средней скорости. Откройте калькулятор и получите примерную оценку для вашей поездки.',
+                    ru: 'Запас хода зависит от ёмкости батареи, твоего веса и средней скорости. Открой калькулятор и посмотри примерную оценку для своей поездки.',
                   })}
                 </p>
               </div>
@@ -1742,13 +1742,13 @@ export default function App() {
                 {tr({ sr: 'Automobil', en: 'Car', ru: 'Автомобиль' })}
               </div>
               <h2 className="mt-3 max-w-xl text-xl font-black leading-[1.05] tracking-tight sm:mt-4 sm:text-4xl">
-                {tr({ sr: 'Koliko ostaje u d\u017eepu?', en: 'How much stays in your pocket?', ru: 'Сколько остается в кармане?' })}
+                {tr({ sr: 'Koliko ostaje u d\u017eepu?', en: 'How much stays in your pocket?', ru: 'Сколько остаётся в кармане?' })}
               </h2>
               <p className="mt-2 max-w-xl text-xs leading-relaxed text-black/60 sm:mt-3 sm:text-base">
                 {tr({
                   sr: 'Unesi svoju dnevnu vo\u017enju i cenu goriva. Dobija\u0161 brzu procenu razlike izme\u0111u automobila i Pogon e-bicikla.',
                   en: 'Enter your daily ride and fuel cost. Get a quick estimate of the difference between a car and a Pogon e-bike.',
-                  ru: 'Введите ежедневный пробег и цену топлива. Получите быструю оценку разницы между автомобилем и электровелосипедом Pogon.',
+                  ru: 'Укажи, сколько ездишь в день и сколько стоит топливо, — и сразу увидишь разницу между автомобилем и электровелосипедом Pogon.',
                 })}
               </p>
             </div>
@@ -1825,7 +1825,7 @@ export default function App() {
                 {tr({
                   sr: '* Struja je ra\u010dunata okvirno kao 0.5 RSD/km.',
                   en: '* Electricity is estimated at roughly 0.5 RSD/km.',
-                  ru: '* Электроэнергия рассчитана примерно как 0.5 RSD/км.',
+                  ru: '* Электричество посчитано примерно по 0.5 RSD/км.',
                 })}
               </p>
             </div>
@@ -1849,13 +1849,13 @@ export default function App() {
                 {tr({ sr: 'Automobil', en: 'Car', ru: 'Автомобиль' })}
               </div>
               <h2 className="mt-6 max-w-[10ch] text-4xl font-black leading-[0.96] tracking-tight sm:text-5xl">
-                {tr({ sr: 'Izra\u010dunaj u\u0161tedu bez naga\u0111anja', en: 'Calculate savings without guessing', ru: 'Рассчитайте экономию без догадок' })}
+                {tr({ sr: 'Izra\u010dunaj u\u0161tedu bez naga\u0111anja', en: 'Calculate savings without guessing', ru: 'Рассчитай экономию без догадок' })}
               </h2>
               <p className="mt-5 max-w-md text-base leading-relaxed text-white/65">
                 {tr({
                   sr: 'Podesi svakodnevnu vo\u017enju i cenu goriva. Kalkulator odmah prikazuje koliko prelazak na Pogon mo\u017ee da promeni mese\u010dni i godi\u0161nji tro\u0161ak.',
                   en: 'Adjust your daily ride and fuel price. The calculator shows how switching to Pogon can change monthly and yearly running costs.',
-                  ru: 'Настройте ежедневный пробег и цену топлива. Калькулятор сразу покажет, как переход на Pogon может изменить ежемесячные и годовые расходы.',
+                  ru: 'Настрой ежедневный пробег и цену топлива. Калькулятор сразу покажет, как переход на Pogon изменит твои расходы за месяц и за год.',
                 })}
               </p>
             </div>
@@ -1887,7 +1887,7 @@ export default function App() {
             {[
               {
                 key: 'dailyKm' as const,
-                label: tr({ sr: 'Koliko km dnevno voziš?', en: 'How many km do you ride daily?', ru: 'Сколько км в день вы ездите?' }),
+                label: tr({ sr: 'Koliko km dnevno voziš?', en: 'How many km do you ride daily?', ru: 'Сколько км в день ты ездишь?' }),
                 suffix: 'km',
                 min: 1,
                 max: 100,
@@ -1949,7 +1949,7 @@ export default function App() {
             {tr({
               sr: '* Cena struje za punjenje električnog vozila ~0.5 RSD/km',
               en: '* Electricity cost for charging an electric vehicle ~0.5 RSD/km',
-              ru: '* Стоимость электроэнергии для зарядки электровелосипеда ~0.5 RSD/км',
+              ru: '* Стоимость электричества для зарядки электровелосипеда — примерно 0.5 RSD/км',
             })}
           </p>
           <a href="#modeli" className="mt-5 inline-flex min-h-14 w-full items-center justify-center rounded-full bg-black px-6 text-sm font-black uppercase tracking-wider text-white transition-transform hover:scale-[1.01] active:scale-[0.99]">
@@ -2125,7 +2125,7 @@ export default function App() {
               <div className="mb-6">
                 <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em]">
                   <Phone className="size-4" />
-                  {tr({ sr: 'Kontakt', en: 'Contact', ru: 'Контакт' })}
+                  {tr({ sr: 'Kontakt', en: 'Contact', ru: 'Контакты' })}
                 </div>
                 <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
                   {copy.heroPrimary}
@@ -2134,7 +2134,7 @@ export default function App() {
                   {tr({
                     sr: 'Ostavi broj i grad. Javićemo ti se uskoro da dogovorimo termin.',
                     en: 'Leave your number and city. We will contact you soon to arrange a time.',
-                    ru: 'Оставьте номер и город. Мы скоро свяжемся, чтобы договориться о времени.',
+                    ru: 'Оставь номер и город — мы скоро свяжемся и договоримся о времени.',
                   })}
                 </p>
               </div>
@@ -2146,7 +2146,7 @@ export default function App() {
                     {tr({
                       sr: 'Hvala! Javićemo ti se uskoro da dogovorimo test vožnju.',
                       en: 'Thank you! We will contact you soon to arrange your test ride.',
-                      ru: 'Спасибо! Мы скоро свяжемся, чтобы договориться о тест-драйве.',
+                      ru: 'Спасибо! Скоро свяжемся с тобой и договоримся о тест-драйве.',
                     })}
                   </p>
                 </div>
@@ -2156,7 +2156,7 @@ export default function App() {
                     { key: 'name', label: tr({ sr: 'Ime', en: 'Name', ru: 'Имя' }), type: 'text', autoComplete: 'name' },
                     { key: 'phone', label: tr({ sr: 'Telefon', en: 'Phone', ru: 'Телефон' }), type: 'tel', autoComplete: 'tel' },
                     { key: 'city', label: tr({ sr: 'Grad', en: 'City', ru: 'Город' }), type: 'text', autoComplete: 'address-level2' },
-                    { key: 'preferredTime', label: tr({ sr: 'Kada želiš test vožnju?', en: 'When would you like a test ride?', ru: 'Когда вам удобно пройти тест-драйв?' }), type: 'text', autoComplete: 'off' },
+                    { key: 'preferredTime', label: tr({ sr: 'Kada želiš test vožnju?', en: 'When would you like a test ride?', ru: 'Когда тебе удобен тест-драйв?' }), type: 'text', autoComplete: 'off' },
                   ].map((field) => (
                     <label key={field.key} className="block text-xs font-bold uppercase tracking-wider text-foreground/60">
                       {field.label}
@@ -2178,7 +2178,7 @@ export default function App() {
                       {tr({
                         sr: 'Unesi ime i telefon da bismo mogli da te kontaktiramo.',
                         en: 'Enter your name and phone so we can contact you.',
-                        ru: 'Введите имя и телефон, чтобы мы могли связаться с вами.',
+                        ru: 'Оставь имя и телефон, чтобы мы могли с тобой связаться.',
                       })}
                     </p>
                   ) : null}
@@ -2541,7 +2541,7 @@ export default function App() {
             <p className="mt-3 text-sm leading-relaxed text-black/55">{tr({
               sr: 'Razgovarajte sa Pogon stručnjakom i pronađite pravi bicikl za vas.',
               en: 'Talk with a Pogon specialist and find the right bike for you.',
-              ru: 'Поговорите со специалистом Pogon и найдите подходящий велосипед.',
+              ru: 'Поговори со специалистом Pogon — вместе подберём подходящий велосипед.',
             })}</p>
             <button type="button" onClick={() => { setIsContactWidgetOpen(false); openLeadModal('specialist-contact'); }} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]">
               <MessageCircle className="size-4 text-[#7fff00]" />
@@ -2630,7 +2630,7 @@ export default function App() {
                     {tr({
                       sr: 'Kapacitet baterije je V x Ah = Wh.',
                       en: 'Battery capacity is V x Ah = Wh.',
-                      ru: 'Емкость батареи рассчитывается так: V x Ah = Wh.',
+                      ru: 'Ёмкость батареи считается так: V x Ah = Wh.',
                     })}
                   </p>
 
@@ -2659,7 +2659,7 @@ export default function App() {
                       {tr({
                         sr: 'Snaga motora ostaje zaključana na 250W jer je to standardni legalni limit za e-bike.',
                         en: 'Motor power stays locked at 250W because that is the standard legal e-bike limit.',
-                        ru: 'Мощность мотора остается ограниченной 250W, потому что это стандартный легальный лимит для e-bike.',
+                        ru: 'Мощность мотора остаётся на уровне 250W — это стандартный легальный лимит для электровелосипедов.',
                       })}
                     </p>
                   </div>
@@ -2714,7 +2714,7 @@ export default function App() {
                       },
                       {
                         key: 'ampHours' as const,
-                        label: tr({ sr: 'Kapacitet baterije', en: 'Battery amp-hours', ru: 'Емкость батареи' }),
+                        label: tr({ sr: 'Kapacitet baterije', en: 'Battery amp-hours', ru: 'Ёмкость батареи' }),
                         suffix: 'Ah',
                         min: 8,
                         max: 35,
@@ -2801,18 +2801,18 @@ export default function App() {
             ? tr({
                 sr: 'Zdravo, želeo/la bih da razgovaram sa Pogon stručnjakom.',
                 en: 'Hi, I would like to speak with a Pogon specialist.',
-                ru: 'Здравствуйте, я хотел(а) бы поговорить со специалистом Pogon.',
+                ru: 'Привет! Хочу поговорить со специалистом Pogon.',
               })
             : leadModalSource?.startsWith('purchase-')
             ? tr({
                 sr: `Zdravo, zanima me kupovina ${leadModalSource.replace('purchase-', '')} modela.`,
                 en: `Hi, I am interested in buying the ${leadModalSource.replace('purchase-', '')} model.`,
-                ru: `Здравствуйте, меня интересует покупка модели ${leadModalSource.replace('purchase-', '')}.`,
+                ru: `Привет! Интересует покупка модели ${leadModalSource.replace('purchase-', '')}.`,
               })
             : tr({
                 sr: 'Zdravo, želim da zakažem test vožnju.',
                 en: 'Hi, I want to book a test ride.',
-                ru: 'Здравствуйте, хочу записаться на тест-драйв.',
+                ru: 'Привет! Хочу записаться на тест-драйв.',
               })
         )}
         onClose={closeLeadModal}
