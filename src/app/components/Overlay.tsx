@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarCheck, Phone } from 'lucide-react';
+import { ArrowRight, CalendarCheck } from 'lucide-react';
 import { motion, MotionValue, useMotionValue, useTransform } from 'motion/react';
 
 type HeroCopy = {
@@ -88,7 +88,7 @@ export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide, p
             {copy.heroPrimary}
           </button>
           <a href={phoneHref} onClick={onPhoneClick} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-xl transition-colors hover:bg-white/15 active:scale-[0.98]">
-            <Phone className="size-4" />
+            <ArrowRight className="size-4" />
             {copy.heroSecondary}
           </a>
         </motion.div>

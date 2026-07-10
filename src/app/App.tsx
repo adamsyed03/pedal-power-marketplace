@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car } from 'lucide-react';
+import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { ScrollyCanvas } from './components/ScrollyCanvas';
 import { Overlay } from './components/Overlay';
@@ -17,7 +17,7 @@ const homeCopyEn = {
   heroTitle: 'Get moving',
   heroSub: 'Electric bikes for city commutes and plans that don’t wait.',
   heroPrimary: 'Book a test ride',
-  heroSecondary: 'Call us',
+  heroSecondary: 'Why Pogon',
   finalTitle: 'Choose a model and kickstart your city routine',
   finalBody: "Message us on WhatsApp and we'll help you pick the right Pogon.",
   finalPrimary: 'View models',
@@ -53,7 +53,7 @@ const homeCopySr = {
   heroTitle: 'Pokreni se',
   heroSub: 'Električni bicikli za grad, tempo i planove koji ne čekaju.',
   heroPrimary: 'Zakaži test vožnju',
-  heroSecondary: 'Pozovi nas',
+  heroSecondary: 'Zašto Pogon',
   finalTitle: 'Izaberi model i pokreni gradsku rutinu',
   finalBody: 'Javi nam se na WhatsApp i pomoći ćemo ti da izabereš pravi Pogon.',
   finalPrimary: 'Pogledaj modele',
@@ -89,9 +89,9 @@ const homeCopyRu = {
   heroTitle: 'Двигайся свободно',
   heroSub: 'Электровелосипеды для города, ежедневных поездок и планов, которые не ждут.',
   heroPrimary: 'Записаться на тест-драйв',
-  heroSecondary: 'Позвонить нам',
+  heroSecondary: 'Почему Pogon',
   finalTitle: 'Выбери модель и запусти свой городской ритм',
-  finalBody: 'Напиши нам в WhatsApp — поможем выбрать подходящий Pogon.',
+  finalBody: 'Напиши нам в WhatsApp, и мы поможем выбрать подходящий Pogon.',
   finalPrimary: 'Смотреть модели',
   finalSecondary: 'Написать в WhatsApp',
   badge: 'Создано для улиц Сербии',
@@ -182,7 +182,6 @@ export default function App() {
   const [lang, setLang] = useState<Language>('sr');
   const [activeSpecs, setActiveSpecs] = useState<string | null>(null);
   const [activeProduct, setActiveProduct] = useState(0);
-  const [activeTechnologyCard, setActiveTechnologyCard] = useState<number | null>(null);
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
   const [activeLightboxProduct, setActiveLightboxProduct] = useState<string | null>(null);
   const [lightboxZoom, setLightboxZoom] = useState(1);
@@ -346,7 +345,7 @@ export default function App() {
           { title: 'Тест-драйв', body: 'Запишись на бесплатный тест-драйв в наших шоурумах в Белграде и Нови-Саде' },
         ],
         ctaBullets: ['GPS-системы безопасности', 'Гарантия 2 года', 'Гибкая рассрочка'],
-        footerBody: 'Лидеры в премиальных электровелосипедах. Меняем городскую мобильность — поездка за поездкой.',
+        footerBody: 'Лидеры в премиальных электровелосипедах. Меняем городскую мобильность, поездка за поездкой.',
         footerProducts: 'Продукты',
         footerCompare: 'Сравнить модели',
         footerSupport: 'Поддержка',
@@ -433,7 +432,7 @@ export default function App() {
   const preModelsSentence = tr({
     sr: 'Pogon je e-bike za gradsku rutinu: stabilan, udoban i spreman da proveriš vožnju pre nego što odlučiš.',
     en: 'Pogon is an e-bike for city routines: stable, comfortable and ready to test before you decide.',
-    ru: 'Pogon — электровелосипед для городского ритма: устойчивый, удобный и готовый к тест-драйву, прежде чем ты примешь решение.',
+    ru: 'Pogon, электровелосипед для городского ритма: устойчивый, удобный и готовый к тест-драйву, прежде чем ты примешь решение.',
   });
   const reviews = [
     {
@@ -441,9 +440,9 @@ export default function App() {
       location: 'Beograd',
       rating: 5,
       text: {
-        sr: 'Ovaj Pogon model je totalno promenio moje gradske vožnje — tiho, snažno i pouzdano.',
-        en: 'This Pogon model totally changed my city rides — quiet, powerful and reliable.',
-        ru: 'Эта модель Pogon полностью изменила мои поездки по городу — тихая, мощная и надёжная.',
+        sr: 'Ovaj Pogon model je totalno promenio moje gradske vožnje: tiho, snažno i pouzdano.',
+        en: 'This Pogon model totally changed my city rides: quiet, powerful and reliable.',
+        ru: 'Эта модель Pogon полностью изменила мои поездки по городу: тихая, мощная и надёжная.',
       },
     },
     {
@@ -483,7 +482,7 @@ export default function App() {
       text: {
         sr: 'Vožnja je sada zabavna, bez gužvi i bez stresa. Pogon je odličan izbor.',
         en: 'Riding is fun now, no traffic lines and no stress. Pogon is an excellent choice.',
-        ru: 'Теперь поездки стали приятными: без пробок и стресса. Pogon — отличный выбор.',
+        ru: 'Теперь поездки стали приятными: без пробок и стресса. Pogon, отличный выбор.',
       },
     },
     {
@@ -552,7 +551,7 @@ export default function App() {
         { question: 'Da li mogu da probam bicikl pre kupovine?', answer: 'Da. Zakaži termin i probaj bicikl pre odluke, bez pritiska.' },
         { question: 'Da li je legalan za vožnju?', answer: 'Modeli su podešeni za gradsku vožnju i legalnu upotrebu u skladu sa pravilima za e-bike.' },
         { question: 'Da li treba dozvola?', answer: 'Za standardnu e-bike vožnju nije potrebna posebna dozvola.' },
-        { question: 'Koliko traje punjenje?', answer: 'Punjenje najčešće traje nekoliko sati, u zavisnosti od baterije i nivoa napunjenosti.' },
+        { question: 'Koliko traje punjenje?', answer: 'Potpuno punjenje traje do 6 sati, u zavisnosti od baterije i početnog nivoa napunjenosti.' },
         { question: 'Šta ako se pokvari?', answer: 'Tu su servis i podrška. Javiš nam se i dogovaramo najbrže rešenje.' },
         { question: 'Da li imate servis?', answer: 'Da, nudimo servisnu podršku i pomoć oko održavanja.' },
         { question: 'Da li može uzbrdo?', answer: 'Da. Motor pomaže na usponima, a test vožnja najbolje pokaže kako radi na tvojoj ruti.' },
@@ -563,7 +562,7 @@ export default function App() {
         { question: 'Can I try the bike before buying?', answer: 'Yes. Book a slot and try it before deciding, without pressure.' },
         { question: 'Is it road legal?', answer: 'The bikes are set up for city riding and legal e-bike use.' },
         { question: 'Do I need a licence?', answer: 'No special licence is needed for standard e-bike riding.' },
-        { question: 'How long does charging take?', answer: 'Charging usually takes a few hours, depending on the battery and charge level.' },
+        { question: 'How long does charging take?', answer: 'A full charge takes up to 6 hours, depending on the battery and starting charge level.' },
         { question: 'What if it breaks?', answer: 'Service and support are available. Contact us and we will arrange the quickest solution.' },
         { question: 'Do you offer service?', answer: 'Yes, we provide service support and maintenance help.' },
         { question: 'Can it go uphill?', answer: 'Yes. The motor helps on climbs, and a test ride shows how it feels on your route.' },
@@ -571,14 +570,14 @@ export default function App() {
       ],
     ru: [
         { question: 'Какой запас хода?', answer: 'Реальный запас хода зависит от маршрута, веса, температуры и уровня поддержки мотора. Проще всего проверить это на тест-драйве.' },
-        { question: 'Можно попробовать велосипед перед покупкой?', answer: 'Да! Запишись на удобное время и попробуй велосипед перед решением — без давления и обязательств.' },
+        { question: 'Можно попробовать велосипед перед покупкой?', answer: 'Да! Запишись на удобное время и попробуй велосипед перед решением, без давления и обязательств.' },
         { question: 'Он легален для езды по дорогам?', answer: 'Да, модели настроены для городской езды и полностью соответствуют правилам для электровелосипедов.' },
         { question: 'Нужны ли права?', answer: 'Нет, для обычной езды на электровелосипеде специальные права не нужны.' },
-        { question: 'Сколько длится зарядка?', answer: 'Обычно несколько часов — зависит от батареи и уровня заряда.' },
-        { question: 'А если что-то сломается?', answer: 'Не переживай — у нас есть сервис и поддержка. Напиши нам, и мы быстро всё решим.' },
+        { question: 'Сколько длится зарядка?', answer: 'Полная зарядка занимает до 6 часов, в зависимости от батареи и начального уровня заряда.' },
+        { question: 'А если что-то сломается?', answer: 'Не переживай, у нас есть сервис и поддержка. Напиши нам, и мы быстро всё решим.' },
         { question: 'У вас есть сервис?', answer: 'Да, мы поможем с обслуживанием и ремонтом.' },
         { question: 'Он едет в гору?', answer: 'Да! Мотор помогает на подъёмах, а тест-драйв лучше всего покажет, как он ведёт себя на твоём маршруте.' },
-        { question: 'Как оплатить?', answer: 'Оплату согласуем напрямую — вся информация будет понятна до покупки.' },
+        { question: 'Как оплатить?', answer: 'Оплату согласуем напрямую, вся информация будет понятна до покупки.' },
       ],
   });
   const trustBadgeIcons = [CalendarCheck, Wrench, Truck, Shield, CheckCircle2];
@@ -839,7 +838,7 @@ export default function App() {
             'Rear hub motor',
             'Foldable steel frame',
             'Hydraulic brakes',
-            'Two batteries — up to 110 km range',
+            'Two batteries, up to 110 km range',
             'Fat tyre wheels',
             'GPS security features',
           ],
@@ -883,7 +882,7 @@ export default function App() {
             'Rear hub motor',
             'Steel frame',
             'Hydraulic brakes',
-            'Two batteries — up to 110 km range',
+            'Two batteries, up to 110 km range',
             'Fat tyre wheels',
             'GPS security features',
           ],
@@ -948,6 +947,29 @@ export default function App() {
         }
         .swipe-hint-dot {
           animation: swipe-hint 1.25s ease-in-out infinite;
+        }
+        @keyframes pencil-circle-draw {
+          0% { stroke-dashoffset: 1; opacity: 0; }
+          8% { opacity: 0.9; }
+          100% { stroke-dashoffset: 0; opacity: 0.9; }
+        }
+        .mobile-pencil-circle {
+          stroke-dasharray: 1;
+          stroke-dashoffset: 1;
+          animation: pencil-circle-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.55s forwards;
+        }
+        .mobile-pencil-circle-secondary {
+          animation-delay: 0.72s;
+          animation-duration: 0.78s;
+          opacity: 0;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .mobile-pencil-circle,
+          .mobile-pencil-circle-secondary {
+            animation: none;
+            stroke-dashoffset: 0;
+            opacity: 0.8;
+          }
         }
         @keyframes soft-float {
           0%, 100% { transform: translateY(0); }
@@ -1040,9 +1062,9 @@ export default function App() {
                       </h2>
                       <p className="mt-2.5 text-sm leading-relaxed text-white/40">
                         {tr({
-                          sr: 'Ostavi broj — pozvaćemo te da dogovorimo termin. Bez obaveze kupovine.',
-                          en: "Leave your number — we'll call to arrange a slot. No purchase required.",
-                          ru: 'Оставь номер — мы позвоним и договоримся о времени. Никаких обязательств.',
+                          sr: 'Ostavi broj. Pozvaćemo te da dogovorimo termin. Bez obaveze kupovine.',
+                          en: "Leave your number. We'll call to arrange a slot. No purchase required.",
+                          ru: 'Оставь номер. Мы позвоним и договоримся о времени. Никаких обязательств.',
                         })}
                       </p>
                     </motion.div>
@@ -1126,7 +1148,6 @@ export default function App() {
 
             <div className="hidden md:flex flex-1 items-center justify-center gap-4 text-xs uppercase tracking-wider text-black/65">
               <a href="#modeli" className="transition-colors hover:text-black">{ui.navModels}</a>
-              <a href="#tehnologija" className="transition-colors hover:text-black">{ui.navTechnology}</a>
               <a href="#iskustva" className="transition-colors hover:text-black">{ui.navReviews}</a>
             </div>
 
@@ -1152,8 +1173,7 @@ export default function App() {
           <Overlay
             copy={copy}
             onBookTestRide={() => openLeadModal('desktop-hero')}
-            phoneHref={phoneHref}
-            onPhoneClick={() => handlePhoneClick('desktop-hero')}
+            phoneHref="#zasto-pogon"
           />
         </ScrollyCanvas>
         <div className="hidden border-b border-border/60 bg-white/90 py-4 lg:block">
@@ -1177,7 +1197,7 @@ export default function App() {
       {/* Hero Section */}
       {!isDesktop && (
       <section className="relative flex touch-pan-y items-center justify-center pt-10 pb-10 sm:pt-14 sm:pb-12 lg:hidden">
-        {/* Background — overflow clipped here only so absolute badges aren't clipped */}
+        {/* Background: overflow clipped here only so absolute badges aren't clipped */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/10"></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(0,0,0,0.05)_0%,transparent_50%)]"></div>
@@ -1202,10 +1222,17 @@ export default function App() {
               <div className="space-y-4">
                 {lang === 'sr' ? (
                   <h1 className="text-[clamp(2.1rem,13vw,3.4rem)] font-black uppercase leading-[0.9] tracking-[-0.05em]">
-                    <span>Pokreni </span>
-                    <span className="relative inline-block pb-2">
-                      Se
-                      <span className="absolute bottom-0 left-0 h-1 w-full bg-primary" aria-hidden="true"></span>
+                    <span className="relative inline-block px-3 py-2">
+                      Pokreni se
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 240 78"
+                        preserveAspectRatio="none"
+                        className="pointer-events-none absolute -inset-x-5 -inset-y-3 h-[calc(100%+1.5rem)] w-[calc(100%+2.5rem)] overflow-visible"
+                      >
+                        <ellipse pathLength="1" cx="120" cy="39" rx="115" ry="32" fill="none" stroke="#7fff00" strokeWidth="3.2" strokeLinecap="round" className="mobile-pencil-circle" />
+                        <ellipse pathLength="1" cx="121" cy="38" rx="112" ry="35" fill="none" stroke="#7fff00" strokeWidth="1.2" strokeLinecap="round" className="mobile-pencil-circle mobile-pencil-circle-secondary" transform="rotate(-2 120 39)" />
+                      </svg>
                     </span>
                   </h1>
                 ) : (
@@ -1231,10 +1258,10 @@ export default function App() {
                   <CalendarCheck className="size-5" />
                   {copy.heroPrimary}
                 </button>
-                <a href={phoneHref} onClick={() => handlePhoneClick('mobile-hero')}
+                <a href="#zasto-pogon"
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-border px-6 sm:px-8 py-4 rounded-full hover:bg-accent transition-all active:scale-[0.98] text-sm uppercase tracking-wider font-bold"
                 >
-                  <Phone className="size-5" />
+                  <ArrowRight className="size-5" />
                   {copy.heroSecondary}
                 </a>
               </div>
@@ -1289,7 +1316,7 @@ export default function App() {
                   loading="eager"
                   className="w-full h-full object-cover"
                 />
-                {/* Rating badge — inside the image corner, no negative positioning */}
+                {/* Rating badge inside the image corner, no negative positioning */}
                 <div className="absolute bottom-3 left-3 flex items-center gap-2.5 rounded-xl bg-white/90 backdrop-blur-sm border border-border/30 px-3 py-2 shadow-lg">
                   <Star className="size-4 fill-primary stroke-primary shrink-0" />
                   <span className="text-sm font-black">4.9</span>
@@ -1309,7 +1336,7 @@ export default function App() {
             text={tr({
               sr: 'Upoznaj električni bicikl koji podiže standard u Srbiji. Sa vrhunskim komponentima, snažnom asistencijom i najmodernijim tehničkim karakteristikama',
               en: 'Meet the electric bike raising the standard in Serbia. With premium components, strong assistance, and modern technical features, Pogon is made for riders who want quality they can feel on every ride.',
-              ru: 'Познакомься с электровелосипедом, который задаёт новый стандарт в Сербии. Премиальные компоненты, мощная поддержка мотора и современные технологии — качество, которое чувствуется в каждой поездке.',
+              ru: 'Познакомься с электровелосипедом, который задаёт новый стандарт в Сербии. Премиальные компоненты, мощная поддержка мотора и современные технологии: качество, которое чувствуется в каждой поездке.',
             })}
           />
         </div>
@@ -1612,6 +1639,37 @@ export default function App() {
       </div>
       </section>
 
+      {/* Why Pogon */}
+      <section id="zasto-pogon" className="relative overflow-hidden bg-[#0b0b0b] py-12 text-white sm:py-16">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(127,255,0,0.16),transparent_35%)]" />
+        <div className="relative mx-auto max-w-7xl px-6">
+          <div className="grid gap-8 lg:grid-cols-[0.66fr_1.34fr] lg:gap-14">
+            <div className="lg:sticky lg:top-28 lg:self-start">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-primary">{tr({ sr: 'Sedam dobrih razloga', en: 'Seven good reasons', ru: 'Семь веских причин' })}</p>
+              <h2 className="mt-3 text-4xl font-black uppercase leading-[0.9] tracking-[-0.05em] sm:text-6xl">{tr({ sr: 'Zašto Pogon?', en: 'Why Pogon?', ru: 'Почему Pogon?' })}</h2>
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/55 sm:text-base">{tr({ sr: 'Više od prevoza. Pametniji, zdraviji i elegantniji način da svaki dan stigneš gde želiš.', en: 'More than transport. A smarter, healthier and more elegant way to get where you want, every day.', ru: 'Больше, чем транспорт. Умный, здоровый и элегантный способ каждый день добираться куда нужно.' })}</p>
+            </div>
+            <ol className="border-t border-white/15">
+              {[
+                { icon: HeartPulse, stat: '5.700', title: tr({ sr: 'Zdravlje', en: 'Health', ru: 'Здоровье' }), body: tr({ sr: 'Oko 5.700 smrti u Srbiji pripisano je bolestima povezanim sa gojaznošću. Svakodnevno kretanje pravi razliku.', en: 'About 5,700 deaths in Serbia were attributed to obesity-related conditions. Daily movement makes a difference.', ru: 'Около 5 700 смертей в Сербии связали с заболеваниями, обусловленными ожирением. Ежедневная активность имеет значение.' }) },
+                { icon: Fuel, stat: '210.000 RSD godišnje', title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
+                { icon: Timer, stat: '150 sati godišnje', title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
+                { icon: Sparkles, stat: '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
+                { icon: Cpu, stat: 'GPS', title: tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
+                { icon: WalletCards, stat: tr({ sr: 'Skoro besplatno', en: 'More or less free', ru: 'Почти бесплатно' }), title: tr({ sr: 'Cena i rate', en: 'Price & installments', ru: 'Цена и рассрочка' }), body: tr({ sr: 'Mesečna rata može biti manja od onoga što već trošiš na gorivo. Pogon se praktično sam otplaćuje.', en: 'A monthly installment can cost less than what you already spend on fuel. Pogon can virtually pay for itself.', ru: 'Ежемесячный платёж может быть меньше нынешних расходов на топливо. Pogon практически окупает себя сам.' }) },
+                { icon: Headphones, stat: '2× zaštita', title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
+              ].map(({ icon: Icon, stat, title, body }, index) => (
+                <motion.li key={title} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} transition={{ duration: 0.4, delay: index * 0.04 }} className="group grid grid-cols-[2rem_1fr_auto] items-start gap-3 border-b border-white/15 py-4 sm:grid-cols-[2.5rem_0.6fr_1.4fr] sm:gap-4 sm:py-5">
+                  <span className="pt-1 text-xs font-black tracking-[0.2em] text-white/30">{String(index + 1).padStart(2, '0')}</span>
+                  <div><p className="mb-1 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#7fff00] drop-shadow-[0_0_8px_rgba(127,255,0,0.25)]">{stat}</p><h3 className="text-lg font-black tracking-tight sm:text-xl">{title}</h3></div>
+                  <div className="col-start-2 flex items-start gap-3 sm:col-start-3"><p className="max-w-xl text-xs leading-relaxed text-white/60 sm:text-sm">{body}</p><span className="ml-auto flex size-9 shrink-0 items-center justify-center rounded-full border border-white/25 text-[#f2f0e9] transition-colors group-hover:border-white/60 group-hover:bg-white/10"><Icon className="size-4" /></span></div>
+                </motion.li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </section>
+
       {/* Test Ride Booking */}
       <section id="test-voznja" className="py-16 sm:py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-6">
@@ -1748,7 +1806,7 @@ export default function App() {
                 {tr({
                   sr: 'Unesi svoju dnevnu vo\u017enju i cenu goriva. Dobija\u0161 brzu procenu razlike izme\u0111u automobila i Pogon e-bicikla.',
                   en: 'Enter your daily ride and fuel cost. Get a quick estimate of the difference between a car and a Pogon e-bike.',
-                  ru: 'Укажи, сколько ездишь в день и сколько стоит топливо, — и сразу увидишь разницу между автомобилем и электровелосипедом Pogon.',
+                  ru: 'Укажи, сколько ездишь в день и сколько стоит топливо, и сразу увидишь разницу между автомобилем и электровелосипедом Pogon.',
                 })}
               </p>
             </div>
@@ -1949,7 +2007,7 @@ export default function App() {
             {tr({
               sr: '* Cena struje za punjenje električnog vozila ~0.5 RSD/km',
               en: '* Electricity cost for charging an electric vehicle ~0.5 RSD/km',
-              ru: '* Стоимость электричества для зарядки электровелосипеда — примерно 0.5 RSD/км',
+              ru: '* Стоимость электричества для зарядки электровелосипеда: примерно 0.5 RSD/км',
             })}
           </p>
           <a href="#modeli" className="mt-5 inline-flex min-h-14 w-full items-center justify-center rounded-full bg-black px-6 text-sm font-black uppercase tracking-wider text-white transition-transform hover:scale-[1.01] active:scale-[0.99]">
@@ -1957,99 +2015,6 @@ export default function App() {
           </a>
           </div>
         </motion.div>
-      </section>
-
-      {/* Technology Section */}
-      <section id="tehnologija" className="py-14 sm:py-28 lg:py-32 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-8 sm:mb-16 lg:mb-20">
-            <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4">{ui.innovation}</div>
-            <h2 className="mx-auto max-w-[12ch] text-3xl font-black leading-[1.04] tracking-tight sm:text-4xl md:max-w-none md:text-6xl">{ui.technologyTitle}</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-4 lg:hidden">
-            {[
-              { icon: Battery, card: ui.technologyCards[0] },
-              { icon: Zap, card: ui.technologyCards[1] },
-              { icon: Gauge, card: ui.technologyCards[2] },
-              { icon: Shield, card: ui.technologyCards[3] },
-            ].map(({ icon: Icon, card }, index) => {
-              const isActive = activeTechnologyCard === index;
-
-              return (
-                <motion.button
-                  key={card.title}
-                  type="button"
-                  initial={{ opacity: 0, y: 22, scale: 0.96 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true, amount: 0.35 }}
-                  transition={{ duration: 0.45, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                  onClick={() => setActiveTechnologyCard(isActive ? null : index)}
-                  aria-expanded={isActive}
-                  className={`min-h-[13rem] rounded-3xl border p-5 text-left shadow-sm transition-all ${
-                    isActive ? 'border-primary/50 bg-card shadow-lg' : 'border-border bg-card'
-                  }`}
-                >
-                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5">
-                    <Icon className="size-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold leading-tight">{card.title}</h3>
-                  <motion.div
-                    initial={false}
-                    animate={{ height: isActive ? 'auto' : 0, opacity: isActive ? 1 : 0 }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                    className="overflow-hidden"
-                  >
-                    <p className="pt-4 text-sm leading-relaxed text-foreground/60">
-                      {card.body}
-                    </p>
-                  </motion.div>
-                  <div className="mt-4 text-[0.62rem] font-bold uppercase tracking-[0.22em] text-foreground/35">
-                    {isActive ? copy.close : copy.clickSpecs}
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-
-          <div className="hidden lg:grid lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className="bg-card p-10 rounded-3xl border border-border hover:border-primary/50 transition-all group">
-              <div className="bg-gradient-to-br from-primary/20 to-primary/5 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Battery className="size-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">{ui.technologyCards[0].title}</h3>
-              <p className="text-foreground/60 text-sm leading-relaxed">
-                {ui.technologyCards[0].body}
-              </p>
-            </div>
-            <div className="bg-card p-10 rounded-3xl border border-border hover:border-primary/50 transition-all group">
-              <div className="bg-gradient-to-br from-primary/20 to-primary/5 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Zap className="size-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">{ui.technologyCards[1].title}</h3>
-              <p className="text-foreground/60 text-sm leading-relaxed">
-                {ui.technologyCards[1].body}
-              </p>
-            </div>
-            <div className="bg-card p-10 rounded-3xl border border-border hover:border-primary/50 transition-all group">
-              <div className="bg-gradient-to-br from-primary/20 to-primary/5 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Gauge className="size-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">{ui.technologyCards[2].title}</h3>
-              <p className="text-foreground/60 text-sm leading-relaxed">
-                {ui.technologyCards[2].body}
-              </p>
-            </div>
-            <div className="bg-card p-10 rounded-3xl border border-border hover:border-primary/50 transition-all group">
-              <div className="bg-gradient-to-br from-primary/20 to-primary/5 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Shield className="size-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">{ui.technologyCards[3].title}</h3>
-              <p className="text-foreground/60 text-sm leading-relaxed">
-                {ui.technologyCards[3].body}
-              </p>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Testimonials */}
@@ -2088,25 +2053,59 @@ export default function App() {
         </div>
       </section>
 
-      {/* Services */}
-      <section className="py-14 sm:py-28">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-8">
-            {[
-              { icon: MapPin, service: ui.services[0] },
-              { icon: Shield, service: ui.services[1] },
-              { icon: Clock, service: ui.services[2] },
-            ].map(({ icon: Icon, service }) => (
-              <div key={service.title} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 text-left sm:block sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:text-center">
-                <div className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl sm:mx-auto sm:mb-6 sm:h-20 sm:w-20">
-                  <Icon className="size-7 text-primary sm:size-10" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold mb-1 sm:text-xl sm:mb-3">{service.title}</h3>
-                  <p className="text-foreground/60 text-sm">{service.body}</p>
-                </div>
-              </div>
-            ))}
+      {/* Previous Why Pogon location */}
+      <section aria-hidden="true" className="hidden">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(127,255,0,0.16),transparent_35%)]" />
+        <div className="relative mx-auto max-w-7xl px-6">
+          <div className="grid gap-8 lg:grid-cols-[0.66fr_1.34fr] lg:gap-14">
+            <div className="lg:sticky lg:top-28 lg:self-start">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-primary">
+                {tr({ sr: 'Sedam dobrih razloga', en: 'Seven good reasons', ru: 'Семь веских причин' })}
+              </p>
+              <h2 className="mt-3 text-4xl font-black uppercase leading-[0.9] tracking-[-0.05em] sm:text-6xl">
+                {tr({ sr: 'Zašto Pogon?', en: 'Why Pogon?', ru: 'Почему Pogon?' })}
+              </h2>
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/55 sm:text-base">
+                {tr({
+                  sr: 'Više od prevoza. Pametniji, zdraviji i elegantniji način da svaki dan stigneš gde želiš.',
+                  en: 'More than transport. A smarter, healthier and more elegant way to get where you want, every day.',
+                  ru: 'Больше, чем транспорт. Умный, здоровый и элегантный способ каждый день добираться куда нужно.',
+                })}
+              </p>
+            </div>
+
+            <ol className="border-t border-white/15">
+              {[
+                { icon: HeartPulse, stat: '5.700', title: tr({ sr: 'Zdravlje', en: 'Health', ru: 'Здоровье' }), body: tr({ sr: 'Oko 5.700 smrti u Srbiji pripisano je bolestima povezanim sa gojaznošću. Svakodnevno kretanje pravi razliku.', en: 'About 5,700 deaths in Serbia were attributed to obesity-related conditions. Daily movement makes a difference.', ru: 'Около 5 700 смертей в Сербии связали с заболеваниями, обусловленными ожирением. Ежедневная активность имеет значение.' }) },
+                { icon: Fuel, stat: '210.000 RSD godišnje', title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
+                { icon: Timer, stat: '150 sati godišnje', title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
+                { icon: Sparkles, stat: '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
+                { icon: Cpu, stat: 'GPS', title: tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
+                { icon: WalletCards, stat: tr({ sr: 'Skoro besplatno', en: 'More or less free', ru: 'Почти бесплатно' }), title: tr({ sr: 'Cena i rate', en: 'Price & installments', ru: 'Цена и рассрочка' }), body: tr({ sr: 'Mesečna rata može biti manja od onoga što već trošiš na gorivo. Pogon se praktično sam otplaćuje.', en: 'A monthly installment can cost less than what you already spend on fuel. Pogon can virtually pay for itself.', ru: 'Ежемесячный платёж может быть меньше нынешних расходов на топливо. Pogon практически окупает себя сам.' }) },
+                { icon: Headphones, stat: '2× zaštita', title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
+              ].map(({ icon: Icon, stat, title, body }, index) => (
+                <motion.li
+                  key={title}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.35 }}
+                  transition={{ duration: 0.4, delay: index * 0.04 }}
+                  className="group grid grid-cols-[2rem_1fr_auto] items-start gap-3 border-b border-white/15 py-4 sm:grid-cols-[2.5rem_0.6fr_1.4fr] sm:gap-4 sm:py-5"
+                >
+                  <span className="pt-1 text-xs font-black tracking-[0.2em] text-white/30">{String(index + 1).padStart(2, '0')}</span>
+                  <div>
+                    <p className="mb-1 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#7fff00] drop-shadow-[0_0_8px_rgba(127,255,0,0.25)]">{stat}</p>
+                    <h3 className="text-lg font-black tracking-tight sm:text-xl">{title}</h3>
+                  </div>
+                  <div className="col-start-2 flex items-start gap-3 sm:col-start-3">
+                    <p className="max-w-xl text-xs leading-relaxed text-white/60 sm:text-sm">{body}</p>
+                    <span className="ml-auto flex size-9 shrink-0 items-center justify-center rounded-full border border-white/25 text-[#f2f0e9] transition-colors group-hover:border-white/60 group-hover:bg-white/10">
+                      <Icon className="size-4" />
+                    </span>
+                  </div>
+                </motion.li>
+              ))}
+            </ol>
           </div>
         </div>
       </section>
@@ -2134,7 +2133,7 @@ export default function App() {
                   {tr({
                     sr: 'Ostavi broj i grad. Javićemo ti se uskoro da dogovorimo termin.',
                     en: 'Leave your number and city. We will contact you soon to arrange a time.',
-                    ru: 'Оставь номер и город — мы скоро свяжемся и договоримся о времени.',
+                    ru: 'Оставь номер и город. Мы скоро свяжемся и договоримся о времени.',
                   })}
                 </p>
               </div>
@@ -2541,7 +2540,7 @@ export default function App() {
             <p className="mt-3 text-sm leading-relaxed text-black/55">{tr({
               sr: 'Razgovarajte sa Pogon stručnjakom i pronađite pravi bicikl za vas.',
               en: 'Talk with a Pogon specialist and find the right bike for you.',
-              ru: 'Поговори со специалистом Pogon — вместе подберём подходящий велосипед.',
+              ru: 'Поговори со специалистом Pogon, и вместе подберём подходящий велосипед.',
             })}</p>
             <button type="button" onClick={() => { setIsContactWidgetOpen(false); openLeadModal('specialist-contact'); }} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]">
               <MessageCircle className="size-4 text-[#7fff00]" />
@@ -2659,7 +2658,7 @@ export default function App() {
                       {tr({
                         sr: 'Snaga motora ostaje zaključana na 250W jer je to standardni legalni limit za e-bike.',
                         en: 'Motor power stays locked at 250W because that is the standard legal e-bike limit.',
-                        ru: 'Мощность мотора остаётся на уровне 250W — это стандартный легальный лимит для электровелосипедов.',
+                        ru: 'Мощность мотора остаётся на уровне 250W. Это стандартный легальный лимит для электровелосипедов.',
                       })}
                     </p>
                   </div>
