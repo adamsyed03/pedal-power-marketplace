@@ -179,7 +179,12 @@ function ScrollColorSentence({ text }: { text: string }) {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Language>('sr');
+  const [lang, setLang] = useState<Language>(() => {
+    const requestedLanguage = new URLSearchParams(window.location.search).get('lang');
+    return requestedLanguage === 'ru' || requestedLanguage === 'en' || requestedLanguage === 'sr'
+      ? requestedLanguage
+      : 'sr';
+  });
   const [activeSpecs, setActiveSpecs] = useState<string | null>(null);
   const [activeProduct, setActiveProduct] = useState(0);
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
