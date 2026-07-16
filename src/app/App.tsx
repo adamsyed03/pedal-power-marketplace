@@ -825,9 +825,9 @@ export default function App() {
       description: copy.coreDescription,
       monthlyPrice: '12,500 RSD',
       price: '125,000 RSD',
-      originalMonthlyPrice: '14,000 RSD',
-      originalPrice: '140,000 RSD',
-      savingsAmount: '15,000 RSD',
+      originalMonthlyPrice: '14,500 RSD',
+      originalPrice: '145,000 RSD',
+      savingsAmount: '20,000 RSD',
       onSale: true,
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
@@ -873,6 +873,10 @@ export default function App() {
       description: copy.cargoDescription,
       monthlyPrice: '12,000 RSD',
       price: '120,000 RSD',
+      originalMonthlyPrice: '14,000 RSD',
+      originalPrice: '140,000 RSD',
+      savingsAmount: '20,000 RSD',
+      onSale: true,
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
