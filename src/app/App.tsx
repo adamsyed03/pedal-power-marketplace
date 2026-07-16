@@ -81,7 +81,7 @@ const homeCopySr = {
   clickSpecs: 'Kliknite za specifikacije',
   close: 'Zatvori',
   clickHide: 'Kliknite ponovo da sakrijete',
-  perMonth: 'po mesecu',
+  perMonth: 'mesečno',
   customerReviews: 'Glasovi Naših Vozača',
 };
 
@@ -175,6 +175,45 @@ function ScrollColorSentence({ text }: { text: string }) {
         ))}
       </p>
     </div>
+  );
+}
+
+function CircledMonthlyPrice({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start 92%', 'start 36%'],
+  });
+  const pathLength = useTransform(scrollYProgress, [0, 0.34, 0.72, 1], [0, 1, 1, 0]);
+  const opacity = useTransform(scrollYProgress, [0, 0.08, 0.82, 1], [0, 1, 1, 0]);
+
+  return (
+    <span ref={ref} className={`relative isolate inline-flex items-baseline ${className}`}>
+      <span className="relative z-10">{children}</span>
+      <motion.svg
+        aria-hidden="true"
+        viewBox="0 0 220 76"
+        preserveAspectRatio="none"
+        className="pointer-events-none absolute -inset-x-3 -inset-y-2 z-0 h-[calc(100%+1rem)] w-[calc(100%+1.5rem)] overflow-visible text-orange-500"
+        style={{ opacity }}
+      >
+        <motion.path
+          d="M 208 39 C 205 10, 158 3, 99 6 C 41 7, 9 17, 8 39 C 7 62, 53 71, 111 69 C 172 68, 211 60, 208 36"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ pathLength }}
+        />
+      </motion.svg>
+    </span>
   );
 }
 
@@ -1483,15 +1522,15 @@ export default function App() {
                       <div className="max-w-[78%] text-left">
                         <div className="text-xl font-black leading-none drop-shadow-md">{model.name}</div>
                         <div className="mt-1.5 flex items-baseline gap-2">
-                          <span className="text-xl font-black leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</span>
+                          <CircledMonthlyPrice className="text-2xl font-black leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</CircledMonthlyPrice>
                           {model.onSale ? (
-                            <span className="text-xs font-semibold text-white/55 line-through">{model.originalMonthlyPrice}</span>
+                            <span className="ml-auto text-[0.65rem] font-medium text-white/50 line-through">{model.originalMonthlyPrice}</span>
                           ) : null}
                         </div>
                         <div className="mt-1 text-[0.55rem] font-bold uppercase tracking-[0.18em] text-white/70">{copy.perMonth}</div>
-                        <div className="mt-0.5 flex items-center gap-1.5 text-[0.62rem] font-semibold text-white/65">
-                          {model.onSale ? <span className="line-through opacity-60">{model.originalPrice}</span> : null}
-                          <span className={model.onSale ? 'font-bold text-white' : ''}>{model.price}</span>
+                        <div className="mt-0.5 flex items-center gap-1.5 text-white/65">
+                          <span className={`${model.onSale ? 'text-xs font-black text-white' : 'text-[0.62rem] font-semibold'}`}>{model.price}</span>
+                          {model.onSale ? <span className="ml-auto text-[0.55rem] font-medium line-through opacity-50">{model.originalPrice}</span> : null}
                         </div>
                         {model.onSale ? (
                           <div className="mt-1 inline-flex items-center rounded-full bg-orange-500/90 px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-white shadow">
@@ -1561,16 +1600,16 @@ export default function App() {
                     ))}
                   </div>
                   <div className={`pt-2 lg:pt-4 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
-                    <div className={`hidden lg:flex items-baseline gap-2 mb-0.5 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>
-                      <span className="text-3xl font-black">{model.monthlyPrice}</span>
+                    <div className={`hidden lg:flex items-baseline gap-3 mb-1 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>
+                      <CircledMonthlyPrice className="text-4xl font-black">{model.monthlyPrice}</CircledMonthlyPrice>
                       {model.onSale ? (
-                        <span className={`text-base font-semibold line-through ${model.isFeatured ? 'text-white/50' : 'text-foreground/40'}`}>{model.originalMonthlyPrice}</span>
+                        <span className={`ml-auto text-xs font-medium line-through ${model.isFeatured ? 'text-white/45' : 'text-foreground/35'}`}>{model.originalMonthlyPrice}</span>
                       ) : null}
                     </div>
                     <div className={`hidden lg:block text-[0.65rem] uppercase tracking-wider mb-1.5 ${model.isFeatured ? 'text-white/80' : 'text-foreground/50'}`}>{copy.perMonth}</div>
-                    <div className={`hidden lg:flex items-center gap-1.5 text-xs ${model.onSale ? 'mb-2' : 'mb-3'} ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
-                      {model.onSale ? <span className="line-through opacity-60">{model.originalPrice}</span> : null}
-                      <span className={model.onSale ? 'font-bold' : ''}>{model.price}</span>
+                    <div className={`hidden lg:flex items-center gap-2 ${model.onSale ? 'mb-2' : 'mb-3'} ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
+                      <span className={model.onSale ? 'text-sm font-black' : 'text-xs'}>{model.price}</span>
+                      {model.onSale ? <span className="ml-auto text-[0.65rem] font-medium line-through opacity-45">{model.originalPrice}</span> : null}
                     </div>
                     {model.onSale ? (
                       <div className="hidden lg:inline-flex items-center rounded-full bg-orange-500/90 px-2.5 py-0.5 mb-3 text-[0.6rem] font-bold uppercase tracking-wide text-white shadow">
