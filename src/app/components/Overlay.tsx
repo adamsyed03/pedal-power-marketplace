@@ -71,7 +71,7 @@ export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide, p
           className="pointer-events-auto mt-10 grid w-full max-w-3xl grid-cols-3 gap-4 rounded-3xl border border-white/10 bg-black/30 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl"
         >
           {[
-            ['70km', copy.range],
+            ['90km', copy.range],
             [`${copy.fromText} 250w`, copy.power],
             [`${copy.fromText} 25km/h`, copy.topSpeed],
           ].map(([value, label]) => (

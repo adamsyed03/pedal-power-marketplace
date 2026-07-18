@@ -81,7 +81,7 @@ const homeCopySr = {
   clickSpecs: 'Kliknite za specifikacije',
   close: 'Zatvori',
   clickHide: 'Kliknite ponovo da sakrijete',
-  perMonth: 'mesečno',
+  perMonth: 'mesečno (11 rata)',
   customerReviews: 'Glasovi Naših Vozača',
 };
 
@@ -821,14 +821,14 @@ export default function App() {
       description: copy.glideDescription,
       monthlyPrice: '17,000 RSD',
       price: '170,000 RSD',
-      mobileSpecs: { range: '70 km', power: '250W motor', battery: '1200 Wh' },
+      mobileSpecs: { range: '90 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
         sr: [
             'Motor u zadnjem točku',
             'Aluminijumski ram',
             'Hidraulične kočnice',
             'Nosivost 110 kg',
-            'Domet 70 km',
+            'Domet 90 km',
             'GPS sigurnosne funkcije',
           ],
         en: [
@@ -836,7 +836,7 @@ export default function App() {
             'Aluminum frame',
             'Hydraulic brakes',
             '110 kg load capacity',
-            'Up to 70 km range',
+            'Up to 90 km range',
             'GPS security features',
           ],
         ru: [
@@ -844,7 +844,7 @@ export default function App() {
             'Алюминиевая рама',
             'Гидравлические тормоза',
             'Грузоподъёмность 110 кг',
-            'Запас хода до 70 км',
+            'Запас хода до 90 км',
             'GPS-функции безопасности',
           ],
       }),
