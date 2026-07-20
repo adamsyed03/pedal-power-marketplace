@@ -8,7 +8,6 @@ import { LeadContactModal } from './components/LeadContactModal';
 const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
 import { submitLead } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
-import { trackMetaLead } from '../lib/metaPixel';
 import { publicAsset } from '../lib/assets';
 
 type Language = 'en' | 'sr' | 'ru';
@@ -655,7 +654,6 @@ export default function App() {
         date_contacted: null,
         comment: testRideForm.preferredTime.trim() || null,
       });
-      trackMetaLead('bottom-test-ride-form');
       setTestRideFormStatus('success');
       setTestRideForm({ name: '', phone: '', city: '', preferredTime: '' });
     } catch {

@@ -1,3 +1,5 @@
+import { trackMetaLead } from './metaPixel';
+
 const SUPABASE_URL = 'https://cirrgscedpitegcahklq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_E8KefAY_I0CO_mKMDCpMcg_RT2dXiBB';
 
@@ -48,6 +50,7 @@ export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at'>) => {
     headers: { Prefer: 'return=minimal' },
     body: JSON.stringify({ name, phone, source, language, city, comment }),
   });
+  trackMetaLead(source);
 };
 
 export const signInAdmin = async (password: string): Promise<AdminSession> => {
