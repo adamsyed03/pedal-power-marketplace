@@ -1,6 +1,7 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, MessageCircle, Phone, X } from 'lucide-react';
 import { submitLead } from '../../lib/supabase';
+import { trackMetaLead } from '../../lib/metaPixel';
 
 type LeadContactModalProps = {
   isOpen: boolean;
@@ -69,6 +70,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
     try {
       setIsSubmitting(true);
       await submitLead({ name: cleanName, phone: cleanPhone, source, language: lang, city: null, country: null, date_contacted: null, comment: null });
+      trackMetaLead(source);
       setSubmitted(true);
       setError('');
     } catch {
