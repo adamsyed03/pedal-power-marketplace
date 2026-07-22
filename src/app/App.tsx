@@ -81,7 +81,7 @@ const homeCopySr = {
   clickSpecs: 'Kliknite za specifikacije',
   close: 'Zatvori',
   clickHide: 'Kliknite ponovo da sakrijete',
-  perMonth: 'mesečno (11 rata)',
+  perMonth: 'mesečno (do 12 rata)',
   customerReviews: 'Glasovi Naših Vozača',
 };
 
@@ -819,8 +819,12 @@ export default function App() {
         { src: publicAsset('Glide 4.jpg'), alt: 'Pogon Glide product photo 4' },
       ],
       description: copy.glideDescription,
-      monthlyPrice: '17,000 RSD',
-      price: '170,000 RSD',
+      monthlyPrice: '15,500 RSD',
+      price: '155,000 RSD',
+      originalMonthlyPrice: '17,000 RSD',
+      originalPrice: '170,000 RSD',
+      savingsAmount: '15,000 RSD',
+      onSale: true,
       mobileSpecs: { range: '90 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
         sr: [
