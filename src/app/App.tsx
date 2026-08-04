@@ -29,8 +29,6 @@ const homeCopyEn = {
   recommended: 'Recommended',
   newBadge: 'New',
   buyNow: 'Buy now',
-  onSaleBadge: 'On sale',
-  youSave: 'You save',
   glideDescription: 'A comfortable, reliable electric city bike for everyday use.',
   coreDescription: 'A foldable fat‑tyre city model for extra comfort and control.',
   cargoDescription: 'A compact fat‑tyre work bike for urban transport and deliveries.',
@@ -65,8 +63,6 @@ const homeCopySr = {
   recommended: 'Preporučeno',
   newBadge: 'Novo',
   buyNow: 'Kupi Sada',
-  onSaleBadge: 'Na akciji',
-  youSave: 'Uštedite',
   glideDescription: 'Gradski e-bicikl za udobnu i pouzdanu vožnju svaki dan.',
   coreDescription: 'Skalabilni foldable model sa debelim gumama za kontrolu i stil.',
   cargoDescription: 'Kompaktan radni e-bicikl za gradske dostave i nošenje tereta.',
@@ -101,8 +97,6 @@ const homeCopyRu = {
   recommended: 'Рекомендуем',
   newBadge: 'Новинка',
   buyNow: 'Купить сейчас',
-  onSaleBadge: 'Акция',
-  youSave: 'Экономия',
   glideDescription: 'Комфортный и надёжный городской электровелосипед на каждый день.',
   coreDescription: 'Складная городская модель с широкими шинами для комфорта и контроля.',
   cargoDescription: 'Компактный рабочий электровелосипед для городских поездок и доставок.',
@@ -400,8 +394,8 @@ export default function App() {
         footerLegal: ['Конфиденциальность', 'Условия', 'Cookies'],
       },
   });
-  const whatsappNumber = '381631505003';
-  const phoneHref = 'tel:+381631505003';
+  const whatsappNumber = '38169692345';
+  const phoneHref = 'tel:+38169692345';
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
   const testRideWhatsappText = tr({
     sr: 'Zdravo, želim da zakažem test vožnju Pogon e-bike-a.',
@@ -821,10 +815,6 @@ export default function App() {
       description: copy.glideDescription,
       monthlyPrice: '15,500 RSD',
       price: '155,000 RSD',
-      originalMonthlyPrice: '17,000 RSD',
-      originalPrice: '170,000 RSD',
-      savingsAmount: '15,000 RSD',
-      onSale: true,
       mobileSpecs: { range: '90 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
         sr: [
@@ -868,10 +858,6 @@ export default function App() {
       description: copy.coreDescription,
       monthlyPrice: '12,500 RSD',
       price: '125,000 RSD',
-      originalMonthlyPrice: '14,500 RSD',
-      originalPrice: '145,000 RSD',
-      savingsAmount: '20,000 RSD',
-      onSale: true,
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
@@ -916,10 +902,6 @@ export default function App() {
       description: copy.cargoDescription,
       monthlyPrice: '12,000 RSD',
       price: '120,000 RSD',
-      originalMonthlyPrice: '14,000 RSD',
-      originalPrice: '140,000 RSD',
-      savingsAmount: '20,000 RSD',
-      onSale: true,
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
@@ -1516,31 +1498,16 @@ export default function App() {
                     <div className={`absolute top-4 right-4 z-20 ${model.badgeClass}`}>
                       {copy[model.badgeKey]}
                     </div>
-                    {model.onSale ? (
-                      <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-red-600 to-orange-500 px-3 py-1 text-xs font-black uppercase tracking-wide text-white shadow-[0_0_0_3px_rgba(255,255,255,0.15)] animate-pulse">
-                        <Zap className="size-3 fill-white" />
-                        {copy.onSaleBadge}
-                      </div>
-                    ) : null}
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3.5 pb-3 pt-12 text-white lg:hidden">
                       <div className="max-w-[78%] text-left">
                         <div className="text-xl font-black leading-none drop-shadow-md">{model.name}</div>
                         <div className="mt-1.5 flex items-baseline gap-2">
                           <CircledMonthlyPrice className="text-2xl font-black leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</CircledMonthlyPrice>
-                          {model.onSale ? (
-                            <span className="ml-auto text-[0.65rem] font-medium text-white/50 line-through">{model.originalMonthlyPrice}</span>
-                          ) : null}
                         </div>
                         <div className="mt-1 text-[0.55rem] font-bold uppercase tracking-[0.18em] text-white/70">{copy.perMonth}</div>
                         <div className="mt-0.5 flex items-center gap-1.5 text-white/65">
-                          <span className={`${model.onSale ? 'text-xs font-black text-white' : 'text-[0.62rem] font-semibold'}`}>{model.price}</span>
-                          {model.onSale ? <span className="ml-auto text-[0.55rem] font-medium line-through opacity-50">{model.originalPrice}</span> : null}
+                          <span className="text-[0.62rem] font-semibold">{model.price}</span>
                         </div>
-                        {model.onSale ? (
-                          <div className="mt-1 inline-flex items-center rounded-full bg-orange-500/90 px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-white shadow">
-                            {copy.youSave} {model.savingsAmount}
-                          </div>
-                        ) : null}
                       </div>
                     </div>
                     <div className={`absolute inset-0 z-30 bg-black/95 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-200 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
@@ -1606,20 +1573,11 @@ export default function App() {
                   <div className={`pt-2 lg:pt-4 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
                     <div className={`hidden lg:flex items-baseline gap-3 mb-1 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>
                       <CircledMonthlyPrice className="text-4xl font-black">{model.monthlyPrice}</CircledMonthlyPrice>
-                      {model.onSale ? (
-                        <span className={`ml-auto text-xs font-medium line-through ${model.isFeatured ? 'text-white/45' : 'text-foreground/35'}`}>{model.originalMonthlyPrice}</span>
-                      ) : null}
                     </div>
                     <div className={`hidden lg:block text-[0.65rem] uppercase tracking-wider mb-1.5 ${model.isFeatured ? 'text-white/80' : 'text-foreground/50'}`}>{copy.perMonth}</div>
-                    <div className={`hidden lg:flex items-center gap-2 ${model.onSale ? 'mb-2' : 'mb-3'} ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
-                      <span className={model.onSale ? 'text-sm font-black' : 'text-xs'}>{model.price}</span>
-                      {model.onSale ? <span className="ml-auto text-[0.65rem] font-medium line-through opacity-45">{model.originalPrice}</span> : null}
+                    <div className={`mb-3 hidden items-center gap-2 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
+                      <span className="text-xs">{model.price}</span>
                     </div>
-                    {model.onSale ? (
-                      <div className="hidden lg:inline-flex items-center rounded-full bg-orange-500/90 px-2.5 py-0.5 mb-3 text-[0.6rem] font-bold uppercase tracking-wide text-white shadow">
-                        {copy.youSave} {model.savingsAmount}
-                      </div>
-                    ) : null}
                     <div className="mb-3 grid grid-cols-3 gap-1.5 lg:hidden">
                       {[
                         { value: model.mobileSpecs.range, label: copy.range },

@@ -33,7 +33,7 @@ const fallbackCopy: HeroCopy = {
   fromText: 'od',
 };
 
-export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide, phoneHref = 'tel:+381631505003', onPhoneClick }: OverlayProps) {
+export function Overlay({ scrollProgress, copy = fallbackCopy, onBookTestRide, phoneHref = 'tel:+38169692345', onPhoneClick }: OverlayProps) {
   const fallbackProgress = useMotionValue(0);
   const progress = scrollProgress ?? fallbackProgress;
   const opacity = useTransform(progress, [0, 0.08, 0.86, 1], [1, 1, 0.94, 0.7]);
