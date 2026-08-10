@@ -813,8 +813,8 @@ export default function App() {
         { src: publicAsset('Glide 4.jpg'), alt: 'Pogon Glide product photo 4' },
       ],
       description: copy.glideDescription,
-      monthlyPrice: '15,500 RSD',
-      price: '155,000 RSD',
+      monthlyPrice: '16,500 RSD',
+      price: '165,000 RSD',
       mobileSpecs: { range: '90 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
         sr: [
@@ -856,8 +856,8 @@ export default function App() {
         { src: publicAsset('Cargo 2.jpg'), alt: 'Pogon Core product photo 2' },
       ],
       description: copy.coreDescription,
-      monthlyPrice: '12,500 RSD',
-      price: '125,000 RSD',
+      monthlyPrice: '13,500 RSD',
+      price: '135,000 RSD',
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
@@ -900,8 +900,8 @@ export default function App() {
         { src: publicAsset('Core 3.jpg'), alt: 'Pogon Cargo product photo 3' },
       ],
       description: copy.cargoDescription,
-      monthlyPrice: '12,000 RSD',
-      price: '120,000 RSD',
+      monthlyPrice: '13,000 RSD',
+      price: '130,000 RSD',
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
@@ -1502,11 +1502,11 @@ export default function App() {
                       <div className="max-w-[78%] text-left">
                         <div className="text-xl font-black leading-none drop-shadow-md">{model.name}</div>
                         <div className="mt-1.5 flex items-baseline gap-2">
-                          <CircledMonthlyPrice className="text-2xl font-black leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</CircledMonthlyPrice>
+                          <CircledMonthlyPrice className="text-xs font-bold leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</CircledMonthlyPrice>
                         </div>
                         <div className="mt-1 text-[0.55rem] font-bold uppercase tracking-[0.18em] text-white/70">{copy.perMonth}</div>
                         <div className="mt-0.5 flex items-center gap-1.5 text-white/65">
-                          <span className="text-[0.62rem] font-semibold">{model.price}</span>
+                          <span className="text-2xl font-black leading-none tracking-tight text-white drop-shadow-md">{model.price}</span>
                         </div>
                       </div>
                     </div>
@@ -1572,11 +1572,11 @@ export default function App() {
                   </div>
                   <div className={`pt-2 lg:pt-4 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
                     <div className={`hidden lg:flex items-baseline gap-3 mb-1 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>
-                      <CircledMonthlyPrice className="text-4xl font-black">{model.monthlyPrice}</CircledMonthlyPrice>
+                      <CircledMonthlyPrice className="text-sm font-bold">{model.monthlyPrice}</CircledMonthlyPrice>
                     </div>
                     <div className={`hidden lg:block text-[0.65rem] uppercase tracking-wider mb-1.5 ${model.isFeatured ? 'text-white/80' : 'text-foreground/50'}`}>{copy.perMonth}</div>
                     <div className={`mb-3 hidden items-center gap-2 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
-                      <span className="text-xs">{model.price}</span>
+                      <span className="text-4xl font-black tracking-tight">{model.price}</span>
                     </div>
                     <div className="mb-3 grid grid-cols-3 gap-1.5 lg:hidden">
                       {[
