@@ -13,16 +13,28 @@ export function buildPaymentConfirmation(order, merchant) {
     : order.deliveryFeeRsd != null
     ? `${order.deliveryFeeRsd} RSD`
     : 'Obračunava se posebno; nije uključena u cenu proizvoda';
+  const unavailable = (value) => value === undefined || value === null || value === '' ? 'Nije dostupno' : value;
+  const items = Array.isArray(order.items) && order.items.length
+    ? order.items
+    : [{ name: order.productName, unitPriceRsd: order.unitPriceRsd, quantity: order.quantity, lineTotalRsd: order.subtotalRsd ?? order.unitPriceRsd * order.quantity }];
+  const itemRows = items.flatMap((item, index) => [
+    [`Stavka ${index + 1}`, item.name || item.product],
+    [`Jedinična cena stavke ${index + 1} sa PDV-om`, `${item.unitPriceRsd} RSD`],
+    [`Količina stavke ${index + 1}`, item.quantity],
+    [`Iznos stavke ${index + 1}`, `${item.lineTotalRsd ?? item.unitPriceRsd * item.quantity} RSD`],
+  ]);
   const rows = [
     ['Broj narudžbine', order.orderId], ['Kupac', order.customerName], ['Email', order.email],
-    ['Adresa kupca/isporuke', `${order.street}, ${order.postalCode} ${order.city}`],
-    ['Proizvod', order.productName], ['Jedinična cena sa PDV-om', `${order.unitPriceRsd} RSD`],
-    ['Količina', order.quantity], ['Proizvodi sa PDV-om', `${order.subtotalRsd} RSD`],
+    ['Adresa kupca', `${order.street}, ${order.postalCode} ${order.city}`],
+    ...(order.deliveryMethod === 'courier' ? [['Adresa isporuke', `${order.street}, ${order.postalCode} ${order.city}`]] : []),
+    ...itemRows,
+    ['Proizvodi sa PDV-om', `${order.subtotalRsd ?? items.reduce((sum, item) => sum + (item.lineTotalRsd ?? item.unitPriceRsd * item.quantity), 0)} RSD`],
     ['Dostava', delivery],
     ['Ukupno za plaćanje', order.totalRsd != null ? `${order.totalRsd} RSD` : null],
-    ['Autorizacioni kod', order.authorizationCode], ['Broj transakcije', order.nestpayTransactionId],
-    ['Status transakcije', order.response], ['Kod statusa transakcije', order.procReturnCode],
-    ['Statusni kod 3D transakcije', order.mdStatus], ['Datum transakcije', order.transactionDate],
+    ['AuthCode / Autorizacioni kod', unavailable(order.authorizationCode)], ['TransId / Broj transakcije', unavailable(order.nestpayTransactionId)],
+    ['Response / Status transakcije', unavailable(order.response)], ['ProcReturnCode', unavailable(order.procReturnCode)],
+    ['mdStatus / Statusni kod 3D transakcije', unavailable(order.mdStatus)], ['EXTRA.TRXDATE', unavailable(order.transactionDate)],
+    ['Datum i vreme pokušaja', unavailable(order.attemptedAt || order.transactionDate)],
   ].filter(([, value]) => value !== undefined && value !== null && value !== '');
   const merchantText = `${merchant.legalName} · PIB ${merchant.pib} · ${merchant.address}`;
   return {

@@ -25,6 +25,12 @@ export default async function handler(request: any, response: any) {
   if (!/^[A-Za-z0-9_-]{16,100}$/.test(idempotencyKey)) return response.status(400).json({ error: 'Nedostaje bezbedan ključ zahteva.' });
 
   try {
+    // Validate the request before touching infrastructure so a missing CAPTCHA
+    // is always reported as a client error rather than an unrelated database
+    // availability failure. Existing idempotent orders are still looked up
+    // before Siteverify so a one-time token is never consumed twice on retry.
+    const input = validateCheckout(request.body);
+    if (!offeredInstallments().includes(input.installmentCount)) return response.status(400).json({ error: 'Izabrani broj rata nije dostupan.' });
     const paymentConfigured = isNestPayTestConfigured();
     const existing = await findOrderByIdempotency(idempotencyKey);
     if (existing) {
@@ -49,8 +55,6 @@ export default async function handler(request: any, response: any) {
       });
     }
 
-    const input = validateCheckout(request.body);
-    if (!offeredInstallments().includes(input.installmentCount)) return response.status(400).json({ error: 'Izabrani broj rata nije dostupan.' });
     if (!await verifyCaptcha(input.captchaToken, ip)) return response.status(400).json({ error: 'Bezbednosna provera nije uspela.' });
     const cart = calculateCartTotal(input.items);
     const delivery = resolveDeliveryFee(input.deliveryMethod);
@@ -87,7 +91,11 @@ export default async function handler(request: any, response: any) {
     });
   } catch (error) {
     const code = error instanceof Error ? error.message : '';
+    if (code === 'INVALID_CAPTCHA') return response.status(400).json({ error: 'Bezbednosna provera je obavezna.' });
     if (code === 'INVALID_CHECKOUT' || code.startsWith('INVALID_')) return response.status(400).json({ error: 'Proverite podatke porudžbine.' });
+    if (code === 'CAPTCHA_NOT_CONFIGURED' || code === 'CAPTCHA_SERVICE_UNAVAILABLE') {
+      return response.status(503).json({ error: 'Bezbednosna provera trenutno nije dostupna.' });
+    }
     return response.status(503).json({ error: 'Porudžbinu trenutno nije moguće sačuvati.' });
   }
 }

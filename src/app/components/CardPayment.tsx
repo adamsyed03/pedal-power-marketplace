@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { LockKeyhole, ShieldCheck } from 'lucide-react';
 import { detectCardType, isOfficialTestPan, normalizeExpiryMonth, normalizeExpiryYear } from '../../lib/nestpay';
+import { PaymentBranding } from './PaymentBranding';
 
 type PreparedPayment = {
   mode: string;
@@ -107,6 +108,7 @@ export function CardPayment() {
           </dl>
         )}
         {error && <p role="alert" className="mt-5 rounded-2xl bg-red-50 p-4 text-sm text-red-800">{error}</p>}
+        <PaymentBranding compact />
         {prepared && (
           <form ref={formRef} onSubmit={submit} className="mt-6 space-y-4" autoComplete="off">
             <label className="block">

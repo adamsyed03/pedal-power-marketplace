@@ -1,4 +1,5 @@
 import { hashLookupToken, rateLimit, requestIp } from '../_lib/security.mjs';
+import { publicMerchantData } from '../_lib/merchant.mjs';
 import { findOrderByLookup } from '../_lib/supabase.mjs';
 
 export default async function handler(request: any, response: any) {
@@ -17,6 +18,14 @@ export default async function handler(request: any, response: any) {
       subtotalRsd: order.subtotal_rsd, totalRsd: order.total_rsd,
       installmentCount: order.installment_count,
       deliveryMethod: order.delivery_method, deliveryFeeRsd: order.delivery_fee_rsd,
+      customer: {
+        name: order.customer_name,
+        email: order.email,
+        address: `${order.street}, ${order.postal_code} ${order.city}`,
+        ...(order.delivery_method === 'courier' ? { deliveryAddress: `${order.street}, ${order.postal_code} ${order.city}` } : {}),
+      },
+      merchant: publicMerchantData(),
+      attemptedAt: order.callback_received_at || order.updated_at,
       ...(order.payment_status === 'PAID' || order.payment_status === 'DECLINED' ? {
         authCode: order.authorization_code, transactionId: order.nestpay_transaction_id,
         response: order.response, procReturnCode: order.proc_return_code,

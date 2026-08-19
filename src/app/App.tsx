@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { ScrollyCanvas } from './components/ScrollyCanvas';
 import { Overlay } from './components/Overlay';
 import { LeadContactModal } from './components/LeadContactModal';
+import { PaymentBranding } from './components/PaymentBranding';
 const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
 import { submitLead } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
@@ -449,26 +450,6 @@ export default function App() {
         'Привет! Хочу записаться на тест-драйв.',
         'Привет! Интересует сервис для велосипеда Pogon.',
         'Привет! Есть вопрос по гарантии Pogon.',
-      ],
-  });
-  const footerCompanyMessages = tr({
-    sr: [
-        'Zdravo, želim da saznam više o Pogonu.',
-        'Zdravo, želim da kontaktiram Pogon tim.',
-        'Zdravo, zanima me karijera u Pogonu.',
-        'Zdravo, zanima me Pogon blog.',
-      ],
-    en: [
-        'Hi, I want to learn more about Pogon.',
-        'Hi, I want to contact the Pogon team.',
-        'Hi, I am interested in careers at Pogon.',
-        'Hi, I am interested in the Pogon blog.',
-      ],
-    ru: [
-        'Привет! Хочу узнать больше о Pogon.',
-        'Привет! Хочу связаться с командой Pogon.',
-        'Привет! Интересует работа в Pogon.',
-        'Привет! Интересует блог Pogon.',
       ],
   });
   const preModelsSentence = tr({
@@ -2497,7 +2478,7 @@ export default function App() {
                 <li><a href="#modeli" className="hover:text-foreground transition-colors">Glide</a></li>
                 <li><a href="#modeli" className="hover:text-foreground transition-colors">Core</a></li>
                 <li><a href="#modeli" className="hover:text-foreground transition-colors">Cargo</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">{ui.footerCompare}</a></li>
+                <li><a href="/#modeli" className="hover:text-foreground transition-colors">{ui.footerCompare}</a></li>
               </ul>
             </div>
 
@@ -2519,24 +2500,25 @@ export default function App() {
             <div>
               <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 sm:mb-4">{ui.footerCompany}</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-foreground/60">
-                {ui.footerCompanyLinks.map((item, index) => (
-                  <li key={item}>
-                    <a href={buildWhatsappLink(footerCompanyMessages[index])} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">
-                      {item}
-                    </a>
-                  </li>
-                ))}
+                <li><a href="/informacije-o-trgovcu" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[0]}</a></li>
+                <li><a href="/kontakt" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[1]}</a></li>
+                <li><a href="/dostava" className="hover:text-foreground transition-colors">Dostava</a></li>
+                <li><a href="/reklamacije" className="hover:text-foreground transition-colors">Reklamacije</a></li>
+                <li><a href="/povracaj-sredstava" className="hover:text-foreground transition-colors">Povraćaj sredstava</a></li>
+                <li><a href="/bezbednost-placanja" className="hover:text-foreground transition-colors">Bezbednost plaćanja</a></li>
               </ul>
             </div>
           </div>
+
+          <PaymentBranding compact />
 
           <div className="pt-5 sm:pt-8 border-t border-border/50">
             <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
               <p className="text-sm text-foreground/50">© 2026 POGON. {ui.copyright}</p>
               <div className="flex gap-4 sm:gap-6 text-sm text-foreground/50">
-                <a href="#" className="hover:text-foreground transition-colors">{ui.footerLegal[0]}</a>
-                <a href="#" className="hover:text-foreground transition-colors">{ui.footerLegal[1]}</a>
-                <a href="#" className="hover:text-foreground transition-colors">{ui.footerLegal[2]}</a>
+                <a href="/privatnost" className="hover:text-foreground transition-colors">{ui.footerLegal[0]}</a>
+                <a href="/uslovi-kupovine" className="hover:text-foreground transition-colors">{ui.footerLegal[1]}</a>
+                <a href="/privatnost#kolacici" className="hover:text-foreground transition-colors">{ui.footerLegal[2]}</a>
               </div>
             </div>
           </div>

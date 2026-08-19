@@ -8,8 +8,16 @@ export function PurchaseTerms() {
 
         <h2 className="mt-10 text-2xl font-black">Cene i PDV</h2>
         <p className="mt-3 leading-7 text-black/70">
-          Sve cene proizvoda su sa uračunatim PDV-om. Trošak dostave obračunava se posebno
-          i biće jasno prikazan pre potvrde porudžbine.
+          Sve cene su sa uračunatim PDV-om i nema dodatnih ili skrivenih troškova.
+          Prodavnica naplaćuje isključivo u RSD. Trošak dostave je zasebna, unapred
+          prikazana stavka konačne specifikacije porudžbine.
+        </p>
+        <p className="mt-3 leading-7 text-black/70">
+          Sva plaćanja izvršavaju se u lokalnoj valuti Republike Srbije — dinarima (RSD).
+          Ako je platna kartica vezana za račun u drugoj valuti, banka izdavalac ili
+          kartična organizacija može izvršiti konverziju po svom kursu, koji Pogonu nije
+          poznat u trenutku transakcije. Zbog toga iznos zaduženja u valuti računa kartice
+          može neznatno odstupati od cene iskazane u RSD.
         </p>
 
         <h2 className="mt-8 text-2xl font-black">Dostava</h2>
@@ -69,6 +77,15 @@ export function PurchaseTerms() {
           <p>Podaci platne kartice ne čuvaju se u Pogon bazi. Lični podaci čuvaju se samo koliko je potrebno za svrhu prikupljanja ili koliko nalažu propisi i obaveze čuvanja dokumentacije. Pristup imaju samo ovlašćena lica i pružaoci usluga kojima su potrebni radi izvršenja usluge.</p>
           <p>Za zahteve u vezi sa podacima: <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a>. Podaci se ne koriste za direktni marketing bez odgovarajućeg pravnog osnova ili potrebne saglasnosti; kupac može zatražiti prestanak marketinških poruka.</p>
         </div>
+        <nav aria-label="Informacije za kupce" className="mt-10 flex flex-wrap gap-x-4 gap-y-2 border-t border-black/10 pt-6 text-sm">
+          <a href="/informacije-o-trgovcu" className="font-bold underline">Podaci o trgovcu</a>
+          <a href="/kontakt" className="font-bold underline">Kontakt</a>
+          <a href="/dostava" className="font-bold underline">Dostava</a>
+          <a href="/reklamacije" className="font-bold underline">Reklamacije</a>
+          <a href="/povracaj-sredstava" className="font-bold underline">Povraćaj sredstava</a>
+          <a href="/privatnost" className="font-bold underline">Privatnost</a>
+          <a href="/bezbednost-placanja" className="font-bold underline">Bezbednost plaćanja</a>
+        </nav>
       </article>
     </main>
   );

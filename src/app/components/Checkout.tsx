@@ -14,6 +14,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { formatRsd, products, ProductKey } from '../../lib/products';
+import { PaymentBranding } from './PaymentBranding';
 import { Turnstile } from './Turnstile';
 
 const installmentOptions = [1, 3, 6, 9, 12];
@@ -49,6 +50,7 @@ export function Checkout() {
   const [deliveryMethod, setDeliveryMethod] = useState<'courier' | 'pickup'>('courier');
   const [accepted, setAccepted] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
+  const [customerSummary, setCustomerSummary] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<'idle' | 'submitting' | 'error'>('idle');
   const [error, setError] = useState('');
   const idempotencyKey = useRef(crypto.randomUUID());
@@ -144,7 +146,7 @@ export function Checkout() {
           <p className="mt-4 max-w-xl text-base leading-7 text-black/55 sm:text-lg">Unesi podatke za dostavu i proveri porudžbinu pre odlaska na bezbedno plaćanje.</p>
         </div>
 
-        <form onSubmit={submit} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_410px] lg:gap-10">
+        <form onSubmit={submit} onInput={(event) => { const input = event.target as HTMLInputElement; if (input.name) setCustomerSummary((current) => ({ ...current, [input.name]: input.value })); }} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_410px] lg:gap-10">
           <div className="space-y-5">
             <section className="rounded-[2rem] border border-black/[0.06] bg-white p-5 shadow-[0_10px_40px_rgba(32,28,18,0.05)] sm:p-8">
               <SectionHeading number="1" title="Kako želiš da preuzmeš bicikl?" description="Cena dostave je odmah uključena u ukupan iznos." />
@@ -181,7 +183,7 @@ export function Checkout() {
                   const entry = products.find((candidate) => candidate.key === item.product)!;
                   return <div key={item.product} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
                     <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-[#f5f3ed]"><img src={entry.image} alt={entry.name} className="size-full object-contain p-1" /></div>
-                    <div className="min-w-0 flex-1"><h2 className="font-black tracking-tight">{entry.name}</h2><p className="mt-1 text-xs text-white/45">{formatRsd(entry.priceRsd)} po komadu</p></div>
+                    <div className="min-w-0 flex-1"><h2 className="font-black tracking-tight">{entry.name}</h2><p className="mt-1 text-xs leading-4 text-white/45">{entry.description}</p><p className="mt-1 text-xs font-bold text-white/70">{formatRsd(entry.priceRsd)} po komadu</p></div>
                     <div className="flex items-center gap-0.5 rounded-full bg-white/10 p-1">
                       <button type="button" aria-label="Smanji količinu" onClick={() => item.quantity === 1 && items.length > 1 ? removeModel(item.product) : changeQuantity(item.product, -1)} className="flex size-7 items-center justify-center rounded-full hover:bg-white/10"><Minus className="size-3" /></button>
                       <span className="min-w-6 text-center text-xs font-black">{item.quantity}</span>
@@ -208,26 +210,47 @@ export function Checkout() {
                 <p className="mt-3 text-xs leading-5 text-white/40">Dostupnost rata zavisi od kartice i banke izdavaoca.</p>
               </div>
 
+              <PaymentBranding dark compact />
+
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-xs leading-5 text-white/60">
+                <p className="font-black text-white">Podaci za konačnu specifikaciju</p>
+                {customerSummary.firstName || customerSummary.lastName || customerSummary.email ? <dl className="mt-2 grid gap-1">
+                  <div><dt className="inline text-white/40">Kupac: </dt><dd className="inline">{`${customerSummary.firstName || ''} ${customerSummary.lastName || ''}`.trim() || '—'}</dd></div>
+                  <div><dt className="inline text-white/40">Email: </dt><dd className="inline break-all">{customerSummary.email || '—'}</dd></div>
+                  <div><dt className="inline text-white/40">Telefon: </dt><dd className="inline">{customerSummary.phone || '—'}</dd></div>
+                  <div><dt className="inline text-white/40">{deliveryMethod === 'courier' ? 'Adresa isporuke' : 'Adresa kupca'}: </dt><dd className="inline">{[customerSummary.street, customerSummary.postalCode, customerSummary.city].filter(Boolean).join(', ') || '—'}</dd></div>
+                  <div><dt className="inline text-white/40">Način preuzimanja: </dt><dd className="inline">{deliveryMethod === 'courier' ? 'Kurirska dostava' : 'Lično preuzimanje'}</dd></div>
+                </dl> : <p className="mt-2">Popunite podatke kupca u odeljku 2. Ovde će biti prikazani za završnu proveru pre plaćanja.</p>}
+              </div>
+
               <div className="mt-6 space-y-3 text-sm">
                 <div className="flex justify-between gap-4 text-white/60"><span>Proizvodi ({items.reduce((sum, item) => sum + item.quantity, 0)})</span><span className="font-medium text-white">{formatRsd(displayedTotal)}</span></div>
                 <div className="flex justify-between gap-4 text-white/60"><span>Dostava</span><span className={deliveryMethod === 'pickup' ? 'font-bold text-emerald-400' : 'font-medium text-white'}>{deliveryMethod === 'pickup' ? 'Besplatno' : formatRsd(displayedDeliveryFee)}</span></div>
                 <div className="flex items-center justify-between gap-4 border-t border-white/10 pt-5"><span className="font-bold">Ukupno</span><span className="text-2xl font-black tracking-tight">{formatRsd(displayedPayableTotal)}</span></div>
-                <p className="text-right text-[11px] text-white/35">PDV je uključen u cenu proizvoda</p>
+                <p className="text-right text-[11px] leading-4 text-white/50">Sve cene su sa uračunatim PDV-om i nema dodatnih ili skrivenih troškova.</p>
+                <p className="text-right text-[11px] text-white/35">Prodavnica naplaćuje isključivo u RSD.</p>
               </div>
             </div>
 
             <div className="border-t border-white/10 bg-black/15 p-5 sm:p-7">
               <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 p-3.5 transition hover:bg-white/[0.04]">
                 <input type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} className="mt-0.5 size-4 shrink-0 accent-orange-500" />
-                <span className="text-xs leading-5 text-white/60">Prihvatam <a href="/uslovi-kupovine" target="_blank" rel="noreferrer" className="font-bold text-white underline decoration-white/30 underline-offset-2 hover:decoration-white">Uslove kupovine</a>, uključujući dostavu, reklamacije, odustanak i povraćaj sredstava.</span>
+                <span className="text-xs leading-5 text-white/60">Pročitao/la sam i prihvatam <a href="/uslovi-kupovine" target="_blank" rel="noreferrer" className="font-bold text-white underline decoration-white/30 underline-offset-2 hover:decoration-white">Opšte uslove kupovine</a>, uključujući dostavu, reklamacije, odustanak i povraćaj sredstava.</span>
               </label>
               <div className="mt-4 overflow-hidden"><Turnstile onToken={setCaptchaToken} /></div>
               {error && <p role="alert" className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-3.5 text-sm leading-5 text-red-100">{error}</p>}
               <button disabled={!accepted || !captchaToken || status === 'submitting'} className="group mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-orange-500 px-5 font-black text-black shadow-[0_8px_28px_rgba(249,115,22,0.25)] transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-35 disabled:shadow-none">
                 {status === 'submitting' ? 'Priprema plaćanja…' : <>Nastavi na plaćanje <ChevronRight className="size-5 transition-transform group-hover:translate-x-0.5" /></>}
               </button>
-              <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-white/35"><LockKeyhole className="size-3.5" /> Podaci kartice se šalju šifrovano direktno banci</div>
+              <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-white/35"><LockKeyhole className="size-3.5" /> Pogon ne čuva broj kartice ni sigurnosni kod</div>
               <a href="tel:+38169692345" className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-white/50 transition hover:text-white"><Phone className="size-3.5" /> Za veću porudžbinu pozovi +381 69 692 345</a>
+              <nav aria-label="Informacije za kupce" className="mt-4 flex flex-wrap justify-center gap-x-3 gap-y-2 text-[11px] text-white/45">
+                <a href="/informacije-o-trgovcu" className="underline hover:text-white">Podaci o trgovcu</a>
+                <a href="/dostava" className="underline hover:text-white">Dostava</a>
+                <a href="/reklamacije" className="underline hover:text-white">Reklamacije</a>
+                <a href="/privatnost" className="underline hover:text-white">Privatnost</a>
+                <a href="/bezbednost-placanja" className="underline hover:text-white">Bezbednost plaćanja</a>
+              </nav>
             </div>
           </aside>
         </form>

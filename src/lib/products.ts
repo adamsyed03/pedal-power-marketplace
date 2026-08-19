@@ -3,6 +3,7 @@ export type ProductKey = 'glide' | 'core' | 'cargo';
 export type Product = {
   key: ProductKey;
   name: string;
+  description: string;
   priceRsd: number;
   image: string;
 };
@@ -10,9 +11,9 @@ export type Product = {
 // This catalog is mirrored by api/_lib/catalog.mjs. The API copy is authoritative:
 // checkout totals must never be calculated from browser-supplied prices.
 export const products: readonly Product[] = [
-  { key: 'glide', name: 'Pogon Glide', priceRsd: 165_000, image: '/Glide main.jpg' },
-  { key: 'core', name: 'Pogon Core', priceRsd: 135_000, image: '/Cargo Main.jpg' },
-  { key: 'cargo', name: 'Pogon Cargo', priceRsd: 130_000, image: '/Core main.jpg' },
+  { key: 'glide', name: 'Pogon Glide', description: 'Premium električni bicikl za udobnu svakodnevnu gradsku vožnju.', priceRsd: 165_000, image: '/Glide main.jpg' },
+  { key: 'core', name: 'Pogon Core', description: 'Svestrani električni bicikl za svakodnevne obaveze i duže gradske rute.', priceRsd: 135_000, image: '/Cargo Main.jpg' },
+  { key: 'cargo', name: 'Pogon Cargo', description: 'Električni teretni bicikl za praktičan prevoz stvari kroz grad.', priceRsd: 130_000, image: '/Core main.jpg' },
 ];
 
 export const formatRsd = (amount: number) =>

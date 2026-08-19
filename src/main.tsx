@@ -6,6 +6,7 @@
   import { CardPayment } from "./app/components/CardPayment.tsx";
   import { PurchaseTerms } from "./app/components/PurchaseTerms.tsx";
   import { BusinessInfo } from "./app/components/BusinessInfo.tsx";
+  import { CustomerPolicy } from "./app/components/CustomerPolicy.tsx";
   import "./styles/index.css";
   import { initAnalytics } from "./lib/analytics.ts";
 
@@ -17,6 +18,18 @@
     ? <PurchaseTerms />
     : route === "/informacije-o-trgovcu"
     ? <BusinessInfo />
+    : route === "/kontakt"
+    ? <CustomerPolicy page="contact" />
+    : route === "/dostava"
+    ? <CustomerPolicy page="delivery" />
+    : route === "/reklamacije"
+    ? <CustomerPolicy page="complaints" />
+    : route === "/povracaj-sredstava"
+    ? <CustomerPolicy page="refunds" />
+    : route === "/privatnost"
+    ? <CustomerPolicy page="privacy" />
+    : route === "/bezbednost-placanja"
+    ? <CustomerPolicy page="security" />
     : route === "/payment/card"
     ? <CardPayment />
     : route === "/payment/success" || route === "/payment/failed"

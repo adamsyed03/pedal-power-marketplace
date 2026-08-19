@@ -11,7 +11,7 @@ import {
   callbackAmountMatchesOrder, hasComplete3DAuthFields, stripSensitiveFields,
 } from '../api/_lib/payment-flow.mjs';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { verifyCaptcha } from '../api/_lib/captcha.mjs';
 import { buildPaymentConfirmation } from '../api/_lib/email.mjs';
 import { mapOrderStatus } from '../api/_lib/reconcile.mjs';
@@ -157,10 +157,14 @@ test('API result mapping is fail-closed: only Approved plus 00 becomes PAID', ()
 test('captcha is verified server-side', async () => {
   const fakeFetch = async (_url, init) => {
     assert.match(init.body.toString(), /secret=secret/);
-    return { ok: true, json: async () => ({ success: true }) };
+    return { ok: true, json: async () => ({ success: true, action: 'checkout' }) };
   };
   assert.equal(await verifyCaptcha('long-enough-token', '127.0.0.1', { TURNSTILE_SECRET_KEY: 'secret' }, fakeFetch), true);
   assert.equal(await verifyCaptcha('short', '', { TURNSTILE_SECRET_KEY: 'secret' }, fakeFetch), false);
+  assert.equal(await verifyCaptcha('long-enough-token', '', { TURNSTILE_SECRET_KEY: 'secret' }, async () => ({ ok: true, json: async () => ({ success: false }) })), false);
+  assert.equal(await verifyCaptcha('long-enough-token', '', { TURNSTILE_SECRET_KEY: 'secret' }, async () => ({ ok: true, json: async () => ({ success: true }) })), false);
+  assert.equal(await verifyCaptcha('long-enough-token', '', { TURNSTILE_SECRET_KEY: 'secret' }, async () => ({ ok: true, json: async () => ({ success: true, action: 'other' }) })), false);
+  await assert.rejects(() => verifyCaptcha('long-enough-token', '', { TURNSTILE_SECRET_KEY: 'secret' }, async () => { throw new Error('offline'); }), /CAPTCHA_SERVICE_UNAVAILABLE/);
 });
 
 test('confirmation claims charged status only for verified PAID and not-charged only for DECLINED', () => {
@@ -297,4 +301,144 @@ test('callback route only redirects after verified processing and rejects invali
   assert.match(flow, /verify3DResponseHash/);
   assert.match(flow, /paymentStateFromApiResponse/);
   assert.match(flow, /UNKNOWN/);
+});
+
+test('checkout rejects missing terms acceptance and missing captcha before order creation', () => {
+  const valid = { items: [{ product: 'glide', quantity: 1 }], installmentCount: 1, captchaToken: 'a'.repeat(20), termsAccepted: true, deliveryMethod: 'courier', customer: { firstName: 'A', lastName: 'B', email: 'a@b.rs', phone: '12345678', street: 'Ulica 1', city: 'Beograd', postalCode: '11000' } };
+  assert.throws(() => validateCheckout({ ...valid, termsAccepted: false }), /INVALID_CHECKOUT/);
+  assert.throws(() => validateCheckout({ ...valid, captchaToken: '' }), /INVALID_CAPTCHA/);
+  const createRoute = readFileSync(new URL('../api/checkout/create.ts', import.meta.url), 'utf8');
+  assert.ok(createRoute.indexOf('validateCheckout(request.body)') < createRoute.indexOf('findOrderByIdempotency(idempotencyKey)'));
+  assert.match(createRoute, /INVALID_CAPTCHA[^]*status\(400\)/);
+  assert.match(createRoute, /CAPTCHA_SERVICE_UNAVAILABLE[^]*status\(503\)/);
+});
+
+test('captcha fails closed without a server secret and expires client tokens', async () => {
+  await assert.rejects(() => verifyCaptcha('a'.repeat(20), '', {}, async () => { throw new Error('must not fetch'); }), /CAPTCHA_NOT_CONFIGURED/);
+  const turnstile = readFileSync(new URL('../src/app/components/Turnstile.tsx', import.meta.url), 'utf8');
+  assert.match(turnstile, /expired-callback[^]*onTokenRef\.current\(''\)/);
+  assert.match(turnstile, /error-callback[^]*fail/);
+  assert.match(turnstile, /script\.addEventListener\('load', render/);
+  assert.match(turnstile, /if \(window\.turnstile\) render\(\)/);
+  assert.match(turnstile, /action: 'checkout'/);
+  assert.match(turnstile, /VITE_TURNSTILE_SITE_KEY/);
+  assert.doesNotMatch(turnstile, /TURNSTILE_SECRET_KEY/);
+});
+
+test('EPM payment branding uses the unchanged bank asset and separate official-artwork slots', () => {
+  assert.equal(existsSync(new URL('../public/payment-brands/banca-intesa.png', import.meta.url)), true);
+  const branding = readFileSync(new URL('../src/app/components/PaymentBranding.tsx', import.meta.url), 'utf8');
+  assert.match(branding, /https:\/\/www\.bancaintesa\.rs/);
+  assert.match(branding, /Prihvaćene kartice/);
+  assert.match(branding, /Programi sigurnosti/);
+  assert.match(branding, /h-\[56px\] w-\[90px\]/);
+  assert.match(branding, /h-14 w-\[120px\]/);
+  assert.match(branding, /rs\.visa\.com\/pay-with-visa\/security-and-assistance\/protected-everywhere\.html/);
+  assert.match(branding, /mastercard\.rs\/sr-rs\/korisnici\/pronadite-karticu\.html/);
+  for (const path of ['../src/app/App.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx', '../src/app/components/CustomerPolicy.tsx']) {
+    assert.match(readFileSync(new URL(path, import.meta.url), 'utf8'), /PaymentBranding/);
+  }
+});
+
+test('checkout visibly declares canonical RSD and VAT terms before payment', () => {
+  const checkout = readFileSync(new URL('../src/app/components/Checkout.tsx', import.meta.url), 'utf8');
+  assert.match(checkout, /Sve cene su sa uračunatim PDV-om i nema dodatnih ili skrivenih troškova\./);
+  assert.match(checkout, /naplaćuje isključivo u RSD/);
+  assert.match(checkout, /Pročitao\/la sam i prihvatam/);
+  assert.match(checkout, /disabled=\{!accepted \|\| !captchaToken/);
+});
+
+test('customer-facing EPM routes and card-network information links are wired', () => {
+  const routes = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
+  for (const route of ['/kontakt', '/dostava', '/reklamacije', '/povracaj-sredstava', '/privatnost', '/bezbednost-placanja']) assert.match(routes, new RegExp(route));
+  const policies = readFileSync(new URL('../src/app/components/CustomerPolicy.tsx', import.meta.url), 'utf8');
+  assert.match(policies, /rs\.visa\.com\/pay-with-visa\/security-and-assistance\/protected-everywhere\.html/);
+  assert.match(policies, /mastercard\.rs\/sr-rs\/korisnici\/pronadite-karticu\.html/);
+  const customerSources = ['../src/app/App.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/PurchaseTerms.tsx', '../src/app/components/BusinessInfo.tsx', '../src/app/components/CustomerPolicy.tsx']
+    .map((path) => readFileSync(new URL(path, import.meta.url), 'utf8')).join('\n');
+  assert.doesNotMatch(customerSources, /href=["']#["']/);
+});
+
+test('browser source and production bundle contain no NestPay server credential names', () => {
+  const browserSources = ['../src/main.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx', '../src/lib/nestpay.ts']
+    .map((path) => readFileSync(new URL(path, import.meta.url), 'utf8')).join('\n');
+  assert.doesNotMatch(browserSources, /NESTPAY_STORE_KEY|NESTPAY_API_USERNAME|NESTPAY_API_PASSWORD|VITE_NESTPAY_STORE_KEY/);
+});
+
+test('success confirmation contains the mandatory customer, order, merchant and transaction categories', () => {
+  const order = {
+    orderId: 'PGN-2026-TEST', paymentStatus: 'PAID', customerName: 'Kupac Test', email: 'kupac@example.rs',
+    street: 'Ulica 1', postalCode: '11000', city: 'Beograd', deliveryMethod: 'courier', deliveryFeeRsd: 3500,
+    items: [{ product: 'glide', name: 'Pogon Glide', unitPriceRsd: 165000, quantity: 1, lineTotalRsd: 165000 }],
+    subtotalRsd: 165000, totalRsd: 168500, authorizationCode: 'AVAILABLE', nestpayTransactionId: 'AVAILABLE',
+    response: 'Approved', procReturnCode: '00', mdStatus: '1', transactionDate: '2026-08-20T12:00:00Z', attemptedAt: '2026-08-20T12:00:00Z',
+  };
+  const html = buildPaymentConfirmation(order, { legalName: 'Pogon Mobility d.o.o.', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
+  for (const expected of ['kartice je zadužen', 'Kupac Test', 'kupac@example.rs', 'Ulica 1', 'Pogon Glide', 'Jedinična cena', 'Količina', 'Proizvodi sa PDV-om', 'PGN-2026-TEST', 'Pogon Mobility d.o.o.', '115472260', 'Autorizacioni kod', 'Broj transakcije', 'ProcReturnCode', 'mdStatus', 'EXTRA.TRXDATE']) assert.match(html, new RegExp(expected));
+});
+
+test('definite failure confirmation includes available data, marks absent transaction values, and excludes injected card fields', () => {
+  const marker = 'DO_NOT_RENDER_SENSITIVE_VALUE';
+  const order = {
+    orderId: 'PGN-2026-DECLINED', paymentStatus: 'DECLINED', customerName: 'Kupac Test', email: 'kupac@example.rs',
+    street: 'Ulica 1', postalCode: '11000', city: 'Beograd', productName: 'Pogon Core', unitPriceRsd: 135000,
+    quantity: 1, subtotalRsd: 135000, totalRsd: 138500, deliveryMethod: 'courier', deliveryFeeRsd: 3500,
+    response: 'Declined', procReturnCode: '05', secretCardField: marker, securityCodeField: marker,
+  };
+  const html = buildPaymentConfirmation(order, { legalName: 'Pogon Mobility d.o.o.', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
+  assert.match(html, /Plaćanje neuspešno/);
+  assert.match(html, /Declined/);
+  assert.match(html, /Nije dostupno/);
+  assert.doesNotMatch(html, new RegExp(marker));
+});
+
+test('payment result is backend-driven and renders mandatory non-sensitive confirmation groups', () => {
+  const result = readFileSync(new URL('../src/app/components/PaymentResult.tsx', import.meta.url), 'utf8');
+  assert.match(result, /\/api\/orders\/status/);
+  for (const expected of ['Podaci o porudžbini', 'Podaci o kupcu', 'Podaci o transakciji', 'Podaci o trgovcu', 'EXTRA.TRXDATE', 'ProcReturnCode', 'mdStatus']) assert.match(result, new RegExp(expected));
+  assert.match(result, /Ne možemo još pouzdano da potvrdimo/);
+});
+
+test('order persistence schema contains required non-sensitive evidence and no card-data columns', () => {
+  const schema = `${readFileSync(new URL('../supabase/orders.sql', import.meta.url), 'utf8')}\n${readFileSync(new URL('../supabase/orders_lifecycle.sql', import.meta.url), 'utf8')}`;
+  for (const field of ['order_id', 'authorization_code', 'nestpay_transaction_id', 'response', 'proc_return_code', 'md_status', 'transaction_date', 'updated_at']) assert.match(schema, new RegExp(field));
+  assert.doesNotMatch(schema, /\b(card_number|security_code|card_expiry)\b/i);
+});
+
+test('NestPay amount is sent in major RSD units without an undocumented para conversion', () => {
+  const { fields } = create3DFormFields({
+    orderId: 'PGN-2026-MAJORUNIT', amountRsd: 168_500, installmentCount: 1,
+    okUrl: 'https://ridepogon.com/api/nestpay/callback', failUrl: 'https://ridepogon.com/api/nestpay/callback',
+  }, testEnv);
+  assert.equal(fields.amount, '168500');
+  const xml = buildAuthorizationXml({ username: 'u', password: 'p', clientId: 'c', orderId: 'o', md: 'm', total: 168_500, installmentCount: 1 });
+  assert.match(xml, /<Total>168500<\/Total>/);
+  assert.doesNotMatch(xml, /16850000/);
+});
+
+test('declined customer confirmations never expose an explicit processor reason', () => {
+  const marker = 'SYNTHETIC_PROCESSOR_REASON_SHOULD_NOT_RENDER';
+  const html = buildPaymentConfirmation({
+    orderId: 'PGN-2026-DECLINE', paymentStatus: 'DECLINED', customerName: 'Kupac Test', email: 'kupac@example.rs',
+    street: 'Ulica 1', postalCode: '11000', city: 'Beograd', productName: 'Pogon Core', unitPriceRsd: 135000,
+    quantity: 1, subtotalRsd: 135000, totalRsd: 138500, deliveryMethod: 'courier', deliveryFeeRsd: 3500,
+    response: 'Declined', procReturnCode: '05', errorMessage: marker, ErrMsg: marker,
+  }, { legalName: 'Pogon Mobility d.o.o.', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
+  assert.match(html, /Plaćanje neuspešno/);
+  assert.doesNotMatch(html, new RegExp(marker));
+
+  const statusApi = readFileSync(new URL('../api/orders/status.ts', import.meta.url), 'utf8');
+  const resultPage = readFileSync(new URL('../src/app/components/PaymentResult.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(statusApi, /ErrMsg|errorMessage/);
+  assert.doesNotMatch(resultPage, /ErrMsg|errorMessage|processor.*reason|decline.*reason/i);
+});
+
+test('RSD-only policies disclose possible issuer conversion for foreign-currency card accounts', () => {
+  const terms = readFileSync(new URL('../src/app/components/PurchaseTerms.tsx', import.meta.url), 'utf8');
+  const security = readFileSync(new URL('../src/app/components/CustomerPolicy.tsx', import.meta.url), 'utf8');
+  for (const source of [terms, security]) {
+    assert.match(source, /Sva plaćanja izvršavaju se.*RSD/s);
+    assert.match(source, /kartica vezana za račun u drugoj valuti/);
+    assert.match(source, /kursu, koji Pogonu nije\s+poznat/);
+  }
 });

@@ -15,10 +15,11 @@ export function validateCheckout(input) {
     installmentCount, captchaToken: text(input?.captchaToken, 2048),
     termsAccepted: input?.termsAccepted === true,
   };
+  if (!result.captchaToken) throw new Error('INVALID_CAPTCHA');
   if (!items.length || items.length > 3 || items.some((item) => !item.product || !Number.isSafeInteger(item.quantity) || item.quantity < 1) ||
       new Set(items.map((item) => item.product)).size !== items.length || !result.firstName || !result.lastName ||
       !result.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email) || !result.phone ||
       !result.street || !result.city || !result.postalCode || !['courier', 'pickup'].includes(result.deliveryMethod) ||
-      ![1, 3, 6, 9, 12].includes(installmentCount) || !result.captchaToken || !result.termsAccepted) throw new Error('INVALID_CHECKOUT');
+      ![1, 3, 6, 9, 12].includes(installmentCount) || !result.termsAccepted) throw new Error('INVALID_CHECKOUT');
   return result;
 }
