@@ -408,6 +408,10 @@ export default function App() {
     trackEvent(source.includes('hero') ? 'primary_cta_click' : 'test_ride_click', { source });
     setLeadModalSource(source);
   };
+  const openCheckout = (model: string) => {
+    trackEvent('checkout_started', { source: 'model-card', model });
+    window.location.assign(`/checkout?model=${encodeURIComponent(model.toLowerCase())}`);
+  };
   const handlePhoneClick = (source: string) => trackEvent('phone_call_click', { source });
   const handleWhatsappClick = (source: string) => trackEvent('whatsapp_click', { source });
 
@@ -950,7 +954,9 @@ export default function App() {
     setLightboxZoom(1);
   };
 
-  if (new URLSearchParams(window.location.search).get('admin') === '1') {
+  const isAdminLeadsRoute = new URLSearchParams(window.location.search).get('admin') === '1';
+
+  if (isAdminLeadsRoute) {
     return <Suspense fallback={null}><AdminLeads /></Suspense>;
   }
 
@@ -1605,7 +1611,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => openLeadModal(`purchase-${model.name}`)}
+                      onClick={() => openCheckout(model.key)}
                       className={`mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 lg:py-2 text-[0.56rem] font-semibold uppercase tracking-wider active:scale-[0.98] ${
                         model.isFeatured ? 'border-white/35 text-primary-foreground/80' : 'border-border text-foreground/60'
                       }`}
