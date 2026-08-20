@@ -38,7 +38,8 @@
 - CC5AS Auth and Order Status XML primitives and response parsing.
 - Guest-checkout Turnstile widget and server verification.
 - Verified-status customer result-page presentation.
-- Transactional payment-confirmation email template/provider abstraction.
+- Gmail SMTP payment confirmations sent only for final outcomes, with an
+  atomic database claim preventing duplicate sends from callback replays.
 - Persistent server-side order creation with authoritative totals.
 - Idempotency keys and opaque hashed public-status tokens.
 - Rate-limited create, status, callback, and internal reconciliation routes.

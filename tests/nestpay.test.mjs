@@ -15,7 +15,8 @@ import {
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { verifyCaptcha } from '../api/_lib/captcha.mjs';
-import { buildPaymentConfirmation } from '../api/_lib/email.mjs';
+import { buildPaymentConfirmation, sendTransactionalEmail, smtpTransportOptions } from '../api/_lib/email.mjs';
+import { dispatchConfirmation } from '../api/_lib/confirmation.mjs';
 import { mapOrderStatus } from '../api/_lib/reconcile.mjs';
 import { createLookupToken, hashLookupToken, rateLimit } from '../api/_lib/security.mjs';
 import { validateCheckout } from '../api/_lib/validation.mjs';
@@ -396,23 +397,103 @@ test('captcha is verified server-side', async () => {
   await assert.rejects(() => verifyCaptcha('long-enough-token', '', { TURNSTILE_SECRET_KEY: 'secret' }, async () => { throw new Error('offline'); }), /CAPTCHA_SERVICE_UNAVAILABLE/);
 });
 
-test('confirmation claims charged status only for verified PAID and not-charged only for DECLINED', () => {
+test('confirmation claims charged status only for verified PAID and not-charged only for final failures', () => {
   const base = { orderId: 'o', customerName: 'Kupac', email: 'a@b.rs', street: 'Ulica 1', postalCode: '11000', city: 'Beograd', productName: 'Pogon', unitPriceRsd: 1, quantity: 1, totalRsd: 1 };
   const merchant = { legalName: 'POGON MOBILITY DOO', pib: 'x', address: 'a' };
   assert.match(buildPaymentConfirmation({ ...base, paymentStatus: 'PAID' }, merchant).html, /kartice je zadužen/);
   assert.match(buildPaymentConfirmation({ ...base, paymentStatus: 'DECLINED' }, merchant).html, /nije zadužen/);
-  const unknown = buildPaymentConfirmation({ ...base, paymentStatus: 'UNKNOWN' }, merchant).html;
-  assert.doesNotMatch(unknown, /kartice je zadužen|kartice nije zadužen/);
+  assert.match(buildPaymentConfirmation({ ...base, paymentStatus: 'FAILED' }, merchant).html, /nije zadužen/);
+  assert.throws(() => buildPaymentConfirmation({ ...base, paymentStatus: 'UNKNOWN' }, merchant), /EMAIL_REQUIRES_FINAL_PAYMENT_STATUS/);
 });
 
 test('payment confirmation separates VAT-inclusive products from delivery', () => {
   const base = { orderId: 'o', paymentStatus: 'PAID', customerName: 'Kupac', email: 'a@b.rs', street: 'Ulica 1', postalCode: '11000', city: 'Beograd', productName: 'Pogon', unitPriceRsd: 100, quantity: 1, totalRsd: 100 };
   const merchant = { legalName: 'POGON MOBILITY DOO', pib: 'x', address: 'a' };
   const courier = buildPaymentConfirmation({ ...base, deliveryMethod: 'courier', deliveryFeeRsd: null }, merchant).html;
-  assert.match(courier, /Proizvodi sa PDV-om/);
-  assert.match(courier, /Obračunava se posebno/);
+  assert.match(courier, /Ukupan iznos proizvoda sa PDV-om/);
+  assert.match(courier, /Adresa isporuke/);
   const pickup = buildPaymentConfirmation({ ...base, deliveryMethod: 'pickup', deliveryFeeRsd: 0 }, merchant).html;
   assert.match(pickup, /Save Maskovica 3/);
+});
+
+test('Gmail SMTP transport uses only server configuration and sends text plus HTML', async () => {
+  const env = {
+    SMTP_HOST: 'smtp.gmail.com', SMTP_PORT: '465', SMTP_SECURE: 'true',
+    SMTP_USER: 'sender@example.test', SMTP_PASS: 'app-password',
+    EMAIL_FROM: 'Pogon <sender@example.test>',
+  };
+  assert.deepEqual(smtpTransportOptions(env), {
+    host: 'smtp.gmail.com', port: 465, secure: true,
+    auth: { user: 'sender@example.test', pass: 'app-password' },
+  });
+  let sent;
+  let closed = false;
+  const nodemailerImpl = { createTransport: () => ({
+    sendMail: async (message) => { sent = message; return { accepted: [message.to] }; },
+    close: () => { closed = true; },
+  }) };
+  await sendTransactionalEmail({ to: 'customer@example.test', subject: 'Subject', text: 'Text', html: '<p>HTML</p>' }, env, nodemailerImpl);
+  assert.deepEqual(sent, {
+    from: env.EMAIL_FROM, to: 'customer@example.test', subject: 'Subject', text: 'Text', html: '<p>HTML</p>',
+  });
+  assert.equal(closed, true);
+  const source = readFileSync(new URL('../api/_lib/email.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /RESEND|api\.resend\.com/i);
+  assert.doesNotMatch(source, /console\.(?:log|error)/);
+});
+
+test('payment confirmation dispatch is atomically idempotent across concurrent replays', async () => {
+  const order = {
+    order_id: 'PGN-2026-IDEMPOTENT', payment_status: 'PAID', customer_name: 'Kupac', email: 'customer@example.test',
+    street: 'Ulica 1', postal_code: '11000', city: 'Beograd', delivery_method: 'courier', product: 'core',
+    unit_price_rsd: 135000, quantity: 1, subtotal_rsd: 135000, delivery_fee_rsd: 3500, total_rsd: 138500,
+    order_items: [{ name: 'Pogon Core', unitPriceRsd: 135000, quantity: 1, lineTotalRsd: 135000 }],
+    response: 'Approved', proc_return_code: '00', md_status: '1', transaction_date: '2026-08-20T12:00:00Z',
+  };
+  let available = true;
+  let sends = 0;
+  let completes = 0;
+  const dependencies = {
+    claim: async () => {
+      if (!available) return null;
+      available = false;
+      return { order: { ...order, confirmation_email_attempts: 1 }, claimToken: 'claim-token' };
+    },
+    send: async () => { sends += 1; },
+    complete: async () => { completes += 1; return { ...order, confirmation_email_sent_at: new Date().toISOString() }; },
+    release: async () => { throw new Error('release must not run after delivery'); },
+  };
+  const results = await Promise.all([
+    dispatchConfirmation(order, {}, dependencies),
+    dispatchConfirmation(order, {}, dependencies),
+  ]);
+  assert.deepEqual(results.sort(), [false, true]);
+  assert.equal(sends, 1);
+  assert.equal(completes, 1);
+});
+
+test('SMTP failure releases only the email claim and never changes payment status', async () => {
+  const order = {
+    order_id: 'PGN-2026-EMAILFAIL', payment_status: 'DECLINED', customer_name: 'Kupac', email: 'customer@example.test',
+    street: 'Ulica 1', postal_code: '11000', city: 'Beograd', delivery_method: 'courier', product: 'core',
+    unit_price_rsd: 135000, quantity: 1, subtotal_rsd: 135000, delivery_fee_rsd: 3500, total_rsd: 138500,
+    response: 'Declined', proc_return_code: '05', md_status: '1',
+  };
+  let released = false;
+  const dependencies = {
+    claim: async () => ({ order, claimToken: 'claim-token' }),
+    send: async () => { throw new Error('synthetic SMTP failure'); },
+    complete: async () => { throw new Error('complete must not run'); },
+    release: async (orderId, claimToken) => {
+      assert.equal(orderId, order.order_id);
+      assert.equal(claimToken, 'claim-token');
+      released = true;
+      return order;
+    },
+  };
+  await assert.rejects(() => dispatchConfirmation(order, {}, dependencies), /PAYMENT_CONFIRMATION_EMAIL_FAILED/);
+  assert.equal(released, true);
+  assert.equal(order.payment_status, 'DECLINED');
 });
 
 test('lookup tokens are opaque and stored only as hashes', () => {
@@ -680,7 +761,7 @@ test('customer-facing EPM routes and card-network information links are wired', 
 test('browser source and production bundle contain no NestPay server credential names', () => {
   const browserSources = ['../src/main.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx', '../src/lib/nestpay.ts']
     .map((path) => readFileSync(new URL(path, import.meta.url), 'utf8')).join('\n');
-  assert.doesNotMatch(browserSources, /NESTPAY_STORE_KEY|NESTPAY_API_USERNAME|NESTPAY_API_PASSWORD|VITE_NESTPAY_STORE_KEY/);
+  assert.doesNotMatch(browserSources, /NESTPAY_STORE_KEY|NESTPAY_API_USERNAME|NESTPAY_API_PASSWORD|VITE_NESTPAY_STORE_KEY|SMTP_PASS/);
 });
 
 test('success confirmation contains the mandatory customer, order, merchant and transaction categories', () => {
@@ -691,8 +772,8 @@ test('success confirmation contains the mandatory customer, order, merchant and 
     subtotalRsd: 165000, totalRsd: 168500, authorizationCode: 'AVAILABLE', nestpayTransactionId: 'AVAILABLE',
     response: 'Approved', procReturnCode: '00', mdStatus: '1', transactionDate: '2026-08-20T12:00:00Z', attemptedAt: '2026-08-20T12:00:00Z',
   };
-  const html = buildPaymentConfirmation(order, { legalName: 'Pogon Mobility d.o.o.', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
-  for (const expected of ['kartice je zadužen', 'Kupac Test', 'kupac@example.rs', 'Ulica 1', 'Pogon Glide', 'Jedinična cena', 'Količina', 'Proizvodi sa PDV-om', 'PGN-2026-TEST', 'Pogon Mobility d.o.o.', '115472260', 'Autorizacioni kod', 'Broj transakcije', 'ProcReturnCode', 'mdStatus', 'EXTRA.TRXDATE']) assert.match(html, new RegExp(expected));
+  const html = buildPaymentConfirmation(order, { legalName: 'POGON MOBILITY DOO', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
+  for (const expected of ['kartice je zadužen', 'Kupac Test', 'kupac@example.rs', 'Ulica 1', 'Pogon Glide', 'Jedinična cena', 'Količina', 'Ukupan iznos proizvoda sa PDV-om', 'PGN-2026-TEST', 'POGON MOBILITY DOO', '115472260', 'Temišvarska 25B', 'Autorizacioni kod', 'Broj transakcije', 'ProcReturnCode', 'mdStatus', 'EXTRA.TRXDATE', 'Datum i vreme transakcije']) assert.match(html, new RegExp(expected));
 });
 
 test('definite failure confirmation includes available data, marks absent transaction values, and excludes injected card fields', () => {
@@ -703,10 +784,10 @@ test('definite failure confirmation includes available data, marks absent transa
     quantity: 1, subtotalRsd: 135000, totalRsd: 138500, deliveryMethod: 'courier', deliveryFeeRsd: 3500,
     response: 'Declined', procReturnCode: '05', secretCardField: marker, securityCodeField: marker,
   };
-  const html = buildPaymentConfirmation(order, { legalName: 'Pogon Mobility d.o.o.', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
+  const html = buildPaymentConfirmation(order, { legalName: 'POGON MOBILITY DOO', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
   assert.match(html, /Plaćanje neuspešno/);
   assert.match(html, /Declined/);
-  assert.match(html, /Nije dostupno/);
+  assert.match(html, />-</);
   assert.doesNotMatch(html, new RegExp(marker));
 });
 
@@ -719,7 +800,7 @@ test('payment result is backend-driven and renders mandatory non-sensitive confi
 
 test('order persistence schema contains required non-sensitive evidence and no card-data columns', () => {
   const schema = `${readFileSync(new URL('../supabase/orders.sql', import.meta.url), 'utf8')}\n${readFileSync(new URL('../supabase/orders_lifecycle.sql', import.meta.url), 'utf8')}`;
-  for (const field of ['order_id', 'authorization_code', 'nestpay_transaction_id', 'response', 'proc_return_code', 'md_status', 'transaction_date', 'updated_at']) assert.match(schema, new RegExp(field));
+  for (const field of ['order_id', 'authorization_code', 'nestpay_transaction_id', 'response', 'proc_return_code', 'md_status', 'transaction_date', 'updated_at', 'confirmation_email_claim_token', 'confirmation_email_claimed_at', 'confirmation_email_attempts']) assert.match(schema, new RegExp(field));
   assert.doesNotMatch(schema, /\b(card_number|security_code|card_expiry)\b/i);
 });
 
@@ -741,7 +822,7 @@ test('declined customer confirmations never expose an explicit processor reason'
     street: 'Ulica 1', postalCode: '11000', city: 'Beograd', productName: 'Pogon Core', unitPriceRsd: 135000,
     quantity: 1, subtotalRsd: 135000, totalRsd: 138500, deliveryMethod: 'courier', deliveryFeeRsd: 3500,
     response: 'Declined', procReturnCode: '05', errorMessage: marker, ErrMsg: marker,
-  }, { legalName: 'Pogon Mobility d.o.o.', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
+  }, { legalName: 'POGON MOBILITY DOO', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
   assert.match(html, /Plaćanje neuspešno/);
   assert.doesNotMatch(html, new RegExp(marker));
 

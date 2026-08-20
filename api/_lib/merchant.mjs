@@ -1,5 +1,5 @@
 export const CANONICAL_MERCHANT = Object.freeze({
-  legalName: 'Pogon Mobility d.o.o.',
+  legalName: 'POGON MOBILITY DOO',
   pib: '115472260',
   address: 'Temišvarska 25B, Beograd',
   email: 'pogonmobility@gmail.com',
