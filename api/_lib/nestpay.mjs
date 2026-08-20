@@ -29,6 +29,25 @@ export function isNestPayTestConfigured(env = process.env) {
 export const escapeHashValue = (value) => String(value ?? '').replaceAll('\\', '\\\\').replaceAll('|', '\\|');
 const sha512Base64 = (text) => createHash('sha512').update(text, 'latin1').digest('base64');
 
+const ISO_8859_9_SPECIAL_BYTES = new Map([
+  [0x011e, 0xd0], [0x0130, 0xdd], [0x015e, 0xde],
+  [0x011f, 0xf0], [0x0131, 0xfd], [0x015f, 0xfe],
+]);
+const ISO_8859_9_REPLACED_LATIN1 = new Set([0xd0, 0xdd, 0xde, 0xf0, 0xfd, 0xfe]);
+
+// Equivalent to .NET Encoding.GetEncoding("ISO-8859-9").GetBytes for the
+// Ver2 response sample. Unrepresentable characters use the default "?"
+// replacement fallback; the six Turkish letters occupy the ISO-8859-9 slots
+// that differ from ISO-8859-1.
+const encodeIso88599 = (text) => Buffer.from(Array.from(String(text), (character) => {
+  const codePoint = character.codePointAt(0);
+  if (ISO_8859_9_SPECIAL_BYTES.has(codePoint)) return ISO_8859_9_SPECIAL_BYTES.get(codePoint);
+  if (codePoint <= 0xff && !ISO_8859_9_REPLACED_LATIN1.has(codePoint)) return codePoint;
+  return 0x3f;
+}));
+
+const sha512Base64Iso88599 = (text) => createHash('sha512').update(encodeIso88599(text)).digest('base64');
+
 // NestPay Merchant Integration 3D, pp. 9 and 15–17 (Hash Version 2).
 export function create3DRequestHash(fields, storeKey) {
   const values = [
@@ -75,33 +94,64 @@ const paramValue = (params, name) => {
   return key ? params[key] : '';
 };
 
-// Hash v2 response check (3D manual response sample, pp. 19–20): parse the
-// colon-delimited names in returned HASHPARAMS order, concatenate the matching
-// POST values without separators (missing/null means empty), compare that exact
-// reconstruction with HASHPARAMSVAL, then append StoreKey and SHA-512/Base64.
-// This response format is intentionally separate from the pipe-delimited and
-// escaped outgoing request-hash format above.
-export function verify3DResponseHash(params, storeKey) {
+// Hash Ver2 response check (3D manual response sample, pp. 30–31): parse the
+// pipe-delimited names in returned HASHPARAMS order. Escape each matching POST
+// value and append "|" (including after the final value), compare that exact
+// paramsval with HASHPARAMSVAL, then append the escaped StoreKey with no extra
+// separator and calculate SHA-512/Base64 over ISO-8859-9 bytes.
+export function inspect3DResponseHash(params, storeKey) {
   const hashParams = String(params.HASHPARAMS || '');
   const suppliedValues = params.HASHPARAMSVAL;
   const suppliedHash = params.HASH;
-  if (!hashParams || suppliedValues == null || !suppliedHash || typeof storeKey !== 'string' || !storeKey) return false;
+  const algorithm = String(paramValue(params, 'hashAlgorithm') ?? '');
+  const hashParamsFields = hashParams ? hashParams.split('|') : [];
+  const result = {
+    hashAlgorithmBranch: !algorithm ? 'MISSING' : algorithm.toLowerCase() === 'ver2' ? 'VER2' : 'OTHER',
+    hashParamsFields,
+    hashParamsFormatValid: Boolean(hashParams)
+      && hashParamsFields.length > 0 && hashParamsFields.every((name) => Boolean(name)),
+    requiredHashFieldsSigned: false,
+    hashParamsValMatch: null,
+    hashValid: false,
+    validationStage: 'MISSING_HASH_INPUTS',
+  };
+  if (!hashParams || suppliedValues == null || !suppliedHash || typeof storeKey !== 'string' || !storeKey) return result;
+  if (result.hashAlgorithmBranch !== 'VER2') {
+    result.validationStage = 'UNSUPPORTED_HASH_ALGORITHM';
+    return result;
+  }
 
-  const names = hashParams.split(':');
-  if (names.at(-1) === '') names.pop();
-  if (!names.length || names.some((name) => !name)) return false;
+  const names = result.hashParamsFields;
+  if (!result.hashParamsFormatValid) {
+    result.validationStage = 'INVALID_HASHPARAMS_FORMAT';
+    return result;
+  }
 
   const lowered = names.map((name) => name.toLowerCase());
   if (!['clientid', 'oid', 'response'].every((required) =>
-    lowered.includes(required) || (required === 'oid' && lowered.includes('returnoid')))) return false;
+    lowered.includes(required) || (required === 'oid' && lowered.includes('returnoid')))) {
+    result.validationStage = 'REQUIRED_FIELDS_NOT_SIGNED';
+    return result;
+  }
+  result.requiredHashFieldsSigned = true;
 
-  const reconstructedValues = names.map((name) => String(paramValue(params, name) ?? '')).join('');
-  if (reconstructedValues !== String(suppliedValues)) return false;
+  const paramsval = names.map((name) => `${escapeHashValue(paramValue(params, name))}|`).join('');
+  result.hashParamsValMatch = paramsval === String(suppliedValues);
+  if (!result.hashParamsValMatch) {
+    result.validationStage = 'HASHPARAMSVAL_MISMATCH';
+    return result;
+  }
 
-  const calculatedHash = sha512Base64(`${reconstructedValues}${storeKey}`);
+  const calculatedHash = sha512Base64Iso88599(`${paramsval}${escapeHashValue(storeKey)}`);
   const left = Buffer.from(calculatedHash);
   const right = Buffer.from(String(suppliedHash));
-  return left.length === right.length && timingSafeEqual(left, right);
+  result.hashValid = left.length === right.length && timingSafeEqual(left, right);
+  result.validationStage = result.hashValid ? 'VALID' : 'HASH_MISMATCH';
+  return result;
+}
+
+export function verify3DResponseHash(params, storeKey) {
+  return inspect3DResponseHash(params, storeKey).hashValid;
 }
 
 export const isAccepted3DStatus = (mdStatus) => ['1', '2', '3', '4'].includes(String(mdStatus));

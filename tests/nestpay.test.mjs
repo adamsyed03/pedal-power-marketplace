@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { calculateCartTotal, calculateOrderTotal } from '../api/_lib/catalog.mjs';
 import { createOrderId } from '../api/_lib/order.mjs';
 import {
-  buildAuthorizationXml, buildOrderStatusXml, create3DFormFields, create3DRequestHash,
+  buildAuthorizationXml, buildOrderStatusXml, create3DFormFields, create3DRequestHash, inspect3DResponseHash,
   generateRnd, getNestPayConfig, isAccepted3DStatus, isApprovedApiResponse,
   isNestPayTestConfigured, parseApiResponse, paymentStateFromApiResponse, verify3DResponseHash,
 } from '../api/_lib/nestpay.mjs';
 import {
   callbackAmountMatchesOrder, createCallbackDiagnostics, hasComplete3DAuthFields,
-  isStagingCallbackDiagnosticsEnabled, stripSensitiveFields,
+  isStagingCallbackDiagnosticsEnabled, processNestPayReturn, stripSensitiveFields,
 } from '../api/_lib/payment-flow.mjs';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
@@ -89,18 +89,31 @@ test('rnd is always exactly 20 characters', () => {
 });
 
 const createResponseHashFixture = ({ names, values, storeKey }) => {
-  const paramsval = names.map((name) => String(values[name] ?? '')).join('');
+  const escape = (value) => String(value ?? '').replaceAll('\\', '\\\\').replaceAll('|', '\\|');
+  const specialBytes = new Map([
+    [0x011e, 0xd0], [0x0130, 0xdd], [0x015e, 0xde],
+    [0x011f, 0xf0], [0x0131, 0xfd], [0x015f, 0xfe],
+  ]);
+  const replacedLatin1 = new Set([0xd0, 0xdd, 0xde, 0xf0, 0xfd, 0xfe]);
+  const encodeIso88599 = (text) => Buffer.from(Array.from(String(text), (character) => {
+    const codePoint = character.codePointAt(0);
+    if (specialBytes.has(codePoint)) return specialBytes.get(codePoint);
+    if (codePoint <= 0xff && !replacedLatin1.has(codePoint)) return codePoint;
+    return 0x3f;
+  }));
+  const paramsval = names.map((name) => `${escape(values[name])}|`).join('');
   return {
     ...values,
-    HASHPARAMS: `${names.join(':')}:`,
+    hashAlgorithm: 'ver2',
+    HASHPARAMS: names.join('|'),
     HASHPARAMSVAL: paramsval,
-    HASH: createHash('sha512').update(`${paramsval}${storeKey}`, 'latin1').digest('base64'),
+    HASH: createHash('sha512').update(encodeIso88599(`${paramsval}${escape(storeKey)}`)).digest('base64'),
   };
 };
 
-test('valid NestPay Hash Ver-2 response is accepted', () => {
-  const values = { clientid: '13IN004634', oid: 'PGN-1', AuthCode: '123456', ProcReturnCode: '00', Response: 'Approved', mdStatus: '1', rnd: 'r'.repeat(20) };
-  const names = ['clientid', 'oid', 'AuthCode', 'ProcReturnCode', 'Response', 'mdStatus', 'rnd'];
+test('official Ver2 response sample algorithm is accepted', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', AuthCode: '123456', Response: 'Approved', HostRefNum: 'ref', ProcReturnCode: '00', TransId: 'trx', ErrMsg: '', mdStatus: '1' };
+  const names = ['clientid', 'oid', 'AuthCode', 'Response', 'HostRefNum', 'ProcReturnCode', 'TransId', 'ErrMsg', 'mdStatus'];
   const params = createResponseHashFixture({ names, values, storeKey: 'STOREKEY' });
   assert.equal(verify3DResponseHash(params, 'STOREKEY'), true);
 });
@@ -121,22 +134,50 @@ test('returned HASHPARAMS ordering is respected', () => {
   const values = { clientid: '13IN004634', oid: 'PGN-1', Response: 'Approved', mdStatus: '1' };
   const original = createResponseHashFixture({ names: ['Response', 'mdStatus', 'oid', 'clientid'], values, storeKey: 'STOREKEY' });
   assert.equal(verify3DResponseHash(original, 'STOREKEY'), true);
-  assert.equal(verify3DResponseHash({ ...original, HASHPARAMS: 'clientid:oid:Response:mdStatus:' }, 'STOREKEY'), false);
+  assert.equal(verify3DResponseHash({ ...original, HASHPARAMS: 'clientid|oid|Response|mdStatus' }, 'STOREKEY'), false);
 });
 
-test('empty returned parameter is concatenated as an empty string', () => {
+test('empty returned parameter still contributes its trailing pipe', () => {
   const values = { clientid: '13IN004634', oid: 'PGN-1', Response: 'Approved' };
   const names = ['clientid', 'oid', 'AuthCode', 'Response'];
   const params = createResponseHashFixture({ names, values, storeKey: 'STOREKEY' });
+  assert.match(params.HASHPARAMSVAL, /\|\|Approved\|$/);
   assert.equal(verify3DResponseHash(params, 'STOREKEY'), true);
 });
 
-test('response hash appends StoreKey characters literally as documented', () => {
-  const values = { clientid: '13IN004634', oid: 'PGN|1', Response: 'Approved', ErrMsg: 'A\\B|C' };
+test('response values and StoreKey are escaped and hashed as ISO-8859-9', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN|1', Response: 'Approved', ErrMsg: 'İşlem A\\B|C' };
   const names = ['ErrMsg', 'Response', 'oid', 'clientid'];
-  const storeKey = 'S|K\\# value';
+  const storeKey = 'SĞ|K\\# value';
   const params = createResponseHashFixture({ names, values, storeKey });
   assert.equal(verify3DResponseHash(params, storeKey), true);
+});
+
+test('response hash requires the explicit Ver2 branch', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', Response: 'Approved' };
+  const params = createResponseHashFixture({ names: ['clientid', 'oid', 'Response'], values, storeKey: 'STOREKEY' });
+  assert.equal(verify3DResponseHash({ ...params, hashAlgorithm: 'ver1' }, 'STOREKEY'), false);
+  assert.equal(verify3DResponseHash({ ...params, hashAlgorithm: undefined }, 'STOREKEY'), false);
+});
+
+test('response hash inspection reports only safe structural outcomes', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', Response: 'Approved', ErrMsg: 'İşlem' };
+  const params = createResponseHashFixture({ names: ['clientid', 'oid', 'Response', 'ErrMsg'], values, storeKey: 'STOREKEY' });
+  assert.deepEqual(inspect3DResponseHash(params, 'STOREKEY'), {
+    hashAlgorithmBranch: 'VER2',
+    hashParamsFields: ['clientid', 'oid', 'Response', 'ErrMsg'],
+    hashParamsFormatValid: true,
+    requiredHashFieldsSigned: true,
+    hashParamsValMatch: true,
+    hashValid: true,
+    validationStage: 'VALID',
+  });
+  assert.equal(inspect3DResponseHash({ ...params, HASHPARAMSVAL: 'altered' }, 'STOREKEY').validationStage, 'HASHPARAMSVAL_MISMATCH');
+  assert.equal(inspect3DResponseHash({ ...params, HASH: `${params.HASH}x` }, 'STOREKEY').validationStage, 'HASH_MISMATCH');
+  const missingBranch = inspect3DResponseHash({ ...params, hashAlgorithm: undefined }, 'STOREKEY');
+  assert.equal(missingBranch.hashAlgorithmBranch, 'MISSING');
+  assert.deepEqual(missingBranch.hashParamsFields, ['clientid', 'oid', 'Response', 'ErrMsg']);
+  assert.equal(missingBranch.validationStage, 'UNSUPPORTED_HASH_ALGORITHM');
 });
 
 test('response hash is rejected when mandatory clientid/oid/Response names are missing', () => {
@@ -338,7 +379,7 @@ test('callback route only redirects after verified processing and rejects invali
   assert.match(callback, /REJECTED/);
   assert.match(callback, /status\(303\)/);
   const flow = readFileSync(new URL('../api/_lib/payment-flow.mjs', import.meta.url), 'utf8');
-  assert.match(flow, /verify3DResponseHash/);
+  assert.match(flow, /inspect3DResponseHash/);
   assert.match(flow, /paymentStateFromApiResponse/);
   assert.match(flow, /UNKNOWN/);
 });
@@ -353,12 +394,45 @@ test('staging callback diagnostics expose presence and outcomes without sensitiv
   assert.equal(diagnostics.FIELD_PRESENCE.clientid, true);
   assert.equal(diagnostics.FIELD_PRESENCE.md, true);
   assert.equal(diagnostics.FIELD_PRESENCE.HASH, true);
+  assert.equal(diagnostics.FIELD_PRESENCE.hashAlgorithm, false);
   assert.equal(diagnostics.FIELD_PRESENCE.Response, false);
+  assert.deepEqual(diagnostics.HASHPARAMS_FIELDS, []);
+  assert.equal(diagnostics.HASHPARAMSVAL_MATCH, null);
   const serialized = JSON.stringify(diagnostics);
   for (const forbidden of [
     'merchant-value', 'sensitive-md', 'sensitive-cavv', 'sensitive-xid',
     'sensitive-hash', 'sensitive-hash-plaintext', 'sensitive-pan', 'sensitive-cvv',
   ]) assert.doesNotMatch(serialized, new RegExp(forbidden));
+});
+
+test('callback hash diagnostics expose field names and comparison stages but never values', async () => {
+  const expiryField = 'Ecom_Payment_Card_ExpDate_Year';
+  const raw = {
+    clientid: '13IN004634', oid: 'PGN-2026-0000000000000001', Response: 'Error',
+    hashAlgorithm: 'ver2', [expiryField]: 'sensitive-expiry',
+    HASHPARAMS: `clientid|oid|Response|${expiryField}`,
+    HASHPARAMSVAL: 'sensitive-paramsval', HASH: 'sensitive-hash',
+  };
+  const diagnostics = createCallbackDiagnostics(raw);
+  const result = await processNestPayReturn(raw, testEnv, async () => {
+    throw new Error('API authorization must not run for an invalid callback hash');
+  }, diagnostics);
+  assert.equal(result.reason, 'INVALID_RESPONSE_HASH');
+  assert.equal(diagnostics.HASH_ALGORITHM_BRANCH, 'VER2');
+  assert.deepEqual(diagnostics.HASHPARAMS_FIELDS, ['clientid', 'oid', 'Response', expiryField]);
+  assert.deepEqual(diagnostics.HASHPARAMS_FIELD_PRESENCE, [
+    { field: 'clientid', present: true }, { field: 'oid', present: true },
+    { field: 'Response', present: true }, { field: expiryField, present: true },
+  ]);
+  assert.deepEqual(diagnostics.HASHED_FIELDS_MISSING, []);
+  assert.deepEqual(diagnostics.HASHED_FIELDS_REMOVED_BY_SANITIZER, [expiryField]);
+  assert.equal(diagnostics.HASHPARAMSVAL_MATCH, false);
+  assert.equal(diagnostics.HASH_VALIDATION_STAGE, 'HASHPARAMSVAL_MISMATCH');
+  assert.equal(diagnostics.HASH_VALID, false);
+  const serialized = JSON.stringify(diagnostics);
+  for (const forbidden of ['sensitive-expiry', 'sensitive-paramsval', 'sensitive-hash']) {
+    assert.doesNotMatch(serialized, new RegExp(forbidden));
+  }
 });
 
 test('callback diagnostics are enabled only for the HTTPS staging origin', () => {
