@@ -1,12 +1,11 @@
 # Payment security boundary
 
-## Responsibility model (3D+API, bank-hosted card page)
+## Responsibility model (3D+API, browser-direct card POST)
 
-Banca Intesa configured merchant `13IN004634` for its bank-hosted NestPay flow
-(see `docs/payments/chip-card-architecture.md`). `/payment/card` contains no
-card fields: the browser POSTs only server-prepared non-card transaction fields
-to NestPay, and the customer enters card data on the bank-hosted page. Card
-data never reaches Pogon browser logic or servers.
+Banca Intesa requires `storetype=3d_pay_hosting` for merchant `13IN004634`
+(see `docs/payments/chip-card-architecture.md`). `/payment/card` holds the card
+values only in the browser and POSTs them together with the server-prepared
+transaction fields directly to NestPay. Card data never reaches Pogon servers.
 
 Hard rules enforced in code and tests:
 

@@ -500,6 +500,7 @@ test('callback amount and required 3D Auth fields are validated before API autho
 
 test('official test PAN literals are isolated from production source', () => {
   const productionSources = [
+    '../src/lib/nestpay.ts',
     '../api/_lib/nestpay.mjs',
     '../api/_lib/payment-flow.mjs',
     '../api/checkout/create.ts',
@@ -512,15 +513,18 @@ test('official test PAN literals are isolated from production source', () => {
   assert.doesNotMatch(productionSources, /\b(?:4\d{15}|5\d{15}|3\d{14}|9\d{15})\b/);
 });
 
-test('server payment surfaces never receive or persist card data', () => {
+test('card data posts browser-to-gateway and never reaches Pogon server surfaces', () => {
   const prepare = readFileSync(new URL('../api/nestpay/prepare.ts', import.meta.url), 'utf8');
   const callback = readFileSync(new URL('../api/nestpay/callback.ts', import.meta.url), 'utf8');
   const flow = readFileSync(new URL('../api/_lib/payment-flow.mjs', import.meta.url), 'utf8');
   const cardPage = readFileSync(new URL('../src/app/components/CardPayment.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(prepare, /\bpan\b|cv2|ExpDate/);
-  assert.doesNotMatch(cardPage, /\bpan\b|cv2|ExpDate|expMonth|expYear|cardType|isOfficialTestPan|detectCardType/);
   assert.match(cardPage, /Object\.entries\(prepared\.fields\)/);
-  assert.match(cardPage, /Banca Intesa \/ NestPay/);
+  assert.match(cardPage, /gateForm\.action = prepared\.gateUrl/);
+  for (const field of ['pan', 'cv2', 'Ecom_Payment_Card_ExpDate_Month', 'Ecom_Payment_Card_ExpDate_Year', 'cardType']) {
+    assert.match(cardPage, new RegExp(`append\\('${field}'`));
+  }
+  assert.match(cardPage, /JSON\.stringify\(\{ orderId, token \}\)/);
   assert.match(callback, /processNestPayReturn/);
   assert.match(flow, /stripSensitiveFields/);
   assert.doesNotMatch(flow, /console\.log/);
@@ -674,7 +678,7 @@ test('customer-facing EPM routes and card-network information links are wired', 
 });
 
 test('browser source and production bundle contain no NestPay server credential names', () => {
-  const browserSources = ['../src/main.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx']
+  const browserSources = ['../src/main.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx', '../src/lib/nestpay.ts']
     .map((path) => readFileSync(new URL(path, import.meta.url), 'utf8')).join('\n');
   assert.doesNotMatch(browserSources, /NESTPAY_STORE_KEY|NESTPAY_API_USERNAME|NESTPAY_API_PASSWORD|VITE_NESTPAY_STORE_KEY/);
 });

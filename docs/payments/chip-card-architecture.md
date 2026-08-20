@@ -4,17 +4,17 @@ The supplied technical manuals define the direct NestPay sequence below and do
 not document a separate Chip Card runtime API. Banca Intesa subsequently gave
 the merchant-specific request contract in writing: use
 `storetype=3d_pay_hosting`, and do not include `instalment` or `CallbackURL` in
-the 3D POST. This implementation follows that latest explicit instruction. See
+the 3D POST. The instruction did not remove the existing browser card fields;
+this implementation follows only those explicit changes. See
 `CHIP_CARD_INTEGRATION.md`.
 
 ## Actual flow (per the supplied bank documentation)
 
 ```text
 Customer → ridepogon.com/checkout → order persisted (PENDING)
-        → /payment/card (Pogon order review and redirect; no card inputs)
+        → /payment/card (browser-only card form)
         → POST /api/nestpay/prepare (server builds Hash v2 + hidden fields)
-        → browser POSTs only server-prepared non-card fields to https://testsecurepay.eway2pay.com/fim/est3dgate
-        → customer enters card data on the bank-hosted NestPay page
+        → browser POSTs card + server-prepared fields directly to https://testsecurepay.eway2pay.com/fim/est3dgate
         → 3-D Secure authentication at issuer
         → NestPay POSTs 3D result (md/eci/xid/cavv/mdStatus) to /api/nestpay/callback
         → server verifies the ver2 response hash and claims the order (AUTHORIZING)
@@ -33,8 +33,8 @@ Key implementation files:
   single API Auth per order, card-data stripping).
 - `api/nestpay/prepare.ts`, `api/nestpay/callback.ts` — HTTP surfaces.
 - `api/_lib/reconcile.mjs`, `api/internal/reconcile.ts` — UNKNOWN resolution.
-- `src/app/components/CardPayment.tsx` — bank-hosted redirect page; it submits
-  only the server-prepared transaction fields and contains no card inputs.
+- `src/app/components/CardPayment.tsx` — browser card form; it submits card and
+  server-prepared transaction fields directly to NestPay.
 
 Secrets (StoreKey, API user password) are server-only. PAN/CVV/expiry are never
-received, persisted or logged by Pogon browser or server code.
+received, persisted or logged by Pogon servers.

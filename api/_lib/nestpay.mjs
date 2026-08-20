@@ -148,10 +148,10 @@ export function generateRnd() {
   return Array.from(randomBytes(20), (byte) => alphabet[byte % alphabet.length]).join('');
 }
 
-// Exact non-card hidden-field set for the browser POST to est3dgate. Banca
-// Intesa confirmed this merchant uses the bank-hosted 3D page and requires
-// storetype=3d_pay_hosting. The POST must omit both instalment and CallbackURL;
-// storetype is not part of the Hash v2 input.
+// Exact server-prepared field set for the browser POST to est3dgate. Banca
+// Intesa requires storetype=3d_pay_hosting for this merchant, while instalment
+// and CallbackURL must be absent. Browser-only card fields are added separately
+// by CardPayment; storetype is not part of the Hash v2 input.
 export function create3DFormFields({ orderId, amountRsd, installmentCount, okUrl, failUrl }, env = process.env) {
   const config = getNestPayConfig(env);
   const amount = String(amountRsd);

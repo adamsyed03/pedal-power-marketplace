@@ -198,7 +198,7 @@ export function Checkout() {
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
                 <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-400" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-white/45">Jednokratno plaćanje</p></div></div>
-                <p className="mt-3 text-xs leading-5 text-white/40">Nakon potvrde bićete preusmereni na zaštićenu Banca Intesa / NestPay stranicu za unos kartice.</p>
+                <p className="mt-3 text-xs leading-5 text-white/40">Podatke kartice unosite u sledećem koraku; pregledač ih šalje direktno Banca Intesa / NestPay sistemu.</p>
               </div>
 
               <PaymentBranding dark compact />

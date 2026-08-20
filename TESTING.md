@@ -1,8 +1,8 @@
 # Banca Intesa official TEST execution plan
 
-> Executable now: ordinary one-payment orders run through Pogon's redirect page
-> (`/payment/card`) → the bank-hosted NestPay TEST card page → server-side API
-> Auth, using Banca Intesa's merchant-specific `3d_pay_hosting` contract.
+> Executable now: ordinary one-payment orders use Pogon's browser card form
+> (`/payment/card`) → a direct POST to the NestPay TEST gateway → server-side
+> API Auth, using Banca Intesa's merchant-specific `3d_pay_hosting` contract.
 
 ## Scope and official sources
 
@@ -86,8 +86,8 @@ Record these non-sensitive values in the operator's evidence sheet:
 1. Confirm TEST mode (`NESTPAY_ENV=test`) and that `/api/nestpay/prepare`
    returns the TEST gateway URL.
 2. Use the bank-confirmed Visa or Mastercard test-card category from `Testne
-   kartice`; enter card data only after the redirect, on the bank-hosted NestPay
-   TEST page. Pogon's `/payment/card` page contains no card inputs. The workbook
+   kartice`; enter it only on Pogon's TEST browser card form. The form submits
+   directly to NestPay and Pogon servers never receive the values. The workbook
    itself does not select the category.
 3. Create a fresh Pogon checkout and record its unique Order ID, exact RSD
    amount and instalment count `1`.

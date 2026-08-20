@@ -3,10 +3,10 @@
 > The TEST 3D+API implementation follows the supplied Banca Intesa technical
 > documentation and Marina Marković's merchant-specific clarification (see
 > `docs/payments/chip-card-architecture.md`). The 3D POST uses
-> `storetype=3d_pay_hosting`, omits `instalment` and `CallbackURL`, and sends no
-> card data from Pogon. The customer enters card data on the bank-hosted page.
-> The merchant backend retains the documented CC5 API Auth handling for
-> returned `md`/`eci`/`xid`/`cavv` values.
+> `storetype=3d_pay_hosting` and omits `instalment` and `CallbackURL`. Card data
+> is added only in the browser and POSTed directly to NestPay; it never reaches
+> Pogon servers. The merchant backend retains the documented CC5 API Auth
+> handling for returned `md`/`eci`/`xid`/`cavv` values.
 
 ## Project audit
 
@@ -27,7 +27,7 @@
 - Cryptographically random immutable order IDs.
 - Supabase order schema with payment states and no card-data columns.
 - TEST/production endpoint separation guards.
-- Bank-hosted card entry; Pogon browser and server code do not collect PAN,
+- Browser-only card entry; Pogon servers do not receive, persist or log PAN,
   CVV or expiry.
 - Merchant-specific `3d_pay_hosting` request with `instalment` and
   `CallbackURL` absent from the POST.
