@@ -75,22 +75,30 @@ const paramValue = (params, name) => {
   return key ? params[key] : '';
 };
 
-// Hash v2 response check (3D manual §3.3.1): escaped values joined with "|",
-// store key appended, SHA-512, Base64. HASHPARAMS must include the mandatory
-// clientid/oid/Response names (§3.3.2).
+// Hash v2 response check (3D manual response sample, pp. 19–20): parse the
+// colon-delimited names in returned HASHPARAMS order, concatenate the matching
+// POST values without separators (missing/null means empty), compare that exact
+// reconstruction with HASHPARAMSVAL, then append StoreKey and SHA-512/Base64.
+// This response format is intentionally separate from the pipe-delimited and
+// escaped outgoing request-hash format above.
 export function verify3DResponseHash(params, storeKey) {
   const hashParams = String(params.HASHPARAMS || '');
   const suppliedValues = params.HASHPARAMSVAL;
   const suppliedHash = params.HASH;
-  if (!hashParams || suppliedValues == null || !suppliedHash) return false;
-  const names = hashParams.split('|').filter(Boolean);
+  if (!hashParams || suppliedValues == null || !suppliedHash || typeof storeKey !== 'string' || !storeKey) return false;
+
+  const names = hashParams.split(':');
+  if (names.at(-1) === '') names.pop();
+  if (!names.length || names.some((name) => !name)) return false;
+
   const lowered = names.map((name) => name.toLowerCase());
   if (!['clientid', 'oid', 'response'].every((required) =>
     lowered.includes(required) || (required === 'oid' && lowered.includes('returnoid')))) return false;
-  const joinedValues = names.map((name) => escapeHashValue(paramValue(params, name))).join('|');
-  const suppliedJoined = String(suppliedValues).replace(/\|$/, '');
-  if (joinedValues !== suppliedJoined) return false;
-  const calculatedHash = sha512Base64(`${joinedValues}|${escapeHashValue(storeKey)}`);
+
+  const reconstructedValues = names.map((name) => String(paramValue(params, name) ?? '')).join('');
+  if (reconstructedValues !== String(suppliedValues)) return false;
+
+  const calculatedHash = sha512Base64(`${reconstructedValues}${storeKey}`);
   const left = Buffer.from(calculatedHash);
   const right = Buffer.from(String(suppliedHash));
   return left.length === right.length && timingSafeEqual(left, right);

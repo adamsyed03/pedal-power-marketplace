@@ -6,14 +6,18 @@ type PaymentBrandingProps = {
 const visaSecureUrl = 'https://rs.visa.com/pay-with-visa/security-and-assistance/protected-everywhere.html';
 const mastercardIdentityCheckUrl = 'https://www.mastercard.rs/sr-rs/korisnici/pronadite-karticu.html';
 
-function MissingAsset({ label, security = false, dark = false }: { label: string; security?: boolean; dark?: boolean }) {
+function BrandAsset({ src, alt, security = false }: { src: string; alt: string; security?: boolean }) {
   return (
     <span
-      role="img"
-      aria-label={`${label}: zvanični logo čeka dostavu banke`}
-      className={`${security ? 'h-14 w-[120px]' : 'h-[56px] w-[90px]'} inline-flex shrink-0 items-center justify-center rounded-lg border border-dashed px-2 text-center text-[10px] font-bold leading-3 ${dark ? 'border-white/25 bg-white/[0.04] text-white/55' : 'border-black/20 bg-black/[0.025] text-black/45'}`}
+      className={`${security ? 'h-14 w-[120px]' : 'h-[56px] w-[90px]'} inline-flex shrink-0 items-center justify-center rounded-lg border border-black/10 bg-white px-3 shadow-sm`}
     >
-      {label}<br />zvanični asset nedostaje
+      <img
+        src={src}
+        alt={alt}
+        className={`${security ? 'max-h-10' : 'max-h-8'} max-w-full object-contain`}
+        loading="lazy"
+        decoding="async"
+      />
     </span>
   );
 }
@@ -32,16 +36,16 @@ export function PaymentBranding({ dark = false, compact = false }: PaymentBrandi
         <div>
           <h3 className={`text-xs font-black uppercase tracking-[0.15em] ${muted}`}>Prihvaćene kartice</h3>
           <div className="mt-3 flex flex-wrap gap-3" role="list" aria-label="Prihvaćene kartice">
-            <span role="listitem"><MissingAsset label="Visa" dark={dark} /></span>
-            <span role="listitem"><MissingAsset label="Mastercard" dark={dark} /></span>
+            <span role="listitem"><BrandAsset src="/payment-brands/visa.png" alt="Visa" /></span>
+            <span role="listitem"><BrandAsset src="/payment-brands/mastercard.png" alt="Mastercard" /></span>
           </div>
         </div>
 
         <div>
           <h3 className={`text-xs font-black uppercase tracking-[0.15em] ${muted}`}>Programi sigurnosti</h3>
           <div className="mt-3 flex flex-wrap gap-3" role="list" aria-label="Programi sigurnosti kartica">
-            <a role="listitem" href={visaSecureUrl} target="_blank" rel="noreferrer"><MissingAsset label="Visa Secure" security dark={dark} /></a>
-            <a role="listitem" href={mastercardIdentityCheckUrl} target="_blank" rel="noreferrer"><MissingAsset label="MC ID Check" security dark={dark} /></a>
+            <a role="listitem" href={visaSecureUrl} target="_blank" rel="noreferrer"><BrandAsset src="/payment-brands/visa-secure.png" alt="Visa Secure" security /></a>
+            <a role="listitem" href={mastercardIdentityCheckUrl} target="_blank" rel="noreferrer"><BrandAsset src="/payment-brands/mastercard-identity-check.svg" alt="Mastercard Identity Check" security /></a>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { calculateCartTotal, calculateOrderTotal } from '../api/_lib/catalog.mjs
 import { createOrderId } from '../api/_lib/order.mjs';
 import {
   buildAuthorizationXml, buildOrderStatusXml, create3DFormFields, create3DRequestHash,
-  escapeHashValue, generateRnd, getNestPayConfig, isAccepted3DStatus, isApprovedApiResponse,
+  generateRnd, getNestPayConfig, isAccepted3DStatus, isApprovedApiResponse,
   isNestPayTestConfigured, parseApiResponse, paymentStateFromApiResponse, verify3DResponseHash,
 } from '../api/_lib/nestpay.mjs';
 import {
@@ -88,22 +88,61 @@ test('rnd is always exactly 20 characters', () => {
   for (let i = 0; i < 50; i += 1) assert.equal(generateRnd().length, 20);
 });
 
-test('ver2 response hash: escaped pipe-joined values plus store key accepted, tampering rejected', () => {
-  const values = { clientid: '13IN004634', oid: 'PGN-1', AuthCode: '123456', ProcReturnCode: '00', Response: 'Approved', mdStatus: '1', cavv: 'c', eci: '05', md: 'm|d', rnd: 'r'.repeat(20) };
-  const names = ['clientid', 'oid', 'AuthCode', 'ProcReturnCode', 'Response', 'mdStatus', 'cavv', 'eci', 'md', 'rnd'];
-  const joined = names.map((name) => escapeHashValue(values[name])).join('|');
-  const hash = createHash('sha512').update(`${joined}|STOREKEY`, 'latin1').digest('base64');
-  const params = { ...values, HASHPARAMS: names.join('|'), HASHPARAMSVAL: joined, HASH: hash };
+const createResponseHashFixture = ({ names, values, storeKey }) => {
+  const paramsval = names.map((name) => String(values[name] ?? '')).join('');
+  return {
+    ...values,
+    HASHPARAMS: `${names.join(':')}:`,
+    HASHPARAMSVAL: paramsval,
+    HASH: createHash('sha512').update(`${paramsval}${storeKey}`, 'latin1').digest('base64'),
+  };
+};
+
+test('valid NestPay Hash Ver-2 response is accepted', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', AuthCode: '123456', ProcReturnCode: '00', Response: 'Approved', mdStatus: '1', rnd: 'r'.repeat(20) };
+  const names = ['clientid', 'oid', 'AuthCode', 'ProcReturnCode', 'Response', 'mdStatus', 'rnd'];
+  const params = createResponseHashFixture({ names, values, storeKey: 'STOREKEY' });
   assert.equal(verify3DResponseHash(params, 'STOREKEY'), true);
-  assert.equal(verify3DResponseHash({ ...params, HASHPARAMSVAL: `${joined}|` }, 'STOREKEY'), true);
-  assert.equal(verify3DResponseHash({ ...params, oid: 'PGN-2' }, 'STOREKEY'), false);
-  assert.equal(verify3DResponseHash({ ...params, HASH: `${hash}x` }, 'STOREKEY'), false);
+});
+
+test('invalid response HASH is rejected', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', Response: 'Approved' };
+  const params = createResponseHashFixture({ names: ['clientid', 'oid', 'Response'], values, storeKey: 'STOREKEY' });
+  assert.equal(verify3DResponseHash({ ...params, HASH: `${params.HASH}x` }, 'STOREKEY'), false);
+});
+
+test('altered returned field value is rejected', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', Response: 'Approved', mdStatus: '1' };
+  const params = createResponseHashFixture({ names: ['clientid', 'oid', 'Response', 'mdStatus'], values, storeKey: 'STOREKEY' });
+  assert.equal(verify3DResponseHash({ ...params, mdStatus: '2' }, 'STOREKEY'), false);
+});
+
+test('returned HASHPARAMS ordering is respected', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', Response: 'Approved', mdStatus: '1' };
+  const original = createResponseHashFixture({ names: ['Response', 'mdStatus', 'oid', 'clientid'], values, storeKey: 'STOREKEY' });
+  assert.equal(verify3DResponseHash(original, 'STOREKEY'), true);
+  assert.equal(verify3DResponseHash({ ...original, HASHPARAMS: 'clientid:oid:Response:mdStatus:' }, 'STOREKEY'), false);
+});
+
+test('empty returned parameter is concatenated as an empty string', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', Response: 'Approved' };
+  const names = ['clientid', 'oid', 'AuthCode', 'Response'];
+  const params = createResponseHashFixture({ names, values, storeKey: 'STOREKEY' });
+  assert.equal(verify3DResponseHash(params, 'STOREKEY'), true);
+});
+
+test('response hash appends StoreKey characters literally as documented', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN|1', Response: 'Approved', ErrMsg: 'A\\B|C' };
+  const names = ['ErrMsg', 'Response', 'oid', 'clientid'];
+  const storeKey = 'S|K\\# value';
+  const params = createResponseHashFixture({ names, values, storeKey });
+  assert.equal(verify3DResponseHash(params, storeKey), true);
 });
 
 test('response hash is rejected when mandatory clientid/oid/Response names are missing', () => {
-  const joined = '1|2';
-  const hash = createHash('sha512').update(`${joined}|k`, 'latin1').digest('base64');
-  assert.equal(verify3DResponseHash({ HASHPARAMS: 'AuthCode|rnd', HASHPARAMSVAL: joined, HASH: hash, AuthCode: '1', rnd: '2' }, 'k'), false);
+  const values = { AuthCode: '1', rnd: '2' };
+  const params = createResponseHashFixture({ names: ['AuthCode', 'rnd'], values, storeKey: 'k' });
+  assert.equal(verify3DResponseHash(params, 'k'), false);
 });
 
 test('3D accepted statuses are exactly 1 through 4', () => {
@@ -351,12 +390,19 @@ test('captcha fails closed without a server secret and expires client tokens', a
   assert.doesNotMatch(turnstile, /TURNSTILE_SECRET_KEY/);
 });
 
-test('EPM payment branding uses the unchanged bank asset and separate official-artwork slots', () => {
-  assert.equal(existsSync(new URL('../public/payment-brands/banca-intesa.png', import.meta.url)), true);
+test('EPM payment branding uses the bank and four card-network artwork assets', () => {
+  for (const asset of [
+    'banca-intesa.png', 'visa.png', 'mastercard.png',
+    'visa-secure.png', 'mastercard-identity-check.svg',
+  ]) assert.equal(existsSync(new URL(`../public/payment-brands/${asset}`, import.meta.url)), true);
   const branding = readFileSync(new URL('../src/app/components/PaymentBranding.tsx', import.meta.url), 'utf8');
   assert.match(branding, /https:\/\/www\.bancaintesa\.rs/);
   assert.match(branding, /Prihvaćene kartice/);
   assert.match(branding, /Programi sigurnosti/);
+  assert.doesNotMatch(branding, /MissingAsset|zvanični asset nedostaje/);
+  for (const asset of ['visa.png', 'mastercard.png', 'visa-secure.png', 'mastercard-identity-check.svg']) {
+    assert.match(branding, new RegExp(`/payment-brands/${asset.replace('.', '\\.')}\\b`));
+  }
   assert.match(branding, /h-\[56px\] w-\[90px\]/);
   assert.match(branding, /h-14 w-\[120px\]/);
   assert.match(branding, /rs\.visa\.com\/pay-with-visa\/security-and-assistance\/protected-everywhere\.html/);
