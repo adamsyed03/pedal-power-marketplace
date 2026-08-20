@@ -118,6 +118,19 @@ test('official Ver2 response sample algorithm is accepted', () => {
   assert.equal(verify3DResponseHash(params, 'STOREKEY'), true);
 });
 
+test('real intermediate Ver2 shape validates without requiring final response fields to be signed', () => {
+  const values = {
+    clientid: '13IN004634', oid: 'PGN-2026-0000000000000001', rnd: 'r'.repeat(20),
+    Response: 'Error', ProcReturnCode: '99', mdStatus: '7',
+  };
+  const params = createResponseHashFixture({ names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY' });
+  const inspection = inspect3DResponseHash(params, 'STOREKEY');
+  assert.equal(inspection.requiredHashFieldsSigned, true);
+  assert.equal(inspection.hashParamsValMatch, true);
+  assert.equal(inspection.hashValid, true);
+  assert.equal(inspection.validationStage, 'VALID');
+});
+
 test('invalid response HASH is rejected', () => {
   const values = { clientid: '13IN004634', oid: 'PGN-1', Response: 'Approved' };
   const params = createResponseHashFixture({ names: ['clientid', 'oid', 'Response'], values, storeKey: 'STOREKEY' });
@@ -180,7 +193,7 @@ test('response hash inspection reports only safe structural outcomes', () => {
   assert.equal(missingBranch.validationStage, 'UNSUPPORTED_HASH_ALGORITHM');
 });
 
-test('response hash is rejected when mandatory clientid/oid/Response names are missing', () => {
+test('response hash is rejected when signed merchant/order binding names are missing', () => {
   const values = { AuthCode: '1', rnd: '2' };
   const params = createResponseHashFixture({ names: ['AuthCode', 'rnd'], values, storeKey: 'k' });
   assert.equal(verify3DResponseHash(params, 'k'), false);

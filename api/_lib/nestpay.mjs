@@ -128,7 +128,10 @@ export function inspect3DResponseHash(params, storeKey) {
   }
 
   const lowered = names.map((name) => name.toLowerCase());
-  if (!['clientid', 'oid', 'response'].every((required) =>
+  // Bind the signed callback to this merchant and order. Response is a final
+  // payment-result field and NestPay's intermediate 3D callback does not list
+  // it in HASHPARAMS (the observed Ver2 shape is clientid|oid|rnd).
+  if (!['clientid', 'oid'].every((required) =>
     lowered.includes(required) || (required === 'oid' && lowered.includes('returnoid')))) {
     result.validationStage = 'REQUIRED_FIELDS_NOT_SIGNED';
     return result;
