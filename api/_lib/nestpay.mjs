@@ -48,6 +48,62 @@ const encodeIso88599 = (text) => Buffer.from(Array.from(String(text), (character
 
 const sha512Base64Iso88599 = (text) => createHash('sha512').update(encodeIso88599(text)).digest('base64');
 
+const normalizeFormScalar = (value) => {
+  if (value == null) return { valid: true, value: '', duplicate: false };
+  if (typeof value === 'string') return { valid: true, value, duplicate: false };
+  if (!Array.isArray(value) || value.length === 0) {
+    return { valid: false, value: '', duplicate: false };
+  }
+  if (!value.every((entry) => typeof entry === 'string')) {
+    return { valid: false, value: '', duplicate: value.length > 1 };
+  }
+  const [first] = value;
+  return {
+    valid: value.every((entry) => entry === first),
+    value: first,
+    duplicate: value.length > 1,
+  };
+};
+
+// Vercel's URL-encoded body parser may represent repeated form fields as
+// arrays. NestPay signs scalar values, so byte-for-byte identical repeats are
+// safely canonicalized to that scalar. Conflicting or non-string values remain
+// ambiguous and must be rejected before any payment processing.
+export function normalizeNestPayFormParams(input) {
+  const params = Object.create(null);
+  const duplicateFields = [];
+  const ambiguousFields = [];
+  const caseInsensitive = new Map();
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    return { params, duplicateFields, ambiguousFields: ['[ROOT]'], valid: false };
+  }
+
+  for (const [key, rawValue] of Object.entries(input)) {
+    const normalized = normalizeFormScalar(rawValue);
+    if (normalized.duplicate) duplicateFields.push(key);
+    if (!normalized.valid) {
+      ambiguousFields.push(key);
+      continue;
+    }
+
+    const folded = key.toLowerCase();
+    const existing = caseInsensitive.get(folded);
+    if (existing && existing.value !== normalized.value) {
+      ambiguousFields.push(existing.key, key);
+      continue;
+    }
+    if (!existing) caseInsensitive.set(folded, { key, value: normalized.value });
+    params[key] = normalized.value;
+  }
+
+  return {
+    params,
+    duplicateFields: [...new Set(duplicateFields)],
+    ambiguousFields: [...new Set(ambiguousFields)],
+    valid: ambiguousFields.length === 0,
+  };
+}
+
 // NestPay Merchant Integration 3D, pp. 9 and 15–17 (Hash Version 2).
 export function create3DRequestHash(fields, storeKey) {
   const values = [
@@ -100,10 +156,12 @@ const paramValue = (params, name) => {
 // paramsval with HASHPARAMSVAL, then append the escaped StoreKey with no extra
 // separator and calculate SHA-512/Base64 over ISO-8859-9 bytes.
 export function inspect3DResponseHash(params, storeKey) {
-  const hashParams = String(params.HASHPARAMS || '');
-  const suppliedValues = params.HASHPARAMSVAL;
-  const suppliedHash = params.HASH;
-  const algorithm = String(paramValue(params, 'hashAlgorithm') ?? '');
+  const normalized = normalizeNestPayFormParams(params);
+  const form = normalized.params;
+  const hashParams = String(form.HASHPARAMS || '');
+  const suppliedValues = form.HASHPARAMSVAL;
+  const suppliedHash = form.HASH;
+  const algorithm = String(paramValue(form, 'hashAlgorithm') ?? '');
   const hashParamsFields = hashParams ? hashParams.split('|') : [];
   const result = {
     hashAlgorithmBranch: !algorithm ? 'MISSING' : algorithm.toLowerCase() === 'ver2' ? 'VER2' : 'OTHER',
@@ -112,9 +170,14 @@ export function inspect3DResponseHash(params, storeKey) {
       && hashParamsFields.length > 0 && hashParamsFields.every((name) => Boolean(name)),
     requiredHashFieldsSigned: false,
     hashParamsValMatch: null,
+    hashParamsValFormat: null,
     hashValid: false,
     validationStage: 'MISSING_HASH_INPUTS',
   };
+  if (!normalized.valid) {
+    result.validationStage = 'AMBIGUOUS_FORM_FIELD';
+    return result;
+  }
   if (!hashParams || suppliedValues == null || !suppliedHash || typeof storeKey !== 'string' || !storeKey) return result;
   if (result.hashAlgorithmBranch !== 'VER2') {
     result.validationStage = 'UNSUPPORTED_HASH_ALGORITHM';
@@ -138,14 +201,24 @@ export function inspect3DResponseHash(params, storeKey) {
   }
   result.requiredHashFieldsSigned = true;
 
-  const paramsval = names.map((name) => `${escapeHashValue(paramValue(params, name))}|`).join('');
-  result.hashParamsValMatch = paramsval === String(suppliedValues);
+  const escapedValues = names.map((name) => escapeHashValue(paramValue(form, name)));
+  // The supplied Ver2 manual is internally inconsistent: section 3.3.1's
+  // concrete HASHPARAMSVAL example has no final pipe, while the pp. 30-31
+  // response sample appends one after every value. Accept only the exact
+  // documented serialization returned by NestPay, then hash that exact text.
+  const candidates = [
+    { format: 'TRAILING_PIPE', paramsval: `${escapedValues.join('|')}|` },
+    { format: 'NO_TRAILING_PIPE', paramsval: escapedValues.join('|') },
+  ];
+  const matched = candidates.find(({ paramsval }) => paramsval === String(suppliedValues));
+  result.hashParamsValMatch = Boolean(matched);
   if (!result.hashParamsValMatch) {
     result.validationStage = 'HASHPARAMSVAL_MISMATCH';
     return result;
   }
+  result.hashParamsValFormat = matched.format;
 
-  const calculatedHash = sha512Base64Iso88599(`${paramsval}${escapeHashValue(storeKey)}`);
+  const calculatedHash = sha512Base64Iso88599(`${matched.paramsval}${escapeHashValue(storeKey)}`);
   const left = Buffer.from(calculatedHash);
   const right = Buffer.from(String(suppliedHash));
   result.hashValid = left.length === right.length && timingSafeEqual(left, right);

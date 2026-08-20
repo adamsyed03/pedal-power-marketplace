@@ -5,7 +5,8 @@ import { createOrderId } from '../api/_lib/order.mjs';
 import {
   buildAuthorizationXml, buildOrderStatusXml, create3DFormFields, create3DRequestHash, inspect3DResponseHash,
   generateRnd, getNestPayConfig, isAccepted3DStatus, isApprovedApiResponse,
-  isNestPayTestConfigured, parseApiResponse, paymentStateFromApiResponse, verify3DResponseHash,
+  isNestPayTestConfigured, normalizeNestPayFormParams, parseApiResponse,
+  paymentStateFromApiResponse, verify3DResponseHash,
 } from '../api/_lib/nestpay.mjs';
 import {
   callbackAmountMatchesOrder, createCallbackDiagnostics, hasComplete3DAuthFields,
@@ -88,7 +89,7 @@ test('rnd is always exactly 20 characters', () => {
   for (let i = 0; i < 50; i += 1) assert.equal(generateRnd().length, 20);
 });
 
-const createResponseHashFixture = ({ names, values, storeKey }) => {
+const createResponseHashFixture = ({ names, values, storeKey, trailingPipe = true }) => {
   const escape = (value) => String(value ?? '').replaceAll('\\', '\\\\').replaceAll('|', '\\|');
   const specialBytes = new Map([
     [0x011e, 0xd0], [0x0130, 0xdd], [0x015e, 0xde],
@@ -101,7 +102,8 @@ const createResponseHashFixture = ({ names, values, storeKey }) => {
     if (codePoint <= 0xff && !replacedLatin1.has(codePoint)) return codePoint;
     return 0x3f;
   }));
-  const paramsval = names.map((name) => `${escape(values[name])}|`).join('');
+  const escapedValues = names.map((name) => escape(values[name]));
+  const paramsval = `${escapedValues.join('|')}${trailingPipe ? '|' : ''}`;
   return {
     ...values,
     hashAlgorithm: 'ver2',
@@ -129,6 +131,55 @@ test('real intermediate Ver2 shape validates without requiring final response fi
   assert.equal(inspection.hashParamsValMatch, true);
   assert.equal(inspection.hashValid, true);
   assert.equal(inspection.validationStage, 'VALID');
+});
+
+test('section 3.3.1 no-trailing-pipe Ver2 response is accepted only with its matching hash', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', rnd: 'r'.repeat(20) };
+  const params = createResponseHashFixture({
+    names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY', trailingPipe: false,
+  });
+  const inspection = inspect3DResponseHash(params, 'STOREKEY');
+  assert.equal(inspection.hashParamsValFormat, 'NO_TRAILING_PIPE');
+  assert.equal(inspection.hashValid, true);
+  const trailing = createResponseHashFixture({ names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY' });
+  assert.equal(verify3DResponseHash({ ...params, HASH: trailing.HASH }, 'STOREKEY'), false);
+});
+
+test('callback form normalization accepts only identical string duplicates without trimming', () => {
+  const normalized = normalizeNestPayFormParams({
+    oid: [' PGN-1 ', ' PGN-1 '], clientid: ['13IN004634'], rnd: 'r'.repeat(20),
+  });
+  assert.equal(normalized.valid, true);
+  assert.equal(normalized.params.oid, ' PGN-1 ');
+  assert.equal(normalized.params.clientid, '13IN004634');
+  assert.deepEqual(normalized.duplicateFields, ['oid']);
+  assert.deepEqual(normalized.ambiguousFields, []);
+
+  for (const invalid of [
+    { oid: ['PGN-1', 'PGN-2'] },
+    { oid: { nested: 'PGN-1' } },
+    { oid: 123 },
+    { clientid: '13IN004634', ClientId: 'different' },
+  ]) assert.equal(normalizeNestPayFormParams(invalid).valid, false);
+});
+
+test('identical repeated callback values are normalized before Ver2 verification', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-2026-0000000000000001', rnd: 'r'.repeat(20) };
+  const fixture = createResponseHashFixture({ names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY' });
+  const repeated = Object.fromEntries(Object.entries(fixture).map(([key, value]) => [key, [value, value]]));
+  const inspection = inspect3DResponseHash(repeated, 'STOREKEY');
+  assert.equal(inspection.hashParamsValMatch, true);
+  assert.equal(inspection.hashValid, true);
+  assert.equal(inspection.hashParamsValFormat, 'TRAILING_PIPE');
+});
+
+test('conflicting repeated callback values are rejected before cryptographic comparison', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-2026-0000000000000001', rnd: 'r'.repeat(20) };
+  const params = createResponseHashFixture({ names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY' });
+  const inspection = inspect3DResponseHash({ ...params, oid: [values.oid, 'PGN-2026-0000000000000002'] }, 'STOREKEY');
+  assert.equal(inspection.hashParamsValMatch, null);
+  assert.equal(inspection.hashValid, false);
+  assert.equal(inspection.validationStage, 'AMBIGUOUS_FORM_FIELD');
 });
 
 test('invalid response HASH is rejected', () => {
@@ -182,6 +233,7 @@ test('response hash inspection reports only safe structural outcomes', () => {
     hashParamsFormatValid: true,
     requiredHashFieldsSigned: true,
     hashParamsValMatch: true,
+    hashParamsValFormat: 'TRAILING_PIPE',
     hashValid: true,
     validationStage: 'VALID',
   });
@@ -411,6 +463,8 @@ test('staging callback diagnostics expose presence and outcomes without sensitiv
   assert.equal(diagnostics.FIELD_PRESENCE.Response, false);
   assert.deepEqual(diagnostics.HASHPARAMS_FIELDS, []);
   assert.equal(diagnostics.HASHPARAMSVAL_MATCH, null);
+  assert.deepEqual(diagnostics.DUPLICATE_FORM_FIELDS, []);
+  assert.deepEqual(diagnostics.AMBIGUOUS_FORM_FIELDS, []);
   const serialized = JSON.stringify(diagnostics);
   for (const forbidden of [
     'merchant-value', 'sensitive-md', 'sensitive-cavv', 'sensitive-xid',
@@ -440,6 +494,7 @@ test('callback hash diagnostics expose field names and comparison stages but nev
   assert.deepEqual(diagnostics.HASHED_FIELDS_MISSING, []);
   assert.deepEqual(diagnostics.HASHED_FIELDS_REMOVED_BY_SANITIZER, [expiryField]);
   assert.equal(diagnostics.HASHPARAMSVAL_MATCH, false);
+  assert.equal(diagnostics.HASHPARAMSVAL_FORMAT, null);
   assert.equal(diagnostics.HASH_VALIDATION_STAGE, 'HASHPARAMSVAL_MISMATCH');
   assert.equal(diagnostics.HASH_VALID, false);
   const serialized = JSON.stringify(diagnostics);

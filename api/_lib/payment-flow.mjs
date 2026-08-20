@@ -1,6 +1,7 @@
 import {
   buildAuthorizationXml, create3DFormFields, getNestPayConfig,
-  inspect3DResponseHash, isAccepted3DStatus, parseApiResponse, paymentStateFromApiResponse,
+  inspect3DResponseHash, isAccepted3DStatus, normalizeNestPayFormParams,
+  parseApiResponse, paymentStateFromApiResponse,
 } from './nestpay.mjs';
 import { findOrderById, patchOrder } from './supabase.mjs';
 import { dispatchConfirmation } from './confirmation.mjs';
@@ -22,8 +23,10 @@ const safeHashFieldName = (field) => /^[A-Za-z0-9_.-]{1,64}$/.test(String(field)
   ? String(field) : '[INVALID_FIELD_NAME]';
 
 const safeCallbackOrderId = (params) => {
-  const oid = String(params?.oid ?? '');
-  const returnOid = String(params?.ReturnOid ?? '');
+  const normalized = normalizeNestPayFormParams(params);
+  if (!normalized.valid) return null;
+  const oid = String(normalized.params.oid ?? '');
+  const returnOid = String(normalized.params.ReturnOid ?? '');
   const candidate = oid || returnOid;
   if (!/^PGN-\d{4}-[A-F0-9]{16}$/.test(candidate)) return null;
   if (oid && returnOid && oid !== returnOid) return null;
@@ -41,6 +44,8 @@ export function createCallbackDiagnostics(rawParams) {
       CALLBACK_PRESENCE_FIELDS.map((field) => [field, present(params, field)]),
     ),
     HASH_CHECK_ATTEMPTED: false,
+    DUPLICATE_FORM_FIELDS: [],
+    AMBIGUOUS_FORM_FIELDS: [],
     HASH_ALGORITHM_BRANCH: 'NOT_CHECKED',
     HASHPARAMS_FIELDS: [],
     HASHPARAMS_FIELD_PRESENCE: [],
@@ -49,6 +54,7 @@ export function createCallbackDiagnostics(rawParams) {
     HASHPARAMS_FORMAT_VALID: null,
     REQUIRED_HASH_FIELDS_SIGNED: null,
     HASHPARAMSVAL_MATCH: null,
+    HASHPARAMSVAL_FORMAT: null,
     HASH_VALIDATION_STAGE: 'NOT_CHECKED',
     HASH_VALID: null,
     CLIENT_ID_MATCH: null,
@@ -123,11 +129,21 @@ const finalize = async (orderId, changes, env) => {
 export async function processNestPayReturn(
   rawParams, env = process.env, fetchImpl = fetch, diagnostics = createCallbackDiagnostics(rawParams),
 ) {
-  const params = stripSensitiveFields(rawParams);
+  const normalized = normalizeNestPayFormParams(rawParams);
+  diagnostics.DUPLICATE_FORM_FIELDS = normalized.duplicateFields.map(safeHashFieldName);
+  diagnostics.AMBIGUOUS_FORM_FIELDS = normalized.ambiguousFields.map(safeHashFieldName);
+  if (!normalized.valid) {
+    return { outcome: 'REJECTED', reason: 'AMBIGUOUS_FORM_FIELD' };
+  }
+  // Verify against the normalized raw POST map. Signed card-bearing fields, if
+  // NestPay ever includes them, may participate in verification but are
+  // stripped immediately afterward and are never logged or persisted.
+  const rawNormalizedParams = normalized.params;
+  const params = stripSensitiveFields(rawNormalizedParams);
   const config = getNestPayConfig(env);
 
   diagnostics.HASH_CHECK_ATTEMPTED = true;
-  const hashInspection = inspect3DResponseHash(params, env.NESTPAY_STORE_KEY);
+  const hashInspection = inspect3DResponseHash(rawNormalizedParams, env.NESTPAY_STORE_KEY);
   const hashFields = hashInspection.hashParamsFields;
   diagnostics.HASH_ALGORITHM_BRANCH = hashInspection.hashAlgorithmBranch;
   diagnostics.HASHPARAMS_FIELDS = hashFields.map(safeHashFieldName);
@@ -137,11 +153,12 @@ export async function processNestPayReturn(
   diagnostics.HASHED_FIELDS_MISSING = hashFields
     .filter((field) => !presentCaseInsensitive(rawParams, field)).map(safeHashFieldName);
   diagnostics.HASHED_FIELDS_REMOVED_BY_SANITIZER = hashFields
-    .filter((field) => presentCaseInsensitive(rawParams, field) && !presentCaseInsensitive(params, field))
+    .filter((field) => presentCaseInsensitive(rawNormalizedParams, field) && !presentCaseInsensitive(params, field))
     .map(safeHashFieldName);
   diagnostics.HASHPARAMS_FORMAT_VALID = hashInspection.hashParamsFormatValid;
   diagnostics.REQUIRED_HASH_FIELDS_SIGNED = hashInspection.requiredHashFieldsSigned;
   diagnostics.HASHPARAMSVAL_MATCH = hashInspection.hashParamsValMatch;
+  diagnostics.HASHPARAMSVAL_FORMAT = hashInspection.hashParamsValFormat;
   diagnostics.HASH_VALIDATION_STAGE = hashInspection.validationStage;
   diagnostics.HASH_VALID = hashInspection.hashValid;
   if (!diagnostics.HASH_VALID) {
