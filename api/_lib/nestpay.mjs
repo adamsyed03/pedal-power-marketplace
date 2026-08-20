@@ -206,9 +206,22 @@ export function inspect3DResponseHash(params, storeKey) {
   // concrete HASHPARAMSVAL example has no final pipe, while the pp. 30-31
   // response sample appends one after every value. Accept only the exact
   // documented serialization returned by NestPay, then hash that exact text.
+  const joinedValues = escapedValues.join('|');
   const candidates = [
-    { format: 'TRAILING_PIPE', paramsval: `${escapedValues.join('|')}|` },
-    { format: 'NO_TRAILING_PIPE', paramsval: escapedValues.join('|') },
+    {
+      format: 'TRAILING_PIPE',
+      paramsval: `${joinedValues}|`,
+      hashPrefix: `${joinedValues}|`,
+    },
+    {
+      format: 'NO_TRAILING_PIPE',
+      paramsval: joinedValues,
+      // Section 3.3.1 returns HASHPARAMSVAL without the final delimiter, but
+      // its published HASH sample verifies only when StoreKey remains the
+      // final pipe-separated value. The delimiter belongs to the hash
+      // plaintext, not to the returned HASHPARAMSVAL representation.
+      hashPrefix: `${joinedValues}|`,
+    },
   ];
   const matched = candidates.find(({ paramsval }) => paramsval === String(suppliedValues));
   result.hashParamsValMatch = Boolean(matched);
@@ -218,7 +231,7 @@ export function inspect3DResponseHash(params, storeKey) {
   }
   result.hashParamsValFormat = matched.format;
 
-  const calculatedHash = sha512Base64Iso88599(`${matched.paramsval}${escapeHashValue(storeKey)}`);
+  const calculatedHash = sha512Base64Iso88599(`${matched.hashPrefix}${escapeHashValue(storeKey)}`);
   const left = Buffer.from(calculatedHash);
   const right = Buffer.from(String(suppliedHash));
   result.hashValid = left.length === right.length && timingSafeEqual(left, right);

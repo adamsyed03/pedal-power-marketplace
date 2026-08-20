@@ -103,13 +103,15 @@ const createResponseHashFixture = ({ names, values, storeKey, trailingPipe = tru
     return 0x3f;
   }));
   const escapedValues = names.map((name) => escape(values[name]));
-  const paramsval = `${escapedValues.join('|')}${trailingPipe ? '|' : ''}`;
+  const joinedValues = escapedValues.join('|');
+  const paramsval = `${joinedValues}${trailingPipe ? '|' : ''}`;
+  const hashPrefix = `${joinedValues}|`;
   return {
     ...values,
     hashAlgorithm: 'ver2',
     HASHPARAMS: names.join('|'),
     HASHPARAMSVAL: paramsval,
-    HASH: createHash('sha512').update(encodeIso88599(`${paramsval}${escape(storeKey)}`)).digest('base64'),
+    HASH: createHash('sha512').update(encodeIso88599(`${hashPrefix}${escape(storeKey)}`)).digest('base64'),
   };
 };
 
@@ -133,16 +135,18 @@ test('real intermediate Ver2 shape validates without requiring final response fi
   assert.equal(inspection.validationStage, 'VALID');
 });
 
-test('section 3.3.1 no-trailing-pipe Ver2 response is accepted only with its matching hash', () => {
+test('section 3.3.1 no-trailing HASHPARAMSVAL keeps one separator before StoreKey in hash plaintext', () => {
   const values = { clientid: '13IN004634', oid: 'PGN-1', rnd: 'r'.repeat(20) };
+  const storeKey = 'STOREKEY';
   const params = createResponseHashFixture({
-    names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY', trailingPipe: false,
+    names: ['clientid', 'oid', 'rnd'], values, storeKey, trailingPipe: false,
   });
-  const inspection = inspect3DResponseHash(params, 'STOREKEY');
+  const inspection = inspect3DResponseHash(params, storeKey);
   assert.equal(inspection.hashParamsValFormat, 'NO_TRAILING_PIPE');
   assert.equal(inspection.hashValid, true);
-  const trailing = createResponseHashFixture({ names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY' });
-  assert.equal(verify3DResponseHash({ ...params, HASH: trailing.HASH }, 'STOREKEY'), false);
+  const directAppendHash = createHash('sha512')
+    .update(Buffer.from(`${params.HASHPARAMSVAL}${storeKey}`, 'latin1')).digest('base64');
+  assert.equal(verify3DResponseHash({ ...params, HASH: directAppendHash }, storeKey), false);
 });
 
 test('callback form normalization accepts only identical string duplicates without trimming', () => {
