@@ -11,4 +11,4 @@
 
   ## Payments
 
-  The TEST harness implements the documented NestPay 3D+API sequence using `storetype=3d_pay`: the merchant-hosted card page posts to the NestPay TEST 3D gateway and the backend completes the payment with a CC5 API Auth using the returned `md`/`eci`/`xid`/`cavv`. Production is hard-disabled. A conflicting merchant-support instruction about Chip Card remains a live-execution gate; see [the payment architecture notes](docs/payments/chip-card-architecture.md).
+  The TEST harness uses the merchant-specific bank-hosted NestPay flow confirmed by Banca Intesa: `storetype=3d_pay_hosting`, with neither `instalment` nor `CallbackURL` in the 3D POST. Card data is entered only on the bank page. The backend retains the documented CC5 API Auth handling for returned 3D values. Production is hard-disabled; see [the payment architecture notes](docs/payments/chip-card-architecture.md).

@@ -20,6 +20,6 @@ export function validateCheckout(input) {
       new Set(items.map((item) => item.product)).size !== items.length || !result.firstName || !result.lastName ||
       !result.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email) || !result.phone ||
       !result.street || !result.city || !result.postalCode || !['courier', 'pickup'].includes(result.deliveryMethod) ||
-      ![1, 3, 6, 9, 12].includes(installmentCount) || !result.termsAccepted) throw new Error('INVALID_CHECKOUT');
+      installmentCount !== 1 || !result.termsAccepted) throw new Error('INVALID_CHECKOUT');
   return result;
 }

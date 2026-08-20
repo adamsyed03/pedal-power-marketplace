@@ -1,11 +1,12 @@
 # NestPay implementation status
 
 > The TEST 3D+API implementation follows the supplied Banca Intesa technical
-> documentation (see `docs/payments/chip-card-architecture.md`). `storetype` is
-> `3d_pay`, matching the merchant-specific 3D Pay + API setup and supplied
-> implementation examples. The merchant backend sends the CC5 API Auth with
-> `md`/`eci`/`xid`/`cavv`. A conflicting merchant-support routing instruction
-> remains a gate for live execution.
+> documentation and Marina Marković's merchant-specific clarification (see
+> `docs/payments/chip-card-architecture.md`). The 3D POST uses
+> `storetype=3d_pay_hosting`, omits `instalment` and `CallbackURL`, and sends no
+> card data from Pogon. The customer enters card data on the bank-hosted page.
+> The merchant backend retains the documented CC5 API Auth handling for
+> returned `md`/`eci`/`xid`/`cavv` values.
 
 ## Project audit
 
@@ -26,6 +27,10 @@
 - Cryptographically random immutable order IDs.
 - Supabase order schema with payment states and no card-data columns.
 - TEST/production endpoint separation guards.
+- Bank-hosted card entry; Pogon browser and server code do not collect PAN,
+  CVV or expiry.
+- Merchant-specific `3d_pay_hosting` request with `instalment` and
+  `CallbackURL` absent from the POST.
 - Hash v2 selected per direct Banca Intesa instruction.
 - SMS/immediate Sale selected; DMS is not enabled.
 - Documented Hash v2 request generation and response-hash verification.

@@ -12,8 +12,9 @@ Chip Card API, SDK, endpoint or runtime protocol, and the bank's integration gui
 v3.0 - BIB (1).pdf`) describes the merchant/IPSP communicating **directly with
 NestPay**:
 
-1. Browser POST of card + transaction fields to the NestPay 3D gateway
-   (`https://testsecurepay.eway2pay.com/fim/est3dgate` in TEST).
+1. Browser POST of signed transaction fields to the NestPay 3D gateway
+   (`https://testsecurepay.eway2pay.com/fim/est3dgate` in TEST), followed by
+   card entry on the bank-hosted page.
 2. NestPay returns the 3-D Secure result (`md`, `eci`, `xid`, `cavv`,
    `mdStatus`) to the merchant callback.
 3. Merchant backend sends the `CC5Request` API Auth
@@ -24,10 +25,9 @@ NestPay**:
 The TEST implementation follows the supplied NestPay manuals directly; see
 `NESTPAY_IMPLEMENTATION.md`. It is hard-disabled outside `NESTPAY_ENV=test`.
 
-An earlier merchant-specific support reply explicitly said: "Obzirom da radite
-preko Chip Carda potrebno je da se redirektujete na stranicu Chip Carda" and
-said the bank page being used was intended for 3D Pay Hosting. This conflicts
-with the direct technical-manual flow and cannot honestly be reclassified as
-an administrative-only statement. The code can be completed and tested
-locally, but no live TC01 should be submitted until that routing conflict is
-resolved in writing.
+The earlier routing ambiguity is now resolved by Banca Intesa's later explicit
+merchant-specific instruction from Marina Marković: use
+`storetype=3d_pay_hosting`; the 3D POST must contain neither `instalment` nor
+`CallbackURL`. No separate Chip Card endpoint or request schema was supplied,
+so the runtime remains the documented NestPay TEST endpoint with bank-hosted
+card entry.

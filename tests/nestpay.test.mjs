@@ -54,35 +54,36 @@ test('request hash follows the Banca Intesa Hash v2 plaintext with empty instalm
   assert.equal(create3DRequestHash(fields, 'key'), createHash('sha512').update(plain, 'latin1').digest('base64'));
 });
 
-test('3D form fields use storetype 3d_pay, 20-char rnd, RSD 941, and a matching hash', () => {
+test('hosted 3D form uses the exact merchant-specific field set and a matching hash', () => {
   const { gateUrl, fields } = create3DFormFields({
     orderId: 'PGN-2026-AB12', amountRsd: 138_500, installmentCount: 1,
     okUrl: 'https://ridepogon.com/api/nestpay/callback?rt=t', failUrl: 'https://ridepogon.com/api/nestpay/callback?rt=t',
   }, testEnv);
   assert.equal(gateUrl, 'https://testsecurepay.eway2pay.com/fim/est3dgate');
-  assert.equal(fields.storetype, '3d_pay');
+  assert.equal(fields.storetype, '3d_pay_hosting');
   assert.equal(fields.trantype, 'Auth');
   assert.equal(fields.currency, '941');
-  assert.equal(fields.instalment, '');
+  assert.equal(Object.hasOwn(fields, 'instalment'), false);
+  assert.equal(Object.keys(fields).some((name) => name.toLowerCase() === 'callbackurl'), false);
   assert.equal(fields.amount, '138500');
   assert.equal(fields.hashAlgorithm, 'ver2');
   assert.equal(fields.lang, 'tr');
   assert.equal(fields.rnd.length, 20);
   assert.deepEqual(Object.keys(fields).sort(), [
     'amount', 'clientid', 'currency', 'failUrl', 'hash', 'hashAlgorithm',
-    'instalment', 'lang', 'oid', 'okUrl', 'rnd', 'storetype', 'trantype',
+    'lang', 'oid', 'okUrl', 'rnd', 'storetype', 'trantype',
   ]);
   assert.equal(fields.hash, create3DRequestHash({
     clientid: fields.clientid, oid: fields.oid, amount: fields.amount,
     okUrl: fields.okUrl, failUrl: fields.failUrl, tranType: fields.trantype,
-    instalment: fields.instalment, rnd: fields.rnd, currency: fields.currency,
+    instalment: '', rnd: fields.rnd, currency: fields.currency,
   }, testEnv.NESTPAY_STORE_KEY));
 });
 
-test('instalment field carries the count only for real instalment sales', () => {
+test('hosted flow omits instalment and fails closed for unsupported multi-instalment orders', () => {
   const base = { orderId: 'o', amountRsd: 200_000, okUrl: 'https://x/cb', failUrl: 'https://x/cb' };
-  assert.equal(create3DFormFields({ ...base, installmentCount: 3 }, testEnv).fields.instalment, '3');
-  assert.equal(create3DFormFields({ ...base, installmentCount: 1 }, testEnv).fields.instalment, '');
+  assert.equal(Object.hasOwn(create3DFormFields({ ...base, installmentCount: 1 }, testEnv).fields, 'instalment'), false);
+  assert.throws(() => create3DFormFields({ ...base, installmentCount: 3 }, testEnv), /HOSTED_INSTALLMENTS_UNSUPPORTED/);
 });
 
 test('rnd is always exactly 20 characters', () => {
@@ -438,9 +439,10 @@ test('order persistence sends a PENDING order through the server-only database c
   assert.match(captured.url, /\/rest\/v1\/orders$/);
 });
 
-test('checkout validation rejects unsupported installment and accepts configured values', () => {
-  const base = { product: 'glide', quantity: 1, installmentCount: 3, captchaToken: 'a'.repeat(20), termsAccepted: true, deliveryMethod: 'courier', customer: { firstName: 'A', lastName: 'B', email: 'a@b.rs', phone: '12345678', street: 'Ulica 1', city: 'Beograd', postalCode: '11000' } };
-  assert.equal(validateCheckout(base).installmentCount, 3);
+test('hosted checkout validation accepts only an ordinary one-payment order', () => {
+  const base = { product: 'glide', quantity: 1, installmentCount: 1, captchaToken: 'a'.repeat(20), termsAccepted: true, deliveryMethod: 'courier', customer: { firstName: 'A', lastName: 'B', email: 'a@b.rs', phone: '12345678', street: 'Ulica 1', city: 'Beograd', postalCode: '11000' } };
+  assert.equal(validateCheckout(base).installmentCount, 1);
+  assert.throws(() => validateCheckout({ ...base, installmentCount: 3 }), /INVALID_CHECKOUT/);
   assert.throws(() => validateCheckout({ ...base, installmentCount: 2 }), /INVALID_CHECKOUT/);
 });
 
@@ -475,8 +477,8 @@ test('delivery fee is authoritative and unresolved courier has no payable fee', 
   assert.throws(() => resolveDeliveryFee('courier', { COURIER_FIXED_FEE_RSD: '33.5' }), /INVALID/);
 });
 
-test('installment choices are server configurable and bounded to 12', () => {
-  assert.deepEqual(offeredInstallments({ NESTPAY_INSTALLMENTS: '1,3,6,12,24' }), [1, 3, 6, 12]);
+test('hosted checkout offers only ordinary one-payment orders', () => {
+  assert.deepEqual(offeredInstallments({ NESTPAY_INSTALLMENTS: '1,3,6,12' }), [1]);
 });
 
 test('card data echoed in a gateway response is stripped before processing or storage', () => {
@@ -498,7 +500,6 @@ test('callback amount and required 3D Auth fields are validated before API autho
 
 test('official test PAN literals are isolated from production source', () => {
   const productionSources = [
-    '../src/lib/nestpay.ts',
     '../api/_lib/nestpay.mjs',
     '../api/_lib/payment-flow.mjs',
     '../api/checkout/create.ts',
@@ -515,7 +516,11 @@ test('server payment surfaces never receive or persist card data', () => {
   const prepare = readFileSync(new URL('../api/nestpay/prepare.ts', import.meta.url), 'utf8');
   const callback = readFileSync(new URL('../api/nestpay/callback.ts', import.meta.url), 'utf8');
   const flow = readFileSync(new URL('../api/_lib/payment-flow.mjs', import.meta.url), 'utf8');
+  const cardPage = readFileSync(new URL('../src/app/components/CardPayment.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(prepare, /\bpan\b|cv2|ExpDate/);
+  assert.doesNotMatch(cardPage, /\bpan\b|cv2|ExpDate|expMonth|expYear|cardType|isOfficialTestPan|detectCardType/);
+  assert.match(cardPage, /Object\.entries\(prepared\.fields\)/);
+  assert.match(cardPage, /Banca Intesa \/ NestPay/);
   assert.match(callback, /processNestPayReturn/);
   assert.match(flow, /stripSensitiveFields/);
   assert.doesNotMatch(flow, /console\.log/);
@@ -669,7 +674,7 @@ test('customer-facing EPM routes and card-network information links are wired', 
 });
 
 test('browser source and production bundle contain no NestPay server credential names', () => {
-  const browserSources = ['../src/main.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx', '../src/lib/nestpay.ts']
+  const browserSources = ['../src/main.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx']
     .map((path) => readFileSync(new URL(path, import.meta.url), 'utf8')).join('\n');
   assert.doesNotMatch(browserSources, /NESTPAY_STORE_KEY|NESTPAY_API_USERNAME|NESTPAY_API_PASSWORD|VITE_NESTPAY_STORE_KEY/);
 });

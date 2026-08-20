@@ -1,33 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { webcrypto } from 'node:crypto';
-import { detectCardType, isOfficialTestPan, normalizeExpiryMonth, normalizeExpiryYear } from './nestpay';
+import { readFileSync } from 'node:fs';
 
-if (!globalThis.crypto?.subtle) {
-  (globalThis as { crypto: Crypto }).crypto = webcrypto as Crypto;
-}
+const cardPage = readFileSync(new URL('../app/components/CardPayment.tsx', import.meta.url), 'utf8');
+const checkout = readFileSync(new URL('../app/components/Checkout.tsx', import.meta.url), 'utf8');
+const homepage = readFileSync(new URL('../app/App.tsx', import.meta.url), 'utf8');
 
-test('cardType maps only documented brands: Visa=1, MasterCard=2, others omitted', () => {
-  assert.equal(detectCardType(`4${'0'.repeat(15)}`), '1');
-  assert.equal(detectCardType(`54${'0'.repeat(14)}`), '2');
-  assert.equal(detectCardType(`2221${'0'.repeat(11)}9`), '2');
-  assert.equal(detectCardType(`37${'0'.repeat(13)}`), '');
-  assert.equal(detectCardType(`989${'0'.repeat(13)}`), '');
+test('bank-hosted card page submits only server-prepared transaction fields', () => {
+  assert.match(cardPage, /Object\.entries\(prepared\.fields\)/);
+  assert.match(cardPage, /Banca Intesa \/ NestPay/);
+  assert.match(cardPage, /Podatke kartice unosite isključivo tamo/);
+  assert.doesNotMatch(cardPage, /\bpan\b|cv2|ExpDate|expMonth|expYear|cardType|isOfficialTestPan|detectCardType/i);
+  assert.doesNotMatch(cardPage, /\.append\(['"](?:pan|cv2|cardType)/i);
 });
 
-test('expiry month is two digits and expiry year is four digits', () => {
-  assert.equal(normalizeExpiryMonth('1'), '01');
-  assert.equal(normalizeExpiryMonth('12'), '12');
-  assert.equal(normalizeExpiryMonth('13'), '');
-  assert.equal(normalizeExpiryYear('26'), '2026');
-  assert.equal(normalizeExpiryYear('2030'), '2030');
-  assert.equal(normalizeExpiryYear('3'), '');
+test('checkout is fail-closed to the one-payment hosted flow', () => {
+  assert.match(checkout, /installmentCount:\s*1/);
+  assert.match(checkout, /Jednokratno plaćanje/);
+  assert.doesNotMatch(checkout, /installmentOptions|setInstallments/);
 });
 
-// Official test PANs are never committed; positive matches are exercised at
-// runtime by the TC01 harness against the workbook cards.
-test('TEST mode rejects non-official cards, so production cards are unusable', async () => {
-  assert.equal(await isOfficialTestPan(`4${'1'.repeat(15)}`), false);
-  assert.equal(await isOfficialTestPan('42'.repeat(8)), false);
-  assert.equal(await isOfficialTestPan(''), false);
+test('homepage does not advertise unavailable installment options', () => {
+  assert.doesNotMatch(homepage, /monthlyPrice|perMonth|12 rata|Fleksibilna rata|Flexible installment|Гибкая рассрочка/);
 });

@@ -17,7 +17,6 @@ import { formatRsd, products, ProductKey } from '../../lib/products';
 import { PaymentBranding } from './PaymentBranding';
 import { Turnstile } from './Turnstile';
 
-const installmentOptions = [1, 3, 6, 9, 12];
 const fieldClassName = 'min-h-13 w-full rounded-2xl border border-black/10 bg-[#f8f7f3] px-4 text-[15px] outline-none transition placeholder:text-black/30 hover:border-black/20 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10';
 
 const fields = [
@@ -46,7 +45,6 @@ export function Checkout() {
   const requestedModel = new URLSearchParams(window.location.search).get('model')?.toLowerCase();
   const model = products.some((entry) => entry.key === requestedModel) ? requestedModel as ProductKey : null;
   const [items, setItems] = useState<{ product: ProductKey; quantity: number }[]>(model ? [{ product: model, quantity: 1 }] : []);
-  const [installments, setInstallments] = useState(1);
   const [deliveryMethod, setDeliveryMethod] = useState<'courier' | 'pickup'>('courier');
   const [accepted, setAccepted] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
@@ -69,7 +67,7 @@ export function Checkout() {
     const form = new FormData(event.currentTarget);
     const payload = {
       items,
-      installmentCount: installments,
+      installmentCount: 1,
       customer: {
         firstName: form.get('firstName'),
         lastName: form.get('lastName'),
@@ -199,15 +197,8 @@ export function Checkout() {
               </div>}
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-400" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-white/45">Izaberi broj rata</p></div></div>
-                <div className="mt-4 grid grid-cols-5 gap-1.5">
-                  {installmentOptions.map((count) => (
-                    <button key={count} type="button" onClick={() => setInstallments(count)} aria-pressed={installments === count} className={`rounded-xl px-1 py-2.5 text-xs font-black transition ${installments === count ? 'bg-orange-500 text-black' : 'bg-white/[0.07] text-white/65 hover:bg-white/15'}`}>
-                      {count === 1 ? '1×' : `${count}×`}
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-3 text-xs leading-5 text-white/40">Dostupnost rata zavisi od kartice i banke izdavaoca.</p>
+                <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-400" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-white/45">Jednokratno plaćanje</p></div></div>
+                <p className="mt-3 text-xs leading-5 text-white/40">Nakon potvrde bićete preusmereni na zaštićenu Banca Intesa / NestPay stranicu za unos kartice.</p>
               </div>
 
               <PaymentBranding dark compact />

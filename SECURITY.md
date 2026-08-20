@@ -1,13 +1,12 @@
 # Payment security boundary
 
-## Responsibility model (3D+API, merchant-hosted card page)
+## Responsibility model (3D+API, bank-hosted card page)
 
-Banca Intesa configured merchant `13IN004634` as **3D Pay + API** with the
-merchant/IPSP integrating directly with NestPay (see
-`docs/payments/chip-card-architecture.md`). In this model the card-entry page
-is hosted by the merchant: `/payment/card` renders the card fields and the
-browser POSTs card + transaction fields **directly to the NestPay gateway**.
-Card data never transits or reaches Pogon servers.
+Banca Intesa configured merchant `13IN004634` for its bank-hosted NestPay flow
+(see `docs/payments/chip-card-architecture.md`). `/payment/card` contains no
+card fields: the browser POSTs only server-prepared non-card transaction fields
+to NestPay, and the customer enters card data on the bank-hosted page. Card
+data never reaches Pogon browser logic or servers.
 
 Hard rules enforced in code and tests:
 
@@ -29,9 +28,8 @@ Hard rules enforced in code and tests:
 - Ambiguous outcomes (timeouts, transport errors) stay `UNKNOWN` and are
   resolved only through the documented Order Status query — a Sale is never
   retried blindly.
-- In TEST mode the card page accepts only the official Banca Intesa test cards
-  (digest allowlist), so production cards cannot be used against the TEST
-  gateway.
+- In TEST mode the gateway is pinned to Banca Intesa's TEST endpoint. Test
+  operators must enter only the official workbook cards on the bank page.
 - `NESTPAY_ENV=test` pins the TEST endpoints; mixing TEST and production URLs
   fails closed (`NESTPAY_ENDPOINT_ENV_MISMATCH`). Production stays disabled
   until the bank issues production parameters after EPM inspection.

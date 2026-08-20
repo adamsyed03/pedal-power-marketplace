@@ -7,9 +7,9 @@ export function resolveDeliveryFee(method, env = process.env) {
   return { exact: true, feeRsd: fee, source: 'fixed_server_config' };
 }
 
-export function offeredInstallments(env = process.env) {
-  const values = String(env.NESTPAY_INSTALLMENTS || '1,3,6,9,12').split(',').map(Number);
-  const clean = [...new Set(values.filter((value) => Number.isSafeInteger(value) && value >= 1 && value <= 12))];
-  if (!clean.includes(1)) clean.unshift(1);
-  return clean;
+export function offeredInstallments() {
+  // The merchant-specific hosted 3D request must omit instalment. Until the
+  // bank documents how hosted instalments are selected and bound to the API
+  // authorization, accept only ordinary one-payment orders.
+  return [1];
 }

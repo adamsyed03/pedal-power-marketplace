@@ -44,7 +44,6 @@ const homeCopyEn = {
   clickSpecs: 'Click for specs',
   close: 'Close',
   clickHide: 'Tap again to hide',
-  perMonth: 'per month',
   customerReviews: 'Voices of Our Riders',
 };
 
@@ -78,7 +77,6 @@ const homeCopySr = {
   clickSpecs: 'Kliknite za specifikacije',
   close: 'Zatvori',
   clickHide: 'Kliknite ponovo da sakrijete',
-  perMonth: 'mesečno (do 12 rata)',
   customerReviews: 'Glasovi Naših Vozača',
 };
 
@@ -112,7 +110,6 @@ const homeCopyRu = {
   clickSpecs: 'Нажми, чтобы увидеть характеристики',
   close: 'Закрыть',
   clickHide: 'Нажми ещё раз, чтобы скрыть',
-  perMonth: 'в месяц',
   customerReviews: 'Отзывы наших райдеров',
 };
 
@@ -170,45 +167,6 @@ function ScrollColorSentence({ text }: { text: string }) {
         ))}
       </p>
     </div>
-  );
-}
-
-function CircledMonthlyPrice({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start 92%', 'start 36%'],
-  });
-  const pathLength = useTransform(scrollYProgress, [0, 0.34, 0.72, 1], [0, 1, 1, 0]);
-  const opacity = useTransform(scrollYProgress, [0, 0.08, 0.82, 1], [0, 1, 1, 0]);
-
-  return (
-    <span ref={ref} className={`relative isolate inline-flex items-baseline ${className}`}>
-      <span className="relative z-10">{children}</span>
-      <motion.svg
-        aria-hidden="true"
-        viewBox="0 0 220 76"
-        preserveAspectRatio="none"
-        className="pointer-events-none absolute -inset-x-3 -inset-y-2 z-0 h-[calc(100%+1rem)] w-[calc(100%+1.5rem)] overflow-visible text-orange-500"
-        style={{ opacity }}
-      >
-        <motion.path
-          d="M 208 39 C 205 10, 158 3, 99 6 C 41 7, 9 17, 8 39 C 7 62, 53 71, 111 69 C 172 68, 211 60, 208 36"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ pathLength }}
-        />
-      </motion.svg>
-    </span>
   );
 }
 
@@ -323,7 +281,7 @@ export default function App() {
           { title: '2 Godine Garancije', body: 'Proširena garancija na sve komponente i besplatni servis prve godine' },
           { title: 'Test Vožnja', body: 'Zakažite besplatnu test vožnju u našim salonima u Beogradu i Novom Sadu' },
         ],
-        ctaBullets: ['GPS sigurnosni sistemi', '2 godine garancije', 'Fleksibilna rata'],
+        ctaBullets: ['GPS sigurnosni sistemi', '2 godine garancije', 'Transparentna cena'],
         footerBody: 'Lideri u premium električnim biciklima. Transformišemo urbanu mobilnost jednu vožnju po vožnju.',
         footerProducts: 'Proizvodi',
         footerCompare: 'Uporedi Modele',
@@ -353,7 +311,7 @@ export default function App() {
           { title: '2-Year Warranty', body: 'Extended warranty on all components and free service in the first year' },
           { title: 'Test Ride', body: 'Book a free test ride in our showrooms in Belgrade and Novi Sad' },
         ],
-        ctaBullets: ['GPS security systems', '2-year warranty', 'Flexible installment'],
+        ctaBullets: ['GPS security systems', '2-year warranty', 'Transparent pricing'],
         footerBody: 'Leaders in premium electric bikes. Transforming urban mobility one ride at a time.',
         footerProducts: 'Products',
         footerCompare: 'Compare Models',
@@ -383,7 +341,7 @@ export default function App() {
           { title: 'Гарантия 2 года', body: 'Расширенная гарантия на все компоненты и бесплатный сервис в первый год' },
           { title: 'Тест-драйв', body: 'Запишись на бесплатный тест-драйв в наших шоурумах в Белграде и Нови-Саде' },
         ],
-        ctaBullets: ['GPS-системы безопасности', 'Гарантия 2 года', 'Гибкая рассрочка'],
+        ctaBullets: ['GPS-системы безопасности', 'Гарантия 2 года', 'Прозрачная цена'],
         footerBody: 'Лидеры в премиальных электровелосипедах. Меняем городскую мобильность, поездка за поездкой.',
         footerProducts: 'Продукты',
         footerCompare: 'Сравнить модели',
@@ -798,7 +756,6 @@ export default function App() {
         { src: publicAsset('Glide 4.jpg'), alt: 'Pogon Glide product photo 4' },
       ],
       description: copy.glideDescription,
-      monthlyPrice: '16,500 RSD',
       price: '165,000 RSD',
       mobileSpecs: { range: '90 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
@@ -841,7 +798,6 @@ export default function App() {
         { src: publicAsset('Cargo 2.jpg'), alt: 'Pogon Core product photo 2' },
       ],
       description: copy.coreDescription,
-      monthlyPrice: '13,500 RSD',
       price: '135,000 RSD',
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
@@ -885,7 +841,6 @@ export default function App() {
         { src: publicAsset('Core 3.jpg'), alt: 'Pogon Cargo product photo 3' },
       ],
       description: copy.cargoDescription,
-      monthlyPrice: '13,000 RSD',
       price: '130,000 RSD',
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
@@ -1488,11 +1443,7 @@ export default function App() {
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3.5 pb-3 pt-12 text-white lg:hidden">
                       <div className="max-w-[78%] text-left">
                         <div className="text-xl font-black leading-none drop-shadow-md">{model.name}</div>
-                        <div className="mt-1.5 flex items-baseline gap-2">
-                          <CircledMonthlyPrice className="text-xs font-bold leading-none tracking-tight drop-shadow-md">{model.monthlyPrice}</CircledMonthlyPrice>
-                        </div>
-                        <div className="mt-1 text-[0.55rem] font-bold uppercase tracking-[0.18em] text-white/70">{copy.perMonth}</div>
-                        <div className="mt-0.5 flex items-center gap-1.5 text-white/65">
+                        <div className="mt-2 flex items-center gap-1.5 text-white/65">
                           <span className="text-2xl font-black leading-none tracking-tight text-white drop-shadow-md">{model.price}</span>
                         </div>
                       </div>
@@ -1558,10 +1509,6 @@ export default function App() {
                     ))}
                   </div>
                   <div className={`pt-2 lg:pt-4 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
-                    <div className={`hidden lg:flex items-baseline gap-3 mb-1 ${model.isFeatured ? 'text-primary-foreground' : ''}`}>
-                      <CircledMonthlyPrice className="text-sm font-bold">{model.monthlyPrice}</CircledMonthlyPrice>
-                    </div>
-                    <div className={`hidden lg:block text-[0.65rem] uppercase tracking-wider mb-1.5 ${model.isFeatured ? 'text-white/80' : 'text-foreground/50'}`}>{copy.perMonth}</div>
                     <div className={`mb-3 hidden items-center gap-2 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
                       <span className="text-4xl font-black tracking-tight">{model.price}</span>
                     </div>
@@ -1653,7 +1600,7 @@ export default function App() {
                 { icon: Timer, stat: '150 sati godišnje', title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
                 { icon: Sparkles, stat: '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
                 { icon: Cpu, stat: 'GPS', title: tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
-                { icon: WalletCards, stat: tr({ sr: 'Skoro besplatno', en: 'More or less free', ru: 'Почти бесплатно' }), title: tr({ sr: 'Cena i rate', en: 'Price & installments', ru: 'Цена и рассрочка' }), body: tr({ sr: 'Mesečna rata može biti manja od onoga što već trošiš na gorivo. Pogon se praktično sam otplaćuje.', en: 'A monthly installment can cost less than what you already spend on fuel. Pogon can virtually pay for itself.', ru: 'Ежемесячный платёж может быть меньше нынешних расходов на топливо. Pogon практически окупает себя сам.' }) },
+                { icon: WalletCards, stat: tr({ sr: 'Jasna cena', en: 'Clear price', ru: 'Понятная цена' }), title: tr({ sr: 'Cena i vrednost', en: 'Price & value', ru: 'Цена и ценность' }), body: tr({ sr: 'Cena proizvoda, dostava i ukupan iznos jasno su prikazani pre plaćanja, bez skrivenih troškova.', en: 'The product price, delivery and total are shown clearly before payment, with no hidden costs.', ru: 'Цена товара, доставка и итоговая сумма ясно указаны до оплаты, без скрытых расходов.' }) },
                 { icon: Headphones, stat: '2× zaštita', title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
               ].map(({ icon: Icon, stat, title, body }, index) => (
                 <motion.li key={title} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} transition={{ duration: 0.4, delay: index * 0.04 }} className="group grid grid-cols-[2rem_1fr_auto] items-start gap-3 border-b border-white/15 py-4 sm:grid-cols-[2.5rem_0.6fr_1.4fr] sm:gap-4 sm:py-5">
@@ -2078,7 +2025,7 @@ export default function App() {
                 { icon: Timer, stat: '150 sati godišnje', title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
                 { icon: Sparkles, stat: '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
                 { icon: Cpu, stat: 'GPS', title: tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
-                { icon: WalletCards, stat: tr({ sr: 'Skoro besplatno', en: 'More or less free', ru: 'Почти бесплатно' }), title: tr({ sr: 'Cena i rate', en: 'Price & installments', ru: 'Цена и рассрочка' }), body: tr({ sr: 'Mesečna rata može biti manja od onoga što već trošiš na gorivo. Pogon se praktično sam otplaćuje.', en: 'A monthly installment can cost less than what you already spend on fuel. Pogon can virtually pay for itself.', ru: 'Ежемесячный платёж может быть меньше нынешних расходов на топливо. Pogon практически окупает себя сам.' }) },
+                { icon: WalletCards, stat: tr({ sr: 'Jasna cena', en: 'Clear price', ru: 'Понятная цена' }), title: tr({ sr: 'Cena i vrednost', en: 'Price & value', ru: 'Цена и ценность' }), body: tr({ sr: 'Cena proizvoda, dostava i ukupan iznos jasno su prikazani pre plaćanja, bez skrivenih troškova.', en: 'The product price, delivery and total are shown clearly before payment, with no hidden costs.', ru: 'Цена товара, доставка и итоговая сумма ясно указаны до оплаты, без скрытых расходов.' }) },
                 { icon: Headphones, stat: '2× zaštita', title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
               ].map(({ icon: Icon, stat, title, body }, index) => (
                 <motion.li

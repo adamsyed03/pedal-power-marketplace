@@ -1,8 +1,8 @@
 # Banca Intesa official TEST execution plan
 
-> Executable now: payments run through the merchant-hosted card page
-> (`/payment/card`) → NestPay TEST 3D gateway → server-side API Auth, per the
-> supplied Banca Intesa 3D+API documentation.
+> Executable now: ordinary one-payment orders run through Pogon's redirect page
+> (`/payment/card`) → the bank-hosted NestPay TEST card page → server-side API
+> Auth, using Banca Intesa's merchant-specific `3d_pay_hosting` contract.
 
 ## Scope and official sources
 
@@ -43,6 +43,11 @@ The workbook represents TC36's minimum as `XX`; it does not provide the actual
 threshold. The operator must obtain the applicable minimum from Banca Intesa
 and use an order total strictly above it.
 
+Marina Marković has explicitly instructed Pogon not to send `instalment` in
+the hosted 3D POST. Consequently TC36 is blocked and the checkout is fail-closed
+to one payment until the bank documents where three instalments are selected
+in the hosted flow and how that selection is bound to the later authorization.
+
 ## Card selection and required coverage
 
 The workbook requires official test cards but does not map a particular card
@@ -81,8 +86,9 @@ Record these non-sensitive values in the operator's evidence sheet:
 1. Confirm TEST mode (`NESTPAY_ENV=test`) and that `/api/nestpay/prepare`
    returns the TEST gateway URL.
 2. Use the bank-confirmed Visa or Mastercard test-card category from `Testne
-   kartice`; enter card data only on the merchant TEST card page
-   (`/payment/card`). The workbook itself does not select the category.
+   kartice`; enter card data only after the redirect, on the bank-hosted NestPay
+   TEST page. Pogon's `/payment/card` page contains no card inputs. The workbook
+   itself does not select the category.
 3. Create a fresh Pogon checkout and record its unique Order ID, exact RSD
    amount and instalment count `1`.
 4. Submit once from the payment page. Do not retry after a timeout.
@@ -131,19 +137,15 @@ Record these non-sensitive values in the operator's evidence sheet:
 
 ## TC36 — successful SMS authorization with 3 instalments
 
-1. Obtain the actual minimum eligible amount and installment-card eligibility
-   from Banca Intesa. Stop if either is unknown.
-2. Create a fresh order whose exact server-authoritative total is above that
-   minimum and record its unique Order ID.
-3. Select instalment count `3`.
-4. Use the appropriate official workbook card only on the licensed TEST payment
-   page. Repeat for each brand the bank confirms as installment-eligible.
-5. Expected gateway result: `Approved`.
-6. Expected Pogon state: `PAID` only after a verified terminal result; ambiguous
-   results remain `UNKNOWN` and must be reconciled before any retry.
-7. Confirm Merchant Center shows the exact Order ID, amount, brand and
-   instalment count `3`.
-8. Preserve safe masked evidence and the actual minimum used for the run.
+1. Do not execute TC36 with the current flow. The bank has prohibited the
+   `instalment` parameter in Pogon's hosted 3D POST.
+2. Obtain the actual minimum, eligible card category, and the exact documented
+   hosted-page procedure for selecting three instalments from Banca Intesa.
+3. Only after written clarification, implement and review that separate flow;
+   never infer it or re-add `instalment` to the initial POST.
+4. Once enabled, retain the existing requirements: a fresh Order ID, verified
+   terminal `PAID`, Merchant Center confirmation of three instalments, and safe
+   masked evidence.
 
 ## Timeout and retry rule
 
@@ -182,7 +184,8 @@ after the bank supplies access.
    generic test-card sheet.
 2. Confirm TC02 was performed against TC01 on the same business day.
 3. Confirm TC04 was performed against TC03.
-4. Confirm TC36 used three instalments and an amount above the real minimum.
+4. After the bank enables and documents TC36, confirm it used three instalments
+   and an amount above the real minimum.
 5. Export the official TEST results from Merchant Center following the supplied
    example workbook.
 6. Review the export for unnecessary sensitive data before distributing it.

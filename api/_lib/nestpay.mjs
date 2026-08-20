@@ -148,14 +148,18 @@ export function generateRnd() {
   return Array.from(randomBytes(20), (byte) => alphabet[byte % alphabet.length]).join('');
 }
 
-// Exact non-card hidden-field set for the browser POST to est3dgate. The
-// merchant-specific setup and supplied implementation examples use 3d_pay;
+// Exact non-card hidden-field set for the browser POST to est3dgate. Banca
+// Intesa confirmed this merchant uses the bank-hosted 3D page and requires
+// storetype=3d_pay_hosting. The POST must omit both instalment and CallbackURL;
 // storetype is not part of the Hash v2 input.
 export function create3DFormFields({ orderId, amountRsd, installmentCount, okUrl, failUrl }, env = process.env) {
   const config = getNestPayConfig(env);
   const amount = String(amountRsd);
   if (!/^\d+(\.\d{1,2})?$/.test(amount)) throw new Error('INVALID_AMOUNT');
-  const instalment = Number(installmentCount) > 1 ? String(installmentCount) : '';
+  if (Number(installmentCount) !== 1) throw new Error('HOSTED_INSTALLMENTS_UNSUPPORTED');
+  // The merchant-specific POST omits instalment, while Marina's supplied
+  // Hash Ver2 formula still contains its empty positional slot after Auth.
+  const instalment = '';
   const rnd = generateRnd();
   const hash = create3DRequestHash(
     { clientid: config.merchantId, oid: orderId, amount, okUrl, failUrl, tranType: 'Auth', instalment, rnd, currency: '941' },
@@ -164,8 +168,8 @@ export function create3DFormFields({ orderId, amountRsd, installmentCount, okUrl
   return {
     gateUrl: config.url3d,
     fields: {
-      clientid: config.merchantId, storetype: '3d_pay', trantype: 'Auth',
-      amount, currency: '941', instalment, oid: orderId,
+      clientid: config.merchantId, storetype: '3d_pay_hosting', trantype: 'Auth',
+      amount, currency: '941', oid: orderId,
       okUrl, failUrl, lang: 'tr', rnd, hashAlgorithm: 'ver2', hash,
     },
   };

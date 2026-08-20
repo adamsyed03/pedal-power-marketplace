@@ -2,9 +2,9 @@ import { hashLookupToken, rateLimit, requestIp } from '../_lib/security.mjs';
 import { findOrderByLookup } from '../_lib/supabase.mjs';
 import { prepare3DPayment } from '../_lib/payment-flow.mjs';
 
-// Returns the server-authoritative hidden fields (including the Hash v2) for
-// the browser's card form POST to the NestPay TEST 3D gateway. Card data never
-// touches this endpoint; the StoreKey never leaves the server.
+// Returns the server-authoritative hidden fields (including Hash v2) for the
+// browser redirect to the NestPay TEST bank-hosted card page. Card data never
+// touches Pogon; the StoreKey never leaves the server.
 export default async function handler(request: any, response: any) {
   response.setHeader('Cache-Control', 'no-store');
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method not allowed.' });
