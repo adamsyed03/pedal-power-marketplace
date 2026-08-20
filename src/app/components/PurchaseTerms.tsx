@@ -4,7 +4,7 @@ export function PurchaseTerms() {
       <article className="mx-auto max-w-3xl rounded-3xl bg-white p-7 shadow-sm sm:p-10">
         <a href="/" className="text-sm font-bold text-black/50">← Pogon</a>
         <h1 className="mt-6 text-4xl font-black tracking-tight">Uslovi kupovine i dostave</h1>
-        <p className="mt-4 text-sm text-black/55">Pogon Mobility d.o.o. · Temišvarska 25B, Beograd · PIB 115472260 · MB 22162721 · šifra delatnosti 4690</p>
+        <p className="mt-4 text-sm text-black/55">Pogon Mobility d.o.o. · Temišvarska 25B, Beograd · PIB 115472260 · MB 22162721 · nespecijalizovana trgovina na veliko · šifra delatnosti 4690</p>
 
         <h2 className="mt-10 text-2xl font-black">Cene i PDV</h2>
         <p className="mt-3 leading-7 text-black/70">
@@ -24,6 +24,11 @@ export function PurchaseTerms() {
         <p className="mt-3 leading-7 text-black/70">
           Dostava je dostupna na teritoriji cele Srbije. Očekivani rok dostave je 1–3 radna
           dana, pod uslovom da je izabrani model na stanju.
+        </p>
+        <p className="mt-3 leading-7 text-black/70">
+          Porudžbine putem ove prodavnice isporučuju se isključivo u Republici Srbiji.
+          Međunarodna dostava i izvoz nisu dostupni, pa se na ove porudžbine ne primenjuju
+          carinski ni uvozni troškovi.
         </p>
         <p className="mt-3 leading-7 text-black/70">
           Kurirska dostava naplaćuje se 3.500 RSD po porudžbini i nije uključena u
@@ -56,7 +61,7 @@ export function PurchaseTerms() {
         <h2 className="mt-8 text-2xl font-black">Pravo na odustanak od ugovora</h2>
         <div className="mt-3 space-y-3 leading-7 text-black/70">
           <p>Potrošač koji zaključi ugovor na daljinu putem internet prodavnice može odustati u roku od 14 dana od dana kada roba dospe u njegovu državinu, odnosno državinu trećeg lica koje je odredio, a koje nije prevoznik, osim kada zakon isključuje ovo pravo. Kupac nije dužan da navede razlog.</p>
-          <p>Jasna izjava o odustanku šalje se na <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a>. Pogon će omogućiti i zakonom propisani obrazac.</p>
+          <p>Jasna izjava o odustanku šalje se na <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a>. Kupac može koristiti i <a className="font-bold underline" href="#obrazac-za-odustanak">obrazac za odustanak</a> dostupan na ovoj stranici.</p>
           <p>Roba se vraća bez nepotrebnog odlaganja, najkasnije 14 dana od slanja izjave. Kod običnog odustanka bez nesaobraznosti direktne troškove vraćanja snosi kupac, osim ako Pogon izričito prihvati te troškove.</p>
           <p>Kupac odgovara za umanjenje vrednosti nastalo rukovanjem koje prevazilazi proveru prirode, karakteristika i funkcionalnosti proizvoda. Originalna ambalaža nije bezuslovno obavezna. Zakonski izuzeci primenjuju se kada su ispunjeni propisani uslovi.</p>
         </div>
@@ -67,7 +72,7 @@ export function PurchaseTerms() {
         <h2 className="mt-8 text-2xl font-black">Povraćaj sredstava</h2>
         <div className="mt-3 space-y-3 leading-7 text-black/70">
           <p>Pogon vrši povraćaj u rokovima propisanim važećim propisima Republike Srbije. Kod odustanka od ugovora na daljinu, povraćaj se vrši u zakonskom roku, uz pravo trgovca da, kada je dozvoljeno, sačeka prijem robe ili dokaz da je poslata.</p>
-          <p>Povraćaj kartične transakcije obavlja se kroz Banca Intesa/NestPay i, kada je primenljivo, na isto sredstvo plaćanja, prema pravilima banke, kartičnih sistema i propisa.</p>
+          <p>Povraćaj sredstava za robu plaćenu karticom vrši se isključivo preko Banca Intesa/NestPay sistema, storniranjem ili refundacijom originalne kartične transakcije na račun kartice kojom je plaćeno. Gotovinski povraćaj i uplata na drugi račun nisu mogući.</p>
           <p>Kod prihvaćene reklamacije zbog nedostatka za koji odgovara prodavac, Pogon snosi dogovoreni trošak povratnog transporta. Vidljivost sredstava nakon pokretanja povraćaja zavisi i od banke izdavaoca i kartičnog sistema.</p>
         </div>
 
@@ -77,6 +82,22 @@ export function PurchaseTerms() {
           <p>Podaci platne kartice ne čuvaju se u Pogon bazi. Lični podaci čuvaju se samo koliko je potrebno za svrhu prikupljanja ili koliko nalažu propisi i obaveze čuvanja dokumentacije. Pristup imaju samo ovlašćena lica i pružaoci usluga kojima su potrebni radi izvršenja usluge.</p>
           <p>Za zahteve u vezi sa podacima: <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a>. Podaci se ne koriste za direktni marketing bez odgovarajućeg pravnog osnova ili potrebne saglasnosti; kupac može zatražiti prestanak marketinških poruka.</p>
         </div>
+
+        <section id="obrazac-za-odustanak" className="mt-10 scroll-mt-6 rounded-2xl border border-black/15 bg-black/[0.025] p-5 sm:p-7">
+          <h2 className="text-2xl font-black">Obrazac za odustanak od ugovora na daljinu</h2>
+          <p className="mt-3 leading-7 text-black/70">Popunjen obrazac pošaljite na <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a> ili na adresu Pogon Mobility d.o.o., Temišvarska 25B, Beograd.</p>
+          <div className="mt-6 space-y-4 text-sm leading-7 text-black/75">
+            <p>Ovim obaveštavam Pogon Mobility d.o.o. da odustajem od ugovora o prodaji sledeće robe:</p>
+            <p>Proizvod/model: ____________________________________________________</p>
+            <p>Broj porudžbine: __________________________________________________</p>
+            <p>Datum naručivanja: __________________ Datum prijema robe: __________________</p>
+            <p>Ime i prezime potrošača: ____________________________________________</p>
+            <p>Adresa potrošača: __________________________________________________</p>
+            <p>Email ili telefon: ___________________________________________________</p>
+            <p>Datum podnošenja: __________________ Potpis (samo za papirni obrazac): __________________</p>
+          </div>
+          <button type="button" onClick={() => window.print()} className="mt-6 rounded-full bg-black px-5 py-3 text-sm font-bold text-white print:hidden">Odštampaj obrazac</button>
+        </section>
         <nav aria-label="Informacije za kupce" className="mt-10 flex flex-wrap gap-x-4 gap-y-2 border-t border-black/10 pt-6 text-sm">
           <a href="/informacije-o-trgovcu" className="font-bold underline">Podaci o trgovcu</a>
           <a href="/kontakt" className="font-bold underline">Kontakt</a>

@@ -9,12 +9,12 @@ const mastercardIdentityCheckUrl = 'https://www.mastercard.rs/sr-rs/korisnici/pr
 function BrandAsset({ src, alt, security = false }: { src: string; alt: string; security?: boolean }) {
   return (
     <span
-      className={`${security ? 'h-14 w-[120px]' : 'h-[56px] w-[90px]'} inline-flex shrink-0 items-center justify-center rounded-lg border border-black/10 bg-white px-3 shadow-sm`}
+      className={`${security ? 'h-14 w-[120px] min-h-[60px] p-0' : 'h-[56px] w-[90px] p-2'} inline-flex shrink-0 items-center justify-center rounded-lg border border-black/10 bg-white shadow-sm`}
     >
       <img
         src={src}
         alt={alt}
-        className={`${security ? 'max-h-10' : 'max-h-8'} max-w-full object-contain`}
+        className={`${security ? 'h-[60px] w-[60px]' : 'h-[40px] w-[74px]'} object-contain`}
         loading="lazy"
         decoding="async"
       />
@@ -32,7 +32,7 @@ export function PaymentBranding({ dark = false, compact = false }: PaymentBrandi
         <img src="/payment-brands/banca-intesa.png" alt="Banca Intesa — Intesa Sanpaolo Group" className="h-auto w-[180px] max-w-full object-contain" />
       </a>
 
-      <div className="mt-5 grid gap-8 xl:grid-cols-2">
+      <div className="mt-5 flex flex-wrap items-start gap-x-60 gap-y-60">
         <div>
           <h3 className={`text-xs font-black uppercase tracking-[0.15em] ${muted}`}>Prihvaćene kartice</h3>
           <div className="mt-3 flex flex-wrap gap-3" role="list" aria-label="Prihvaćene kartice">

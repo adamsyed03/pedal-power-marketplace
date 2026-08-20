@@ -22,7 +22,9 @@ export default async function handler(request: any, response: any) {
         name: order.customer_name,
         email: order.email,
         address: `${order.street}, ${order.postal_code} ${order.city}`,
-        ...(order.delivery_method === 'courier' ? { deliveryAddress: `${order.street}, ${order.postal_code} ${order.city}` } : {}),
+        deliveryAddress: order.delivery_method === 'courier'
+          ? `${order.street}, ${order.postal_code} ${order.city}`
+          : 'Save Maskovica 3, Beograd',
       },
       merchant: publicMerchantData(),
       attemptedAt: order.callback_received_at || order.updated_at,

@@ -29,6 +29,7 @@ export function buildPaymentConfirmation(order, merchant) {
     ...(order.deliveryMethod === 'courier' ? [['Adresa isporuke', `${order.street}, ${order.postalCode} ${order.city}`]] : []),
     ...itemRows,
     ['Proizvodi sa PDV-om', `${order.subtotalRsd ?? items.reduce((sum, item) => sum + (item.lineTotalRsd ?? item.unitPriceRsd * item.quantity), 0)} RSD`],
+    ['PDV / Porez', 'PDV je uračunat u prikazane cene.'],
     ['Dostava', delivery],
     ['Ukupno za plaćanje', order.totalRsd != null ? `${order.totalRsd} RSD` : null],
     ['AuthCode / Autorizacioni kod', unavailable(order.authorizationCode)], ['TransId / Broj transakcije', unavailable(order.nestpayTransactionId)],

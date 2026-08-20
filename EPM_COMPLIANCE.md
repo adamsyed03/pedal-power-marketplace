@@ -7,6 +7,8 @@
 - Checkout displays the bank-requested statement: “Sve cene su sa uračunatim
   PDV-om i nema dodatnih ili skrivenih troškova.”
 - Delivery is available throughout Serbia.
+- Checkout delivery is limited to the Republic of Serbia; international delivery
+  and export are explicitly unavailable, so customs/import charges do not apply.
 - Expected delivery is 1–3 business days when the selected model is in stock.
 - Courier delivery is fixed at 3,500 RSD per order, calculated server-side and
   shown separately before payment. Pickup is 0 RSD.
@@ -21,11 +23,18 @@
   privacy, transaction confidentiality and purchase terms. Checkout and footer
   link to these routes.
 - Visa and Mastercard informational links use the URLs supplied by Banca Intesa.
+- Merchant information includes both activity code 4690 and its plain-language
+  activity, “Nespecijalizovana trgovina na veliko.”
 - The official Banca Intesa logo extracted unchanged from the supplied EPM v3.5
   document is linked on the homepage, checkout, card-entry and payment-security
-  views. The acceptance and 3D Secure groups have separate, dimensioned slots;
-  usable individual bank-supplied Visa, Mastercard, Visa Secure and MC ID Check
-  artwork is still required before those slots can be released as final branding.
+  views. Visa, Mastercard, Visa Secure and MC ID Check artwork files are present.
+  Acceptance marks use equal 74x40-pixel canvases, program marks use equal
+  60x60-pixel canvases, and the groups have the required four-program-mark-width
+  (240-pixel) separation. Final presentation remains subject to bank inspection.
+- Card refunds are disclosed as exclusive refunds of the original card
+  transaction to the card account used for payment; cash or another account is
+  not offered.
+- A print-ready withdrawal form is publicly available from the purchase terms.
 - Payment-result and email templates distinguish the VAT-inclusive product
   subtotal from delivery and include the mandatory customer, order, merchant
   and available non-sensitive transaction fields for PAID and DECLINED results.
@@ -36,10 +45,8 @@
 
 ## OWNER_INPUT_REQUIRED
 
-- Bank inspection/approval and any bank-required brand artwork not already
-  supplied in the project. Specifically: individual official Visa, Mastercard,
-  Visa Secure and MC ID Check logo files. The PDF contains only composite layout
-  examples for these marks, not reusable individual source assets.
+- Bank inspection/approval of the implemented brand presentation and supplied
+  artwork.
 - Verified deployment provider/subprocessor disclosures where required.
 - Actual deployment credentials.
 - Execution and Merchant Center evidence for the official bank test scenarios.

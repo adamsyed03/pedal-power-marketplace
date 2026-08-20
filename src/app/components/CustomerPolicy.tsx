@@ -44,6 +44,7 @@ export function CustomerPolicy({ page }: { page: 'contact' | 'delivery' | 'compl
       <section><h2 className="text-2xl font-black text-black">Kurirska dostava</h2><p className="mt-3">Dostava je dostupna na teritoriji cele Srbije. Za modele koji su na stanju očekivani rok dostave je 1–3 radna dana. Naknada za kurirsku dostavu iznosi 3.500 RSD po porudžbini i prikazuje se u konačnoj specifikaciji pre plaćanja.</p></section>
       <section><h2 className="text-2xl font-black text-black">Lično preuzimanje</h2><p className="mt-3">Lično preuzimanje na adresi Save Maskovica 3, Beograd je bez naknade. Termin se potvrđuje nakon provere dostupnosti modela.</p></section>
       <section><h2 className="text-2xl font-black text-black">Dostupnost robe</h2><p className="mt-3">Rok dostave važi kada je izabrani model na stanju. Ako isporuka nije moguća u očekivanom roku, Pogon kontaktira kupca radi dogovora pre dalje obrade.</p></section>
+      <section><h2 className="text-2xl font-black text-black">Ograničenja dostave</h2><p className="mt-3">Porudžbine putem ove prodavnice isporučuju se isključivo u Republici Srbiji. Međunarodna dostava i izvoz nisu dostupni, pa se na ove porudžbine ne primenjuju carinski ni uvozni troškovi.</p></section>
     </PolicyLayout>
   );
 
@@ -57,7 +58,7 @@ export function CustomerPolicy({ page }: { page: 'contact' | 'delivery' | 'compl
   if (page === 'refunds') return (
     <PolicyLayout title="Povraćaj sredstava">
       <section><h2 className="text-2xl font-black text-black">Odustanak i refundacija</h2><p className="mt-3">Pravila o odustanku od ugovora, reklamacijama i rokovima povraćaja detaljno su navedena u <a className="font-bold underline" href="/uslovi-kupovine">Opštim uslovima kupovine</a>.</p></section>
-      <section><h2 className="text-2xl font-black text-black">Kartično plaćanje</h2><p className="mt-3">Povraćaj kartične transakcije obavlja se kroz Banca Intesa/NestPay i, kada je primenljivo, na isto sredstvo plaćanja, prema pravilima banke, kartičnih sistema i propisa. Vidljivost vraćenih sredstava zavisi i od banke koja je izdala karticu.</p></section>
+      <section><h2 className="text-2xl font-black text-black">Kartično plaćanje</h2><p className="mt-3">Povraćaj sredstava za robu plaćenu karticom vrši se isključivo preko Banca Intesa/NestPay sistema, storniranjem ili refundacijom originalne kartične transakcije na račun kartice kojom je plaćeno. Gotovinski povraćaj i uplata na drugi račun nisu mogući. Vidljivost vraćenih sredstava zavisi i od banke koja je izdala karticu.</p></section>
       <section><h2 className="text-2xl font-black text-black">Zahtev</h2><div className="mt-3"><ContactLinks /></div><p className="mt-3">Uz zahtev navedite broj porudžbine kako bismo mogli da proverimo status kupovine.</p></section>
     </PolicyLayout>
   );

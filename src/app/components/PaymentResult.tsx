@@ -56,6 +56,7 @@ export function PaymentResult() {
               <div className="flex justify-between gap-6"><dt>Broj narudžbine</dt><dd className="break-all text-right font-bold">{order.orderId}</dd></div>
               {(order.items?.length ? order.items : [{ product: order.product, name: order.product, quantity: order.quantity, unitPriceRsd: order.unitPriceRsd, lineTotalRsd: order.unitPriceRsd * order.quantity }]).map((item) => <div key={item.product} className="rounded-xl bg-black/[0.03] p-3"><div className="flex justify-between gap-4"><dt>{item.name}</dt><dd className="font-bold">{item.quantity} × {formatRsd(item.unitPriceRsd)}</dd></div><p className="mt-1 text-right text-black/50">Ukupno: {formatRsd(item.lineTotalRsd)}</p></div>)}
               <div className="flex justify-between gap-6"><dt>Proizvodi sa PDV-om</dt><dd className="font-bold">{formatRsd(order.subtotalRsd ?? order.unitPriceRsd * order.quantity)}</dd></div>
+              <div className="flex justify-between gap-6"><dt>PDV / Porez</dt><dd className="text-right font-bold">PDV je uračunat u prikazane cene.</dd></div>
               <div className="flex justify-between gap-6"><dt>Dostava</dt><dd className="text-right font-bold">{order.deliveryMethod === 'pickup' ? 'Lično preuzimanje — bez naknade' : order.deliveryFeeRsd != null ? formatRsd(order.deliveryFeeRsd) : 'Obračunava se posebno'}</dd></div>
               <div className="flex justify-between gap-6"><dt>Ukupno za plaćanje</dt><dd className="font-bold">{order.totalRsd != null ? formatRsd(order.totalRsd) : 'Nije dostupno'}</dd></div>
               <div className="flex justify-between gap-6"><dt>Broj rata</dt><dd className="font-bold">{order.installmentCount}</dd></div>
@@ -64,7 +65,7 @@ export function PaymentResult() {
               <div className="flex justify-between gap-6"><dt>Ime i prezime</dt><dd className="text-right font-bold">{order.customer.name}</dd></div>
               <div className="flex justify-between gap-6"><dt>Email</dt><dd className="break-all text-right font-bold">{order.customer.email}</dd></div>
               <div className="flex justify-between gap-6"><dt>Adresa kupca</dt><dd className="text-right font-bold">{order.customer.address}</dd></div>
-              {order.customer.deliveryAddress && <div className="flex justify-between gap-6"><dt>Adresa isporuke</dt><dd className="text-right font-bold">{order.customer.deliveryAddress}</dd></div>}
+              {order.customer.deliveryAddress && <div className="flex justify-between gap-6"><dt>{order.deliveryMethod === 'pickup' ? 'Adresa preuzimanja' : 'Adresa isporuke'}</dt><dd className="text-right font-bold">{order.customer.deliveryAddress}</dd></div>}
             </dl></section>
             <section><h2 className="text-lg font-black">Podaci o transakciji</h2><dl className="mt-3 grid gap-3">
               <div className="flex justify-between gap-6"><dt>Autorizacioni kod</dt><dd>{available(order.authCode)}</dd></div>
