@@ -48,6 +48,33 @@ const encodeIso88599 = (text) => Buffer.from(Array.from(String(text), (character
 
 const sha512Base64Iso88599 = (text) => createHash('sha512').update(encodeIso88599(text)).digest('base64');
 
+const SHA512_BASE64 = /^[A-Za-z0-9+/]{86}==$/;
+const SHA512_BASE64_FORM_VALUE = /^[A-Za-z0-9+/ ]{86}==$/;
+
+// Some application/x-www-form-urlencoded decoders turn an unescaped Base64
+// "+" into an ASCII space. Recover only that single transport ambiguity and
+// only for an otherwise canonical 64-byte SHA-512 Base64 value. No other
+// whitespace, URL-safe alphabet, trimming or permissive Base64 decoding is
+// accepted, and the complete cryptographic comparison remains mandatory.
+const normalizeReceivedSha512Base64 = (value) => {
+  if (typeof value !== 'string') return { valid: false, value: '', mode: null };
+  const exact = SHA512_BASE64.test(value);
+  const formEncodedPlus = !exact && value.includes(' ') && SHA512_BASE64_FORM_VALUE.test(value);
+  const normalized = exact ? value : formEncodedPlus ? value.replaceAll(' ', '+') : '';
+  if (!normalized || !SHA512_BASE64.test(normalized)) {
+    return { valid: false, value: '', mode: null };
+  }
+  const decoded = Buffer.from(normalized, 'base64');
+  if (decoded.length !== 64 || decoded.toString('base64') !== normalized) {
+    return { valid: false, value: '', mode: null };
+  }
+  return {
+    valid: true,
+    value: normalized,
+    mode: exact ? 'EXACT' : 'FORM_PLUS_AS_SPACE',
+  };
+};
+
 const normalizeFormScalar = (value) => {
   if (value == null) return { valid: true, value: '', duplicate: false };
   if (typeof value === 'string') return { valid: true, value, duplicate: false };
@@ -171,6 +198,11 @@ export function inspect3DResponseHash(params, storeKey) {
     requiredHashFieldsSigned: false,
     hashParamsValMatch: null,
     hashParamsValFormat: null,
+    receivedHashLength: typeof suppliedHash === 'string' ? suppliedHash.length : null,
+    calculatedHashLength: null,
+    receivedHashHasPlus: typeof suppliedHash === 'string' ? suppliedHash.includes('+') : null,
+    receivedHashHasSpace: typeof suppliedHash === 'string' ? suppliedHash.includes(' ') : null,
+    hashTransportNormalization: null,
     hashValid: false,
     validationStage: 'MISSING_HASH_INPUTS',
   };
@@ -232,8 +264,15 @@ export function inspect3DResponseHash(params, storeKey) {
   result.hashParamsValFormat = matched.format;
 
   const calculatedHash = sha512Base64Iso88599(`${matched.hashPrefix}${escapeHashValue(storeKey)}`);
+  result.calculatedHashLength = calculatedHash.length;
+  const normalizedHash = normalizeReceivedSha512Base64(String(suppliedHash));
+  result.hashTransportNormalization = normalizedHash.mode;
+  if (!normalizedHash.valid) {
+    result.validationStage = 'INVALID_HASH_ENCODING';
+    return result;
+  }
   const left = Buffer.from(calculatedHash);
-  const right = Buffer.from(String(suppliedHash));
+  const right = Buffer.from(normalizedHash.value);
   result.hashValid = left.length === right.length && timingSafeEqual(left, right);
   result.validationStage = result.hashValid ? 'VALID' : 'HASH_MISMATCH';
   return result;

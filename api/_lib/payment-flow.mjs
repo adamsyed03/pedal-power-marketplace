@@ -55,8 +55,20 @@ export function createCallbackDiagnostics(rawParams) {
     REQUIRED_HASH_FIELDS_SIGNED: null,
     HASHPARAMSVAL_MATCH: null,
     HASHPARAMSVAL_FORMAT: null,
+    RECEIVED_HASH_LENGTH: null,
+    CALCULATED_HASH_LENGTH: null,
+    RECEIVED_HASH_HAS_PLUS: null,
+    RECEIVED_HASH_HAS_SPACE: null,
+    HASH_TRANSPORT_NORMALIZATION: null,
     HASH_VALIDATION_STAGE: 'NOT_CHECKED',
     HASH_VALID: null,
+    STOREKEY_STATUS: 'NOT_CHECKED',
+    STOREKEY_LENGTH: null,
+    STOREKEY_HAS_HASH_CHARACTER: null,
+    STOREKEY_HAS_LEADING_WHITESPACE: null,
+    STOREKEY_HAS_TRAILING_WHITESPACE: null,
+    STOREKEY_HAS_NEWLINE: null,
+    STOREKEY_HAS_LITERAL_QUOTES: null,
     CLIENT_ID_MATCH: null,
     ORDER_ID_MATCH: null,
     ORDER_FOUND: null,
@@ -140,6 +152,16 @@ export async function processNestPayReturn(
   // stripped immediately afterward and are never logged or persisted.
   const rawNormalizedParams = normalized.params;
   const params = stripSensitiveFields(rawNormalizedParams);
+  const storeKey = env.NESTPAY_STORE_KEY;
+  diagnostics.STOREKEY_STATUS = typeof storeKey !== 'string'
+    ? 'MISSING' : storeKey.length > 0 ? 'SET' : 'INVALID';
+  diagnostics.STOREKEY_LENGTH = typeof storeKey === 'string' ? storeKey.length : null;
+  diagnostics.STOREKEY_HAS_HASH_CHARACTER = typeof storeKey === 'string' ? storeKey.includes('#') : null;
+  diagnostics.STOREKEY_HAS_LEADING_WHITESPACE = typeof storeKey === 'string' ? /^\s/.test(storeKey) : null;
+  diagnostics.STOREKEY_HAS_TRAILING_WHITESPACE = typeof storeKey === 'string' ? /\s$/.test(storeKey) : null;
+  diagnostics.STOREKEY_HAS_NEWLINE = typeof storeKey === 'string' ? /[\r\n]/.test(storeKey) : null;
+  diagnostics.STOREKEY_HAS_LITERAL_QUOTES = typeof storeKey === 'string'
+    ? (/^"[\s\S]*"$/.test(storeKey) || /^'[\s\S]*'$/.test(storeKey)) : null;
   const config = getNestPayConfig(env);
 
   diagnostics.HASH_CHECK_ATTEMPTED = true;
@@ -159,6 +181,11 @@ export async function processNestPayReturn(
   diagnostics.REQUIRED_HASH_FIELDS_SIGNED = hashInspection.requiredHashFieldsSigned;
   diagnostics.HASHPARAMSVAL_MATCH = hashInspection.hashParamsValMatch;
   diagnostics.HASHPARAMSVAL_FORMAT = hashInspection.hashParamsValFormat;
+  diagnostics.RECEIVED_HASH_LENGTH = hashInspection.receivedHashLength;
+  diagnostics.CALCULATED_HASH_LENGTH = hashInspection.calculatedHashLength;
+  diagnostics.RECEIVED_HASH_HAS_PLUS = hashInspection.receivedHashHasPlus;
+  diagnostics.RECEIVED_HASH_HAS_SPACE = hashInspection.receivedHashHasSpace;
+  diagnostics.HASH_TRANSPORT_NORMALIZATION = hashInspection.hashTransportNormalization;
   diagnostics.HASH_VALIDATION_STAGE = hashInspection.validationStage;
   diagnostics.HASH_VALID = hashInspection.hashValid;
   if (!diagnostics.HASH_VALID) {

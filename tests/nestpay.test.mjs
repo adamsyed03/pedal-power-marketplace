@@ -149,6 +149,79 @@ test('section 3.3.1 no-trailing HASHPARAMSVAL keeps one separator before StoreKe
   assert.equal(verify3DResponseHash({ ...params, HASH: directAppendHash }, storeKey), false);
 });
 
+test('Ver2 response accepts only strict form-decoder recovery of Base64 plus characters', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', rnd: 'r0' };
+  const params = createResponseHashFixture({
+    names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY',
+  });
+  assert.match(params.HASH, /\+/);
+
+  const exact = inspect3DResponseHash(params, 'STOREKEY');
+  assert.equal(exact.hashValid, true);
+  assert.equal(exact.hashTransportNormalization, 'EXACT');
+  assert.equal(exact.receivedHashHasPlus, true);
+  assert.equal(exact.receivedHashHasSpace, false);
+
+  const allSpaces = inspect3DResponseHash({ ...params, HASH: params.HASH.replaceAll('+', ' ') }, 'STOREKEY');
+  assert.equal(allSpaces.hashValid, true);
+  assert.equal(allSpaces.validationStage, 'VALID');
+  assert.equal(allSpaces.hashTransportNormalization, 'FORM_PLUS_AS_SPACE');
+  assert.equal(allSpaces.receivedHashHasPlus, false);
+  assert.equal(allSpaces.receivedHashHasSpace, true);
+
+  const mixed = inspect3DResponseHash({ ...params, HASH: params.HASH.replace('+', ' ') }, 'STOREKEY');
+  assert.equal(mixed.hashValid, true);
+  assert.equal(mixed.hashTransportNormalization, 'FORM_PLUS_AS_SPACE');
+  assert.equal(mixed.receivedHashHasPlus, true);
+  assert.equal(mixed.receivedHashHasSpace, true);
+});
+
+test('Ver2 response rejects malformed or non-canonical Base64 transport values', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', rnd: 'r0' };
+  const params = createResponseHashFixture({
+    names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY',
+  });
+  const firstNonPlus = [...params.HASH].findIndex((character, index) => index < 86 && character !== '+');
+  const wrongSpace = `${params.HASH.slice(0, firstNonPlus)} ${params.HASH.slice(firstNonPlus + 1)}`;
+  const canonicalTamper = `${params.HASH[0] === 'A' ? 'B' : 'A'}${params.HASH.slice(1)}`;
+  assert.equal(inspect3DResponseHash({ ...params, HASH: wrongSpace }, 'STOREKEY').validationStage, 'HASH_MISMATCH');
+  assert.equal(inspect3DResponseHash({ ...params, HASH: canonicalTamper }, 'STOREKEY').validationStage, 'HASH_MISMATCH');
+
+  const malformed = [
+    params.HASH.slice(1), `${params.HASH}A`, `${params.HASH.slice(0, -2)}=A`,
+    `_${params.HASH.slice(1)}`, `-${params.HASH.slice(1)}`, `%${params.HASH.slice(1)}`,
+    ` ${params.HASH}`, `${params.HASH} `, params.HASH.replace('+', '\t'),
+    params.HASH.replace('+', '\r'), params.HASH.replace('+', '\n'),
+    params.HASH.replace('+', '\u00a0'),
+  ];
+  for (const received of malformed) {
+    const inspection = inspect3DResponseHash({ ...params, HASH: received }, 'STOREKEY');
+    assert.equal(inspection.hashValid, false);
+    assert.equal(inspection.validationStage, 'INVALID_HASH_ENCODING');
+    assert.equal(inspection.hashTransportNormalization, null);
+  }
+});
+
+test('Ver2 transport recovery never normalizes HASHPARAMSVAL or ambiguous HASH fields', () => {
+  const values = { clientid: '13IN004634', oid: 'PGN-1', rnd: 'A+B' };
+  const params = createResponseHashFixture({
+    names: ['clientid', 'oid', 'rnd'], values, storeKey: 'STOREKEY',
+  });
+  const changedParamsval = inspect3DResponseHash({
+    ...params, HASHPARAMSVAL: params.HASHPARAMSVAL.replace('+', ' '),
+  }, 'STOREKEY');
+  assert.equal(changedParamsval.hashValid, false);
+  assert.equal(changedParamsval.validationStage, 'HASHPARAMSVAL_MISMATCH');
+
+  const repeated = inspect3DResponseHash({ ...params, HASH: [params.HASH, params.HASH] }, 'STOREKEY');
+  assert.equal(repeated.hashValid, true);
+  const conflicting = inspect3DResponseHash({
+    ...params, HASH: [params.HASH, `${params.HASH[0] === 'A' ? 'B' : 'A'}${params.HASH.slice(1)}`],
+  }, 'STOREKEY');
+  assert.equal(conflicting.hashValid, false);
+  assert.equal(conflicting.validationStage, 'AMBIGUOUS_FORM_FIELD');
+});
+
 test('callback form normalization accepts only identical string duplicates without trimming', () => {
   const normalized = normalizeNestPayFormParams({
     oid: [' PGN-1 ', ' PGN-1 '], clientid: ['13IN004634'], rnd: 'r'.repeat(20),
@@ -238,11 +311,16 @@ test('response hash inspection reports only safe structural outcomes', () => {
     requiredHashFieldsSigned: true,
     hashParamsValMatch: true,
     hashParamsValFormat: 'TRAILING_PIPE',
+    receivedHashLength: params.HASH.length,
+    calculatedHashLength: params.HASH.length,
+    receivedHashHasPlus: params.HASH.includes('+'),
+    receivedHashHasSpace: false,
+    hashTransportNormalization: 'EXACT',
     hashValid: true,
     validationStage: 'VALID',
   });
   assert.equal(inspect3DResponseHash({ ...params, HASHPARAMSVAL: 'altered' }, 'STOREKEY').validationStage, 'HASHPARAMSVAL_MISMATCH');
-  assert.equal(inspect3DResponseHash({ ...params, HASH: `${params.HASH}x` }, 'STOREKEY').validationStage, 'HASH_MISMATCH');
+  assert.equal(inspect3DResponseHash({ ...params, HASH: `${params.HASH}x` }, 'STOREKEY').validationStage, 'INVALID_HASH_ENCODING');
   const missingBranch = inspect3DResponseHash({ ...params, hashAlgorithm: undefined }, 'STOREKEY');
   assert.equal(missingBranch.hashAlgorithmBranch, 'MISSING');
   assert.deepEqual(missingBranch.hashParamsFields, ['clientid', 'oid', 'Response', 'ErrMsg']);
@@ -485,7 +563,8 @@ test('callback hash diagnostics expose field names and comparison stages but nev
     HASHPARAMSVAL: 'sensitive-paramsval', HASH: 'sensitive-hash',
   };
   const diagnostics = createCallbackDiagnostics(raw);
-  const result = await processNestPayReturn(raw, testEnv, async () => {
+  const diagnosticEnv = { ...testEnv, NESTPAY_STORE_KEY: ' "secret#value"\n' };
+  const result = await processNestPayReturn(raw, diagnosticEnv, async () => {
     throw new Error('API authorization must not run for an invalid callback hash');
   }, diagnostics);
   assert.equal(result.reason, 'INVALID_RESPONSE_HASH');
@@ -501,8 +580,20 @@ test('callback hash diagnostics expose field names and comparison stages but nev
   assert.equal(diagnostics.HASHPARAMSVAL_FORMAT, null);
   assert.equal(diagnostics.HASH_VALIDATION_STAGE, 'HASHPARAMSVAL_MISMATCH');
   assert.equal(diagnostics.HASH_VALID, false);
+  assert.equal(diagnostics.RECEIVED_HASH_LENGTH, raw.HASH.length);
+  assert.equal(diagnostics.CALCULATED_HASH_LENGTH, null);
+  assert.equal(diagnostics.RECEIVED_HASH_HAS_PLUS, false);
+  assert.equal(diagnostics.RECEIVED_HASH_HAS_SPACE, false);
+  assert.equal(diagnostics.HASH_TRANSPORT_NORMALIZATION, null);
+  assert.equal(diagnostics.STOREKEY_STATUS, 'SET');
+  assert.equal(diagnostics.STOREKEY_LENGTH, diagnosticEnv.NESTPAY_STORE_KEY.length);
+  assert.equal(diagnostics.STOREKEY_HAS_HASH_CHARACTER, true);
+  assert.equal(diagnostics.STOREKEY_HAS_LEADING_WHITESPACE, true);
+  assert.equal(diagnostics.STOREKEY_HAS_TRAILING_WHITESPACE, true);
+  assert.equal(diagnostics.STOREKEY_HAS_NEWLINE, true);
+  assert.equal(diagnostics.STOREKEY_HAS_LITERAL_QUOTES, false);
   const serialized = JSON.stringify(diagnostics);
-  for (const forbidden of ['sensitive-expiry', 'sensitive-paramsval', 'sensitive-hash']) {
+  for (const forbidden of ['sensitive-expiry', 'sensitive-paramsval', 'sensitive-hash', 'secret#value']) {
     assert.doesNotMatch(serialized, new RegExp(forbidden));
   }
 });
