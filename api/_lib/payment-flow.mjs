@@ -9,6 +9,51 @@ import { dispatchConfirmation } from './confirmation.mjs';
 // gateway-provided non-sensitive fields must survive.
 const SENSITIVE_FIELDS = /^(pan|cardnumber|card_number|cv2|cvv2?|cvc2?)$|expdate|expmonth|expyear|expiry/i;
 
+const CALLBACK_PRESENCE_FIELDS = [
+  'clientid', 'clientId', 'ClientId', 'oid', 'ReturnOid', 'Response',
+  'ProcReturnCode', 'AuthCode', 'TransId', 'mdStatus', 'md', 'eci', 'xid',
+  'cavv', 'rnd', 'HASHPARAMS', 'HASHPARAMSVAL', 'HASH', 'EXTRA.TRXDATE',
+];
+
+const present = (params, field) => Object.prototype.hasOwnProperty.call(params || {}, field);
+
+const safeCallbackOrderId = (params) => {
+  const oid = String(params?.oid ?? '');
+  const returnOid = String(params?.ReturnOid ?? '');
+  const candidate = oid || returnOid;
+  if (!/^PGN-\d{4}-[A-F0-9]{16}$/.test(candidate)) return null;
+  if (oid && returnOid && oid !== returnOid) return null;
+  return candidate;
+};
+
+// Staging diagnostics contain only an allowlisted order ID, field-presence
+// booleans and validation outcomes. Callback field values never enter this
+// object, so it is safe to serialize without exposing payment data or hashes.
+export function createCallbackDiagnostics(rawParams) {
+  const params = rawParams && typeof rawParams === 'object' ? rawParams : {};
+  return {
+    order_id: safeCallbackOrderId(params),
+    FIELD_PRESENCE: Object.fromEntries(
+      CALLBACK_PRESENCE_FIELDS.map((field) => [field, present(params, field)]),
+    ),
+    HASH_CHECK_ATTEMPTED: false,
+    HASH_VALID: null,
+    CLIENT_ID_MATCH: null,
+    ORDER_ID_MATCH: null,
+    ORDER_FOUND: null,
+    AMOUNT_MATCH: null,
+  };
+}
+
+export function isStagingCallbackDiagnosticsEnabled(env = process.env) {
+  try {
+    const baseUrl = new URL(String(env.APP_BASE_URL || ''));
+    return baseUrl.protocol === 'https:' && baseUrl.hostname === 'test.ridepogon.com';
+  } catch {
+    return false;
+  }
+}
+
 // The 3D return may echo merchant-submitted fields. Card data must never be
 // persisted or logged, so it is stripped before any further processing.
 export function stripSensitiveFields(params) {
@@ -62,23 +107,32 @@ const finalize = async (orderId, changes, env) => {
 // md/eci/xid/cavv (BIB guide §5.4). Only Approved + ProcReturnCode 00 marks
 // the order PAID. Ambiguous API outcomes leave the order UNKNOWN for the
 // Order Status reconciliation to settle — a Sale is never retried blindly.
-export async function processNestPayReturn(rawParams, env = process.env, fetchImpl = fetch) {
+export async function processNestPayReturn(
+  rawParams, env = process.env, fetchImpl = fetch, diagnostics = createCallbackDiagnostics(rawParams),
+) {
   const params = stripSensitiveFields(rawParams);
   const config = getNestPayConfig(env);
 
-  if (!verify3DResponseHash(params, env.NESTPAY_STORE_KEY)) {
+  diagnostics.HASH_CHECK_ATTEMPTED = true;
+  diagnostics.HASH_VALID = verify3DResponseHash(params, env.NESTPAY_STORE_KEY);
+  if (!diagnostics.HASH_VALID) {
     return { outcome: 'REJECTED', reason: 'INVALID_RESPONSE_HASH' };
   }
-  if (String(params.clientid || params.ClientId || '') !== config.merchantId) {
+  diagnostics.CLIENT_ID_MATCH = String(params.clientid || params.ClientId || '') === config.merchantId;
+  if (!diagnostics.CLIENT_ID_MATCH) {
     return { outcome: 'REJECTED', reason: 'CLIENTID_MISMATCH' };
   }
   const orderId = String(params.oid || params.ReturnOid || '');
-  if (!orderId || (params.ReturnOid && params.oid && params.ReturnOid !== params.oid)) {
+  diagnostics.ORDER_ID_MATCH = Boolean(orderId)
+    && !(params.ReturnOid && params.oid && params.ReturnOid !== params.oid);
+  if (!diagnostics.ORDER_ID_MATCH) {
     return { outcome: 'REJECTED', reason: 'ORDER_ID_MISMATCH' };
   }
   const order = await findOrderById(orderId, env);
-  if (!order) return { outcome: 'REJECTED', reason: 'ORDER_NOT_FOUND' };
-  if (!callbackAmountMatchesOrder(params, order)) {
+  diagnostics.ORDER_FOUND = Boolean(order);
+  if (!diagnostics.ORDER_FOUND) return { outcome: 'REJECTED', reason: 'ORDER_NOT_FOUND' };
+  diagnostics.AMOUNT_MATCH = callbackAmountMatchesOrder(params, order);
+  if (!diagnostics.AMOUNT_MATCH) {
     return { outcome: 'REJECTED', reason: 'AMOUNT_MISMATCH' };
   }
   if (['PAID', 'DECLINED', 'FAILED', 'CANCELLED', 'REFUNDED'].includes(order.payment_status)) {

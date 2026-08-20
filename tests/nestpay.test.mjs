@@ -8,7 +8,8 @@ import {
   isNestPayTestConfigured, parseApiResponse, paymentStateFromApiResponse, verify3DResponseHash,
 } from '../api/_lib/nestpay.mjs';
 import {
-  callbackAmountMatchesOrder, hasComplete3DAuthFields, stripSensitiveFields,
+  callbackAmountMatchesOrder, createCallbackDiagnostics, hasComplete3DAuthFields,
+  isStagingCallbackDiagnosticsEnabled, stripSensitiveFields,
 } from '../api/_lib/payment-flow.mjs';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
@@ -301,6 +302,31 @@ test('callback route only redirects after verified processing and rejects invali
   assert.match(flow, /verify3DResponseHash/);
   assert.match(flow, /paymentStateFromApiResponse/);
   assert.match(flow, /UNKNOWN/);
+});
+
+test('staging callback diagnostics expose presence and outcomes without sensitive values', () => {
+  const diagnostics = createCallbackDiagnostics({
+    oid: 'PGN-2026-80BDD83DF09AB903', clientid: 'merchant-value', md: 'sensitive-md',
+    cavv: 'sensitive-cavv', xid: 'sensitive-xid', HASH: 'sensitive-hash',
+    HASHPARAMSVAL: 'sensitive-hash-plaintext', pan: 'sensitive-pan', cvv: 'sensitive-cvv',
+  });
+  assert.equal(diagnostics.order_id, 'PGN-2026-80BDD83DF09AB903');
+  assert.equal(diagnostics.FIELD_PRESENCE.clientid, true);
+  assert.equal(diagnostics.FIELD_PRESENCE.md, true);
+  assert.equal(diagnostics.FIELD_PRESENCE.HASH, true);
+  assert.equal(diagnostics.FIELD_PRESENCE.Response, false);
+  const serialized = JSON.stringify(diagnostics);
+  for (const forbidden of [
+    'merchant-value', 'sensitive-md', 'sensitive-cavv', 'sensitive-xid',
+    'sensitive-hash', 'sensitive-hash-plaintext', 'sensitive-pan', 'sensitive-cvv',
+  ]) assert.doesNotMatch(serialized, new RegExp(forbidden));
+});
+
+test('callback diagnostics are enabled only for the HTTPS staging origin', () => {
+  assert.equal(isStagingCallbackDiagnosticsEnabled({ APP_BASE_URL: 'https://test.ridepogon.com' }), true);
+  assert.equal(isStagingCallbackDiagnosticsEnabled({ APP_BASE_URL: 'https://ridepogon.com' }), false);
+  assert.equal(isStagingCallbackDiagnosticsEnabled({ APP_BASE_URL: 'http://test.ridepogon.com' }), false);
+  assert.equal(isStagingCallbackDiagnosticsEnabled({ APP_BASE_URL: 'not-a-url' }), false);
 });
 
 test('checkout rejects missing terms acceptance and missing captcha before order creation', () => {
