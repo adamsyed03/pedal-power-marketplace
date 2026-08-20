@@ -15,12 +15,15 @@ Official sources:
   - `Testne kartice`
 - `docs/nestpay/izgled tabele sa testnim transakcijama (1).xls`
 
-The official test-card sheet contains one test card for each supported brand:
-Mastercard, Visa, Dina and American Express. Card values must be read directly
-from that workbook by the human test operator. Never copy full card numbers,
-expiry values, CVC values or 3-D Secure passwords into source control,
-application logs, screenshots, tickets, chat, customer pages or this document.
-Use them only against the official TEST payment page.
+The official test-card sheet contains Mastercard, Visa, Dina and American
+Express test-card rows. The SMS case rows do not assign any of those cards to a
+specific case. Current merchant support is believed to be Visa and Mastercard;
+do not use Dina or American Express unless merchant-specific confirmation from
+Banca Intesa says they are enabled. Card values must be read directly from the
+workbook by the human test operator. Never copy full card numbers, expiry
+values, CVC values or 3-D Secure passwords into source control, application
+logs, screenshots, tickets, chat, customer pages or this document. Use them
+only against the official TEST payment page.
 
 An official case is **not executed** until the real transaction is visible in
 Banca Intesa TEST Merchant Center. Local automated tests are not official bank
@@ -40,21 +43,19 @@ The workbook represents TC36's minimum as `XX`; it does not provide the actual
 threshold. The operator must obtain the applicable minimum from Banca Intesa
 and use an order total strictly above it.
 
-## Required brand coverage
+## Card selection and required coverage
 
-At minimum, record one verified successful SMS transaction for every supplied
-brand. Use a fresh Order ID for every run:
+The workbook requires official test cards but does not map a particular card
+or brand to TC01, TC03 or TC36. Before the first run, the operator must obtain
+merchant-specific confirmation of:
 
-| Run | Case | Card reference | Instalments |
-|---|---|---|---:|
-| SMS-MC | TC01 or TC03 | Mastercard row in `Testne kartice` | 1 |
-| SMS-VI | TC01 or TC03 | Visa row in `Testne kartice` | 1 |
-| SMS-DI | TC01 or TC03 | Dina row in `Testne kartice` | 1 |
-| SMS-AX | TC01 or TC03 | AMEX row in `Testne kartice` | 1 |
-| SMS-3I | TC36 | Each card/brand the bank confirms as eligible for 3 instalments | 3 |
+- whether TC01 and TC03 should use Visa, Mastercard, or both;
+- which enabled test-card category is eligible for TC36 instalments; and
+- whether the bank expects any case to be repeated across card categories.
 
-If Banca Intesa requires every successful case with every card, repeat TC01,
-TC03 and eligible TC36 for each workbook card. Never reuse an Order ID.
+Use only confirmed enabled categories and a fresh Order ID for every run. Do
+not infer coverage from the presence of Dina or American Express rows in the
+generic workbook.
 
 ## Execution record — complete for every run
 
@@ -79,8 +80,9 @@ Record these non-sensitive values in the operator's evidence sheet:
 
 1. Confirm TEST mode (`NESTPAY_ENV=test`) and that `/api/nestpay/prepare`
    returns the TEST gateway URL.
-2. Choose the next uncovered brand from `Testne kartice`; enter card data only
-   on the merchant TEST card page (`/payment/card`).
+2. Use the bank-confirmed Visa or Mastercard test-card category from `Testne
+   kartice`; enter card data only on the merchant TEST card page
+   (`/payment/card`). The workbook itself does not select the category.
 3. Create a fresh Pogon checkout and record its unique Order ID, exact RSD
    amount and instalment count `1`.
 4. Submit once from the payment page. Do not retry after a timeout.
@@ -107,7 +109,7 @@ Record these non-sensitive values in the operator's evidence sheet:
 ## TC03 — successful SMS authorization
 
 1. Repeat the TC01 payment-page procedure with a fresh Order ID.
-2. Use a card brand still needed by the coverage matrix.
+2. Use the bank-confirmed Visa or Mastercard category required for this case.
 3. Record exact RSD amount and instalment count `1`.
 4. Expected gateway result: `Approved`.
 5. Expected Pogon state: verified `PAID`, or `UNKNOWN` if the outcome is
@@ -155,9 +157,29 @@ attempt is safe.
 Do not implement or run TC11, TC12, TC14, TC15, TC33, TC34 or TC35. Pogon does
 not use PreAuth/PostAuth DMS processing.
 
+## Merchant Center operator workflow
+
+1. Open the official Banca Intesa TEST Merchant Center user login at
+   `https://testsecurepay.eway2pay.com/bib/report/user.login`.
+2. Sign in with the bank-issued Merchant ID, user name and password. Never save
+   the password in this repository or in evidence files.
+3. Find each transaction using the exact Pogon Order ID and verify transaction
+   type/status, date, masked card, card brand, amount and currency, instalment
+   count, authorization number, 3-D Secure `mdStatus`, response code and
+   response detail.
+4. Export or transcribe the results into the supplied
+   `izgled tabele sa testnim transakcijama` structure. Review the output and
+   keep card data masked before sharing it.
+
+The supplied documents do not include the Merchant Center user manual or login
+credentials. Exact screen/menu names and the export control must be confirmed
+after the bank supplies access.
+
 ## Completion and submission
 
-1. Confirm all four supplied brands have at least one real approved SMS result.
+1. Confirm every bank-required, merchant-enabled Visa/Mastercard category has
+   the required real approved SMS result; do not infer the matrix from the
+   generic test-card sheet.
 2. Confirm TC02 was performed against TC01 on the same business day.
 3. Confirm TC04 was performed against TC03.
 4. Confirm TC36 used three instalments and an amount above the real minimum.

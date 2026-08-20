@@ -1,0 +1,6 @@
+.env
+.env.*
+docs/nestpay/
+*.log
+node_modules/
+dist/
