@@ -173,7 +173,7 @@ export function create3DFormFields({ orderId, amountRsd, installmentCount, okUrl
     fields: {
       clientid: config.merchantId, storetype: '3d_pay_hosting', trantype: 'Auth',
       amount, currency: '941', oid: orderId,
-      okUrl, failUrl, lang: 'en', rnd, encoding: 'utf-8', shopurl,
+      okUrl, failUrl, lang: 'sr', rnd, encoding: 'utf-8', shopurl,
       hashAlgorithm: 'ver2', hash,
     },
   };

@@ -27,10 +27,12 @@
   activity, “Nespecijalizovana trgovina na veliko.”
 - The official Banca Intesa logo extracted unchanged from the supplied EPM v3.5
   document is linked on the homepage, checkout, card-entry and payment-security
-  views. Visa, Mastercard, Visa Secure and MC ID Check artwork files are present.
-  Acceptance marks use equal 74x40-pixel canvases, program marks use equal
-  60x60-pixel canvases, and the groups have the required four-program-mark-width
-  (240-pixel) separation. Final presentation remains subject to bank inspection.
+  views. Mastercard, Maestro, Visa, American Express and DinaCard acceptance
+  artwork is grouped separately from Visa Secure, MC ID Check, American Express
+  SafeKey and DinaCard Secure program artwork. The accepted-card row, bank-logo
+  row and security-program row are rendered as three distinct groups with equal
+  canvases inside each group and compliant spacing. Final presentation remains
+  subject to bank inspection.
 - Card refunds are disclosed as exclusive refunds of the original card
   transaction to the card account used for payment; cash or another account is
   not offered.

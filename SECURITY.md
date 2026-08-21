@@ -16,7 +16,7 @@ Hard rules enforced in code and tests:
   server-only and never use a `VITE_` prefix. Hash v2 is computed server-side in
   `/api/nestpay/prepare`; the browser receives only the finished hidden fields.
 - The browser POST contains `storetype=3d_pay_hosting`, `hashAlgorithm=ver2`,
-  `encoding=utf-8` and `lang=en`; it contains neither `instalment` nor
+  `encoding=utf-8` and `lang=sr`; it contains neither `instalment` nor
   `CallbackURL` nor any card-data field.
 - Any eligible installment count is selected only on the bank-hosted page after
   BIN recognition and is retained from the normalized final gateway response.

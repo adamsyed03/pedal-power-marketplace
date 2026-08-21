@@ -68,7 +68,7 @@ test('hosted 3D form uses the exact merchant-specific field set and a matching h
   assert.equal(Object.keys(fields).some((name) => name.toLowerCase() === 'callbackurl'), false);
   assert.equal(fields.amount, '138500.00');
   assert.equal(fields.hashAlgorithm, 'ver2');
-  assert.equal(fields.lang, 'en');
+  assert.equal(fields.lang, 'sr');
   assert.equal(fields.encoding, 'utf-8');
   assert.equal(fields.shopurl, 'https://ridepogon.com/checkout');
   assert.equal(fields.rnd.length, 20);
@@ -751,9 +751,11 @@ test('EPM payment branding uses the complete official Banca Intesa artwork set',
   }
   assert.match(branding, /h-\[42px\] w-\[66px\]/);
   assert.match(branding, /h-\[52px\] w-\[110px\]/);
+  assert.match(branding, /h-\[32px\] w-\[50px\]/);
+  assert.match(branding, /h-\[40px\] w-\[60px\]/);
   assert.match(branding, /gap-8/);
   assert.match(branding, /gap-2/);
-  assert.match(branding, /xl:flex-row/);
+  assert.doesNotMatch(branding, /xl:flex-row|flex-wrap/);
   assert.doesNotMatch(branding, /rounded-lg border border-black\/10 bg-white p-2 shadow-sm/);
   assert.match(branding, /rs\.visa\.com\/pay-with-visa\/security-and-assistance\/protected-everywhere\.html/);
   assert.match(branding, /mastercard\.rs\/sr-rs\/korisnici\/pronadite-karticu\.html/);
