@@ -6,6 +6,25 @@ export function PurchaseTerms() {
         <h1 className="mt-6 text-4xl font-black tracking-tight">Uslovi kupovine i dostave</h1>
         <p className="mt-4 text-sm text-black/55">Pogon Mobility d.o.o. · Temišvarska 25B, Beograd · PIB 115472260 · MB 22162721 · nespecijalizovana trgovina na veliko · šifra delatnosti 4690</p>
 
+        <h2 className="mt-10 text-2xl font-black">Osnovni podaci o firmi</h2>
+        <dl className="mt-4 grid gap-3 rounded-2xl bg-black/[0.025] p-5 text-sm sm:grid-cols-2">
+          <div><dt className="text-black/50">Pun naziv pravnog subjekta</dt><dd className="font-bold">POGON MOBILITY DOO</dd></div>
+          <div><dt className="text-black/50">Adresa</dt><dd className="font-bold">Temišvarska 25B, Beograd</dd></div>
+          <div><dt className="text-black/50">Delatnost i šifra delatnosti</dt><dd className="font-bold">Nespecijalizovana trgovina na veliko (4690)</dd></div>
+          <div><dt className="text-black/50">Matični broj</dt><dd className="font-bold">22162721</dd></div>
+          <div><dt className="text-black/50">Poreski identifikacioni broj (PIB)</dt><dd className="font-bold">115472260</dd></div>
+          <div><dt className="text-black/50">Web adresa</dt><dd className="font-bold"><a className="underline" href="https://ridepogon.com">ridepogon.com</a></dd></div>
+          <div><dt className="text-black/50">Kontakt telefon</dt><dd className="font-bold"><a className="underline" href="tel:+38169692345">+381 69 69 2345</a></dd></div>
+          <div><dt className="text-black/50">Kontakt email</dt><dd className="font-bold"><a className="underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a></dd></div>
+        </dl>
+
+        <h2 className="mt-8 text-2xl font-black">Kontakt podaci — korisnički servis</h2>
+        <p className="mt-3 leading-7 text-black/70">
+          Za informacije o narudžbini, reklamacije ili otkazivanje porudžbine obratite nam se na adresi
+          Temišvarska 25B, Beograd, telefonom na <a className="font-bold underline" href="tel:+38169692345">+381 69 69 2345</a> ili
+          emailom na <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a>.
+        </p>
+
         <h2 className="mt-10 text-2xl font-black">Cene i PDV</h2>
         <p className="mt-3 leading-7 text-black/70">
           Sve cene su sa uračunatim PDV-om i nema dodatnih ili skrivenih troškova.
@@ -75,6 +94,12 @@ export function PurchaseTerms() {
           <p>Povraćaj sredstava za robu plaćenu karticom vrši se isključivo preko Banca Intesa/NestPay sistema, storniranjem ili refundacijom originalne kartične transakcije na račun kartice kojom je plaćeno. Gotovinski povraćaj i uplata na drugi račun nisu mogući.</p>
           <p>Kod prihvaćene reklamacije zbog nedostatka za koji odgovara prodavac, Pogon snosi dogovoreni trošak povratnog transporta. Vidljivost sredstava nakon pokretanja povraćaja zavisi i od banke izdavaoca i kartičnog sistema.</p>
         </div>
+
+        <h2 className="mt-8 text-2xl font-black">Zaštita poverljivih podataka o transakciji</h2>
+        <blockquote className="mt-3 space-y-3 rounded-2xl border border-black/10 bg-black/[0.025] p-5 leading-7 text-black/70">
+          <p>„Prilikom unošenja podataka o platnoj kartici, poverljive informacija se prenose putem javne mreže u zaštićenoj (kriptovanoj) formi upotrebom SSL protokola i PKI sistema, kao trenutno najsavremenije kriptografske tehnologije.</p>
+          <p>Sigurnost podataka prilikom kupovine, garantuje procesor platnih kartica, Banca Intesa ad Beograd, pa se tako kompletni proces naplate obavlja na stranicama banke. Niti jednog trenutka podaci o platnoj kartici nisu dostupni našem sistemu.“</p>
+        </blockquote>
 
         <h2 className="mt-8 text-2xl font-black">Zaštita privatnosti</h2>
         <div className="mt-3 space-y-3 leading-7 text-black/70">

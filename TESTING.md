@@ -1,8 +1,9 @@
 # Banca Intesa official TEST execution plan
 
-> Executable now: ordinary one-payment orders use Pogon's browser card form
-> (`/payment/card`) → a direct POST to the NestPay TEST gateway → server-side
-> API Auth, using Banca Intesa's merchant-specific `3d_pay_hosting` contract.
+> Executable now: ordinary one-payment orders use Banca Intesa's
+> `3d_pay_hosting` contract. Pogon sends only signed non-card transaction fields,
+> the customer enters card data on the bank page, and NestPay returns the signed
+> final payment result. Pogon does not send a second API Auth.
 
 ## Scope and official sources
 
@@ -85,10 +86,10 @@ Record these non-sensitive values in the operator's evidence sheet:
 
 1. Confirm TEST mode (`NESTPAY_ENV=test`) and that `/api/nestpay/prepare`
    returns the TEST gateway URL.
-2. Use the bank-confirmed Visa or Mastercard test-card category from `Testne
-   kartice`; enter it only on Pogon's TEST browser card form. The form submits
-   directly to NestPay and Pogon servers never receive the values. The workbook
-   itself does not select the category.
+2. Use the bank-confirmed test-card category from `Testne kartice`; enter it
+   only on the Banca Intesa / NestPay TEST hosted page after redirection. Pogon
+   never receives the card values. The workbook itself does not select the
+   category.
 3. Create a fresh Pogon checkout and record its unique Order ID, exact RSD
    amount and instalment count `1`.
 4. Submit once from the payment page. Do not retry after a timeout.

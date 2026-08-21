@@ -1,12 +1,11 @@
 # NestPay implementation status
 
-> The TEST 3D+API implementation follows the supplied Banca Intesa technical
-> documentation and Marina Marković's merchant-specific clarification (see
-> `docs/payments/chip-card-architecture.md`). The 3D POST uses
-> `storetype=3d_pay_hosting` and omits `instalment` and `CallbackURL`. Card data
-> is added only in the browser and POSTed directly to NestPay; it never reaches
-> Pogon servers. The merchant backend retains the documented CC5 API Auth
-> handling for returned `md`/`eci`/`xid`/`cavv` values.
+> The TEST integration follows Banca Intesa's supplied 3D Pay Hosting package
+> and Marina Marković's merchant-specific clarification. The POST uses
+> `storetype=3d_pay_hosting`, omits `instalment` and `CallbackURL`, and contains
+> no card data. Customers enter card details only on the NestPay hosted page.
+> NestPay performs payment automatically and returns the signed final result;
+> Pogon does not send a second API Auth.
 
 ## Project audit
 
@@ -27,15 +26,15 @@
 - Cryptographically random immutable order IDs.
 - Supabase order schema with payment states and no card-data columns.
 - TEST/production endpoint separation guards.
-- Browser-only card entry; Pogon servers do not receive, persist or log PAN,
-  CVV or expiry.
+- Bank-hosted card entry; Pogon does not receive, persist or log PAN, CVV or
+  expiry.
 - Merchant-specific `3d_pay_hosting` request with `instalment` and
   `CallbackURL` absent from the POST.
 - Hash v2 selected per direct Banca Intesa instruction.
 - SMS/immediate Sale selected; DMS is not enabled.
 - Documented Hash v2 request generation and response-hash verification.
 - `mdStatus` acceptance predicate for values 1–4, per the 3D manual.
-- CC5AS Auth and Order Status XML primitives and response parsing.
+- Final hosted-response processing and Order Status XML reconciliation.
 - Guest-checkout Turnstile widget and server verification.
 - Verified-status customer result-page presentation.
 - Gmail SMTP payment confirmations sent only for final outcomes, with an

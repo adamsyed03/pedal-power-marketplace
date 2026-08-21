@@ -11,4 +11,4 @@
 
   ## Payments
 
-  The TEST harness uses Banca Intesa's merchant-specific 3D POST contract: `storetype=3d_pay_hosting`, with neither `instalment` nor `CallbackURL`. The browser adds the card fields and posts directly to NestPay; Pogon servers never receive them. The backend retains the documented CC5 API Auth handling for returned 3D values. Production is hard-disabled; see [the payment architecture notes](docs/payments/chip-card-architecture.md).
+  The TEST harness uses Banca Intesa's merchant-specific hosted-payment contract: `storetype=3d_pay_hosting`, with neither `instalment` nor `CallbackURL`. Pogon posts only server-prepared non-card transaction fields; customers enter card details exclusively on the Banca Intesa / NestPay page. The signed hosted callback contains the final payment result, so Pogon does not send a second API Auth. Production is hard-disabled; see [the payment architecture notes](docs/payments/chip-card-architecture.md).

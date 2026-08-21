@@ -22,9 +22,9 @@ const resultPath = (outcome: string, order: any, token: string) => {
   return `${page}${query}`;
 };
 
-// okUrl/failUrl target. NestPay posts the 3D result here through the
-// customer's browser; the response hash is verified, the API Auth is sent
-// server-side, and the customer is redirected to the result page.
+// okUrl/failUrl target. NestPay posts the final hosted-payment result here
+// through the customer's browser; Pogon verifies the response hash and then
+// redirects the customer to its result page. No second API Auth is sent.
 export default async function handler(request: any, response: any) {
   response.setHeader('Cache-Control', 'no-store');
   if (request.method !== 'POST') return response.status(405).send('Method not allowed');

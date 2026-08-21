@@ -6,9 +6,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite --port 5174",
-    "test": "npm run test:checkout && npm run test:payment-unit",
-    "test:checkout": "node --test tests/*.test.mjs",
-    "test:payment-unit": "node --import tsx --test src/lib/nestpay.test.ts"
+    "test": "npm run test:checkout",
+    "test:checkout": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

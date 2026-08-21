@@ -3,13 +3,12 @@ import assert from 'node:assert/strict';
 import { calculateCartTotal, calculateOrderTotal } from '../api/_lib/catalog.mjs';
 import { createOrderId } from '../api/_lib/order.mjs';
 import {
-  buildAuthorizationXml, buildOrderStatusXml, create3DFormFields, create3DRequestHash, inspect3DResponseHash,
-  generateRnd, getNestPayConfig, isAccepted3DStatus, isApprovedApiResponse,
-  isNestPayTestConfigured, normalizeNestPayFormParams, parseApiResponse,
-  paymentStateFromApiResponse, verify3DResponseHash,
+  buildOrderStatusXml, create3DFormFields, create3DRequestHash, inspect3DResponseHash,
+  generateRnd, getNestPayConfig, isAccepted3DStatus, isNestPayTestConfigured,
+  normalizeNestPayFormParams, parseApiResponse, verify3DResponseHash,
 } from '../api/_lib/nestpay.mjs';
 import {
-  callbackAmountMatchesOrder, createCallbackDiagnostics, hasComplete3DAuthFields,
+  callbackAmountMatchesOrder, createCallbackDiagnostics, hostedPaymentState,
   isStagingCallbackDiagnosticsEnabled, processNestPayReturn, stripSensitiveFields,
 } from '../api/_lib/payment-flow.mjs';
 import { createHash } from 'node:crypto';
@@ -68,11 +67,14 @@ test('hosted 3D form uses the exact merchant-specific field set and a matching h
   assert.equal(Object.keys(fields).some((name) => name.toLowerCase() === 'callbackurl'), false);
   assert.equal(fields.amount, '138500');
   assert.equal(fields.hashAlgorithm, 'ver2');
-  assert.equal(fields.lang, 'tr');
+  assert.equal(fields.lang, 'en');
+  assert.equal(fields.encoding, 'utf-8');
+  assert.equal(fields.shopurl, 'https://ridepogon.com/checkout');
   assert.equal(fields.rnd.length, 20);
   assert.deepEqual(Object.keys(fields).sort(), [
-    'amount', 'clientid', 'currency', 'failUrl', 'hash', 'hashAlgorithm',
-    'lang', 'oid', 'okUrl', 'rnd', 'storetype', 'trantype',
+    'amount', 'clientid', 'currency', 'encoding', 'failUrl', 'hash',
+    'hashAlgorithm', 'lang', 'oid', 'okUrl', 'rnd', 'shopurl', 'storetype',
+    'trantype',
   ]);
   assert.equal(fields.hash, create3DRequestHash({
     clientid: fields.clientid, oid: fields.oid, amount: fields.amount,
@@ -340,23 +342,11 @@ test('3D accepted statuses are exactly 1 through 4', () => {
   for (const value of ['0', '5', '6', '7', '8', '']) assert.equal(isAccepted3DStatus(value), false);
 });
 
-test('authorization XML uses md in Number and includes 3D values and installments', () => {
-  const output = buildAuthorizationXml({ username: 'u', password: 'p&', clientId: 'c', ipAddress: '127.0.0.1', email: 'a@b.rs', orderId: 'o', md: 'md', total: '100', installmentCount: 3, eci: 'eci', xid: 'xid', cavv: 'cavv' });
-  assert.match(output, /<Number>md<\/Number>/);
-  assert.match(output, /<Currency>941<\/Currency>/);
-  assert.match(output, /<Instalment>3<\/Instalment>/);
-  assert.match(output, /<PayerSecurityLevel>eci<\/PayerSecurityLevel>/);
-  assert.match(output, /<PayerTxnId>xid<\/PayerTxnId>/);
-  assert.match(output, /<PayerAuthenticationCode>cavv<\/PayerAuthenticationCode>/);
-  assert.match(output, /<Password>p&amp;<\/Password>/);
-  assert.doesNotMatch(output, /Cvv2Val|Expires/);
-});
-
-test('API response parsing distinguishes approved, declined and malformed', () => {
+test('Order Status response parsing extracts safe result fields and rejects malformed XML', () => {
   const approved = parseApiResponse('<CC5Response><OrderId>o</OrderId><Response>Approved</Response><ProcReturnCode>00</ProcReturnCode><AuthCode>a</AuthCode><HostRefNum>h</HostRefNum><TransId>t</TransId><Extra><TRXDATE>20260819 10:00:00</TRXDATE></Extra></CC5Response>');
-  assert.equal(isApprovedApiResponse(approved), true);
+  assert.equal(approved.response, 'Approved');
+  assert.equal(approved.procReturnCode, '00');
   assert.equal(approved.transactionDate, '20260819 10:00:00');
-  assert.equal(isApprovedApiResponse(parseApiResponse('<CC5Response><Response>Declined</Response><ProcReturnCode>05</ProcReturnCode></CC5Response>')), false);
   assert.throws(() => parseApiResponse('bad'), /MALFORMED/);
 });
 
@@ -374,14 +364,6 @@ test('test and production endpoints cannot be mixed', () => {
   assert.throws(() => getNestPayConfig({ ...secrets, NESTPAY_ENV: 'test', NESTPAY_MERCHANT_ID: 'wrong' }), /MERCHANT_ID_MISMATCH/);
   assert.equal(isNestPayTestConfigured({ ...secrets, NESTPAY_ENV: 'test' }), true);
   assert.equal(isNestPayTestConfigured({ ...secrets, NESTPAY_ENV: 'production' }), false);
-});
-
-test('API result mapping is fail-closed: only Approved plus 00 becomes PAID', () => {
-  assert.equal(paymentStateFromApiResponse({ response: 'Approved', procReturnCode: '00' }), 'PAID');
-  assert.equal(paymentStateFromApiResponse({ response: 'Approved', procReturnCode: '05' }), 'UNKNOWN');
-  assert.equal(paymentStateFromApiResponse({ response: 'Declined', procReturnCode: '05' }), 'DECLINED');
-  assert.equal(paymentStateFromApiResponse({ response: 'Error', procReturnCode: '99' }), 'UNKNOWN');
-  assert.equal(paymentStateFromApiResponse(null), 'UNKNOWN');
 });
 
 test('captcha is verified server-side', async () => {
@@ -570,18 +552,15 @@ test('card data echoed in a gateway response is stripped before processing or st
   assert.deepEqual(Object.keys(clean).sort(), ['MaskedPan', 'Response', 'oid']);
 });
 
-test('callback amount and required 3D Auth fields are validated before API authorization', () => {
+test('hosted callback amount is validated before final payment processing', () => {
   const order = { total_rsd: 138_500 };
   assert.equal(callbackAmountMatchesOrder({ amount: '138500' }, order), true);
   assert.equal(callbackAmountMatchesOrder({ amount: '1' }, order), false);
   assert.equal(callbackAmountMatchesOrder({}, order), true);
-  assert.equal(hasComplete3DAuthFields({ md: 'm', eci: '05', xid: 'x', cavv: 'c' }), true);
-  assert.equal(hasComplete3DAuthFields({ md: 'm', eci: '05', xid: 'x' }), false);
 });
 
 test('official test PAN literals are isolated from production source', () => {
   const productionSources = [
-    '../src/lib/nestpay.ts',
     '../api/_lib/nestpay.mjs',
     '../api/_lib/payment-flow.mjs',
     '../api/checkout/create.ts',
@@ -594,7 +573,7 @@ test('official test PAN literals are isolated from production source', () => {
   assert.doesNotMatch(productionSources, /\b(?:4\d{15}|5\d{15}|3\d{14}|9\d{15})\b/);
 });
 
-test('card data posts browser-to-gateway and never reaches Pogon server surfaces', () => {
+test('hosted payment redirects with transaction fields while card data stays exclusively on the bank page', () => {
   const prepare = readFileSync(new URL('../api/nestpay/prepare.ts', import.meta.url), 'utf8');
   const callback = readFileSync(new URL('../api/nestpay/callback.ts', import.meta.url), 'utf8');
   const flow = readFileSync(new URL('../api/_lib/payment-flow.mjs', import.meta.url), 'utf8');
@@ -603,8 +582,10 @@ test('card data posts browser-to-gateway and never reaches Pogon server surfaces
   assert.match(cardPage, /Object\.entries\(prepared\.fields\)/);
   assert.match(cardPage, /gateForm\.action = prepared\.gateUrl/);
   for (const field of ['pan', 'cv2', 'Ecom_Payment_Card_ExpDate_Month', 'Ecom_Payment_Card_ExpDate_Year', 'cardType']) {
-    assert.match(cardPage, new RegExp(`append\\('${field}'`));
+    assert.doesNotMatch(cardPage, new RegExp(`['\"]${field}['\"]`));
   }
+  assert.doesNotMatch(cardPage, /cc-number|cc-csc|Broj kartice|CVC\/CVV/);
+  assert.match(cardPage, /Podatke platne kartice unosite isključivo na stranici banke/);
   assert.match(cardPage, /JSON\.stringify\(\{ orderId, token \}\)/);
   assert.match(callback, /processNestPayReturn/);
   assert.match(flow, /stripSensitiveFields/);
@@ -617,8 +598,18 @@ test('callback route only redirects after verified processing and rejects invali
   assert.match(callback, /status\(303\)/);
   const flow = readFileSync(new URL('../api/_lib/payment-flow.mjs', import.meta.url), 'utf8');
   assert.match(flow, /inspect3DResponseHash/);
-  assert.match(flow, /paymentStateFromApiResponse/);
+  assert.match(flow, /params\?\.Response === 'Approved'.*params\?\.ProcReturnCode === '00'/s);
+  assert.match(flow, /params\?\.Response === 'Declined'.*params\?\.Response === 'Error'/s);
+  assert.doesNotMatch(flow, /buildAuthorizationXml|PayerAuthenticationCode|NESTPAY_API_HTTP/);
   assert.match(flow, /UNKNOWN/);
+});
+
+test('hosted callback is final and fail-closed without a second API Auth', () => {
+  assert.equal(hostedPaymentState({ mdStatus: '1', Response: 'Approved', ProcReturnCode: '00' }), 'PAID');
+  assert.equal(hostedPaymentState({ mdStatus: '7', Response: 'Approved', ProcReturnCode: '00' }), 'DECLINED');
+  assert.equal(hostedPaymentState({ mdStatus: '1', Response: 'Declined', ProcReturnCode: '05' }), 'DECLINED');
+  assert.equal(hostedPaymentState({ mdStatus: '1', Response: 'Error', ProcReturnCode: '99' }), 'DECLINED');
+  assert.equal(hostedPaymentState({ mdStatus: '1', Response: 'Approved', ProcReturnCode: '99' }), 'UNKNOWN');
 });
 
 test('staging callback diagnostics expose presence and outcomes without sensitive values', () => {
@@ -717,24 +708,27 @@ test('captcha fails closed without a server secret and expires client tokens', a
   assert.doesNotMatch(turnstile, /TURNSTILE_SECRET_KEY/);
 });
 
-test('EPM payment branding uses the bank and four card-network artwork assets', () => {
+test('EPM payment branding uses the complete official Banca Intesa artwork set', () => {
   for (const asset of [
-    'banca-intesa.png', 'visa.png', 'mastercard.png',
-    'visa-secure.png', 'mastercard-identity-check.svg',
+    'bib-banca-intesa.png', 'bib-maestro.png', 'bib-mastercard.png',
+    'bib-dinacard.png', 'bib-visa.png', 'bib-amex.png',
+    'bib-mastercard-id-check.png', 'bib-visa-secure.png',
+    'bib-amex-safekey.png', 'bib-dinacard-secure.png',
   ]) assert.equal(existsSync(new URL(`../public/payment-brands/${asset}`, import.meta.url)), true);
   const branding = readFileSync(new URL('../src/app/components/PaymentBranding.tsx', import.meta.url), 'utf8');
   assert.match(branding, /https:\/\/www\.bancaintesa\.rs/);
   assert.match(branding, /Prihvaćene kartice/);
   assert.match(branding, /Programi sigurnosti/);
   assert.doesNotMatch(branding, /MissingAsset|zvanični asset nedostaje/);
-  for (const asset of ['visa.png', 'mastercard.png', 'visa-secure.png', 'mastercard-identity-check.svg']) {
+  for (const asset of ['bib-maestro.png', 'bib-mastercard.png', 'bib-dinacard.png', 'bib-visa.png', 'bib-amex.png', 'bib-mastercard-id-check.png', 'bib-visa-secure.png', 'bib-amex-safekey.png', 'bib-dinacard-secure.png']) {
     assert.match(branding, new RegExp(`/payment-brands/${asset.replace('.', '\\.')}\\b`));
   }
-  assert.match(branding, /h-\[56px\] w-\[90px\]/);
-  assert.match(branding, /h-14 w-\[120px\]/);
+  assert.match(branding, /h-12 w-\[74px\]/);
+  assert.match(branding, /h-12 w-\[80px\]/);
+  assert.match(branding, /xl:gap-x-\[320px\]/);
   assert.match(branding, /rs\.visa\.com\/pay-with-visa\/security-and-assistance\/protected-everywhere\.html/);
   assert.match(branding, /mastercard\.rs\/sr-rs\/korisnici\/pronadite-karticu\.html/);
-  for (const path of ['../src/app/App.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx', '../src/app/components/CustomerPolicy.tsx']) {
+  for (const path of ['../src/app/App.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CustomerPolicy.tsx']) {
     assert.match(readFileSync(new URL(path, import.meta.url), 'utf8'), /PaymentBranding/);
   }
 });
@@ -745,6 +739,18 @@ test('checkout visibly declares canonical RSD and VAT terms before payment', () 
   assert.match(checkout, /naplaćuje isključivo u RSD/);
   assert.match(checkout, /Pročitao\/la sam i prihvatam/);
   assert.match(checkout, /disabled=\{!accepted \|\| !captchaToken/);
+});
+
+test('purchase terms contain Marina inspection items 2.1.1, 2.1.4 and the supplied 2.1.8 statement', () => {
+  const terms = readFileSync(new URL('../src/app/components/PurchaseTerms.tsx', import.meta.url), 'utf8');
+  for (const expected of [
+    'POGON MOBILITY DOO', 'Temišvarska 25B, Beograd', 'Nespecijalizovana trgovina na veliko (4690)',
+    '22162721', '115472260', 'ridepogon.com', '+381 69 69 2345', 'pogonmobility@gmail.com',
+    'Kontakt podaci — korisnički servis', 'Zaštita poverljivih podataka o transakciji',
+    'poverljive informacija se prenose putem javne mreže u zaštićenoj (kriptovanoj) formi',
+    'kompletni proces naplate obavlja na stranicama banke',
+    'Niti jednog trenutka podaci o platnoj kartici nisu dostupni našem sistemu',
+  ]) assert.match(terms, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });
 
 test('customer-facing EPM routes and card-network information links are wired', () => {
@@ -759,7 +765,7 @@ test('customer-facing EPM routes and card-network information links are wired', 
 });
 
 test('browser source and production bundle contain no NestPay server credential names', () => {
-  const browserSources = ['../src/main.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx', '../src/lib/nestpay.ts']
+  const browserSources = ['../src/main.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CardPayment.tsx']
     .map((path) => readFileSync(new URL(path, import.meta.url), 'utf8')).join('\n');
   assert.doesNotMatch(browserSources, /NESTPAY_STORE_KEY|NESTPAY_API_USERNAME|NESTPAY_API_PASSWORD|VITE_NESTPAY_STORE_KEY|SMTP_PASS/);
 });
@@ -810,9 +816,7 @@ test('NestPay amount is sent in major RSD units without an undocumented para con
     okUrl: 'https://ridepogon.com/api/nestpay/callback', failUrl: 'https://ridepogon.com/api/nestpay/callback',
   }, testEnv);
   assert.equal(fields.amount, '168500');
-  const xml = buildAuthorizationXml({ username: 'u', password: 'p', clientId: 'c', orderId: 'o', md: 'm', total: 168_500, installmentCount: 1 });
-  assert.match(xml, /<Total>168500<\/Total>/);
-  assert.doesNotMatch(xml, /16850000/);
+  assert.notEqual(fields.amount, '16850000');
 });
 
 test('declined customer confirmations never expose an explicit processor reason', () => {

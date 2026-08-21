@@ -1,7 +1,5 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
-import { LockKeyhole, ShieldCheck } from 'lucide-react';
-import { detectCardType, isOfficialTestPan, normalizeExpiryMonth, normalizeExpiryYear } from '../../lib/nestpay';
-import { PaymentBranding } from './PaymentBranding';
+import { useEffect, useRef, useState } from 'react';
+import { LockKeyhole } from 'lucide-react';
 
 type PreparedPayment = {
   mode: string;
@@ -13,19 +11,17 @@ type PreparedPayment = {
 };
 
 const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS').format(value)} RSD`;
-const inputClassName = 'min-h-13 w-full rounded-2xl border border-black/10 bg-[#f8f7f3] px-4 text-[15px] outline-none transition placeholder:text-black/30 hover:border-black/20 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10';
 
-// The transaction fields and Hash Ver2 come from Pogon's server. Card data is
-// held only in this browser form and POSTed directly to the NestPay TEST
-// gateway; it never reaches Pogon servers, storage, analytics or logs.
+// Pogon prepares only the non-card transaction fields. The browser immediately
+// POSTs them unchanged to Banca Intesa / NestPay, where the customer enters all
+// card data on the bank-hosted HPP page.
 export function CardPayment() {
   const params = new URLSearchParams(window.location.search);
   const orderId = params.get('orderId') || '';
   const token = params.get('token') || '';
   const [prepared, setPrepared] = useState<PreparedPayment | null>(null);
   const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
+  const submittedRef = useRef(false);
 
   useEffect(() => {
     if (!orderId || !token) { setError('Nedostaju podaci porudžbine.'); return; }
@@ -42,45 +38,23 @@ export function CardPayment() {
       .catch((cause) => setError(cause instanceof Error ? cause.message : 'Priprema plaćanja nije uspela.'));
   }, [orderId, token]);
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!prepared || submitting) return;
-    const data = new FormData(event.currentTarget);
-    const pan = String(data.get('pan') || '').replace(/\s/g, '');
-    const month = normalizeExpiryMonth(String(data.get('expMonth') || ''));
-    const year = normalizeExpiryYear(String(data.get('expYear') || ''));
-    const cvv = String(data.get('cv2') || '').trim();
-    setError('');
-    if (!/^\d{13,19}$/.test(pan)) { setError('Proverite broj kartice.'); return; }
-    if (!month || !year) { setError('Proverite datum isteka kartice.'); return; }
-    if (!/^\d{3,4}$/.test(cvv)) { setError('Proverite CVC/CVV kod.'); return; }
-    if (prepared.mode === 'test' && !(await isOfficialTestPan(pan))) {
-      setError('TEST okruženje prihvata isključivo zvanične testne kartice banke.');
-      return;
-    }
-    setSubmitting(true);
-
+  useEffect(() => {
+    if (!prepared || submittedRef.current) return;
+    submittedRef.current = true;
     const gateForm = document.createElement('form');
     gateForm.method = 'POST';
     gateForm.action = prepared.gateUrl;
     gateForm.hidden = true;
-    const append = (name: string, value: string) => {
+    for (const [name, value] of Object.entries(prepared.fields)) {
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = name;
       input.value = value;
       gateForm.appendChild(input);
-    };
-    for (const [name, value] of Object.entries(prepared.fields)) append(name, value);
-    append('pan', pan);
-    append('cv2', cvv);
-    append('Ecom_Payment_Card_ExpDate_Month', month);
-    append('Ecom_Payment_Card_ExpDate_Year', year);
-    const cardType = detectCardType(pan);
-    if (cardType) append('cardType', cardType);
+    }
     document.body.appendChild(gateForm);
     gateForm.submit();
-  };
+  }, [prepared]);
 
   return (
     <main className="grid min-h-screen place-items-center bg-[#f3f2ed] px-5 py-12 text-[#171713]">
@@ -91,47 +65,20 @@ export function CardPayment() {
             <LockKeyhole className="size-4 text-emerald-700" /> Sigurno plaćanje
           </span>
         </div>
-        <h1 className="mt-6 text-3xl font-black tracking-tight">Plaćanje karticom</h1>
+        <h1 className="mt-6 text-3xl font-black tracking-tight">Preusmeravanje na banku</h1>
         {prepared && (
           <dl className="mt-5 grid gap-2 rounded-2xl bg-[#f8f7f3] p-4 text-sm">
-            <div className="flex justify-between"><dt>Broj narudžbine</dt><dd className="font-bold">{prepared.orderId}</dd></div>
-            <div className="flex justify-between"><dt>Iznos sa PDV-om</dt><dd className="font-black">{formatRsd(prepared.totalRsd)}</dd></div>
-            {prepared.mode === 'test' && (
-              <p className="mt-1 rounded-xl bg-amber-100 px-3 py-2 text-xs font-bold text-amber-900">TEST okruženje — prihvataju se samo zvanične testne kartice.</p>
-            )}
+            <div className="flex justify-between gap-4"><dt>Broj narudžbine</dt><dd className="font-bold">{prepared.orderId}</dd></div>
+            <div className="flex justify-between gap-4"><dt>Iznos sa PDV-om</dt><dd className="font-black">{formatRsd(prepared.totalRsd)}</dd></div>
           </dl>
         )}
-        {error && <p role="alert" className="mt-5 rounded-2xl bg-red-50 p-4 text-sm text-red-800">{error}</p>}
-        <PaymentBranding compact />
-        {prepared && (
-          <form ref={formRef} onSubmit={submit} className="mt-6 space-y-4" autoComplete="off">
-            <label className="block">
-              <span className="mb-2 block text-sm font-bold">Broj kartice</span>
-              <input name="pan" inputMode="numeric" autoComplete="cc-number" placeholder="0000 0000 0000 0000" required maxLength={23} className={inputClassName} />
-            </label>
-            <div className="grid grid-cols-3 gap-3">
-              <label className="block">
-                <span className="mb-2 block text-sm font-bold">Mesec</span>
-                <input name="expMonth" inputMode="numeric" autoComplete="cc-exp-month" placeholder="MM" required maxLength={2} className={inputClassName} />
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-bold">Godina</span>
-                <input name="expYear" inputMode="numeric" autoComplete="cc-exp-year" placeholder="GGGG" required maxLength={4} className={inputClassName} />
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-bold">CVC/CVV</span>
-                <input name="cv2" inputMode="numeric" autoComplete="cc-csc" placeholder="123" required maxLength={4} className={inputClassName} />
-              </label>
-            </div>
-            <button disabled={submitting} className="mt-2 flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-orange-500 font-black text-black transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-40">
-              {submitting ? 'Preusmeravanje na banku…' : 'Plati'}
-            </button>
-            <p className="flex items-center justify-center gap-2 text-center text-[11px] text-black/40">
-              <ShieldCheck className="size-3.5" /> Podaci kartice se šalju šifrovano direktno banci (Banca Intesa / NestPay) i ne čuvaju se kod trgovca.
-            </p>
-          </form>
+        {error ? (
+          <p role="alert" className="mt-5 rounded-2xl bg-red-50 p-4 text-sm text-red-800">{error}</p>
+        ) : (
+          <p className="mt-6 text-sm leading-6 text-black/60">
+            Preusmeravamo Vas na zaštićenu Banca Intesa / NestPay stranicu. Podatke platne kartice unosite isključivo na stranici banke.
+          </p>
         )}
-        {!prepared && !error && <p className="mt-6 text-sm text-black/50">Priprema sigurnog plaćanja…</p>}
       </section>
     </main>
   );

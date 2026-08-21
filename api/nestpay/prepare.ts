@@ -3,8 +3,9 @@ import { findOrderByLookup } from '../_lib/supabase.mjs';
 import { prepare3DPayment } from '../_lib/payment-flow.mjs';
 
 // Returns the server-authoritative hidden fields (including Hash v2) for the
-// browser's direct POST to the NestPay TEST gateway. Card data never touches
-// this endpoint; the StoreKey never leaves the server.
+// browser's direct POST to the NestPay TEST hosted-payment page. The bank page
+// collects all card data; this endpoint never receives it and never exposes the
+// StoreKey.
 export default async function handler(request: any, response: any) {
   response.setHeader('Cache-Control', 'no-store');
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method not allowed.' });

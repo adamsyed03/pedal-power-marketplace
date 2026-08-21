@@ -1,40 +1,37 @@
-# Payment architecture (Banca Intesa / NestPay 3D+API)
+# Payment architecture (Banca Intesa / NestPay 3D Pay Hosting)
 
-The supplied technical manuals define the direct NestPay sequence below and do
-not document a separate Chip Card runtime API. Banca Intesa subsequently gave
-the merchant-specific request contract in writing: use
-`storetype=3d_pay_hosting`, and do not include `instalment` or `CallbackURL` in
-the 3D POST. The instruction did not remove the existing browser card fields;
-this implementation follows only those explicit changes. See
-`CHIP_CARD_INTEGRATION.md`.
+Marina Marković confirmed this merchant is a 3D Pay Hosting merchant. The
+controlling package is the bank-provided `3D Pay Hosting` package. It requires
+`storetype=3d_pay_hosting` and prohibits `instalment` and `CallbackURL` in the
+POST. The hosted manual states that payment is performed automatically by
+NestPay and that card entry occurs on the bank-hosted page.
 
-## Actual flow (per the supplied bank documentation)
+## Actual flow
 
 ```text
 Customer → ridepogon.com/checkout → order persisted (PENDING)
-        → /payment/card (browser-only card form)
-        → POST /api/nestpay/prepare (server builds Hash v2 + hidden fields)
-        → browser POSTs card + server-prepared fields directly to https://testsecurepay.eway2pay.com/fim/est3dgate
-        → 3-D Secure authentication at issuer
-        → NestPay POSTs 3D result (md/eci/xid/cavv/mdStatus) to /api/nestpay/callback
-        → server verifies the ver2 response hash and claims the order (AUTHORIZING)
-        → server sends CC5Request Auth to https://testsecurepay.eway2pay.com/fim/api
-        → Approved + ProcReturnCode 00 → PAID; Declined → DECLINED;
-          Error/transport failure/ambiguity → UNKNOWN
-          UNKNOWN is resolved by Order Status query
-        → browser redirected to /payment/success or /payment/failed
+        → POST /api/nestpay/prepare (server creates Hash v2 + non-card fields)
+        → browser immediately POSTs those fields to the NestPay TEST HPP
+        → customer enters card data exclusively on the bank page
+        → NestPay performs 3-D Secure and the payment automatically
+        → NestPay POSTs the signed final result to /api/nestpay/callback
+        → Pogon verifies Hash v2, merchant ID, order ID and amount
+        → accepted mdStatus + Approved + ProcReturnCode 00 → PAID
+          Declined/Error or unacceptable mdStatus → DECLINED
+          ambiguous state → UNKNOWN, resolved only by Order Status query
+        → customer is redirected to Pogon's result page
 ```
 
-Key implementation files:
+There is no second CC5 API Auth in the hosted flow. The API credentials remain
+server-only for documented read-only Order Status reconciliation.
 
-- `api/_lib/nestpay.mjs` — Hash v2, 3D form fields, response-hash check,
-  CC5Request builders, response parsing.
-- `api/_lib/payment-flow.mjs` — prepare + callback processing (idempotent,
-  single API Auth per order, card-data stripping).
+Key files:
+
+- `api/_lib/nestpay.mjs` — Hash v2, hosted form fields and response verification.
+- `api/_lib/payment-flow.mjs` — idempotent hosted callback finalization.
 - `api/nestpay/prepare.ts`, `api/nestpay/callback.ts` — HTTP surfaces.
-- `api/_lib/reconcile.mjs`, `api/internal/reconcile.ts` — UNKNOWN resolution.
-- `src/app/components/CardPayment.tsx` — browser card form; it submits card and
-  server-prepared transaction fields directly to NestPay.
+- `api/_lib/reconcile.mjs`, `api/internal/reconcile.ts` — Order Status checks.
+- `src/app/components/CardPayment.tsx` — automatic non-card POST to the bank.
 
-Secrets (StoreKey, API user password) are server-only. PAN/CVV/expiry are never
-received, persisted or logged by Pogon servers.
+StoreKey and API credentials are server-only. PAN, CVV and expiry are entered
+only on the bank page and are never received, persisted or logged by Pogon.

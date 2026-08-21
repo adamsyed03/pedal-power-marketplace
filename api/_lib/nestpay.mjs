@@ -149,9 +149,9 @@ export function generateRnd() {
 }
 
 // Exact server-prepared field set for the browser POST to est3dgate. Banca
-// Intesa requires storetype=3d_pay_hosting for this merchant, while instalment
-// and CallbackURL must be absent. Browser-only card fields are added separately
-// by CardPayment; storetype is not part of the Hash v2 input.
+// Intesa requires storetype=3d_pay_hosting for this merchant, while instalment,
+// CallbackURL and all card fields must be absent. The bank-hosted HPP collects
+// the card details; storetype, lang, encoding and shopurl are not Hash v2 inputs.
 export function create3DFormFields({ orderId, amountRsd, installmentCount, okUrl, failUrl }, env = process.env) {
   const config = getNestPayConfig(env);
   const amount = String(amountRsd);
@@ -161,6 +161,7 @@ export function create3DFormFields({ orderId, amountRsd, installmentCount, okUrl
   // Hash Ver2 formula still contains its empty positional slot after Auth.
   const instalment = '';
   const rnd = generateRnd();
+  const shopurl = `${new URL(okUrl).origin}/checkout`;
   const hash = create3DRequestHash(
     { clientid: config.merchantId, oid: orderId, amount, okUrl, failUrl, tranType: 'Auth', instalment, rnd, currency: '941' },
     env.NESTPAY_STORE_KEY,
@@ -170,7 +171,8 @@ export function create3DFormFields({ orderId, amountRsd, installmentCount, okUrl
     fields: {
       clientid: config.merchantId, storetype: '3d_pay_hosting', trantype: 'Auth',
       amount, currency: '941', oid: orderId,
-      okUrl, failUrl, lang: 'tr', rnd, hashAlgorithm: 'ver2', hash,
+      okUrl, failUrl, lang: 'en', rnd, encoding: 'utf-8', shopurl,
+      hashAlgorithm: 'ver2', hash,
     },
   };
 }
@@ -292,13 +294,6 @@ const xml = (value) => String(value ?? '')
   .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
   .replaceAll('"', '&quot;').replaceAll("'", '&apos;');
 
-// CC5AS XML fields from the API manual, pp. 9–18.
-export function buildAuthorizationXml(input) {
-  const instalment = Number(input.installmentCount) > 1
-    ? `<Instalment>${xml(input.installmentCount)}</Instalment>` : '';
-  return `<CC5Request><Name>${xml(input.username)}</Name><Password>${xml(input.password)}</Password><ClientId>${xml(input.clientId)}</ClientId><IPAddress>${xml(input.ipAddress)}</IPAddress><Email>${xml(input.email)}</Email><OrderId>${xml(input.orderId)}</OrderId><Type>Auth</Type><Number>${xml(input.md)}</Number><Total>${xml(input.total)}</Total><Currency>941</Currency>${instalment}<PayerSecurityLevel>${xml(input.eci)}</PayerSecurityLevel><PayerTxnId>${xml(input.xid)}</PayerTxnId><PayerAuthenticationCode>${xml(input.cavv)}</PayerAuthenticationCode></CC5Request>`;
-}
-
 export function buildOrderStatusXml(input) {
   return `<CC5Request><Name>${xml(input.username)}</Name><Password>${xml(input.password)}</Password><ClientId>${xml(input.clientId)}</ClientId><OrderId>${xml(input.orderId)}</OrderId><Extra><ORDERSTATUS>QUERY</ORDERSTATUS></Extra></CC5Request>`;
 }
@@ -320,13 +315,4 @@ export function parseApiResponse(body) {
     statusMdStatus: get('MDSTATUS'),
     transactionDate: get('TRXDATE') || get('AUTH_DTTM') || get('CAPTURE_DTTM'),
   };
-}
-
-export const isApprovedApiResponse = (result) =>
-  result?.response === 'Approved' && result?.procReturnCode === '00';
-
-export function paymentStateFromApiResponse(result) {
-  if (isApprovedApiResponse(result)) return 'PAID';
-  if (result?.response === 'Declined') return 'DECLINED';
-  return 'UNKNOWN';
 }

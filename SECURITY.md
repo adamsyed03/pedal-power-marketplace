@@ -1,34 +1,32 @@
 # Payment security boundary
 
-## Responsibility model (3D+API, browser-direct card POST)
+## Responsibility model (Banca Intesa 3D Pay Hosting)
 
-Banca Intesa requires `storetype=3d_pay_hosting` for merchant `13IN004634`
-(see `docs/payments/chip-card-architecture.md`). `/payment/card` holds the card
-values only in the browser and POSTs them together with the server-prepared
-transaction fields directly to NestPay. Card data never reaches Pogon servers.
+Banca Intesa requires `storetype=3d_pay_hosting` for merchant `13IN004634`.
+Pogon prepares the signed non-card transaction fields and immediately POSTs
+them to NestPay. The customer enters PAN, CVV and expiry exclusively on the
+Banca Intesa / NestPay hosted payment page; Pogon never receives those values.
 
 Hard rules enforced in code and tests:
 
-- PAN, CVV and expiry are never persisted, logged, sent to analytics or error
-  monitoring, or stored in local/session storage. The callback strips any
-  card-data-shaped fields NestPay may echo before processing
-  (`stripSensitiveFields` in `api/_lib/payment-flow.mjs`).
+- PAN, CVV and expiry are never collected, persisted, logged, sent to analytics
+  or error monitoring, or stored in local/session storage. The callback strips
+  any card-data-shaped fields the gateway might echo before processing.
 - `NESTPAY_STORE_KEY`, `NESTPAY_API_USERNAME` and `NESTPAY_API_PASSWORD` are
-  server-only and must never use a `VITE_` prefix. The Hash v2 is computed
-  server-side in `/api/nestpay/prepare`; the browser only receives the finished
-  hidden-field set.
-- The 3D response is trusted only after the ver2 response-hash check
-  (SHA-512/Base64 over the escaped `HASHPARAMS` values plus StoreKey), plus
-  clientid and order checks. An order becomes `PAID` only when the server-side
-  API Auth returns `Response=Approved` and `ProcReturnCode=00`.
-- Callbacks are idempotent: an order is claimed with a conditional
-  `AUTHORIZING` transition, so a duplicate or concurrent callback can never
-  trigger a second Sale or overwrite a final state.
-- Ambiguous outcomes (timeouts, transport errors) stay `UNKNOWN` and are
-  resolved only through the documented Order Status query — a Sale is never
-  retried blindly.
-- In TEST mode the gateway is pinned to Banca Intesa's TEST endpoint. Test
-  operators must enter only the official workbook cards on the bank page.
-- `NESTPAY_ENV=test` pins the TEST endpoints; mixing TEST and production URLs
-  fails closed (`NESTPAY_ENDPOINT_ENV_MISMATCH`). Production stays disabled
-  until the bank issues production parameters after EPM inspection.
+  server-only and never use a `VITE_` prefix. Hash v2 is computed server-side in
+  `/api/nestpay/prepare`; the browser receives only the finished hidden fields.
+- The browser POST contains `storetype=3d_pay_hosting`, `hashAlgorithm=ver2`,
+  `encoding=utf-8` and `lang=en`; it contains neither `instalment` nor
+  `CallbackURL` nor any card-data field.
+- The hosted response is trusted only after the ver2 response-hash check plus
+  merchant, order and amount binding. The callback is already the final payment
+  response: NestPay performs the payment automatically, and Pogon never sends a
+  second API Auth.
+- An order becomes `PAID` only when the signed hosted response contains an
+  accepted `mdStatus`, `Response=Approved` and `ProcReturnCode=00`.
+- Callbacks are idempotent: a conditional state transition ensures duplicate or
+  concurrent callbacks cannot finalize or email the same transaction twice.
+- Ambiguous local state is resolved only through the documented read-only Order
+  Status query. A payment transaction is never retried blindly.
+- TEST mode pins the official Banca Intesa TEST endpoints. Production remains
+  disabled until the bank completes inspection and issues production values.

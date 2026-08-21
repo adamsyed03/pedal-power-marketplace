@@ -180,7 +180,7 @@ export function Checkout() {
                 {items.map((item) => {
                   const entry = products.find((candidate) => candidate.key === item.product)!;
                   return <div key={item.product} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                    <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-[#f5f3ed]"><img src={entry.image} alt={entry.name} className="size-full object-contain p-1" /></div>
+                    <div className="size-16 shrink-0 overflow-hidden rounded-xl"><img src={entry.image} alt={entry.name} className="size-full object-cover" /></div>
                     <div className="min-w-0 flex-1"><h2 className="font-black tracking-tight">{entry.name}</h2><p className="mt-1 text-xs leading-4 text-white/45">{entry.description}</p><p className="mt-1 text-xs font-bold text-white/70">{formatRsd(entry.priceRsd)} po komadu</p></div>
                     <div className="flex items-center gap-0.5 rounded-full bg-white/10 p-1">
                       <button type="button" aria-label="Smanji količinu" onClick={() => item.quantity === 1 && items.length > 1 ? removeModel(item.product) : changeQuantity(item.product, -1)} className="flex size-7 items-center justify-center rounded-full hover:bg-white/10"><Minus className="size-3" /></button>
@@ -198,7 +198,7 @@ export function Checkout() {
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
                 <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-400" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-white/45">Jednokratno plaćanje</p></div></div>
-                <p className="mt-3 text-xs leading-5 text-white/40">Podatke kartice unosite u sledećem koraku; pregledač ih šalje direktno Banca Intesa / NestPay sistemu.</p>
+                <p className="mt-3 text-xs leading-5 text-white/40">Nakon potvrde bićete preusmereni na zaštićenu Banca Intesa / NestPay stranicu, gde isključivo unosite podatke platne kartice.</p>
               </div>
 
               <PaymentBranding dark compact />

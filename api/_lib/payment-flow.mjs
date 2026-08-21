@@ -1,7 +1,6 @@
 import {
-  buildAuthorizationXml, create3DFormFields, getNestPayConfig,
+  create3DFormFields, getNestPayConfig,
   inspect3DResponseHash, isAccepted3DStatus, normalizeNestPayFormParams,
-  parseApiResponse, paymentStateFromApiResponse,
 } from './nestpay.mjs';
 import { findOrderById, patchOrder } from './supabase.mjs';
 import { dispatchConfirmation } from './confirmation.mjs';
@@ -100,9 +99,12 @@ export function callbackAmountMatchesOrder(params, order) {
   return !returnedAmount || returnedAmount === String(order?.total_rsd ?? '');
 }
 
-export function hasComplete3DAuthFields(params) {
-  return [params?.md, params?.eci, params?.xid, params?.cavv]
-    .every((value) => String(value ?? '').length > 0);
+export function hostedPaymentState(params) {
+  if (isAccepted3DStatus(params?.mdStatus)
+    && params?.Response === 'Approved' && params?.ProcReturnCode === '00') return 'PAID';
+  if (!isAccepted3DStatus(params?.mdStatus)
+    || params?.Response === 'Declined' || params?.Response === 'Error') return 'DECLINED';
+  return 'UNKNOWN';
 }
 
 // Builds the exact hidden-field set for the browser POST to est3dgate for one
@@ -133,13 +135,11 @@ const finalize = async (orderId, changes, env) => {
   return updated;
 };
 
-// Processes the NestPay 3D response POST: validates the response hash, claims
-// the order, and for accepted mdStatus values sends the API Auth request with
-// md/eci/xid/cavv (BIB guide §5.4). Only Approved + ProcReturnCode 00 marks
-// the order PAID. Ambiguous API outcomes leave the order UNKNOWN for the
-// Order Status reconciliation to settle — a Sale is never retried blindly.
+// Processes the final 3D Pay Hosting response. NestPay hosts card entry and
+// performs the payment automatically, so this signed callback already carries
+// the final transaction result. Pogon must never send a second API Auth.
 export async function processNestPayReturn(
-  rawParams, env = process.env, fetchImpl = fetch, diagnostics = createCallbackDiagnostics(rawParams),
+  rawParams, env = process.env, _fetchImpl = fetch, diagnostics = createCallbackDiagnostics(rawParams),
 ) {
   const normalized = normalizeNestPayFormParams(rawParams);
   diagnostics.DUPLICATE_FORM_FIELDS = normalized.duplicateFields.map(safeHashFieldName);
@@ -213,7 +213,7 @@ export async function processNestPayReturn(
   }
 
   // Single-writer claim: a concurrent duplicate callback loses this update and
-  // must not trigger a second API Auth for the same order.
+  // must not finalize or email the same hosted payment twice.
   const claimed = await patchOrder(orderId, {
     payment_status: 'AUTHORIZING',
     callback_received_at: new Date().toISOString(),
@@ -221,54 +221,15 @@ export async function processNestPayReturn(
   }, ['PENDING', '3D_PENDING'], env);
   if (!claimed) return { outcome: 'ALREADY_PROCESSING', order: await findOrderById(orderId, env) };
 
-  if (!isAccepted3DStatus(params.mdStatus)) {
-    const updated = await finalize(orderId, {
-      payment_status: 'DECLINED', response: 'Declined',
-      proc_return_code: null,
-    }, env);
-    return { outcome: 'DECLINED_3D', order: updated };
-  }
-
-  if (!hasComplete3DAuthFields(params)) {
-    const updated = await finalize(orderId, { payment_status: 'UNKNOWN' }, env);
-    return { outcome: 'UNKNOWN', order: updated, reason: 'MISSING_3D_AUTH_FIELDS' };
-  }
-
-  const xml = buildAuthorizationXml({
-    username: env.NESTPAY_API_USERNAME, password: env.NESTPAY_API_PASSWORD,
-    clientId: config.merchantId, ipAddress: params.ClientIp || '', email: order.email || '',
-    orderId, total: String(order.total_rsd), installmentCount: order.installment_count,
-    md: params.md, eci: params.eci, xid: params.xid, cavv: params.cavv,
-  });
-
-  let result;
-  try {
-    const response = await fetchImpl(config.apiUrl, {
-      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ DATA: xml }),
-    });
-    if (!response.ok) throw new Error(`NESTPAY_API_HTTP_${response.status}`);
-    result = parseApiResponse(await response.text());
-  } catch {
-    // The charge may or may not have happened. Stay UNKNOWN; reconciliation
-    // resolves it via Order Status query. Never retry the Sale.
-    const updated = await finalize(orderId, { payment_status: 'UNKNOWN' }, env);
-    return { outcome: 'UNKNOWN', order: updated };
-  }
-
   const shared = {
-    authorization_code: result.authCode || null,
-    nestpay_transaction_id: result.transactionId || null,
-    host_reference: result.hostReference || null,
-    proc_return_code: result.procReturnCode || null,
-    response: result.response || null,
-    transaction_date: result.transactionDate || null,
+    authorization_code: params.AuthCode || null,
+    nestpay_transaction_id: params.TransId || null,
+    host_reference: params.HostRefNum || null,
+    proc_return_code: params.ProcReturnCode || null,
+    response: params.Response || null,
+    transaction_date: params['EXTRA.TRXDATE'] || params.TRXDATE || null,
   };
-  if (result.orderId && result.orderId !== orderId) {
-    const updated = await finalize(orderId, { payment_status: 'UNKNOWN' }, env);
-    return { outcome: 'UNKNOWN', order: updated, reason: 'API_ORDER_ID_MISMATCH' };
-  }
-  const nextState = paymentStateFromApiResponse(result);
+  const nextState = hostedPaymentState(params);
   if (nextState === 'PAID') {
     const updated = await finalize(orderId, { payment_status: 'PAID', ...shared }, env);
     return { outcome: 'PAID', order: updated };
