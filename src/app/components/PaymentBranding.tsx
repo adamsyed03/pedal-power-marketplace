@@ -7,16 +7,18 @@ const visaSecureUrl = 'https://rs.visa.com/pay-with-visa/security-and-assistance
 const mastercardIdentityCheckUrl = 'https://www.mastercard.rs/sr-rs/korisnici/pronadite-karticu.html';
 
 const acceptedCards = [
-  ['/payment-brands/bib-maestro.png', 'Maestro'],
   ['/payment-brands/bib-mastercard.png', 'Mastercard'],
-  ['/payment-brands/bib-dinacard.png', 'DinaCard'],
+  ['/payment-brands/bib-maestro.png', 'Maestro'],
   ['/payment-brands/bib-visa.png', 'Visa'],
   ['/payment-brands/bib-amex.png', 'American Express'],
+  ['/payment-brands/bib-dinacard.png', 'DinaCard'],
 ] as const;
 
 const securityPrograms = [
-  ['/payment-brands/bib-mastercard-id-check.png', 'Mastercard Identity Check', mastercardIdentityCheckUrl],
   ['/payment-brands/bib-visa-secure.png', 'Visa Secure', visaSecureUrl],
+  ['/payment-brands/bib-mastercard-id-check.png', 'Mastercard Identity Check', mastercardIdentityCheckUrl],
+  ['/payment-brands/bib-amex-safekey.png', 'American Express SafeKey', null],
+  ['/payment-brands/bib-dinacard-secure.png', 'DinaCard Secure', null],
 ] as const;
 
 function BrandAsset({ src, alt, security = false }: { src: string; alt: string; security?: boolean }) {
@@ -49,7 +51,9 @@ export function PaymentBranding({ dark = false, compact = false }: PaymentBrandi
 
         <div className="flex flex-wrap items-center gap-2" role="list" aria-label="Programi sigurnosti kartica">
           {securityPrograms.map(([src, alt, href]) => (
-            <a key={src} role="listitem" href={href} target="_blank" rel="noreferrer"><BrandAsset src={src} alt={alt} security /></a>
+            href
+              ? <a key={src} role="listitem" href={href} target="_blank" rel="noreferrer"><BrandAsset src={src} alt={alt} security /></a>
+              : <span key={src} role="listitem"><BrandAsset src={src} alt={alt} security /></span>
           ))}
         </div>
       </div>

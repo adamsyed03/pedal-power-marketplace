@@ -743,10 +743,12 @@ test('EPM payment branding uses the complete official Banca Intesa artwork set',
   assert.match(branding, /Prihvaćene kartice/);
   assert.match(branding, /Programi sigurnosti/);
   assert.doesNotMatch(branding, /MissingAsset|zvanični asset nedostaje/);
-  for (const asset of ['bib-maestro.png', 'bib-mastercard.png', 'bib-dinacard.png', 'bib-visa.png', 'bib-amex.png', 'bib-mastercard-id-check.png', 'bib-visa-secure.png']) {
+  for (const asset of [
+    'bib-mastercard.png', 'bib-maestro.png', 'bib-visa.png', 'bib-amex.png', 'bib-dinacard.png',
+    'bib-visa-secure.png', 'bib-mastercard-id-check.png', 'bib-amex-safekey.png', 'bib-dinacard-secure.png',
+  ]) {
     assert.match(branding, new RegExp(`/payment-brands/${asset.replace('.', '\\.')}\\b`));
   }
-  assert.doesNotMatch(branding, /bib-amex-safekey|bib-dinacard-secure/);
   assert.match(branding, /h-\[42px\] w-\[66px\]/);
   assert.match(branding, /h-\[52px\] w-\[110px\]/);
   assert.match(branding, /gap-8/);
