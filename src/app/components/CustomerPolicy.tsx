@@ -41,7 +41,7 @@ export function CustomerPolicy({ page }: { page: 'contact' | 'delivery' | 'compl
 
   if (page === 'delivery') return (
     <PolicyLayout title="Dostava i preuzimanje">
-      <section><h2 className="text-2xl font-black text-black">Kurirska dostava</h2><p className="mt-3">Dostava je dostupna na teritoriji cele Srbije. Za modele koji su na stanju očekivani rok dostave je 1–3 radna dana. Naknada za kurirsku dostavu iznosi 3.500 RSD po porudžbini i prikazuje se u konačnoj specifikaciji pre plaćanja.</p></section>
+      <section><h2 className="text-2xl font-black text-black">Kurirska dostava</h2><p className="mt-3">Dostava je dostupna na teritoriji cele Srbije. Za modele koji su na stanju očekivani rok dostave je 1–3 radna dana. Naknada za kurirsku dostavu iznosi 3.500,00 RSD po porudžbini i prikazuje se u konačnoj specifikaciji pre plaćanja.</p></section>
       <section><h2 className="text-2xl font-black text-black">Lično preuzimanje</h2><p className="mt-3">Lično preuzimanje na adresi Save Maskovica 3, Beograd je bez naknade. Termin se potvrđuje nakon provere dostupnosti modela.</p></section>
       <section><h2 className="text-2xl font-black text-black">Dostupnost robe</h2><p className="mt-3">Rok dostave važi kada je izabrani model na stanju. Ako isporuka nije moguća u očekivanom roku, Pogon kontaktira kupca radi dogovora pre dalje obrade.</p></section>
       <section><h2 className="text-2xl font-black text-black">Ograničenja dostave</h2><p className="mt-3">Porudžbine putem ove prodavnice isporučuju se isključivo u Republici Srbiji. Međunarodna dostava i izvoz nisu dostupni, pa se na ove porudžbine ne primenjuju carinski ni uvozni troškovi.</p></section>

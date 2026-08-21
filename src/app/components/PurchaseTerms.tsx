@@ -38,6 +38,12 @@ export function PurchaseTerms() {
           poznat u trenutku transakcije. Zbog toga iznos zaduženja u valuti računa kartice
           može neznatno odstupati od cene iskazane u RSD.
         </p>
+        <p className="mt-3 leading-7 text-black/70">
+          Plaćanje na rate dostupno je samo karticama koje je izdala Banca Intesa. Izbor broja
+          rata prikazuje se na zaštićenoj stranici Banke nakon unosa kartice. Konačan iznos za
+          plaćanje na rate može biti približno 10% viši; Banka prikazuje tačan iznos pre potvrde
+          plaćanja.
+        </p>
 
         <h2 className="mt-8 text-2xl font-black">Dostava</h2>
         <p className="mt-3 leading-7 text-black/70">
@@ -50,7 +56,7 @@ export function PurchaseTerms() {
           carinski ni uvozni troškovi.
         </p>
         <p className="mt-3 leading-7 text-black/70">
-          Kurirska dostava naplaćuje se 3.500 RSD po porudžbini i nije uključena u
+          Kurirska dostava naplaćuje se 3.500,00 RSD po porudžbini i nije uključena u
           prikazanu cenu bicikla. Naknada za dostavu i konačan iznos prikazuju se pre
           potvrde porudžbine i pre bilo kakvog plaćanja.
         </p>

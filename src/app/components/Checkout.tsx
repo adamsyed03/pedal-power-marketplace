@@ -151,7 +151,7 @@ export function Checkout() {
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 <button type="button" onClick={() => setDeliveryMethod('courier')} aria-pressed={deliveryMethod === 'courier'} className={`flex min-h-32 gap-4 rounded-2xl border-2 p-4 text-left transition ${deliveryMethod === 'courier' ? 'border-orange-500 bg-orange-50/60' : 'border-black/[0.07] hover:border-black/20'}`}>
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm"><Truck className="size-5" /></span>
-                  <span><span className="flex items-center gap-2 font-black">Kurirska dostava {deliveryMethod === 'courier' && <Check className="size-4 text-orange-600" />}</span><span className="mt-1 block text-sm leading-5 text-black/50">Cela Srbija · 1–3 radna dana</span><span className="mt-2 block text-sm font-black">3.500 RSD</span></span>
+                  <span><span className="flex items-center gap-2 font-black">Kurirska dostava {deliveryMethod === 'courier' && <Check className="size-4 text-orange-600" />}</span><span className="mt-1 block text-sm leading-5 text-black/50">Cela Srbija · 1–3 radna dana</span><span className="mt-2 block text-sm font-black">{formatRsd(3500)}</span></span>
                 </button>
                 <button type="button" onClick={() => setDeliveryMethod('pickup')} aria-pressed={deliveryMethod === 'pickup'} className={`flex min-h-32 gap-4 rounded-2xl border-2 p-4 text-left transition ${deliveryMethod === 'pickup' ? 'border-orange-500 bg-orange-50/60' : 'border-black/[0.07] hover:border-black/20'}`}>
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm"><Store className="size-5" /></span>
@@ -198,7 +198,7 @@ export function Checkout() {
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
                 <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-400" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-white/45">Plaćanje do 12 rata</p></div></div>
-                <p className="mt-3 text-xs leading-5 text-white/40">Nakon potvrde bićete preusmereni na zaštićenu Banca Intesa / NestPay stranicu, gde isključivo unosite podatke platne kartice. Izbor broja rata prikazuje se na stranici banke nakon unosa kartice. Plaćanje na rate dostupno je samo karticama koje je izdala Banca Intesa.</p>
+                <p className="mt-3 text-xs leading-5 text-white/40">Nakon potvrde bićete preusmereni na zaštićenu Banca Intesa / NestPay stranicu, gde isključivo unosite podatke platne kartice. Izbor broja rata prikazuje se na stranici banke nakon unosa kartice. Plaćanje na rate dostupno je samo karticama koje je izdala Banca Intesa. Konačan iznos za plaćanje na rate može biti približno 10% viši; tačan iznos banka prikazuje pre potvrde plaćanja.</p>
               </div>
 
               <PaymentBranding dark compact />

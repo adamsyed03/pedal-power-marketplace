@@ -15,7 +15,7 @@ export function BusinessInfo() {
           <div><dt className="text-black/50">Email</dt><dd className="font-bold"><a href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a></dd></div>
         </dl>
         <h2 className="mt-10 text-2xl font-black">Dostava i preuzimanje</h2>
-        <p className="mt-3 leading-7 text-black/70">Dostava je dostupna na teritoriji cele Srbije. Za modele koji su na stanju, očekivani rok dostave je 1–3 radna dana. Kurirska dostava iznosi 3.500 RSD po porudžbini i prikazuje se pre plaćanja.</p>
+        <p className="mt-3 leading-7 text-black/70">Dostava je dostupna na teritoriji cele Srbije. Za modele koji su na stanju, očekivani rok dostave je 1–3 radna dana. Kurirska dostava iznosi 3.500,00 RSD po porudžbini i prikazuje se pre plaćanja.</p>
         <p className="mt-3 leading-7 text-black/70">Porudžbine putem ove prodavnice isporučuju se isključivo u Republici Srbiji. Međunarodna dostava i izvoz nisu dostupni, pa se na ove porudžbine ne primenjuju carinski ni uvozni troškovi.</p>
         <p className="mt-3 leading-7 text-black/70">Lično preuzimanje dostupno je na adresi Save Maskovica 3, Beograd, bez troška dostave.</p>
         <h2 className="mt-10 text-2xl font-black">Reklamacije, otkaz i povraćaj</h2>

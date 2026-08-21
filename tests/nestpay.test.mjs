@@ -743,13 +743,16 @@ test('EPM payment branding uses the complete official Banca Intesa artwork set',
   assert.match(branding, /Prihvaćene kartice/);
   assert.match(branding, /Programi sigurnosti/);
   assert.doesNotMatch(branding, /MissingAsset|zvanični asset nedostaje/);
-  for (const asset of ['bib-maestro.png', 'bib-mastercard.png', 'bib-dinacard.png', 'bib-visa.png', 'bib-amex.png', 'bib-mastercard-id-check.png', 'bib-visa-secure.png', 'bib-amex-safekey.png', 'bib-dinacard-secure.png']) {
+  for (const asset of ['bib-maestro.png', 'bib-mastercard.png', 'bib-dinacard.png', 'bib-visa.png', 'bib-amex.png', 'bib-mastercard-id-check.png', 'bib-visa-secure.png']) {
     assert.match(branding, new RegExp(`/payment-brands/${asset.replace('.', '\\.')}\\b`));
   }
-  assert.match(branding, /h-12 w-\[74px\]/);
-  assert.match(branding, /h-12 w-\[80px\]/);
-  assert.match(branding, /lg:grid-cols-2/);
-  assert.doesNotMatch(branding, /gap-y-(?:40|60)|gap-x-\[320px\]/);
+  assert.doesNotMatch(branding, /bib-amex-safekey|bib-dinacard-secure/);
+  assert.match(branding, /h-\[42px\] w-\[66px\]/);
+  assert.match(branding, /h-\[52px\] w-\[110px\]/);
+  assert.match(branding, /gap-8/);
+  assert.match(branding, /gap-2/);
+  assert.match(branding, /xl:flex-row/);
+  assert.doesNotMatch(branding, /rounded-lg border border-black\/10 bg-white p-2 shadow-sm/);
   assert.match(branding, /rs\.visa\.com\/pay-with-visa\/security-and-assistance\/protected-everywhere\.html/);
   assert.match(branding, /mastercard\.rs\/sr-rs\/korisnici\/pronadite-karticu\.html/);
   for (const path of ['../src/app/App.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CustomerPolicy.tsx']) {
@@ -767,6 +770,8 @@ test('checkout visibly declares canonical RSD and VAT terms before payment', () 
   assert.match(checkout, /Plaćanje do 12 rata/);
   assert.match(checkout, /Izbor broja rata prikazuje se na stranici banke nakon unosa kartice/);
   assert.match(checkout, /samo karticama koje je izdala Banca Intesa/);
+  assert.match(checkout, /Konačan iznos za plaćanje na rate može biti približno 10% viši/);
+  assert.match(checkout, /\{formatRsd\(3500\)\}/);
   const money = readFileSync(new URL('../src/lib/products.ts', import.meta.url), 'utf8');
   assert.match(money, /minimumFractionDigits:\s*2/);
   assert.match(money, /maximumFractionDigits:\s*2/);
@@ -782,6 +787,8 @@ test('purchase terms contain Marina inspection items 2.1.1, 2.1.4 and the suppli
     'kompletni proces naplate obavlja na stranicama banke',
     'Niti jednog trenutka podaci o platnoj kartici nisu dostupni našem sistemu',
   ]) assert.match(terms, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.match(terms, /Konačan iznos za\s+plaćanje na rate može biti približno 10% viši/);
+  assert.match(terms, /3\.500,00 RSD/);
 });
 
 test('customer-facing EPM routes and card-network information links are wired', () => {

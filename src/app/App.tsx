@@ -260,7 +260,7 @@ export default function App() {
   const monthlySavings = Math.max(0, Math.round((dailyFuelCost - dailyElectricCost) * 30));
   const yearlySavings = Math.max(0, Math.round((dailyFuelCost - dailyElectricCost) * 365));
   const yearlyCo2Kg = Math.max(0, Math.round((savingsQuiz.dailyKm * 365 * savingsQuiz.fuelConsumption * 2.31) / 100));
-  const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS').format(value)} RSD`;
+  const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)} RSD`;
   const ui = tr({
     sr: {
         navModels: 'Modeli',
@@ -756,7 +756,7 @@ export default function App() {
         { src: publicAsset('Glide 4.jpg'), alt: 'Pogon Glide product photo 4' },
       ],
       description: copy.glideDescription,
-      price: '165,000 RSD',
+      price: '165.000,00 RSD',
       mobileSpecs: { range: '90 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
         sr: [
@@ -798,7 +798,7 @@ export default function App() {
         { src: publicAsset('Cargo 2.jpg'), alt: 'Pogon Core product photo 2' },
       ],
       description: copy.coreDescription,
-      price: '135,000 RSD',
+      price: '135.000,00 RSD',
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
@@ -841,7 +841,7 @@ export default function App() {
         { src: publicAsset('Core 3.jpg'), alt: 'Pogon Cargo product photo 3' },
       ],
       description: copy.cargoDescription,
-      price: '130,000 RSD',
+      price: '130.000,00 RSD',
       mobileSpecs: { range: '110 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
