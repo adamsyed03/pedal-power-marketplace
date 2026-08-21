@@ -154,8 +154,10 @@ export function generateRnd() {
 // the card details; storetype, lang, encoding and shopurl are not Hash v2 inputs.
 export function create3DFormFields({ orderId, amountRsd, installmentCount, okUrl, failUrl }, env = process.env) {
   const config = getNestPayConfig(env);
-  const amount = String(amountRsd);
-  if (!/^\d+(\.\d{1,2})?$/.test(amount)) throw new Error('INVALID_AMOUNT');
+  if (!Number.isSafeInteger(amountRsd) || amountRsd <= 0) throw new Error('INVALID_AMOUNT');
+  // EPM requires RSD amounts to be displayed with the para component. NestPay
+  // receives that exact two-decimal value and the request hash covers it.
+  const amount = amountRsd.toFixed(2);
   if (Number(installmentCount) !== 1) throw new Error('HOSTED_INSTALLMENTS_UNSUPPORTED');
   // The merchant-specific POST omits instalment, while Marina's supplied
   // Hash Ver2 formula still contains its empty positional slot after Auth.

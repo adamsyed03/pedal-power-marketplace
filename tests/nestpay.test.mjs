@@ -9,7 +9,8 @@ import {
 } from '../api/_lib/nestpay.mjs';
 import {
   callbackAmountMatchesOrder, createCallbackDiagnostics, hostedPaymentState,
-  isStagingCallbackDiagnosticsEnabled, processNestPayReturn, stripSensitiveFields,
+  hostedInstallmentCount, isStagingCallbackDiagnosticsEnabled, processNestPayReturn,
+  stripSensitiveFields,
 } from '../api/_lib/payment-flow.mjs';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
@@ -65,7 +66,7 @@ test('hosted 3D form uses the exact merchant-specific field set and a matching h
   assert.equal(fields.currency, '941');
   assert.equal(Object.hasOwn(fields, 'instalment'), false);
   assert.equal(Object.keys(fields).some((name) => name.toLowerCase() === 'callbackurl'), false);
-  assert.equal(fields.amount, '138500');
+  assert.equal(fields.amount, '138500.00');
   assert.equal(fields.hashAlgorithm, 'ver2');
   assert.equal(fields.lang, 'en');
   assert.equal(fields.encoding, 'utf-8');
@@ -124,6 +125,27 @@ test('official Ver2 response sample algorithm is accepted', () => {
   const names = ['clientid', 'oid', 'AuthCode', 'Response', 'HostRefNum', 'ProcReturnCode', 'TransId', 'ErrMsg', 'mdStatus'];
   const params = createResponseHashFixture({ names, values, storeKey: 'STOREKEY' });
   assert.equal(verify3DResponseHash(params, 'STOREKEY'), true);
+});
+
+test('hosted page installment selection is normalized only from valid callback values', () => {
+  assert.equal(hostedInstallmentCount({ Instalment: '12' }), 12);
+  assert.equal(hostedInstallmentCount({ installment: '3' }), 3);
+  assert.equal(hostedInstallmentCount({ instalment: '' }), 1);
+  assert.equal(hostedInstallmentCount({ instalment: '-' }), 1);
+  assert.equal(hostedInstallmentCount({ instalment: '12', Installment: '12' }), 12);
+  assert.equal(hostedInstallmentCount({ instalment: '12', Installment: '3' }), null);
+  assert.equal(hostedInstallmentCount({ instalment: '0' }), null);
+  assert.equal(hostedInstallmentCount({ instalment: '13' }), null);
+  assert.equal(hostedInstallmentCount({ instalment: ' 3' }), null);
+  assert.equal(hostedInstallmentCount({}), null);
+});
+
+test('callback amount binding accepts only the exact RSD integer or required two-decimal representation', () => {
+  const order = { total_rsd: 138500 };
+  assert.equal(callbackAmountMatchesOrder({ amount: '138500' }, order), true);
+  assert.equal(callbackAmountMatchesOrder({ amount: '138500.00' }, order), true);
+  assert.equal(callbackAmountMatchesOrder({ amount: '138500.0' }, order), false);
+  assert.equal(callbackAmountMatchesOrder({ amount: '138500.01' }, order), false);
 });
 
 test('real intermediate Ver2 shape validates without requiring final response fields to be signed', () => {
@@ -624,6 +646,7 @@ test('staging callback diagnostics expose presence and outcomes without sensitiv
   assert.equal(diagnostics.FIELD_PRESENCE.HASH, true);
   assert.equal(diagnostics.FIELD_PRESENCE.hashAlgorithm, false);
   assert.equal(diagnostics.FIELD_PRESENCE.Response, false);
+  assert.equal(diagnostics.FIELD_PRESENCE.instalment, false);
   assert.deepEqual(diagnostics.HASHPARAMS_FIELDS, []);
   assert.equal(diagnostics.HASHPARAMSVAL_MATCH, null);
   assert.deepEqual(diagnostics.DUPLICATE_FORM_FIELDS, []);
@@ -725,7 +748,8 @@ test('EPM payment branding uses the complete official Banca Intesa artwork set',
   }
   assert.match(branding, /h-12 w-\[74px\]/);
   assert.match(branding, /h-12 w-\[80px\]/);
-  assert.match(branding, /xl:gap-x-\[320px\]/);
+  assert.match(branding, /lg:grid-cols-2/);
+  assert.doesNotMatch(branding, /gap-y-(?:40|60)|gap-x-\[320px\]/);
   assert.match(branding, /rs\.visa\.com\/pay-with-visa\/security-and-assistance\/protected-everywhere\.html/);
   assert.match(branding, /mastercard\.rs\/sr-rs\/korisnici\/pronadite-karticu\.html/);
   for (const path of ['../src/app/App.tsx', '../src/app/components/Checkout.tsx', '../src/app/components/CustomerPolicy.tsx']) {
@@ -739,6 +763,13 @@ test('checkout visibly declares canonical RSD and VAT terms before payment', () 
   assert.match(checkout, /naplaćuje isključivo u RSD/);
   assert.match(checkout, /Pročitao\/la sam i prihvatam/);
   assert.match(checkout, /disabled=\{!accepted \|\| !captchaToken/);
+  assert.doesNotMatch(checkout, /Jednokratno plaćanje/);
+  assert.match(checkout, /Plaćanje do 12 rata/);
+  assert.match(checkout, /Izbor broja rata prikazuje se na stranici banke nakon unosa kartice/);
+  assert.match(checkout, /samo karticama koje je izdala Banca Intesa/);
+  const money = readFileSync(new URL('../src/lib/products.ts', import.meta.url), 'utf8');
+  assert.match(money, /minimumFractionDigits:\s*2/);
+  assert.match(money, /maximumFractionDigits:\s*2/);
 });
 
 test('purchase terms contain Marina inspection items 2.1.1, 2.1.4 and the supplied 2.1.8 statement', () => {
@@ -776,10 +807,11 @@ test('success confirmation contains the mandatory customer, order, merchant and 
     street: 'Ulica 1', postalCode: '11000', city: 'Beograd', deliveryMethod: 'courier', deliveryFeeRsd: 3500,
     items: [{ product: 'glide', name: 'Pogon Glide', unitPriceRsd: 165000, quantity: 1, lineTotalRsd: 165000 }],
     subtotalRsd: 165000, totalRsd: 168500, authorizationCode: 'AVAILABLE', nestpayTransactionId: 'AVAILABLE',
-    response: 'Approved', procReturnCode: '00', mdStatus: '1', transactionDate: '2026-08-20T12:00:00Z', attemptedAt: '2026-08-20T12:00:00Z',
+    response: 'Approved', procReturnCode: '00', mdStatus: '1', installmentCount: 12,
+    transactionDate: '2026-08-20T12:00:00Z', attemptedAt: '2026-08-20T12:00:00Z',
   };
   const html = buildPaymentConfirmation(order, { legalName: 'POGON MOBILITY DOO', pib: '115472260', address: 'Temišvarska 25B, Beograd' }).html;
-  for (const expected of ['kartice je zadužen', 'Kupac Test', 'kupac@example.rs', 'Ulica 1', 'Pogon Glide', 'Jedinična cena', 'Količina', 'Ukupan iznos proizvoda sa PDV-om', 'PGN-2026-TEST', 'POGON MOBILITY DOO', '115472260', 'Temišvarska 25B', 'Autorizacioni kod', 'Broj transakcije', 'ProcReturnCode', 'mdStatus', 'EXTRA.TRXDATE', 'Datum i vreme transakcije']) assert.match(html, new RegExp(expected));
+  for (const expected of ['kartice je zadužen', 'Kupac Test', 'kupac@example.rs', 'Ulica 1', 'Pogon Glide', 'Jedinična cena', 'Količina', 'Ukupan iznos proizvoda sa PDV-om', 'Broj rata', '12', '168\.500,00 RSD', 'PGN-2026-TEST', 'POGON MOBILITY DOO', '115472260', 'Temišvarska 25B', 'Autorizacioni kod', 'Broj transakcije', 'ProcReturnCode', 'mdStatus', 'EXTRA.TRXDATE', 'Datum i vreme transakcije']) assert.match(html, new RegExp(expected));
 });
 
 test('definite failure confirmation includes available data, marks absent transaction values, and excludes injected card fields', () => {
@@ -815,7 +847,7 @@ test('NestPay amount is sent in major RSD units without an undocumented para con
     orderId: 'PGN-2026-MAJORUNIT', amountRsd: 168_500, installmentCount: 1,
     okUrl: 'https://ridepogon.com/api/nestpay/callback', failUrl: 'https://ridepogon.com/api/nestpay/callback',
   }, testEnv);
-  assert.equal(fields.amount, '168500');
+  assert.equal(fields.amount, '168500.00');
   assert.notEqual(fields.amount, '16850000');
 });
 

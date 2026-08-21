@@ -41,7 +41,7 @@ export function PaymentBranding({ dark = false, compact = false }: PaymentBrandi
         <img src="/payment-brands/bib-banca-intesa.png" alt="Banca Intesa — Intesa Sanpaolo Group" className="h-auto w-[220px] max-w-full object-contain" />
       </a>
 
-      <div className="mt-6 grid items-start gap-y-10 xl:grid-cols-[auto_1fr] xl:gap-x-[320px]">
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
         <div>
           <h3 className={`text-xs font-black uppercase tracking-[0.15em] ${muted}`}>Prihvaćene kartice</h3>
           <div className="mt-3 flex flex-wrap gap-3" role="list" aria-label="Prihvaćene kartice">

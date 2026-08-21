@@ -12,7 +12,8 @@ const SENSITIVE_FIELDS = /^(pan|cardnumber|card_number|cv2|cvv2?|cvc2?)$|expdate
 const CALLBACK_PRESENCE_FIELDS = [
   'clientid', 'clientId', 'ClientId', 'oid', 'ReturnOid', 'Response',
   'ProcReturnCode', 'AuthCode', 'TransId', 'mdStatus', 'md', 'eci', 'xid',
-  'cavv', 'rnd', 'hashAlgorithm', 'HASHPARAMS', 'HASHPARAMSVAL', 'HASH', 'EXTRA.TRXDATE',
+  'cavv', 'rnd', 'instalment', 'installment', 'hashAlgorithm', 'HASHPARAMS',
+  'HASHPARAMSVAL', 'HASH', 'EXTRA.TRXDATE',
 ];
 
 const present = (params, field) => Object.prototype.hasOwnProperty.call(params || {}, field);
@@ -96,7 +97,8 @@ export function stripSensitiveFields(params) {
 
 export function callbackAmountMatchesOrder(params, order) {
   const returnedAmount = String(params?.amount ?? params?.Amount ?? '');
-  return !returnedAmount || returnedAmount === String(order?.total_rsd ?? '');
+  const expectedAmount = String(order?.total_rsd ?? '');
+  return !returnedAmount || returnedAmount === expectedAmount || returnedAmount === `${expectedAmount}.00`;
 }
 
 export function hostedPaymentState(params) {
@@ -105,6 +107,22 @@ export function hostedPaymentState(params) {
   if (!isAccepted3DStatus(params?.mdStatus)
     || params?.Response === 'Declined' || params?.Response === 'Error') return 'DECLINED';
   return 'UNKNOWN';
+}
+
+// In the merchant-specific hosted flow, Pogon must not send `instalment`.
+// NestPay offers the choice after recognizing an eligible Banca Intesa card
+// and returns the selected count with the final callback.
+export function hostedInstallmentCount(params) {
+  const entries = Object.entries(params || {}).filter(([key]) =>
+    ['instalment', 'installment'].includes(String(key).toLowerCase()));
+  if (!entries.length) return null;
+  const distinct = [...new Set(entries.map(([, value]) => String(value ?? '')))];
+  if (distinct.length !== 1) return null;
+  const value = distinct[0];
+  if (value === '' || value === '-') return 1;
+  if (!/^\d{1,2}$/.test(value)) return null;
+  const count = Number(value);
+  return Number.isInteger(count) && count >= 1 && count <= 12 ? count : null;
 }
 
 // Builds the exact hidden-field set for the browser POST to est3dgate for one
@@ -214,10 +232,12 @@ export async function processNestPayReturn(
 
   // Single-writer claim: a concurrent duplicate callback loses this update and
   // must not finalize or email the same hosted payment twice.
+  const returnedInstallmentCount = hostedInstallmentCount(params);
   const claimed = await patchOrder(orderId, {
     payment_status: 'AUTHORIZING',
     callback_received_at: new Date().toISOString(),
     md_status: String(params.mdStatus ?? ''),
+    ...(returnedInstallmentCount == null ? {} : { installment_count: returnedInstallmentCount }),
   }, ['PENDING', '3D_PENDING'], env);
   if (!claimed) return { outcome: 'ALREADY_PROCESSING', order: await findOrderById(orderId, env) };
 

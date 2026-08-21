@@ -9,6 +9,9 @@ const htmlEscape = (value) => String(value ?? '')
 const FINAL_FAILURE_STATES = new Set(['DECLINED', 'FAILED', 'CANCELLED']);
 const unavailable = (value) => value === undefined || value === null || value === '' ? '-' : value;
 const address = (street, postalCode, city) => [street, [postalCode, city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || '-';
+const rsd = (value) => value === undefined || value === null
+  ? '-'
+  : `${new Intl.NumberFormat('sr-RS', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value))} RSD`;
 
 export function buildPaymentConfirmation(order, merchant) {
   const paid = order.paymentStatus === 'PAID';
@@ -31,8 +34,8 @@ export function buildPaymentConfirmation(order, merchant) {
   const itemRows = items.flatMap((item, index) => [
     [`Proizvod ${index + 1}`, unavailable(item.name || item.product)],
     [`Količina ${index + 1}`, unavailable(item.quantity)],
-    [`Jedinična cena ${index + 1}`, item.unitPriceRsd == null ? '-' : `${item.unitPriceRsd} RSD`],
-    [`Ukupno za proizvod ${index + 1}`, item.lineTotalRsd == null ? '-' : `${item.lineTotalRsd} RSD`],
+    [`Jedinična cena ${index + 1}`, rsd(item.unitPriceRsd)],
+    [`Ukupno za proizvod ${index + 1}`, rsd(item.lineTotalRsd)],
   ]);
   const rows = [
     ['Ime i prezime kupca', unavailable(order.customerName)],
@@ -41,9 +44,10 @@ export function buildPaymentConfirmation(order, merchant) {
     ['Adresa isporuke / preuzimanja', unavailable(deliveryAddress)],
     ...itemRows,
     ['PDV / Porez', 'PDV je uračunat u prikazane cene.'],
-    ['Ukupan iznos proizvoda sa PDV-om', order.subtotalRsd == null ? '-' : `${order.subtotalRsd} RSD`],
-    ['Dostava', order.deliveryFeeRsd == null ? '-' : `${order.deliveryFeeRsd} RSD`],
-    ['Ukupno za plaćanje', order.totalRsd == null ? '-' : `${order.totalRsd} RSD`],
+    ['Ukupan iznos proizvoda sa PDV-om', rsd(order.subtotalRsd)],
+    ['Dostava', rsd(order.deliveryFeeRsd)],
+    ['Ukupno za plaćanje', rsd(order.totalRsd)],
+    ['Broj rata', unavailable(order.installmentCount)],
     ['Order ID / Broj narudžbine', unavailable(order.orderId)],
     ['AuthCode / Autorizacioni kod', unavailable(order.authorizationCode)],
     ['TransId / Broj transakcije', unavailable(order.nestpayTransactionId)],

@@ -18,6 +18,8 @@ Hard rules enforced in code and tests:
 - The browser POST contains `storetype=3d_pay_hosting`, `hashAlgorithm=ver2`,
   `encoding=utf-8` and `lang=en`; it contains neither `instalment` nor
   `CallbackURL` nor any card-data field.
+- Any eligible installment count is selected only on the bank-hosted page after
+  BIN recognition and is retained from the normalized final gateway response.
 - The hosted response is trusted only after the ver2 response-hash check plus
   merchant, order and amount binding. The callback is already the final payment
   response: NestPay performs the payment automatically, and Pogon never sends a

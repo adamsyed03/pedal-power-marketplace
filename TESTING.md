@@ -1,9 +1,11 @@
 # Banca Intesa official TEST execution plan
 
-> Executable now: ordinary one-payment orders use Banca Intesa's
+> Executable now: card payments use Banca Intesa's
 > `3d_pay_hosting` contract. Pogon sends only signed non-card transaction fields,
 > the customer enters card data on the bank page, and NestPay returns the signed
-> final payment result. Pogon does not send a second API Auth.
+> final payment result. Eligible Banca Intesa cards can select up to 12
+> installments on the hosted page after BIN recognition. Pogon does not send a
+> second API Auth.
 
 ## Scope and official sources
 
@@ -45,9 +47,9 @@ threshold. The operator must obtain the applicable minimum from Banca Intesa
 and use an order total strictly above it.
 
 Marina Marković has explicitly instructed Pogon not to send `instalment` in
-the hosted 3D POST. Consequently TC36 is blocked and the checkout is fail-closed
-to one payment until the bank documents where three instalments are selected
-in the hosted flow and how that selection is bound to the later authorization.
+the hosted 3D POST. She subsequently confirmed that the hosted bank page offers
+up to 12 installments after recognizing the first six card digits, and that
+installments are available only for cards issued by Banca Intesa.
 
 ## Card selection and required coverage
 
@@ -138,15 +140,13 @@ Record these non-sensitive values in the operator's evidence sheet:
 
 ## TC36 — successful SMS authorization with 3 instalments
 
-1. Do not execute TC36 with the current flow. The bank has prohibited the
-   `instalment` parameter in Pogon's hosted 3D POST.
-2. Obtain the actual minimum, eligible card category, and the exact documented
-   hosted-page procedure for selecting three instalments from Banca Intesa.
-3. Only after written clarification, implement and review that separate flow;
-   never infer it or re-add `instalment` to the initial POST.
-4. Once enabled, retain the existing requirements: a fresh Order ID, verified
-   terminal `PAID`, Merchant Center confirmation of three instalments, and safe
-   masked evidence.
+1. Create a fresh order with a total above the bank-confirmed TC36 minimum.
+2. Do not add `instalment` to Pogon's hosted 3D POST.
+3. On the NestPay hosted page, enter the eligible Banca Intesa TEST card and
+   select `3` only after the bank page exposes the installment selector.
+4. Complete the transaction once and require a verified terminal `PAID` result.
+5. Confirm that Pogon's result and Merchant Center both show three installments,
+   then preserve the safe masked evidence.
 
 ## Timeout and retry rule
 

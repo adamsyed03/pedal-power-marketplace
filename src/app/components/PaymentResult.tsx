@@ -12,7 +12,7 @@ type PublicOrder = {
   deliveryMethod?: string; deliveryFeeRsd?: number | null;
 };
 
-const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS').format(value)} RSD`;
+const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)} RSD`;
 const available = (value?: string | null) => value || 'Nije dostupno';
 
 export function PaymentResult() {

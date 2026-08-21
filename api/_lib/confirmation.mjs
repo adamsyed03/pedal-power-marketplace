@@ -43,6 +43,7 @@ export async function dispatchConfirmation(order, env = process.env, dependencie
       totalRsd: current.total_rsd,
       deliveryMethod: current.delivery_method,
       deliveryFeeRsd: current.delivery_fee_rsd,
+      installmentCount: current.installment_count,
       authorizationCode: current.authorization_code,
       nestpayTransactionId: current.nestpay_transaction_id,
       response: current.response,

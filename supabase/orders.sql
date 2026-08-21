@@ -19,7 +19,7 @@ create table if not exists public.orders (
   city text not null,
   postal_code text not null,
   delivery_method text not null check (delivery_method in ('courier', 'pickup')),
-  installment_count integer not null default 1 check (installment_count in (1, 3, 6, 9, 12)),
+  installment_count integer not null default 1 check (installment_count between 1 and 12),
   payment_status public.payment_status not null default 'PENDING',
   nestpay_transaction_id text,
   authorization_code text,

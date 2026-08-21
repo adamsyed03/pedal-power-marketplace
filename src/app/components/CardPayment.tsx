@@ -10,7 +10,7 @@ type PreparedPayment = {
   fields: Record<string, string>;
 };
 
-const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS').format(value)} RSD`;
+const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)} RSD`;
 
 // Pogon prepares only the non-card transaction fields. The browser immediately
 // POSTs them unchanged to Banca Intesa / NestPay, where the customer enters all

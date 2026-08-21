@@ -4,6 +4,8 @@
 > and Marina Marković's merchant-specific clarification. The POST uses
 > `storetype=3d_pay_hosting`, omits `instalment` and `CallbackURL`, and contains
 > no card data. Customers enter card details only on the NestPay hosted page.
+> For eligible Banca Intesa cards, the hosted page offers up to 12 installments
+> after BIN recognition and returns the selected count in the final response.
 > NestPay performs payment automatically and returns the signed final result;
 > Pogon does not send a second API Auth.
 
@@ -30,6 +32,8 @@
   expiry.
 - Merchant-specific `3d_pay_hosting` request with `instalment` and
   `CallbackURL` absent from the POST.
+- Hosted-page installment selection for eligible Banca Intesa cards, with the
+  returned count persisted for the result page and confirmation email.
 - Hash v2 selected per direct Banca Intesa instruction.
 - SMS/immediate Sale selected; DMS is not enabled.
 - Documented Hash v2 request generation and response-hash verification.

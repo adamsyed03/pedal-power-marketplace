@@ -197,8 +197,8 @@ export function Checkout() {
               </div>}
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-400" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-white/45">Jednokratno plaćanje</p></div></div>
-                <p className="mt-3 text-xs leading-5 text-white/40">Nakon potvrde bićete preusmereni na zaštićenu Banca Intesa / NestPay stranicu, gde isključivo unosite podatke platne kartice.</p>
+                <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-400" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-white/45">Plaćanje do 12 rata</p></div></div>
+                <p className="mt-3 text-xs leading-5 text-white/40">Nakon potvrde bićete preusmereni na zaštićenu Banca Intesa / NestPay stranicu, gde isključivo unosite podatke platne kartice. Izbor broja rata prikazuje se na stranici banke nakon unosa kartice. Plaćanje na rate dostupno je samo karticama koje je izdala Banca Intesa.</p>
               </div>
 
               <PaymentBranding dark compact />

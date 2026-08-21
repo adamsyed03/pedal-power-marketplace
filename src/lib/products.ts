@@ -17,4 +17,4 @@ export const products: readonly Product[] = [
 ];
 
 export const formatRsd = (amount: number) =>
-  `${new Intl.NumberFormat('sr-RS').format(amount)} RSD`;
+  `${new Intl.NumberFormat('sr-RS', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)} RSD`;
