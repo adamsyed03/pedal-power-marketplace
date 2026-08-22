@@ -1,29 +1,85 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
-const TEST_3D = 'https://testsecurepay.eway2pay.com/fim/est3dgate';
-const TEST_API = 'https://testsecurepay.eway2pay.com/fim/api';
-const TEST_MERCHANT_ID = '13IN004634';
+const MERCHANT_ID = '13IN004634';
+const NESTPAY_ENVIRONMENTS = Object.freeze({
+  test: Object.freeze({
+    url3d: 'https://testsecurepay.eway2pay.com/fim/est3Dgate',
+    apiUrl: 'https://testsecurepay.eway2pay.com/fim/api',
+    appOrigin: 'https://test.ridepogon.com',
+  }),
+  production: Object.freeze({
+    url3d: 'https://bib.eway2pay.com/fim/est3Dgate',
+    apiUrl: 'https://bib.eway2pay.com/fim/api',
+    appOrigin: 'https://ridepogon.com',
+  }),
+});
+
+const appOriginForMode = (mode, value) => {
+  if (!value) throw new Error('APP_BASE_URL_MISSING');
+  let base;
+  try {
+    base = new URL(value);
+  } catch {
+    throw new Error('APP_BASE_URL_INVALID');
+  }
+  if (base.username || base.password || base.search || base.hash || !['', '/'].includes(base.pathname)) {
+    throw new Error('NESTPAY_APP_BASE_URL_MISMATCH');
+  }
+  const expected = NESTPAY_ENVIRONMENTS[mode].appOrigin;
+  if (mode === 'production') {
+    if (base.origin !== expected) throw new Error('NESTPAY_APP_BASE_URL_MISMATCH');
+    return expected;
+  }
+  const localTest = ['localhost', '127.0.0.1'].includes(base.hostname)
+    && ['http:', 'https:'].includes(base.protocol);
+  if (base.origin !== expected && !localTest) throw new Error('NESTPAY_APP_BASE_URL_MISMATCH');
+  return base.origin;
+};
+
+const assertDeploymentScope = (mode, vercelEnv) => {
+  if (!vercelEnv) return;
+  if (mode === 'production' && vercelEnv !== 'production') {
+    throw new Error('NESTPAY_VERCEL_ENV_MISMATCH');
+  }
+  if (mode === 'test' && vercelEnv === 'production') {
+    throw new Error('NESTPAY_VERCEL_ENV_MISMATCH');
+  }
+};
 
 export function getNestPayConfig(env = process.env) {
   const mode = env.NESTPAY_ENV;
-  if (mode !== 'test') throw new Error('NESTPAY_TEST_MODE_REQUIRED');
-  const url3d = env.NESTPAY_3D_URL || TEST_3D;
-  const apiUrl = env.NESTPAY_API_URL || TEST_API;
-  if (url3d !== TEST_3D || apiUrl !== TEST_API) throw new Error('NESTPAY_ENDPOINT_ENV_MISMATCH');
-  for (const key of ['NESTPAY_MERCHANT_ID', 'NESTPAY_STORE_KEY', 'NESTPAY_API_USERNAME', 'NESTPAY_API_PASSWORD']) {
+  if (typeof mode !== 'string' || !Object.hasOwn(NESTPAY_ENVIRONMENTS, mode)) {
+    throw new Error('NESTPAY_ENV_INVALID');
+  }
+  const expected = NESTPAY_ENVIRONMENTS[mode];
+  const url3d = env.NESTPAY_3D_URL || expected.url3d;
+  const apiUrl = env.NESTPAY_API_URL || expected.apiUrl;
+  if (url3d !== expected.url3d || apiUrl !== expected.apiUrl) {
+    throw new Error('NESTPAY_ENDPOINT_ENV_MISMATCH');
+  }
+  for (const key of ['NESTPAY_MERCHANT_ID', 'NESTPAY_STORE_KEY']) {
     if (!env[key]) throw new Error(`MISSING_${key}`);
   }
-  if (env.NESTPAY_MERCHANT_ID !== TEST_MERCHANT_ID) throw new Error('NESTPAY_MERCHANT_ID_MISMATCH');
-  return { mode, url3d, apiUrl, merchantId: env.NESTPAY_MERCHANT_ID };
+  if (env.NESTPAY_MERCHANT_ID !== MERCHANT_ID) throw new Error('NESTPAY_MERCHANT_ID_MISMATCH');
+  assertDeploymentScope(mode, env.VERCEL_ENV);
+  const appOrigin = appOriginForMode(mode, env.APP_BASE_URL);
+  return { mode, url3d, apiUrl, appOrigin, merchantId: env.NESTPAY_MERCHANT_ID };
 }
 
-export function isNestPayTestConfigured(env = process.env) {
+export function isNestPayConfigured(env = process.env) {
   try {
     getNestPayConfig(env);
     return true;
   } catch {
     return false;
   }
+}
+
+export function getNestPayApiCredentials(env = process.env) {
+  const username = env.NESTPAY_API_USERNAME;
+  const password = env.NESTPAY_API_PASSWORD;
+  if (!username || !password) throw new Error('NESTPAY_API_CREDENTIALS_REQUIRED');
+  return { username, password };
 }
 
 export const escapeHashValue = (value) => String(value ?? '').replaceAll('\\', '\\\\').replaceAll('|', '\\|');
@@ -163,7 +219,13 @@ export function create3DFormFields({ orderId, amountRsd, installmentCount, okUrl
   // Hash Ver2 formula still contains its empty positional slot after Auth.
   const instalment = '';
   const rnd = generateRnd();
-  const shopurl = `${new URL(okUrl).origin}/checkout`;
+  const ok = new URL(okUrl);
+  const fail = new URL(failUrl);
+  if (ok.origin !== config.appOrigin || fail.origin !== config.appOrigin
+    || ok.pathname !== '/api/nestpay/callback' || fail.pathname !== '/api/nestpay/callback') {
+    throw new Error('NESTPAY_RETURN_URL_MISMATCH');
+  }
+  const shopurl = `${config.appOrigin}/checkout`;
   const hash = create3DRequestHash(
     { clientid: config.merchantId, oid: orderId, amount, okUrl, failUrl, tranType: 'Auth', instalment, rnd, currency: '941' },
     env.NESTPAY_STORE_KEY,

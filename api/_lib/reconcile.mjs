@@ -1,4 +1,6 @@
-import { buildOrderStatusXml, getNestPayConfig, parseApiResponse } from './nestpay.mjs';
+import {
+  buildOrderStatusXml, getNestPayApiCredentials, getNestPayConfig, parseApiResponse,
+} from './nestpay.mjs';
 import { findOrderById, patchOrder } from './supabase.mjs';
 import { dispatchConfirmation } from './confirmation.mjs';
 
@@ -18,8 +20,9 @@ export async function reconcileOrder(orderId, env = process.env, fetchImpl = fet
   if (!order || order.payment_status !== 'UNKNOWN') return order;
   const config = getNestPayConfig(env);
   if (config.mode !== 'test') throw new Error('TEST_MODE_REQUIRED');
+  const apiCredentials = getNestPayApiCredentials(env);
   const xml = buildOrderStatusXml({
-    username: env.NESTPAY_API_USERNAME, password: env.NESTPAY_API_PASSWORD,
+    username: apiCredentials.username, password: apiCredentials.password,
     clientId: env.NESTPAY_MERCHANT_ID, orderId,
   });
   let result;

@@ -11,7 +11,7 @@ NestPay and that card entry occurs on the bank-hosted page.
 ```text
 Customer → ridepogon.com/checkout → order persisted (PENDING)
         → POST /api/nestpay/prepare (server creates Hash v2 + non-card fields)
-        → browser immediately POSTs those fields to the NestPay TEST HPP
+        → browser immediately POSTs those fields to the environment-pinned NestPay HPP
         → customer enters card data exclusively on the bank page
         → NestPay performs 3-D Secure and the payment automatically
         → NestPay POSTs the signed final result to /api/nestpay/callback
@@ -22,8 +22,14 @@ Customer → ridepogon.com/checkout → order persisted (PENDING)
         → customer is redirected to Pogon's result page
 ```
 
-There is no second CC5 API Auth in the hosted flow. The API credentials remain
-server-only for documented read-only Order Status reconciliation.
+There is no second CC5 API Auth in the hosted flow. API credentials are not
+required for the initial Hosted Sale; when configured, they remain server-only
+and are consumed only by the protected read-only Order Status reconciliation.
+
+`NESTPAY_ENV=test` is bound to `test.ridepogon.com` and the TEST endpoints.
+`NESTPAY_ENV=production` is bound to `ridepogon.com` and the production
+endpoints. Cross-environment endpoint, origin, and Vercel-scope combinations
+are rejected before payment preparation.
 
 Key files:
 

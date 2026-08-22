@@ -132,8 +132,8 @@ export async function prepare3DPayment(order, lookupToken, env = process.env) {
   if (!order) throw new Error('ORDER_NOT_FOUND');
   if (!['PENDING', '3D_PENDING'].includes(order.payment_status)) throw new Error('ORDER_NOT_PAYABLE');
   if (!Number.isSafeInteger(order.total_rsd) || order.total_rsd <= 0) throw new Error('ORDER_TOTAL_NOT_FINAL');
-  if (!env.APP_BASE_URL) throw new Error('APP_BASE_URL_MISSING');
-  const returnUrl = `${String(env.APP_BASE_URL).replace(/\/$/, '')}/api/nestpay/callback?rt=${encodeURIComponent(lookupToken)}`;
+  const config = getNestPayConfig(env);
+  const returnUrl = `${config.appOrigin}/api/nestpay/callback?rt=${encodeURIComponent(lookupToken)}`;
   const prepared = create3DFormFields({
     orderId: order.order_id,
     amountRsd: order.total_rsd,

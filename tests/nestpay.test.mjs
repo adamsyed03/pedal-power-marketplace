@@ -4,7 +4,7 @@ import { calculateCartTotal, calculateOrderTotal } from '../api/_lib/catalog.mjs
 import { createOrderId } from '../api/_lib/order.mjs';
 import {
   buildOrderStatusXml, create3DFormFields, create3DRequestHash, inspect3DResponseHash,
-  generateRnd, getNestPayConfig, isAccepted3DStatus, isNestPayTestConfigured,
+  generateRnd, getNestPayApiCredentials, getNestPayConfig, isAccepted3DStatus, isNestPayConfigured,
   normalizeNestPayFormParams, parseApiResponse, verify3DResponseHash,
 } from '../api/_lib/nestpay.mjs';
 import {
@@ -26,7 +26,12 @@ import { insertOrder } from '../api/_lib/supabase.mjs';
 
 const testEnv = {
   NESTPAY_ENV: 'test', NESTPAY_MERCHANT_ID: '13IN004634', NESTPAY_STORE_KEY: 'STOREKEY',
-  NESTPAY_API_USERNAME: 'u', NESTPAY_API_PASSWORD: 'p',
+  APP_BASE_URL: 'https://test.ridepogon.com', VERCEL_ENV: 'preview',
+};
+
+const productionEnv = {
+  NESTPAY_ENV: 'production', NESTPAY_MERCHANT_ID: '13IN004634', NESTPAY_STORE_KEY: 'STOREKEY',
+  APP_BASE_URL: 'https://ridepogon.com', VERCEL_ENV: 'production',
 };
 
 test('server calculates authoritative product total and ignores browser price', () => {
@@ -58,9 +63,9 @@ test('request hash follows the Banca Intesa Hash v2 plaintext with empty instalm
 test('hosted 3D form uses the exact merchant-specific field set and a matching hash', () => {
   const { gateUrl, fields } = create3DFormFields({
     orderId: 'PGN-2026-AB12', amountRsd: 138_500, installmentCount: 1,
-    okUrl: 'https://ridepogon.com/api/nestpay/callback?rt=t', failUrl: 'https://ridepogon.com/api/nestpay/callback?rt=t',
+    okUrl: 'https://test.ridepogon.com/api/nestpay/callback?rt=t', failUrl: 'https://test.ridepogon.com/api/nestpay/callback?rt=t',
   }, testEnv);
-  assert.equal(gateUrl, 'https://testsecurepay.eway2pay.com/fim/est3dgate');
+  assert.equal(gateUrl, 'https://testsecurepay.eway2pay.com/fim/est3Dgate');
   assert.equal(fields.storetype, '3d_pay_hosting');
   assert.equal(fields.trantype, 'Auth');
   assert.equal(fields.currency, '941');
@@ -70,7 +75,7 @@ test('hosted 3D form uses the exact merchant-specific field set and a matching h
   assert.equal(fields.hashAlgorithm, 'ver2');
   assert.equal(fields.lang, 'sr');
   assert.equal(fields.encoding, 'utf-8');
-  assert.equal(fields.shopurl, 'https://ridepogon.com/checkout');
+  assert.equal(fields.shopurl, 'https://test.ridepogon.com/checkout');
   assert.equal(fields.rnd.length, 20);
   assert.deepEqual(Object.keys(fields).sort(), [
     'amount', 'clientid', 'currency', 'encoding', 'failUrl', 'hash',
@@ -85,7 +90,7 @@ test('hosted 3D form uses the exact merchant-specific field set and a matching h
 });
 
 test('hosted flow omits instalment and fails closed for unsupported multi-instalment orders', () => {
-  const base = { orderId: 'o', amountRsd: 200_000, okUrl: 'https://x/cb', failUrl: 'https://x/cb' };
+  const base = { orderId: 'o', amountRsd: 200_000, okUrl: 'https://test.ridepogon.com/api/nestpay/callback', failUrl: 'https://test.ridepogon.com/api/nestpay/callback' };
   assert.equal(Object.hasOwn(create3DFormFields({ ...base, installmentCount: 1 }, testEnv).fields, 'instalment'), false);
   assert.throws(() => create3DFormFields({ ...base, installmentCount: 3 }, testEnv), /HOSTED_INSTALLMENTS_UNSUPPORTED/);
 });
@@ -378,14 +383,77 @@ test('Order Status query is separate from authorization', () => {
   assert.doesNotMatch(xml, /<Type>Auth<\/Type>|<Number>/);
 });
 
-test('test and production endpoints cannot be mixed', () => {
-  const secrets = { NESTPAY_MERCHANT_ID: '13IN004634', NESTPAY_STORE_KEY: 's', NESTPAY_API_USERNAME: 'u', NESTPAY_API_PASSWORD: 'p' };
-  assert.equal(getNestPayConfig({ ...secrets, NESTPAY_ENV: 'test' }).mode, 'test');
-  assert.throws(() => getNestPayConfig({ ...secrets, NESTPAY_ENV: 'test', NESTPAY_API_URL: 'https://bib.eway2pay.com/fim/api' }), /MISMATCH/);
-  assert.throws(() => getNestPayConfig({ ...secrets, NESTPAY_ENV: 'production' }), /TEST_MODE_REQUIRED/);
-  assert.throws(() => getNestPayConfig({ ...secrets, NESTPAY_ENV: 'test', NESTPAY_MERCHANT_ID: 'wrong' }), /MERCHANT_ID_MISMATCH/);
-  assert.equal(isNestPayTestConfigured({ ...secrets, NESTPAY_ENV: 'test' }), true);
-  assert.equal(isNestPayTestConfigured({ ...secrets, NESTPAY_ENV: 'production' }), false);
+test('test and production configurations select only their pinned endpoints', () => {
+  const testConfig = getNestPayConfig(testEnv);
+  const productionConfig = getNestPayConfig(productionEnv);
+  assert.equal(testConfig.mode, 'test');
+  assert.equal(testConfig.url3d, 'https://testsecurepay.eway2pay.com/fim/est3Dgate');
+  assert.equal(testConfig.apiUrl, 'https://testsecurepay.eway2pay.com/fim/api');
+  assert.equal(testConfig.appOrigin, 'https://test.ridepogon.com');
+  assert.equal(productionConfig.mode, 'production');
+  assert.equal(productionConfig.url3d, 'https://bib.eway2pay.com/fim/est3Dgate');
+  assert.equal(productionConfig.apiUrl, 'https://bib.eway2pay.com/fim/api');
+  assert.equal(productionConfig.appOrigin, 'https://ridepogon.com');
+  assert.equal(isNestPayConfigured(testEnv), true);
+  assert.equal(isNestPayConfigured(productionEnv), true);
+});
+
+test('test and production endpoint, domain and Vercel scopes cannot cross-contaminate', () => {
+  assert.throws(() => getNestPayConfig({ ...testEnv, NESTPAY_3D_URL: 'https://bib.eway2pay.com/fim/est3Dgate' }), /ENDPOINT_ENV_MISMATCH/);
+  assert.throws(() => getNestPayConfig({ ...testEnv, NESTPAY_API_URL: 'https://bib.eway2pay.com/fim/api' }), /ENDPOINT_ENV_MISMATCH/);
+  assert.throws(() => getNestPayConfig({ ...productionEnv, NESTPAY_3D_URL: 'https://testsecurepay.eway2pay.com/fim/est3Dgate' }), /ENDPOINT_ENV_MISMATCH/);
+  assert.throws(() => getNestPayConfig({ ...productionEnv, NESTPAY_API_URL: 'https://testsecurepay.eway2pay.com/fim/api' }), /ENDPOINT_ENV_MISMATCH/);
+  assert.throws(() => getNestPayConfig({ ...testEnv, APP_BASE_URL: 'https://ridepogon.com' }), /APP_BASE_URL_MISMATCH/);
+  assert.throws(() => getNestPayConfig({ ...productionEnv, APP_BASE_URL: 'https://test.ridepogon.com' }), /APP_BASE_URL_MISMATCH/);
+  assert.throws(() => getNestPayConfig({ ...testEnv, VERCEL_ENV: 'production' }), /VERCEL_ENV_MISMATCH/);
+  assert.throws(() => getNestPayConfig({ ...productionEnv, VERCEL_ENV: 'preview' }), /VERCEL_ENV_MISMATCH/);
+  assert.throws(() => getNestPayConfig({ ...productionEnv, NESTPAY_ENV: 'prod' }), /NESTPAY_ENV_INVALID/);
+  assert.equal(isNestPayConfigured({ ...productionEnv, NESTPAY_3D_URL: 'https://testsecurepay.eway2pay.com/fim/est3Dgate' }), false);
+  const payment = { orderId: 'PGN-2026-ISOLATION', amountRsd: 100, installmentCount: 1 };
+  assert.throws(() => create3DFormFields({
+    ...payment,
+    okUrl: 'https://test.ridepogon.com/api/nestpay/callback',
+    failUrl: 'https://test.ridepogon.com/api/nestpay/callback',
+  }, productionEnv), /RETURN_URL_MISMATCH/);
+  assert.throws(() => create3DFormFields({
+    ...payment,
+    okUrl: 'https://ridepogon.com/api/nestpay/callback',
+    failUrl: 'https://ridepogon.com/api/nestpay/callback',
+  }, testEnv), /RETURN_URL_MISMATCH/);
+});
+
+test('production Hosted Sale requires merchant and StoreKey but not API credentials', () => {
+  assert.throws(() => getNestPayConfig({ ...productionEnv, NESTPAY_MERCHANT_ID: '' }), /MISSING_NESTPAY_MERCHANT_ID/);
+  assert.throws(() => getNestPayConfig({ ...productionEnv, NESTPAY_STORE_KEY: '' }), /MISSING_NESTPAY_STORE_KEY/);
+  const { gateUrl, fields } = create3DFormFields({
+    orderId: 'PGN-2026-PRODUCTION', amountRsd: 138_500, installmentCount: 1,
+    okUrl: 'https://ridepogon.com/api/nestpay/callback?rt=opaque',
+    failUrl: 'https://ridepogon.com/api/nestpay/callback?rt=opaque',
+  }, productionEnv);
+  assert.equal(gateUrl, 'https://bib.eway2pay.com/fim/est3Dgate');
+  assert.equal(fields.okUrl, 'https://ridepogon.com/api/nestpay/callback?rt=opaque');
+  assert.equal(fields.failUrl, 'https://ridepogon.com/api/nestpay/callback?rt=opaque');
+  assert.equal(fields.storetype, '3d_pay_hosting');
+  assert.equal(fields.trantype, 'Auth');
+  assert.equal(Object.hasOwn(fields, 'instalment'), false);
+  assert.doesNotThrow(() => getNestPayConfig(productionEnv));
+  assert.throws(() => getNestPayApiCredentials(productionEnv), /API_CREDENTIALS_REQUIRED/);
+});
+
+test('API credentials are isolated to secondary Order Status configuration', () => {
+  assert.deepEqual(
+    getNestPayApiCredentials({ NESTPAY_API_USERNAME: 'secondary-user', NESTPAY_API_PASSWORD: 'secondary-password' }),
+    { username: 'secondary-user', password: 'secondary-password' },
+  );
+  assert.throws(() => getNestPayApiCredentials({ NESTPAY_API_USERNAME: 'secondary-user' }), /API_CREDENTIALS_REQUIRED/);
+  const cardPage = readFileSync(new URL('../src/app/components/CardPayment.tsx', import.meta.url), 'utf8');
+  const paymentFlow = readFileSync(new URL('../api/_lib/payment-flow.mjs', import.meta.url), 'utf8');
+  const prepareStart = paymentFlow.indexOf('export async function prepare3DPayment');
+  const prepareEnd = paymentFlow.indexOf('const finalize', prepareStart);
+  const prepareSource = paymentFlow.slice(prepareStart, prepareEnd);
+  assert.match(cardPage, /gateForm\.action = prepared\.gateUrl/);
+  assert.doesNotMatch(cardPage, /NESTPAY_API|\/fim\/api|API_USERNAME|API_PASSWORD/);
+  assert.doesNotMatch(prepareSource, /fetch\(|fetchImpl|config\.apiUrl|NESTPAY_API_USERNAME|NESTPAY_API_PASSWORD/);
 });
 
 test('captcha is verified server-side', async () => {
@@ -552,6 +620,7 @@ test('callback and result URLs come only from HTTPS APP_BASE_URL', () => {
   const urls = getPublicUrls({ APP_BASE_URL: 'https://ridepogon.com/' });
   assert.equal(urls.callbackUrl, 'https://ridepogon.com/api/nestpay/callback');
   assert.equal(urls.successUrl, 'https://ridepogon.com/payment/success');
+  assert.equal(getPublicUrls({ APP_BASE_URL: 'https://test.ridepogon.com/' }).callbackUrl, 'https://test.ridepogon.com/api/nestpay/callback');
   assert.throws(() => getPublicUrls({ APP_BASE_URL: 'http://ridepogon.com' }), /HTTPS/);
 });
 
@@ -781,6 +850,13 @@ test('checkout visibly declares canonical RSD and VAT terms before payment', () 
   assert.match(money, /maximumFractionDigits:\s*2/);
 });
 
+test('checkout order summary uses the light bank-branding surface', () => {
+  const checkout = readFileSync(new URL('../src/app/components/Checkout.tsx', import.meta.url), 'utf8');
+  assert.match(checkout, /<aside className="[^"]*bg-white text-\[#171713\]/);
+  assert.match(checkout, /<PaymentBranding compact \/>/);
+  assert.doesNotMatch(checkout, /<PaymentBranding dark compact \/>/);
+});
+
 test('purchase terms contain Marina inspection items 2.1.1, 2.1.4 and the supplied 2.1.8 statement', () => {
   const terms = readFileSync(new URL('../src/app/components/PurchaseTerms.tsx', import.meta.url), 'utf8');
   for (const expected of [
@@ -856,7 +932,7 @@ test('order persistence schema contains required non-sensitive evidence and no c
 test('NestPay amount is sent in major RSD units without an undocumented para conversion', () => {
   const { fields } = create3DFormFields({
     orderId: 'PGN-2026-MAJORUNIT', amountRsd: 168_500, installmentCount: 1,
-    okUrl: 'https://ridepogon.com/api/nestpay/callback', failUrl: 'https://ridepogon.com/api/nestpay/callback',
+    okUrl: 'https://test.ridepogon.com/api/nestpay/callback', failUrl: 'https://test.ridepogon.com/api/nestpay/callback',
   }, testEnv);
   assert.equal(fields.amount, '168500.00');
   assert.notEqual(fields.amount, '16850000');

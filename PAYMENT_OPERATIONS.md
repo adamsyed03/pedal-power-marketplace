@@ -1,8 +1,10 @@
 # Payment operations
 
-Void and refund are back-office operations performed in the NestPay TEST
-Merchant Center (`https://testsecurepay.eway2pay.com/bib/report/user.login`),
-exactly as the SMS test workbook prescribes for TC02 and TC04. No public
+Void and refund are manual back-office operations performed in the applicable
+NestPay Merchant Center: TEST uses
+`https://testsecurepay.eway2pay.com/bib/report/user.login`, while production
+uses `https://bib.eway2pay.com/bib/report/user.login`. The SMS test workbook
+prescribes the TEST TC02 and TC04 operations. No public or automated
 void/refund endpoint is exposed.
 
 ## Same-day cancellation (Void)

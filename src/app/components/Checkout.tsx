@@ -173,17 +173,17 @@ export function Checkout() {
             </section>
           </div>
 
-          <aside className="overflow-hidden rounded-[2rem] border border-black/[0.06] bg-[#1b1b17] text-white shadow-[0_24px_70px_rgba(26,23,15,0.18)] lg:sticky lg:top-24">
+          <aside className="overflow-hidden rounded-[2rem] border border-black/[0.08] bg-white text-[#171713] shadow-[0_24px_70px_rgba(26,23,15,0.12)] lg:sticky lg:top-24">
             <div className="p-5 sm:p-7">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/45">Tvoja porudžbina</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">Tvoja porudžbina</p>
               <div className="mt-5 space-y-3">
                 {items.map((item) => {
                   const entry = products.find((candidate) => candidate.key === item.product)!;
-                  return <div key={item.product} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                  return <div key={item.product} className="flex items-center gap-3 rounded-2xl border border-black/10 bg-[#f8f7f3] p-3">
                     <div className="size-16 shrink-0 overflow-hidden rounded-xl"><img src={entry.image} alt={entry.name} className="size-full object-cover" /></div>
-                    <div className="min-w-0 flex-1"><h2 className="font-black tracking-tight">{entry.name}</h2><p className="mt-1 text-xs leading-4 text-white/45">{entry.description}</p><p className="mt-1 text-xs font-bold text-white/70">{formatRsd(entry.priceRsd)} po komadu</p></div>
-                    <div className="flex items-center gap-0.5 rounded-full bg-white/10 p-1">
-                      <button type="button" aria-label="Smanji količinu" onClick={() => item.quantity === 1 && items.length > 1 ? removeModel(item.product) : changeQuantity(item.product, -1)} className="flex size-7 items-center justify-center rounded-full hover:bg-white/10"><Minus className="size-3" /></button>
+                    <div className="min-w-0 flex-1"><h2 className="font-black tracking-tight">{entry.name}</h2><p className="mt-1 text-xs leading-4 text-black/50">{entry.description}</p><p className="mt-1 text-xs font-bold text-black/70">{formatRsd(entry.priceRsd)} po komadu</p></div>
+                    <div className="flex items-center gap-0.5 rounded-full bg-black/[0.06] p-1">
+                      <button type="button" aria-label="Smanji količinu" onClick={() => item.quantity === 1 && items.length > 1 ? removeModel(item.product) : changeQuantity(item.product, -1)} className="flex size-7 items-center justify-center rounded-full hover:bg-black/[0.06]"><Minus className="size-3" /></button>
                       <span className="min-w-6 text-center text-xs font-black">{item.quantity}</span>
                       <button type="button" aria-label="Dodaj još jedan" onClick={() => changeQuantity(item.product, 1)} className="flex size-7 items-center justify-center rounded-full bg-orange-500 text-black hover:bg-orange-400"><Plus className="size-3" /></button>
                     </div>
@@ -192,55 +192,55 @@ export function Checkout() {
               </div>
 
               {items.length < products.length && <div className="mt-4">
-                <p className="mb-2 text-xs font-bold text-white/45">Dodaj drugi model</p>
-                <div className="flex flex-wrap gap-2">{products.filter((entry) => !items.some((item) => item.product === entry.key)).map((entry) => <button key={entry.key} type="button" onClick={() => addModel(entry.key)} className="rounded-full border border-white/15 px-3 py-2 text-xs font-bold text-white/70 transition hover:border-orange-400 hover:text-white"><Plus className="mr-1 inline size-3" /> {entry.name}</button>)}</div>
+                <p className="mb-2 text-xs font-bold text-black/45">Dodaj drugi model</p>
+                <div className="flex flex-wrap gap-2">{products.filter((entry) => !items.some((item) => item.product === entry.key)).map((entry) => <button key={entry.key} type="button" onClick={() => addModel(entry.key)} className="rounded-full border border-black/15 px-3 py-2 text-xs font-bold text-black/65 transition hover:border-orange-500 hover:text-black"><Plus className="mr-1 inline size-3" /> {entry.name}</button>)}</div>
               </div>}
 
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-400" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-white/45">Plaćanje do 12 rata</p></div></div>
-                <p className="mt-3 text-xs leading-5 text-white/40">Nakon potvrde bićete preusmereni na zaštićenu Banca Intesa / NestPay stranicu, gde isključivo unosite podatke platne kartice. Izbor broja rata prikazuje se na stranici banke nakon unosa kartice. Plaćanje na rate dostupno je samo karticama koje je izdala Banca Intesa. Konačan iznos za plaćanje na rate može biti približno 10% viši; tačan iznos banka prikazuje pre potvrde plaćanja.</p>
+              <div className="mt-6 rounded-2xl border border-black/10 bg-[#f8f7f3] p-4">
+                <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-600" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-black/45">Plaćanje do 12 rata</p></div></div>
+                <p className="mt-3 text-xs leading-5 text-black/50">Nakon potvrde bićete preusmereni na zaštićenu Banca Intesa / NestPay stranicu, gde isključivo unosite podatke platne kartice. Izbor broja rata prikazuje se na stranici banke nakon unosa kartice. Plaćanje na rate dostupno je samo karticama koje je izdala Banca Intesa. Konačan iznos za plaćanje na rate može biti približno 10% viši; tačan iznos banka prikazuje pre potvrde plaćanja.</p>
               </div>
 
-              <PaymentBranding dark compact />
+              <PaymentBranding compact />
 
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-xs leading-5 text-white/60">
-                <p className="font-black text-white">Podaci za konačnu specifikaciju</p>
+              <div className="mt-6 rounded-2xl border border-black/10 bg-[#f8f7f3] p-4 text-xs leading-5 text-black/65">
+                <p className="font-black text-black">Podaci za konačnu specifikaciju</p>
                 {customerSummary.firstName || customerSummary.lastName || customerSummary.email ? <dl className="mt-2 grid gap-1">
-                  <div><dt className="inline text-white/40">Kupac: </dt><dd className="inline">{`${customerSummary.firstName || ''} ${customerSummary.lastName || ''}`.trim() || '—'}</dd></div>
-                  <div><dt className="inline text-white/40">Email: </dt><dd className="inline break-all">{customerSummary.email || '—'}</dd></div>
-                  <div><dt className="inline text-white/40">Telefon: </dt><dd className="inline">{customerSummary.phone || '—'}</dd></div>
-                  <div><dt className="inline text-white/40">{deliveryMethod === 'courier' ? 'Adresa isporuke' : 'Adresa kupca'}: </dt><dd className="inline">{[customerSummary.street, customerSummary.postalCode, customerSummary.city].filter(Boolean).join(', ') || '—'}</dd></div>
-                  <div><dt className="inline text-white/40">Način preuzimanja: </dt><dd className="inline">{deliveryMethod === 'courier' ? 'Kurirska dostava' : 'Lično preuzimanje'}</dd></div>
+                  <div><dt className="inline text-black/45">Kupac: </dt><dd className="inline">{`${customerSummary.firstName || ''} ${customerSummary.lastName || ''}`.trim() || '—'}</dd></div>
+                  <div><dt className="inline text-black/45">Email: </dt><dd className="inline break-all">{customerSummary.email || '—'}</dd></div>
+                  <div><dt className="inline text-black/45">Telefon: </dt><dd className="inline">{customerSummary.phone || '—'}</dd></div>
+                  <div><dt className="inline text-black/45">{deliveryMethod === 'courier' ? 'Adresa isporuke' : 'Adresa kupca'}: </dt><dd className="inline">{[customerSummary.street, customerSummary.postalCode, customerSummary.city].filter(Boolean).join(', ') || '—'}</dd></div>
+                  <div><dt className="inline text-black/45">Način preuzimanja: </dt><dd className="inline">{deliveryMethod === 'courier' ? 'Kurirska dostava' : 'Lično preuzimanje'}</dd></div>
                 </dl> : <p className="mt-2">Popunite podatke kupca u odeljku 2. Ovde će biti prikazani za završnu proveru pre plaćanja.</p>}
               </div>
 
               <div className="mt-6 space-y-3 text-sm">
-                <div className="flex justify-between gap-4 text-white/60"><span>Proizvodi ({items.reduce((sum, item) => sum + item.quantity, 0)})</span><span className="font-medium text-white">{formatRsd(displayedTotal)}</span></div>
-                <div className="flex justify-between gap-4 text-white/60"><span>Dostava</span><span className={deliveryMethod === 'pickup' ? 'font-bold text-emerald-400' : 'font-medium text-white'}>{deliveryMethod === 'pickup' ? 'Besplatno' : formatRsd(displayedDeliveryFee)}</span></div>
-                <div className="flex items-center justify-between gap-4 border-t border-white/10 pt-5"><span className="font-bold">Ukupno</span><span className="text-2xl font-black tracking-tight">{formatRsd(displayedPayableTotal)}</span></div>
-                <p className="text-right text-[11px] leading-4 text-white/50">Sve cene su sa uračunatim PDV-om i nema dodatnih ili skrivenih troškova.</p>
-                <p className="text-right text-[11px] text-white/35">Prodavnica naplaćuje isključivo u RSD.</p>
+                <div className="flex justify-between gap-4 text-black/60"><span>Proizvodi ({items.reduce((sum, item) => sum + item.quantity, 0)})</span><span className="font-medium text-black">{formatRsd(displayedTotal)}</span></div>
+                <div className="flex justify-between gap-4 text-black/60"><span>Dostava</span><span className={deliveryMethod === 'pickup' ? 'font-bold text-emerald-700' : 'font-medium text-black'}>{deliveryMethod === 'pickup' ? 'Besplatno' : formatRsd(displayedDeliveryFee)}</span></div>
+                <div className="flex items-center justify-between gap-4 border-t border-black/10 pt-5"><span className="font-bold">Ukupno</span><span className="text-2xl font-black tracking-tight">{formatRsd(displayedPayableTotal)}</span></div>
+                <p className="text-right text-[11px] leading-4 text-black/50">Sve cene su sa uračunatim PDV-om i nema dodatnih ili skrivenih troškova.</p>
+                <p className="text-right text-[11px] text-black/40">Prodavnica naplaćuje isključivo u RSD.</p>
               </div>
             </div>
 
-            <div className="border-t border-white/10 bg-black/15 p-5 sm:p-7">
-              <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 p-3.5 transition hover:bg-white/[0.04]">
+            <div className="border-t border-black/10 bg-[#f8f7f3] p-5 sm:p-7">
+              <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-black/10 bg-white p-3.5 transition hover:bg-black/[0.02]">
                 <input type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} className="mt-0.5 size-4 shrink-0 accent-orange-500" />
-                <span className="text-xs leading-5 text-white/60">Pročitao/la sam i prihvatam <a href="/uslovi-kupovine" target="_blank" rel="noreferrer" className="font-bold text-white underline decoration-white/30 underline-offset-2 hover:decoration-white">Opšte uslove kupovine</a>, uključujući dostavu, reklamacije, odustanak i povraćaj sredstava.</span>
+                <span className="text-xs leading-5 text-black/65">Pročitao/la sam i prihvatam <a href="/uslovi-kupovine" target="_blank" rel="noreferrer" className="font-bold text-black underline decoration-black/30 underline-offset-2 hover:decoration-black">Opšte uslove kupovine</a>, uključujući dostavu, reklamacije, odustanak i povraćaj sredstava.</span>
               </label>
               <div className="mt-4 overflow-hidden"><Turnstile onToken={setCaptchaToken} /></div>
-              {error && <p role="alert" className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-3.5 text-sm leading-5 text-red-100">{error}</p>}
+              {error && <p role="alert" className="mt-4 rounded-2xl border border-red-600/20 bg-red-50 p-3.5 text-sm leading-5 text-red-700">{error}</p>}
               <button disabled={!accepted || !captchaToken || status === 'submitting'} className="group mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-orange-500 px-5 font-black text-black shadow-[0_8px_28px_rgba(249,115,22,0.25)] transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-35 disabled:shadow-none">
                 {status === 'submitting' ? 'Priprema plaćanja…' : <>Nastavi na plaćanje <ChevronRight className="size-5 transition-transform group-hover:translate-x-0.5" /></>}
               </button>
-              <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-white/35"><LockKeyhole className="size-3.5" /> Pogon ne čuva broj kartice ni sigurnosni kod</div>
-              <a href="tel:+38169692345" className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-white/50 transition hover:text-white"><Phone className="size-3.5" /> Za veću porudžbinu pozovi +381 69 692 345</a>
-              <nav aria-label="Informacije za kupce" className="mt-4 flex flex-wrap justify-center gap-x-3 gap-y-2 text-[11px] text-white/45">
-                <a href="/informacije-o-trgovcu" className="underline hover:text-white">Podaci o trgovcu</a>
-                <a href="/dostava" className="underline hover:text-white">Dostava</a>
-                <a href="/reklamacije" className="underline hover:text-white">Reklamacije</a>
-                <a href="/privatnost" className="underline hover:text-white">Privatnost</a>
-                <a href="/bezbednost-placanja" className="underline hover:text-white">Bezbednost plaćanja</a>
+              <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-black/40"><LockKeyhole className="size-3.5" /> Pogon ne čuva broj kartice ni sigurnosni kod</div>
+              <a href="tel:+38169692345" className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-black/55 transition hover:text-black"><Phone className="size-3.5" /> Za veću porudžbinu pozovi +381 69 692 345</a>
+              <nav aria-label="Informacije za kupce" className="mt-4 flex flex-wrap justify-center gap-x-3 gap-y-2 text-[11px] text-black/50">
+                <a href="/informacije-o-trgovcu" className="underline hover:text-black">Podaci o trgovcu</a>
+                <a href="/dostava" className="underline hover:text-black">Dostava</a>
+                <a href="/reklamacije" className="underline hover:text-black">Reklamacije</a>
+                <a href="/privatnost" className="underline hover:text-black">Privatnost</a>
+                <a href="/bezbednost-placanja" className="underline hover:text-black">Bezbednost plaćanja</a>
               </nav>
             </div>
           </aside>

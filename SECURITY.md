@@ -13,8 +13,11 @@ Hard rules enforced in code and tests:
   or error monitoring, or stored in local/session storage. The callback strips
   any card-data-shaped fields the gateway might echo before processing.
 - `NESTPAY_STORE_KEY`, `NESTPAY_API_USERNAME` and `NESTPAY_API_PASSWORD` are
-  server-only and never use a `VITE_` prefix. Hash v2 is computed server-side in
-  `/api/nestpay/prepare`; the browser receives only the finished hidden fields.
+  server-only and never use a `VITE_` prefix. Only Merchant ID and StoreKey are
+  required for the initial Hosted Sale. API credentials are optional and are
+  requested only by the protected secondary Order Status operation. Hash v2 is
+  computed server-side in `/api/nestpay/prepare`; the browser receives only the
+  finished hidden fields.
 - The browser POST contains `storetype=3d_pay_hosting`, `hashAlgorithm=ver2`,
   `encoding=utf-8` and `lang=sr`; it contains neither `instalment` nor
   `CallbackURL` nor any card-data field.
@@ -30,5 +33,7 @@ Hard rules enforced in code and tests:
   concurrent callbacks cannot finalize or email the same transaction twice.
 - Ambiguous local state is resolved only through the documented read-only Order
   Status query. A payment transaction is never retried blindly.
-- TEST mode pins the official Banca Intesa TEST endpoints. Production remains
-  disabled until the bank completes inspection and issues production values.
+- `NESTPAY_ENV=test` pins the TEST endpoint, `test.ridepogon.com`, and a
+  non-production Vercel scope. `NESTPAY_ENV=production` pins the production
+  endpoint, `ridepogon.com`, and Vercel's production scope. Mixed endpoint,
+  hostname, or deployment-scope combinations fail closed.

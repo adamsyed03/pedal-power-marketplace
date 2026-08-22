@@ -1,6 +1,6 @@
 # NestPay implementation status
 
-> The TEST integration follows Banca Intesa's supplied 3D Pay Hosting package
+> The TEST and production code paths follow Banca Intesa's supplied 3D Pay Hosting package
 > and Marina Marković's merchant-specific clarification. The POST uses
 > `storetype=3d_pay_hosting`, omits `instalment` and `CallbackURL`, and contains
 > no card data. Customers enter card details only on the NestPay hosted page.
@@ -51,11 +51,13 @@
 - Tests for totals, tampering, IDs, hashes, 3D status, XML, malformed/declined
   responses, status query separation, and environment isolation.
 
-## Deliberately disabled
+## Environment activation
 
-Production payments stay disabled: `NESTPAY_ENV=test` pins the TEST endpoints,
-and switching to production requires the bank's production parameters issued
-after the EPM inspection (see `CHIP_CARD_INTEGRATION.md` and `SECURITY.md`).
+The code accepts only `NESTPAY_ENV=test` and `NESTPAY_ENV=production`. Each mode
+pins its exact bank endpoint, public application origin, and Vercel deployment
+scope. Production code support does not itself activate or deploy production;
+the production-only Vercel variables and supervised bank pilot remain separate
+operational steps (see `CHIP_CARD_INTEGRATION.md` and `SECURITY.md`).
 
 The Order Detail Service document referenced by the connectivity guide was not
 supplied; reconciliation uses the documented Order Status query

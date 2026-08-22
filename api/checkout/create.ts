@@ -5,7 +5,7 @@ import { createLookupToken, hashLookupToken, rateLimit, requestIp } from '../_li
 import { findOrderByIdempotency, insertOrder, patchOrder } from '../_lib/supabase.mjs';
 import { validateCheckout } from '../_lib/validation.mjs';
 import { offeredInstallments, resolveDeliveryFee } from '../_lib/delivery.mjs';
-import { isNestPayTestConfigured } from '../_lib/nestpay.mjs';
+import { isNestPayConfigured } from '../_lib/nestpay.mjs';
 
 const cardPageUrl = (orderId: string, token: string) =>
   `/payment/card?orderId=${encodeURIComponent(orderId)}&token=${encodeURIComponent(token)}`;
@@ -31,7 +31,7 @@ export default async function handler(request: any, response: any) {
     // before Siteverify so a one-time token is never consumed twice on retry.
     const input = validateCheckout(request.body);
     if (!offeredInstallments().includes(input.installmentCount)) return response.status(400).json({ error: 'Izabrani broj rata nije dostupan.' });
-    const paymentConfigured = isNestPayTestConfigured();
+    const paymentConfigured = isNestPayConfigured();
     const existing = await findOrderByIdempotency(idempotencyKey);
     if (existing) {
       // The lookup token is stored only as a hash, so a retried create issues a
