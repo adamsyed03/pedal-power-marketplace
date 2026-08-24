@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 type PublicOrder = {
   orderId: string; status: string; product: string; quantity: number;
   unitPriceRsd: number; subtotalRsd?: number; totalRsd: number | null; installmentCount: number;
-  items?: { product: string; name: string; quantity: number; unitPriceRsd: number; lineTotalRsd: number }[];
+  items?: { product: string; name: string; quantity: number; unitPriceRsd: number; lineTotalRsd: number; originalUnitPriceRsd?: number; discountRsd?: number; promoCode?: string }[];
   customer: { name: string; email: string; address: string; deliveryAddress?: string };
   merchant: { legalName: string; pib: string; address: string };
   authCode?: string; transactionId?: string; response?: string;
@@ -54,7 +54,7 @@ export function PaymentResult() {
           <div className="mt-8 space-y-8 border-t border-black/10 pt-6 text-sm">
             <section><h2 className="text-lg font-black">Podaci o porudžbini</h2><dl className="mt-3 grid gap-3">
               <div className="flex justify-between gap-6"><dt>Broj narudžbine</dt><dd className="break-all text-right font-bold">{order.orderId}</dd></div>
-              {(order.items?.length ? order.items : [{ product: order.product, name: order.product, quantity: order.quantity, unitPriceRsd: order.unitPriceRsd, lineTotalRsd: order.unitPriceRsd * order.quantity }]).map((item) => <div key={item.product} className="rounded-xl bg-black/[0.03] p-3"><div className="flex justify-between gap-4"><dt>{item.name}</dt><dd className="font-bold">{item.quantity} × {formatRsd(item.unitPriceRsd)}</dd></div><p className="mt-1 text-right text-black/50">Ukupno: {formatRsd(item.lineTotalRsd)}</p></div>)}
+              {(order.items?.length ? order.items : [{ product: order.product, name: order.product, quantity: order.quantity, unitPriceRsd: order.unitPriceRsd, lineTotalRsd: order.unitPriceRsd * order.quantity }]).map((item) => <div key={item.product} className="rounded-xl bg-black/[0.03] p-3"><div className="flex justify-between gap-4"><dt>{item.name}</dt><dd className="font-bold">{item.quantity} × {formatRsd(item.unitPriceRsd)}</dd></div>{item.discountRsd ? <p className="mt-1 text-right font-bold text-emerald-700">Popust ({item.promoCode}): −{formatRsd(item.discountRsd)}</p> : null}<p className="mt-1 text-right text-black/50">Ukupno: {formatRsd(item.lineTotalRsd)}</p></div>)}
               <div className="flex justify-between gap-6"><dt>Proizvodi sa PDV-om</dt><dd className="font-bold">{formatRsd(order.subtotalRsd ?? order.unitPriceRsd * order.quantity)}</dd></div>
               <div className="flex justify-between gap-6"><dt>PDV / Porez</dt><dd className="text-right font-bold">PDV je uračunat u prikazane cene.</dd></div>
               <div className="flex justify-between gap-6"><dt>Dostava</dt><dd className="text-right font-bold">{order.deliveryMethod === 'pickup' ? 'Lično preuzimanje — bez naknade' : order.deliveryFeeRsd != null ? formatRsd(order.deliveryFeeRsd) : 'Obračunava se posebno'}</dd></div>

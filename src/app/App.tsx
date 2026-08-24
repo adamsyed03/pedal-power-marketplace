@@ -1579,6 +1579,20 @@ export default function App() {
               </button>
             </div>
           </div>
+          <div className="mt-6 flex justify-center px-1 sm:mt-8">
+            <div className="flex max-w-3xl items-start gap-3 rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3 text-sm leading-6 text-foreground/75 sm:items-center sm:px-5">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Phone className="size-4" />
+              </span>
+              <p>
+                {tr({
+                  sr: <>Ako želite kupiti na rate ili preko administrativnih zabrana, pozovite nas na <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
+                  en: <>For installment purchases or payroll deduction arrangements, call us at <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
+                  ru: <>Для покупки в рассрочку или через удержание из заработной платы позвоните нам по номеру <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
+                })}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
       </section>

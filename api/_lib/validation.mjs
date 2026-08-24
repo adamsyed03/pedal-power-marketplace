@@ -13,6 +13,9 @@ export function validateCheckout(input) {
     street: text(customer.street, 160), city: text(customer.city, 100),
     postalCode: text(customer.postalCode, 20), deliveryMethod: text(input?.deliveryMethod, 20),
     installmentCount, captchaToken: text(input?.captchaToken, 2048),
+    promoCode: input?.promoCode === undefined || input?.promoCode === null || input?.promoCode === ''
+      ? null
+      : text(input.promoCode, 40),
     termsAccepted: input?.termsAccepted === true,
   };
   if (!result.captchaToken) throw new Error('INVALID_CAPTCHA');
@@ -20,6 +23,6 @@ export function validateCheckout(input) {
       new Set(items.map((item) => item.product)).size !== items.length || !result.firstName || !result.lastName ||
       !result.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email) || !result.phone ||
       !result.street || !result.city || !result.postalCode || !['courier', 'pickup'].includes(result.deliveryMethod) ||
-      installmentCount !== 1 || !result.termsAccepted) throw new Error('INVALID_CHECKOUT');
+      installmentCount !== 1 || (input?.promoCode && !result.promoCode) || !result.termsAccepted) throw new Error('INVALID_CHECKOUT');
   return result;
 }

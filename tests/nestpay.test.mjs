@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateCartTotal, calculateOrderTotal } from '../api/_lib/catalog.mjs';
+import { applyPromotion, normalizePromoCode, singleUsePromotionOrderId } from '../api/_lib/promotions.mjs';
 import { createOrderId } from '../api/_lib/order.mjs';
 import {
   buildOrderStatusXml, create3DFormFields, create3DRequestHash, inspect3DResponseHash,
@@ -47,6 +48,44 @@ test('mixed-model totals are authoritative and quantities are not capped at five
   assert.throws(() => calculateCartTotal([{ product: 'glide', quantity: 1 }, { product: 'glide', quantity: 2 }]), /DUPLICATE_PRODUCT/);
 });
 
+test('MILEBANJA sets each Cargo bike to 120,000 RSD without discounting other models', () => {
+  const cart = calculateCartTotal([
+    { product: 'cargo', quantity: 2 },
+    { product: 'core', quantity: 1 },
+  ]);
+  const discounted = applyPromotion(cart, '  milebanja  ');
+  assert.equal(discounted.promoCode, 'MILEBANJA');
+  assert.equal(discounted.originalSubtotalRsd, 395_000);
+  assert.equal(discounted.discountRsd, 20_000);
+  assert.equal(discounted.subtotalRsd, 375_000);
+  assert.deepEqual(discounted.items.find((item) => item.product === 'cargo'), {
+    product: 'cargo', name: 'Pogon Cargo', quantity: 2,
+    originalUnitPriceRsd: 130_000, unitPriceRsd: 120_000,
+    lineTotalRsd: 240_000, discountRsd: 20_000, promoCode: 'MILEBANJA',
+  });
+  assert.equal(discounted.items.find((item) => item.product === 'core').unitPriceRsd, 135_000);
+});
+
+test('promo codes are server-normalized and fail closed when invalid or inapplicable', () => {
+  assert.equal(normalizePromoCode(' milebanja '), 'MILEBANJA');
+  assert.equal(normalizePromoCode(''), null);
+  assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), 'NOTREAL'), /INVALID_PROMO_CODE/);
+  assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'core', quantity: 1 }]), 'MILEBANJA'), /PROMO_NOT_APPLICABLE/);
+  const regular = applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), null);
+  assert.equal(regular.subtotalRsd, 130_000);
+  assert.equal(regular.discountRsd, 0);
+});
+
+test('single-use promo reservation IDs are stable per environment and isolated from production', () => {
+  const first = singleUsePromotionOrderId('MILEBANJA', { NESTPAY_ENV: 'test' });
+  const repeated = singleUsePromotionOrderId(' milebanja ', { NESTPAY_ENV: 'test' });
+  const production = singleUsePromotionOrderId('MILEBANJA', { NESTPAY_ENV: 'production' });
+  assert.match(first, /^PGN-2026-[A-F0-9]{16}$/);
+  assert.equal(first, repeated);
+  assert.notEqual(first, production);
+  assert.throws(() => singleUsePromotionOrderId('NOTREAL', { NESTPAY_ENV: 'test' }), /INVALID_PROMO_CODE/);
+});
+
 test('order IDs are unique and year-scoped', () => {
   const ids = new Set(Array.from({ length: 100 }, () => createOrderId(new Date('2026-01-01'))));
   assert.equal(ids.size, 100);
@@ -65,7 +104,7 @@ test('hosted 3D form uses the exact merchant-specific field set and a matching h
     orderId: 'PGN-2026-AB12', amountRsd: 138_500, installmentCount: 1,
     okUrl: 'https://test.ridepogon.com/api/nestpay/callback?rt=t', failUrl: 'https://test.ridepogon.com/api/nestpay/callback?rt=t',
   }, testEnv);
-  assert.equal(gateUrl, 'https://testsecurepay.eway2pay.com/fim/est3Dgate');
+  assert.equal(gateUrl, 'https://bib.eway2pay.com/fim/est3Dgate');
   assert.equal(fields.storetype, '3d_pay_hosting');
   assert.equal(fields.trantype, 'Auth');
   assert.equal(fields.currency, '941');
@@ -387,8 +426,8 @@ test('test and production configurations select only their pinned endpoints', ()
   const testConfig = getNestPayConfig(testEnv);
   const productionConfig = getNestPayConfig(productionEnv);
   assert.equal(testConfig.mode, 'test');
-  assert.equal(testConfig.url3d, 'https://testsecurepay.eway2pay.com/fim/est3Dgate');
-  assert.equal(testConfig.apiUrl, 'https://testsecurepay.eway2pay.com/fim/api');
+  assert.equal(testConfig.url3d, 'https://bib.eway2pay.com/fim/est3Dgate');
+  assert.equal(testConfig.apiUrl, 'https://bib.eway2pay.com/fim/api');
   assert.equal(testConfig.appOrigin, 'https://test.ridepogon.com');
   assert.equal(productionConfig.mode, 'production');
   assert.equal(productionConfig.url3d, 'https://bib.eway2pay.com/fim/est3Dgate');
@@ -399,8 +438,6 @@ test('test and production configurations select only their pinned endpoints', ()
 });
 
 test('test and production endpoint, domain and Vercel scopes cannot cross-contaminate', () => {
-  assert.throws(() => getNestPayConfig({ ...testEnv, NESTPAY_3D_URL: 'https://bib.eway2pay.com/fim/est3Dgate' }), /ENDPOINT_ENV_MISMATCH/);
-  assert.throws(() => getNestPayConfig({ ...testEnv, NESTPAY_API_URL: 'https://bib.eway2pay.com/fim/api' }), /ENDPOINT_ENV_MISMATCH/);
   assert.throws(() => getNestPayConfig({ ...productionEnv, NESTPAY_3D_URL: 'https://testsecurepay.eway2pay.com/fim/est3Dgate' }), /ENDPOINT_ENV_MISMATCH/);
   assert.throws(() => getNestPayConfig({ ...productionEnv, NESTPAY_API_URL: 'https://testsecurepay.eway2pay.com/fim/api' }), /ENDPOINT_ENV_MISMATCH/);
   assert.throws(() => getNestPayConfig({ ...testEnv, APP_BASE_URL: 'https://ridepogon.com' }), /APP_BASE_URL_MISMATCH/);
@@ -595,8 +632,10 @@ test('order persistence sends a PENDING order through the server-only database c
 test('hosted checkout validation accepts only an ordinary one-payment order', () => {
   const base = { product: 'glide', quantity: 1, installmentCount: 1, captchaToken: 'a'.repeat(20), termsAccepted: true, deliveryMethod: 'courier', customer: { firstName: 'A', lastName: 'B', email: 'a@b.rs', phone: '12345678', street: 'Ulica 1', city: 'Beograd', postalCode: '11000' } };
   assert.equal(validateCheckout(base).installmentCount, 1);
+  assert.equal(validateCheckout({ ...base, promoCode: ' MILEBANJA ' }).promoCode, 'MILEBANJA');
   assert.throws(() => validateCheckout({ ...base, installmentCount: 3 }), /INVALID_CHECKOUT/);
   assert.throws(() => validateCheckout({ ...base, installmentCount: 2 }), /INVALID_CHECKOUT/);
+  assert.throws(() => validateCheckout({ ...base, promoCode: 'x'.repeat(41) }), /INVALID_CHECKOUT/);
 });
 
 test('rate limiting blocks requests above the configured window limit', () => {

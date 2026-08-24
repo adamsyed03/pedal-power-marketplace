@@ -3,8 +3,8 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 const MERCHANT_ID = '13IN004634';
 const NESTPAY_ENVIRONMENTS = Object.freeze({
   test: Object.freeze({
-    url3d: 'https://testsecurepay.eway2pay.com/fim/est3Dgate',
-    apiUrl: 'https://testsecurepay.eway2pay.com/fim/api',
+    url3d: 'https://bib.eway2pay.com/fim/est3Dgate',
+    apiUrl: 'https://bib.eway2pay.com/fim/api',
     appOrigin: 'https://test.ridepogon.com',
   }),
   production: Object.freeze({

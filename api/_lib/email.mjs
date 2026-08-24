@@ -35,6 +35,10 @@ export function buildPaymentConfirmation(order, merchant) {
     [`Proizvod ${index + 1}`, unavailable(item.name || item.product)],
     [`Količina ${index + 1}`, unavailable(item.quantity)],
     [`Jedinična cena ${index + 1}`, rsd(item.unitPriceRsd)],
+    ...(Number(item.discountRsd || 0) > 0 ? [
+      [`Kod za popust ${index + 1}`, unavailable(item.promoCode)],
+      [`Popust ${index + 1}`, rsd(-Number(item.discountRsd))],
+    ] : []),
     [`Ukupno za proizvod ${index + 1}`, rsd(item.lineTotalRsd)],
   ]);
   const rows = [

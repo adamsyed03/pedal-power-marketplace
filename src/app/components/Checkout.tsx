@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useRef, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Check,
@@ -11,6 +11,7 @@ import {
   Plus,
   ShieldCheck,
   Store,
+  Tag,
   Truck,
 } from 'lucide-react';
 import { formatRsd, products, ProductKey } from '../../lib/products';
@@ -51,13 +52,53 @@ export function Checkout() {
   const [customerSummary, setCustomerSummary] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<'idle' | 'submitting' | 'error'>('idle');
   const [error, setError] = useState('');
+  const [promoInput, setPromoInput] = useState('');
+  const [promoCode, setPromoCode] = useState<string | null>(null);
+  const [promoError, setPromoError] = useState('');
   const idempotencyKey = useRef(crypto.randomUUID());
   const displayedTotal = useMemo(() => items.reduce((sum, item) => {
     const entry = products.find((candidate) => candidate.key === item.product)!;
     return sum + entry.priceRsd * item.quantity;
   }, 0), [items]);
+  const cargoQuantity = items.find((item) => item.product === 'cargo')?.quantity ?? 0;
+  const displayedDiscount = promoCode === 'MILEBANJA' ? cargoQuantity * 10_000 : 0;
   const displayedDeliveryFee = deliveryMethod === 'courier' ? 3_500 : 0;
-  const displayedPayableTotal = displayedTotal + displayedDeliveryFee;
+  const displayedPayableTotal = displayedTotal - displayedDiscount + displayedDeliveryFee;
+
+  useEffect(() => {
+    idempotencyKey.current = crypto.randomUUID();
+  }, [items, deliveryMethod, promoCode]);
+
+  useEffect(() => {
+    if (promoCode && cargoQuantity === 0) {
+      setPromoCode(null);
+      setPromoInput('');
+      setPromoError('Kod MILEBANJA važi samo za Pogon Cargo.');
+    }
+  }, [cargoQuantity, promoCode]);
+
+  const applyPromoCode = () => {
+    const normalized = promoInput.trim().toUpperCase();
+    if (promoCode === normalized) {
+      setPromoCode(null);
+      setPromoInput('');
+      setPromoError('');
+      return;
+    }
+    if (normalized !== 'MILEBANJA') {
+      setPromoCode(null);
+      setPromoError('Kod za popust nije važeći.');
+      return;
+    }
+    if (cargoQuantity === 0) {
+      setPromoCode(null);
+      setPromoError('Kod MILEBANJA važi samo za Pogon Cargo.');
+      return;
+    }
+    setPromoInput(normalized);
+    setPromoCode(normalized);
+    setPromoError('');
+  };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -79,6 +120,7 @@ export function Checkout() {
       },
       deliveryMethod,
       paymentOption: 'card',
+      promoCode,
       captchaToken,
       termsAccepted: accepted,
     };
@@ -181,7 +223,7 @@ export function Checkout() {
                   const entry = products.find((candidate) => candidate.key === item.product)!;
                   return <div key={item.product} className="flex items-center gap-3 rounded-2xl border border-black/10 bg-[#f8f7f3] p-3">
                     <div className="size-16 shrink-0 overflow-hidden rounded-xl"><img src={entry.image} alt={entry.name} className="size-full object-cover" /></div>
-                    <div className="min-w-0 flex-1"><h2 className="font-black tracking-tight">{entry.name}</h2><p className="mt-1 text-xs leading-4 text-black/50">{entry.description}</p><p className="mt-1 text-xs font-bold text-black/70">{formatRsd(entry.priceRsd)} po komadu</p></div>
+                    <div className="min-w-0 flex-1"><h2 className="font-black tracking-tight">{entry.name}</h2><p className="mt-1 text-xs leading-4 text-black/50">{entry.description}</p><p className="mt-1 text-xs font-bold text-black/70">{item.product === 'cargo' && promoCode === 'MILEBANJA' ? <><span className="mr-1.5 text-black/35 line-through">{formatRsd(entry.priceRsd)}</span>{formatRsd(120_000)}</> : formatRsd(entry.priceRsd)} po komadu</p></div>
                     <div className="flex items-center gap-0.5 rounded-full bg-black/[0.06] p-1">
                       <button type="button" aria-label="Smanji količinu" onClick={() => item.quantity === 1 && items.length > 1 ? removeModel(item.product) : changeQuantity(item.product, -1)} className="flex size-7 items-center justify-center rounded-full hover:bg-black/[0.06]"><Minus className="size-3" /></button>
                       <span className="min-w-6 text-center text-xs font-black">{item.quantity}</span>
@@ -195,6 +237,39 @@ export function Checkout() {
                 <p className="mb-2 text-xs font-bold text-black/45">Dodaj drugi model</p>
                 <div className="flex flex-wrap gap-2">{products.filter((entry) => !items.some((item) => item.product === entry.key)).map((entry) => <button key={entry.key} type="button" onClick={() => addModel(entry.key)} className="rounded-full border border-black/15 px-3 py-2 text-xs font-bold text-black/65 transition hover:border-orange-500 hover:text-black"><Plus className="mr-1 inline size-3" /> {entry.name}</button>)}</div>
               </div>}
+
+              <div className="mt-6 rounded-2xl border border-black/10 bg-[#f8f7f3] p-4">
+                <label htmlFor="promo-code" className="flex items-center gap-2 text-sm font-black"><Tag className="size-4 text-orange-600" /> Kod za popust</label>
+                <div className="mt-3 flex gap-2">
+                  <input
+                    id="promo-code"
+                    value={promoInput}
+                    onChange={(event) => {
+                      const next = event.target.value.toUpperCase();
+                      setPromoInput(next);
+                      setPromoError('');
+                      if (promoCode && next.trim() !== promoCode) setPromoCode(null);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        applyPromoCode();
+                      }
+                    }}
+                    maxLength={40}
+                    autoComplete="off"
+                    placeholder="Unesi kod"
+                    aria-describedby="promo-code-status"
+                    className="min-h-11 min-w-0 flex-1 rounded-xl border border-black/10 bg-white px-3 text-sm font-bold uppercase outline-none transition placeholder:font-normal placeholder:normal-case placeholder:text-black/30 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+                  />
+                  <button type="button" onClick={applyPromoCode} className="min-h-11 rounded-xl bg-[#171713] px-4 text-sm font-black text-white transition hover:bg-black/80">
+                    {promoCode ? 'Ukloni' : 'Primeni'}
+                  </button>
+                </div>
+                <p id="promo-code-status" className={`mt-2 min-h-5 text-xs font-bold ${promoError ? 'text-red-700' : promoCode ? 'text-emerald-700' : 'text-black/40'}`}>
+                  {promoError || (promoCode ? `Kod ${promoCode} je primenjen: ${formatRsd(displayedDiscount)} popusta.` : 'Kod se proverava i na serveru pre plaćanja.')}
+                </p>
+              </div>
 
               <div className="mt-6 rounded-2xl border border-black/10 bg-[#f8f7f3] p-4">
                 <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-600" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-black/45">Plaćanje do 12 rata</p></div></div>
@@ -216,6 +291,7 @@ export function Checkout() {
 
               <div className="mt-6 space-y-3 text-sm">
                 <div className="flex justify-between gap-4 text-black/60"><span>Proizvodi ({items.reduce((sum, item) => sum + item.quantity, 0)})</span><span className="font-medium text-black">{formatRsd(displayedTotal)}</span></div>
+                {displayedDiscount > 0 && <div className="flex justify-between gap-4 text-emerald-700"><span>Popust ({promoCode})</span><span className="font-bold">−{formatRsd(displayedDiscount)}</span></div>}
                 <div className="flex justify-between gap-4 text-black/60"><span>Dostava</span><span className={deliveryMethod === 'pickup' ? 'font-bold text-emerald-700' : 'font-medium text-black'}>{deliveryMethod === 'pickup' ? 'Besplatno' : formatRsd(displayedDeliveryFee)}</span></div>
                 <div className="flex items-center justify-between gap-4 border-t border-black/10 pt-5"><span className="font-bold">Ukupno</span><span className="text-2xl font-black tracking-tight">{formatRsd(displayedPayableTotal)}</span></div>
                 <p className="text-right text-[11px] leading-4 text-black/50">Sve cene su sa uračunatim PDV-om i nema dodatnih ili skrivenih troškova.</p>

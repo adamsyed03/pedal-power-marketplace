@@ -1,5 +1,6 @@
 import { verifyCaptcha } from '../_lib/captcha.mjs';
 import { calculateCartTotal } from '../_lib/catalog.mjs';
+import { applyPromotion, singleUsePromotionOrderId } from '../_lib/promotions.mjs';
 import { createOrderId } from '../_lib/order.mjs';
 import { createLookupToken, hashLookupToken, rateLimit, requestIp } from '../_lib/security.mjs';
 import { findOrderByIdempotency, insertOrder, patchOrder } from '../_lib/supabase.mjs';
@@ -24,6 +25,7 @@ export default async function handler(request: any, response: any) {
   const idempotencyKey = String(request.headers?.['idempotency-key'] || '');
   if (!/^[A-Za-z0-9_-]{16,100}$/.test(idempotencyKey)) return response.status(400).json({ error: 'Nedostaje bezbedan ključ zahteva.' });
 
+  let requestedPromoCode: string | null = null;
   try {
     // Validate the request before touching infrastructure so a missing CAPTCHA
     // is always reported as a client error rather than an unrelated database
@@ -56,11 +58,13 @@ export default async function handler(request: any, response: any) {
     }
 
     if (!await verifyCaptcha(input.captchaToken, ip)) return response.status(400).json({ error: 'Bezbednosna provera nije uspela.' });
-    const cart = calculateCartTotal(input.items);
+    const cart = applyPromotion(calculateCartTotal(input.items), input.promoCode);
+    requestedPromoCode = cart.promoCode;
     const delivery = resolveDeliveryFee(input.deliveryMethod);
     const lookupToken = createLookupToken();
     const order = await insertOrder({
-      order_id: createOrderId(), product: cart.items[0].product, quantity: cart.totalQuantity,
+      order_id: cart.promoCode ? singleUsePromotionOrderId(cart.promoCode) : createOrderId(),
+      product: cart.items[0].product, quantity: cart.totalQuantity,
       unit_price_rsd: cart.items[0].unitPriceRsd, order_items: cart.items, subtotal_rsd: cart.subtotalRsd,
       delivery_fee_rsd: delivery.feeRsd,
       total_rsd: delivery.exact ? cart.subtotalRsd + delivery.feeRsd : null,
@@ -92,6 +96,11 @@ export default async function handler(request: any, response: any) {
   } catch (error) {
     const code = error instanceof Error ? error.message : '';
     if (code === 'INVALID_CAPTCHA') return response.status(400).json({ error: 'Bezbednosna provera je obavezna.' });
+    if (code === 'INVALID_PROMO_CODE') return response.status(400).json({ error: 'Kod za popust nije važeći.' });
+    if (code === 'PROMO_NOT_APPLICABLE') return response.status(400).json({ error: 'Kod MILEBANJA važi samo za Pogon Cargo.' });
+    if (code === 'ORDER_DATABASE_ERROR_409' && requestedPromoCode === 'MILEBANJA') {
+      return response.status(409).json({ error: 'Kod MILEBANJA je već iskorišćen.' });
+    }
     if (code === 'INVALID_CHECKOUT' || code.startsWith('INVALID_')) return response.status(400).json({ error: 'Proverite podatke porudžbine.' });
     if (code === 'CAPTCHA_NOT_CONFIGURED' || code === 'CAPTCHA_SERVICE_UNAVAILABLE') {
       return response.status(503).json({ error: 'Bezbednosna provera trenutno nije dostupna.' });
