@@ -665,7 +665,7 @@ test('callback and result URLs come only from HTTPS APP_BASE_URL', () => {
 
 test('delivery fee is authoritative and unresolved courier has no payable fee', () => {
   assert.deepEqual(resolveDeliveryFee('pickup', {}), { exact: true, feeRsd: 0, source: 'pickup' });
-  assert.deepEqual(resolveDeliveryFee('courier', {}), { exact: true, feeRsd: 3500, source: 'fixed_server_config' });
+  assert.deepEqual(resolveDeliveryFee('courier', {}), { exact: true, feeRsd: 3900, source: 'fixed_server_config' });
   assert.deepEqual(resolveDeliveryFee('courier', { COURIER_FIXED_FEE_RSD: '3300' }), { exact: true, feeRsd: 3300, source: 'fixed_server_config' });
   assert.throws(() => resolveDeliveryFee('courier', { COURIER_FIXED_FEE_RSD: '33.5' }), /INVALID/);
 });
@@ -883,7 +883,7 @@ test('checkout visibly declares canonical RSD and VAT terms before payment', () 
   assert.match(checkout, /Izbor broja rata prikazuje se na stranici banke nakon unosa kartice/);
   assert.match(checkout, /samo karticama koje je izdala Banca Intesa/);
   assert.match(checkout, /Konačan iznos za plaćanje na rate može biti približno 10% viši/);
-  assert.match(checkout, /\{formatRsd\(3500\)\}/);
+  assert.match(checkout, /\{formatRsd\(3900\)\}/);
   const money = readFileSync(new URL('../src/lib/products.ts', import.meta.url), 'utf8');
   assert.match(money, /minimumFractionDigits:\s*2/);
   assert.match(money, /maximumFractionDigits:\s*2/);
@@ -907,7 +907,7 @@ test('purchase terms contain Marina inspection items 2.1.1, 2.1.4 and the suppli
     'Niti jednog trenutka podaci o platnoj kartici nisu dostupni našem sistemu',
   ]) assert.match(terms, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.match(terms, /Konačan iznos za\s+plaćanje na rate može biti približno 10% viši/);
-  assert.match(terms, /3\.500,00 RSD/);
+  assert.match(terms, /3\.900,00 RSD/);
 });
 
 test('customer-facing EPM routes and card-network information links are wired', () => {

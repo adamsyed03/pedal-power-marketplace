@@ -62,7 +62,7 @@ export function Checkout() {
   }, 0), [items]);
   const cargoQuantity = items.find((item) => item.product === 'cargo')?.quantity ?? 0;
   const displayedDiscount = promoCode === 'MILEBANJA' ? cargoQuantity * 10_000 : 0;
-  const displayedDeliveryFee = deliveryMethod === 'courier' ? 3_500 : 0;
+  const displayedDeliveryFee = deliveryMethod === 'courier' ? 3_900 : 0;
   const displayedPayableTotal = displayedTotal - displayedDiscount + displayedDeliveryFee;
 
   useEffect(() => {
@@ -193,7 +193,7 @@ export function Checkout() {
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 <button type="button" onClick={() => setDeliveryMethod('courier')} aria-pressed={deliveryMethod === 'courier'} className={`flex min-h-32 gap-4 rounded-2xl border-2 p-4 text-left transition ${deliveryMethod === 'courier' ? 'border-orange-500 bg-orange-50/60' : 'border-black/[0.07] hover:border-black/20'}`}>
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm"><Truck className="size-5" /></span>
-                  <span><span className="flex items-center gap-2 font-black">Kurirska dostava {deliveryMethod === 'courier' && <Check className="size-4 text-orange-600" />}</span><span className="mt-1 block text-sm leading-5 text-black/50">Cela Srbija · 1–3 radna dana</span><span className="mt-2 block text-sm font-black">{formatRsd(3500)}</span></span>
+                  <span><span className="flex items-center gap-2 font-black">Kurirska dostava {deliveryMethod === 'courier' && <Check className="size-4 text-orange-600" />}</span><span className="mt-1 block text-sm leading-5 text-black/50">Cela Srbija · 1–3 radna dana</span><span className="mt-2 block text-sm font-black">{formatRsd(3900)}</span></span>
                 </button>
                 <button type="button" onClick={() => setDeliveryMethod('pickup')} aria-pressed={deliveryMethod === 'pickup'} className={`flex min-h-32 gap-4 rounded-2xl border-2 p-4 text-left transition ${deliveryMethod === 'pickup' ? 'border-orange-500 bg-orange-50/60' : 'border-black/[0.07] hover:border-black/20'}`}>
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm"><Store className="size-5" /></span>

@@ -85,7 +85,7 @@ These facts must not be replaced with fake public placeholders.
 
 - Delivery throughout Serbia.
 - Expected delivery in 1–3 business days when the model is in stock.
-- Courier delivery is fixed at 3,500 RSD per order, calculated server-side and
+- Courier delivery is fixed at 3,900 RSD per order, calculated server-side and
   not included in bicycle prices.
 - Personal pickup: Save Maskovica 3, Belgrade.
 - Pogon Mobility d.o.o. is VAT registered and consumer product prices include

@@ -56,7 +56,7 @@ export function PurchaseTerms() {
           carinski ni uvozni troškovi.
         </p>
         <p className="mt-3 leading-7 text-black/70">
-          Kurirska dostava naplaćuje se 3.500,00 RSD po porudžbini i nije uključena u
+          Kurirska dostava naplaćuje se 3.900,00 RSD po porudžbini i nije uključena u
           prikazanu cenu bicikla. Naknada za dostavu i konačan iznos prikazuju se pre
           potvrde porudžbine i pre bilo kakvog plaćanja.
         </p>

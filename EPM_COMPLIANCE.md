@@ -10,7 +10,7 @@
 - Checkout delivery is limited to the Republic of Serbia; international delivery
   and export are explicitly unavailable, so customs/import charges do not apply.
 - Expected delivery is 1–3 business days when the selected model is in stock.
-- Courier delivery is fixed at 3,500 RSD per order, calculated server-side and
+- Courier delivery is fixed at 3,900 RSD per order, calculated server-side and
   shown separately before payment. Pickup is 0 RSD.
 - Personal pickup is available at Save Maskovica 3, Belgrade.
 - Checkout shows the actual product/model and description, unit price, quantity,
