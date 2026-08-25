@@ -1,6 +1,6 @@
 import { verifyCaptcha } from '../_lib/captcha.mjs';
 import { calculateCartTotal } from '../_lib/catalog.mjs';
-import { applyPromotion, singleUsePromotionOrderId } from '../_lib/promotions.mjs';
+import { applyPromotion, isSingleUsePromotion, singleUsePromotionOrderId } from '../_lib/promotions.mjs';
 import { createOrderId } from '../_lib/order.mjs';
 import { createLookupToken, hashLookupToken, rateLimit, requestIp } from '../_lib/security.mjs';
 import { findOrderByIdempotency, insertOrder, patchOrder } from '../_lib/supabase.mjs';
@@ -63,7 +63,9 @@ export default async function handler(request: any, response: any) {
     const delivery = resolveDeliveryFee(input.deliveryMethod);
     const lookupToken = createLookupToken();
     const order = await insertOrder({
-      order_id: cart.promoCode ? singleUsePromotionOrderId(cart.promoCode) : createOrderId(),
+      order_id: cart.promoCode && isSingleUsePromotion(cart.promoCode)
+        ? singleUsePromotionOrderId(cart.promoCode)
+        : createOrderId(),
       product: cart.items[0].product, quantity: cart.totalQuantity,
       unit_price_rsd: cart.items[0].unitPriceRsd, order_items: cart.items, subtotal_rsd: cart.subtotalRsd,
       delivery_fee_rsd: delivery.feeRsd,

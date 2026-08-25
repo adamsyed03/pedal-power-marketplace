@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateCartTotal, calculateOrderTotal } from '../api/_lib/catalog.mjs';
-import { applyPromotion, normalizePromoCode, singleUsePromotionOrderId } from '../api/_lib/promotions.mjs';
+import { applyPromotion, isSingleUsePromotion, normalizePromoCode, singleUsePromotionOrderId } from '../api/_lib/promotions.mjs';
 import { createOrderId } from '../api/_lib/order.mjs';
 import {
   buildOrderStatusXml, create3DFormFields, create3DRequestHash, inspect3DResponseHash,
@@ -66,8 +66,24 @@ test('MILEBANJA sets each Cargo bike to 120,000 RSD without discounting other mo
   assert.equal(discounted.items.find((item) => item.product === 'core').unitPriceRsd, 135_000);
 });
 
+test('NBGD subtracts 5,000 RSD once from any order', () => {
+  const cart = calculateCartTotal([
+    { product: 'glide', quantity: 2 },
+    { product: 'core', quantity: 1 },
+  ]);
+  const discounted = applyPromotion(cart, ' nbgd ');
+  assert.equal(discounted.promoCode, 'NBGD');
+  assert.equal(discounted.originalSubtotalRsd, 465_000);
+  assert.equal(discounted.discountRsd, 5_000);
+  assert.equal(discounted.subtotalRsd, 460_000);
+  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 460_000);
+  assert.equal(discounted.items[0].discountRsd, 5_000);
+  assert.equal(discounted.items[0].promoCode, 'NBGD');
+});
+
 test('promo codes are server-normalized and fail closed when invalid or inapplicable', () => {
   assert.equal(normalizePromoCode(' milebanja '), 'MILEBANJA');
+  assert.equal(normalizePromoCode(' nbgd '), 'NBGD');
   assert.equal(normalizePromoCode(''), null);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), 'NOTREAL'), /INVALID_PROMO_CODE/);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'core', quantity: 1 }]), 'MILEBANJA'), /PROMO_NOT_APPLICABLE/);
@@ -83,6 +99,9 @@ test('single-use promo reservation IDs are stable per environment and isolated f
   assert.match(first, /^PGN-2026-[A-F0-9]{16}$/);
   assert.equal(first, repeated);
   assert.notEqual(first, production);
+  assert.equal(isSingleUsePromotion('MILEBANJA'), true);
+  assert.equal(isSingleUsePromotion('NBGD'), false);
+  assert.throws(() => singleUsePromotionOrderId('NBGD', { NESTPAY_ENV: 'test' }), /INVALID_PROMO_CODE/);
   assert.throws(() => singleUsePromotionOrderId('NOTREAL', { NESTPAY_ENV: 'test' }), /INVALID_PROMO_CODE/);
 });
 

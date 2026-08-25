@@ -61,7 +61,11 @@ export function Checkout() {
     return sum + entry.priceRsd * item.quantity;
   }, 0), [items]);
   const cargoQuantity = items.find((item) => item.product === 'cargo')?.quantity ?? 0;
-  const displayedDiscount = promoCode === 'MILEBANJA' ? cargoQuantity * 10_000 : 0;
+  const displayedDiscount = promoCode === 'MILEBANJA'
+    ? cargoQuantity * 10_000
+    : promoCode === 'NBGD'
+      ? Math.min(5_000, displayedTotal)
+      : 0;
   const displayedDeliveryFee = deliveryMethod === 'courier' ? 3_900 : 0;
   const displayedPayableTotal = displayedTotal - displayedDiscount + displayedDeliveryFee;
 
@@ -70,7 +74,7 @@ export function Checkout() {
   }, [items, deliveryMethod, promoCode]);
 
   useEffect(() => {
-    if (promoCode && cargoQuantity === 0) {
+    if (promoCode === 'MILEBANJA' && cargoQuantity === 0) {
       setPromoCode(null);
       setPromoInput('');
       setPromoError('Kod MILEBANJA važi samo za Pogon Cargo.');
@@ -85,7 +89,7 @@ export function Checkout() {
       setPromoError('');
       return;
     }
-    if (normalized !== 'MILEBANJA') {
+    if (!['MILEBANJA', 'NBGD'].includes(normalized)) {
       setPromoCode(null);
       setPromoError('Kod za popust nije važeći.');
       return;
