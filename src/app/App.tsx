@@ -1196,6 +1196,9 @@ export default function App() {
               </div>
 
               <div className="space-y-4">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-foreground/55">
+                  {tr({ sr: 'Pogon električni bicikli', en: 'Pogon electric bikes', ru: 'Pogon электровелосипеды' })}
+                </p>
                 {lang === 'sr' ? (
                   <h1 className="text-[clamp(2.1rem,13vw,3.4rem)] font-black uppercase leading-[0.9] tracking-[-0.05em]">
                     <span className="relative inline-block px-3 py-2">
@@ -1310,7 +1313,7 @@ export default function App() {
         <div className="mx-auto max-w-7xl">
           <ScrollColorSentence
             text={tr({
-              sr: 'Upoznaj električni bicikl koji podiže standard u Srbiji. Sa vrhunskim komponentima, snažnom asistencijom i najmodernijim tehničkim karakteristikama',
+              sr: 'Upoznaj Pogon električni bicikl koji podiže standard u Srbiji. Sa vrhunskim komponentama, snažnom asistencijom i savremenim tehničkim karakteristikama, Pogon je napravljen za kvalitetnu svakodnevnu gradsku vožnju.',
               en: 'Meet the electric bike raising the standard in Serbia. With premium components, strong assistance, and modern technical features, Pogon is made for riders who want quality they can feel on every ride.',
               ru: 'Познакомься с электровелосипедом, который задаёт новый стандарт в Сербии. Премиальные компоненты, мощная поддержка мотора и современные технологии: качество, которое чувствуется в каждой поездке.',
             })}

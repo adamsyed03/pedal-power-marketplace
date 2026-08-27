@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://ridepogon.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url><loc>https://ridepogon.com/informacije-o-trgovcu</loc><priority>0.4</priority></url>
+  <url><loc>https://ridepogon.com/kontakt</loc><priority>0.5</priority></url>
+  <url><loc>https://ridepogon.com/dostava</loc><priority>0.3</priority></url>
+  <url><loc>https://ridepogon.com/reklamacije</loc><priority>0.2</priority></url>
+  <url><loc>https://ridepogon.com/povracaj-sredstava</loc><priority>0.2</priority></url>
+  <url><loc>https://ridepogon.com/privatnost</loc><priority>0.1</priority></url>
+  <url><loc>https://ridepogon.com/bezbednost-placanja</loc><priority>0.1</priority></url>
+  <url><loc>https://ridepogon.com/uslovi-kupovine</loc><priority>0.1</priority></url>
+</urlset>
