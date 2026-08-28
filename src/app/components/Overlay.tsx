@@ -23,7 +23,7 @@ type OverlayProps = {
 };
 
 const fallbackCopy: HeroCopy = {
-  heroTitle: 'Pokreni se',
+  heroTitle: 'Pogon električni bicikli',
   heroSub: 'Električni bicikli za grad, tempo i planove koji ne čekaju.',
   heroPrimary: 'Zakaži test vožnju',
   heroSecondary: 'Pozovi nas',

@@ -15,7 +15,7 @@ type Language = 'en' | 'sr' | 'ru';
 type Localized<T> = Record<Language, T>;
 
 const homeCopyEn = {
-  heroTitle: 'Get moving',
+  heroTitle: 'Pogon electric bikes',
   heroSub: 'Electric bikes for city commutes and plans that don’t wait.',
   heroPrimary: 'Book a test ride',
   heroSecondary: 'Why Pogon',
@@ -48,7 +48,7 @@ const homeCopyEn = {
 };
 
 const homeCopySr = {
-  heroTitle: 'Pokreni se',
+  heroTitle: 'Pogon električni bicikli',
   heroSub: 'Električni bicikli za grad, tempo i planove koji ne čekaju.',
   heroPrimary: 'Zakaži test vožnju',
   heroSecondary: 'Zašto Pogon',
@@ -81,7 +81,7 @@ const homeCopySr = {
 };
 
 const homeCopyRu = {
-  heroTitle: 'Двигайся свободно',
+  heroTitle: 'Pogon электровелосипеды',
   heroSub: 'Электровелосипеды для города, ежедневных поездок и планов, которые не ждут.',
   heroPrimary: 'Записаться на тест-драйв',
   heroSecondary: 'Почему Pogon',
@@ -1196,13 +1196,11 @@ export default function App() {
               </div>
 
               <div className="space-y-4">
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-foreground/55">
-                  {tr({ sr: 'Pogon električni bicikli', en: 'Pogon electric bikes', ru: 'Pogon электровелосипеды' })}
-                </p>
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-foreground/55">Pogon Mobility</p>
                 {lang === 'sr' ? (
                   <h1 className="text-[clamp(2.1rem,13vw,3.4rem)] font-black uppercase leading-[0.9] tracking-[-0.05em]">
                     <span className="relative inline-block px-3 py-2">
-                      Pokreni se
+                      Pogon
                       <svg
                         aria-hidden="true"
                         viewBox="0 0 240 78"
@@ -1213,6 +1211,7 @@ export default function App() {
                         <ellipse pathLength="1" cx="121" cy="38" rx="112" ry="35" fill="none" stroke="#7fff00" strokeWidth="1.2" strokeLinecap="round" className="mobile-pencil-circle mobile-pencil-circle-secondary" transform="rotate(-2 120 39)" />
                       </svg>
                     </span>
+                    <span className="mt-3 block text-[0.48em] tracking-[0.08em]">Električni bicikli</span>
                   </h1>
                 ) : (
                   <>
@@ -1327,7 +1326,9 @@ export default function App() {
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-8 md:mb-20 lg:mb-10">
             <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4 lg:mb-3">{copy.premiumSeries}</div>
-            <h2 className="text-4xl md:text-6xl lg:text-5xl font-black mb-4 md:mb-6 lg:mb-3 tracking-tight">{ui.navModels}</h2>
+            <h2 className="text-4xl md:text-6xl lg:text-5xl font-black mb-4 md:mb-6 lg:mb-3 tracking-tight">
+              {tr({ sr: 'Pogon modeli električnih bicikala', en: 'Pogon electric bike models', ru: 'Модели электровелосипедов Pogon' })}
+            </h2>
             <p className="text-base sm:text-xl lg:text-base text-foreground/60 max-w-2xl mx-auto font-light">
               {copy.modelsCopy}
             </p>
