@@ -2443,6 +2443,7 @@ export default function App() {
                 <li><a href="#modeli" className="hover:text-foreground transition-colors">Glide</a></li>
                 <li><a href="#modeli" className="hover:text-foreground transition-colors">Core</a></li>
                 <li><a href="#modeli" className="hover:text-foreground transition-colors">Cargo</a></li>
+                <li><a href="/elektricni-bicikli/" className="hover:text-foreground transition-colors">Električni bicikli</a></li>
                 <li><a href="/#modeli" className="hover:text-foreground transition-colors">{ui.footerCompare}</a></li>
               </ul>
             </div>
