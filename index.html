@@ -46,7 +46,7 @@
         "@context": "https://schema.org",
         "@graph": [
           {
-            "@type": "Organization",
+            "@type": ["Organization", "Store"],
             "@id": "https://ridepogon.com/#organization",
             "name": "Pogon",
             "legalName": "Pogon Mobility d.o.o.",
@@ -54,6 +54,7 @@
             "logo": "https://ridepogon.com/Logo.png",
             "email": "pogonmobility@gmail.com",
             "telephone": "+38169692345",
+            "areaServed": { "@type": "Country", "name": "Srbija" },
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Temišvarska 25B",
@@ -95,7 +96,7 @@
                   "image": "https://ridepogon.com/Glide%20main.jpg",
                   "description": "Gradski električni bicikl za udobnu i pouzdanu svakodnevnu vožnju.",
                   "brand": { "@type": "Brand", "name": "Pogon" },
-                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "165000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/#modeli" }
+                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "165000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/elektricni-bicikli/glide/" }
                 }
               },
               {
@@ -107,7 +108,7 @@
                   "image": "https://ridepogon.com/Cargo%20Main.jpg",
                   "description": "Sklopivi električni bicikl sa širokim gumama za gradsku vožnju.",
                   "brand": { "@type": "Brand", "name": "Pogon" },
-                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "135000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/#modeli" }
+                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "135000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/elektricni-bicikli/core/" }
                 }
               },
               {
@@ -119,7 +120,7 @@
                   "image": "https://ridepogon.com/Core%20main.jpg",
                   "description": "Električni teretni bicikl za praktičan prevoz kroz grad.",
                   "brand": { "@type": "Brand", "name": "Pogon" },
-                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "130000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/#modeli" }
+                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "130000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/elektricni-bicikli/cargo/" }
                 }
               }
             ]
@@ -146,7 +147,14 @@
 
     <body>
       <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1345566057642265&ev=PageView&noscript=1" /></noscript>
-      <div id="root"></div>
+      <div id="root">
+        <main style="max-width:900px;margin:0 auto;padding:80px 24px;font-family:Arial,sans-serif">
+          <p style="font-weight:700;text-transform:uppercase;letter-spacing:.16em">Pogon Mobility · Srbija</p>
+          <h1 style="font-size:clamp(42px,8vw,82px);line-height:.95">Pogon električni bicikli</h1>
+          <p style="font-size:20px;line-height:1.6">Električni bicikli za svakodnevnu gradsku vožnju. Pogledajte modele Pogon Glide, Core i Cargo, uporedite domet i cenu ili zakažite test vožnju u Beogradu.</p>
+          <p><a href="/elektricni-bicikli/">Pogledajte sve električne bicikle</a></p>
+        </main>
+      </div>
       <script type="module" src="/src/main.tsx"></script>
     </body>
   </html>

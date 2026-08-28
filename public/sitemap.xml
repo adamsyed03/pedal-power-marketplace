@@ -10,6 +10,9 @@
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url><loc>https://ridepogon.com/elektricni-bicikli/glide/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ridepogon.com/elektricni-bicikli/core/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ridepogon.com/elektricni-bicikli/cargo/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://ridepogon.com/informacije-o-trgovcu</loc><priority>0.4</priority></url>
   <url><loc>https://ridepogon.com/kontakt</loc><priority>0.5</priority></url>
   <url><loc>https://ridepogon.com/dostava</loc><priority>0.3</priority></url>
