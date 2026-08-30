@@ -14,6 +14,11 @@ const PROMOTIONS = Object.freeze({
     kind: 'fixed_order_discount',
     discountRsd: 5_000,
   }),
+  INSTAGRAM: Object.freeze({
+    code: 'INSTAGRAM',
+    kind: 'fixed_order_discount',
+    discountRsd: 5_000,
+  }),
 });
 
 export function normalizePromoCode(value) {

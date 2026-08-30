@@ -81,9 +81,25 @@ test('NBGD subtracts 5,000 RSD once from any order', () => {
   assert.equal(discounted.items[0].promoCode, 'NBGD');
 });
 
+test('INSTAGRAM subtracts 5,000 RSD once from any order', () => {
+  const cart = calculateCartTotal([
+    { product: 'glide', quantity: 1 },
+    { product: 'cargo', quantity: 1 },
+  ]);
+  const discounted = applyPromotion(cart, ' instagram ');
+  assert.equal(discounted.promoCode, 'INSTAGRAM');
+  assert.equal(discounted.originalSubtotalRsd, 295_000);
+  assert.equal(discounted.discountRsd, 5_000);
+  assert.equal(discounted.subtotalRsd, 290_000);
+  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 290_000);
+  assert.equal(discounted.items[0].discountRsd, 5_000);
+  assert.equal(discounted.items[0].promoCode, 'INSTAGRAM');
+});
+
 test('promo codes are server-normalized and fail closed when invalid or inapplicable', () => {
   assert.equal(normalizePromoCode(' milebanja '), 'MILEBANJA');
   assert.equal(normalizePromoCode(' nbgd '), 'NBGD');
+  assert.equal(normalizePromoCode(' instagram '), 'INSTAGRAM');
   assert.equal(normalizePromoCode(''), null);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), 'NOTREAL'), /INVALID_PROMO_CODE/);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'core', quantity: 1 }]), 'MILEBANJA'), /PROMO_NOT_APPLICABLE/);
@@ -101,6 +117,7 @@ test('single-use promo reservation IDs are stable per environment and isolated f
   assert.notEqual(first, production);
   assert.equal(isSingleUsePromotion('MILEBANJA'), true);
   assert.equal(isSingleUsePromotion('NBGD'), false);
+  assert.equal(isSingleUsePromotion('INSTAGRAM'), false);
   assert.throws(() => singleUsePromotionOrderId('NBGD', { NESTPAY_ENV: 'test' }), /INVALID_PROMO_CODE/);
   assert.throws(() => singleUsePromotionOrderId('NOTREAL', { NESTPAY_ENV: 'test' }), /INVALID_PROMO_CODE/);
 });
