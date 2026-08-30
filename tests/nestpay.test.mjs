@@ -908,6 +908,17 @@ test('EPM payment branding uses the complete official Banca Intesa artwork set',
   }
 });
 
+test('initial HTML keeps SEO content without flashing unstyled fallback copy', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const root = html.match(/<div id="root">([\s\S]*?)<\/div>\s*<noscript>/)?.[1] ?? '';
+  assert.match(html, /<html lang="sr-Latn">/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/ridepogon\.com\/"/);
+  assert.match(html, /<script type="application\/ld\+json">/);
+  assert.match(root, /class="app-shell"/);
+  assert.doesNotMatch(root, /<h1>|Pogon električni bicikli/);
+  assert.match(html, /<noscript>[\s\S]*<h1>Pogon električni bicikli<\/h1>/);
+});
+
 test('checkout visibly declares canonical RSD and VAT terms before payment', () => {
   const checkout = readFileSync(new URL('../src/app/components/Checkout.tsx', import.meta.url), 'utf8');
   assert.match(checkout, /Sve cene su sa uračunatim PDV-om i nema dodatnih ili skrivenih troškova\./);

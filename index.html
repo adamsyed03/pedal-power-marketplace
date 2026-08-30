@@ -1,9 +1,15 @@
 
   <!DOCTYPE html>
-  <html lang="sr">
+  <html lang="sr-Latn">
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <script>
+        (() => {
+          const path = window.location.pathname.replace(/\/+$/, '') || '/';
+          document.documentElement.dataset.appRoute = path === '/' ? 'home' : 'internal';
+        })();
+      </script>
       <!-- Google tag (gtag.js) -->
       <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18415875509"></script>
       <script>
@@ -16,6 +22,7 @@
       <meta name="description" content="Pogon električni bicikli za svakodnevnu gradsku vožnju. Istraži modele Glide, Core i Cargo, uporedi karakteristike i zakaži test vožnju u Beogradu." />
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       <meta name="author" content="Pogon Mobility d.o.o." />
+      <meta name="application-name" content="Pogon" />
       <meta name="theme-color" content="#7fff00" />
       <link rel="canonical" href="https://ridepogon.com/" />
       <link rel="alternate" hreflang="sr" href="https://ridepogon.com/?lang=sr" />
@@ -26,15 +33,19 @@
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="Pogon" />
       <meta property="og:locale" content="sr_RS" />
+      <meta property="og:locale:alternate" content="en_US" />
+      <meta property="og:locale:alternate" content="ru_RU" />
       <meta property="og:title" content="Pogon | Električni bicikli za grad" />
       <meta property="og:description" content="Gradski električni bicikli dizajnirani za ulice Srbije. Pogledaj Pogon modele i zakaži test vožnju." />
       <meta property="og:url" content="https://ridepogon.com/" />
       <meta property="og:image" content="https://ridepogon.com/Excellent4.optimized.jpg" />
+      <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:image:alt" content="Pogon električni bicikl u gradskoj vožnji" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content="Pogon | Električni bicikli za grad" />
       <meta name="twitter:description" content="Gradski električni bicikli dizajnirani za ulice Srbije." />
       <meta name="twitter:image" content="https://ridepogon.com/Excellent4.optimized.jpg" />
+      <meta name="twitter:image:alt" content="Pogon električni bicikl u gradskoj vožnji" />
       <link rel="icon" type="image/png" href="%BASE_URL%Logo.png" />
       <link rel="apple-touch-icon" href="%BASE_URL%Logo.png" />
       <link rel="preconnect" href="https://cirrgscedpitegcahklq.supabase.co" />
@@ -142,19 +153,79 @@
       fbq('track', 'PageView');
       </script>
       <!-- End Meta Pixel Code -->
-      <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
+      <style>
+        :root { color-scheme: light; background: #fff; }
+        html, body { min-height: 100%; margin: 0; }
+        body { background: #fff; }
+        #root { min-height: 100vh; min-height: 100dvh; }
+        .app-shell {
+          display: flex;
+          min-height: 100vh;
+          min-height: 100dvh;
+          align-items: center;
+          justify-content: center;
+          background: #fff;
+        }
+        .app-shell__brand { position: relative; width: 8rem; }
+        .app-shell__logo { display: block; width: 100%; height: auto; }
+        .app-shell__indicator {
+          position: absolute;
+          left: 50%;
+          bottom: -1rem;
+          width: .4rem;
+          height: .4rem;
+          margin-left: -.2rem;
+          border-radius: 999px;
+          background: #65cc00;
+          animation: app-shell-pulse 1s ease-in-out infinite alternate;
+        }
+        .no-script-content {
+          box-sizing: border-box;
+          max-width: 56rem;
+          min-height: 100vh;
+          margin: 0 auto;
+          padding: 5rem 1.5rem;
+          font-family: Arial, sans-serif;
+          color: #171713;
+        }
+        .no-script-content h1 { font-size: clamp(2.6rem, 8vw, 5rem); line-height: .95; }
+        .no-script-content p { max-width: 46rem; font-size: 1.15rem; line-height: 1.65; }
+        .no-script-content a { color: #171713; font-weight: 700; }
+        @keyframes app-shell-pulse {
+          from { opacity: .35; transform: scale(.8); }
+          to { opacity: 1; transform: scale(1.2); }
+        }
+        @media (min-width: 1024px) {
+          html[data-app-route="home"],
+          html[data-app-route="home"] body,
+          html[data-app-route="home"] .app-shell { background: #050505; }
+          html[data-app-route="home"] .app-shell__logo { filter: brightness(0) invert(1); }
+          html[data-app-route="home"] .app-shell__indicator { background: #7fff00; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .app-shell__indicator { animation: none; }
+        }
+      </style>
     </head>
 
     <body>
-      <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1345566057642265&ev=PageView&noscript=1" /></noscript>
       <div id="root">
-        <main style="max-width:900px;margin:0 auto;padding:80px 24px;font-family:Arial,sans-serif">
-          <p style="font-weight:700;text-transform:uppercase;letter-spacing:.16em">Pogon Mobility · Srbija</p>
-          <h1 style="font-size:clamp(42px,8vw,82px);line-height:.95">Pogon električni bicikli</h1>
-          <p style="font-size:20px;line-height:1.6">Električni bicikli za svakodnevnu gradsku vožnju. Pogledajte modele Pogon Glide, Core i Cargo, uporedite domet i cenu ili zakažite test vožnju u Beogradu.</p>
+        <div class="app-shell" role="status" aria-label="Pogon se učitava">
+          <div class="app-shell__brand" aria-hidden="true">
+            <img class="app-shell__logo" src="%BASE_URL%Logo.png" alt="" />
+            <span class="app-shell__indicator"></span>
+          </div>
+        </div>
+      </div>
+      <noscript>
+        <img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1345566057642265&ev=PageView&noscript=1" />
+        <main class="no-script-content">
+          <p>Pogon Mobility · Srbija</p>
+          <h1>Pogon električni bicikli</h1>
+          <p>Električni bicikli za svakodnevnu gradsku vožnju. Pogledajte modele Pogon Glide, Core i Cargo, uporedite domet i cenu ili zakažite test vožnju u Beogradu.</p>
           <p><a href="/elektricni-bicikli/">Pogledajte sve električne bicikle</a></p>
         </main>
-      </div>
+      </noscript>
       <script type="module" src="/src/main.tsx"></script>
     </body>
   </html>
