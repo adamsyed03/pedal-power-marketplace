@@ -167,7 +167,7 @@ export function TicTacToeGame({ open, language, onClose, onViewModels }: { open:
           exit={{ opacity: 0 }}
           role="dialog"
           aria-modal="true"
-          aria-labelledby="tic-tac-toe-title"
+          aria-labelledby={phase === 'won' ? 'tic-tac-toe-result-title' : 'tic-tac-toe-title'}
           onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}
         >
           <motion.div
@@ -175,7 +175,7 @@ export function TicTacToeGame({ open, language, onClose, onViewModels }: { open:
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.97 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="relative my-auto w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 bg-[#0b0b0b] text-white shadow-[0_30px_100px_rgba(0,0,0,0.6)]"
+            className={`relative my-auto w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 bg-[#0b0b0b] text-white shadow-[0_30px_100px_rgba(0,0,0,0.6)] ${phase === 'won' ? 'h-[58dvh] min-h-[25rem] max-h-[29rem] sm:h-auto sm:min-h-0 sm:max-h-none' : ''}`}
           >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_5%,rgba(127,255,0,0.22),transparent_38%)]" />
 
@@ -206,14 +206,16 @@ export function TicTacToeGame({ open, language, onClose, onViewModels }: { open:
               <XIcon className="size-4" />
             </button>
 
-            <div className="relative z-20 p-5 sm:p-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#7fff00]/40 bg-[#7fff00]/10 px-3 py-1.5 text-[0.65rem] font-black uppercase tracking-[0.2em] text-[#9cff45]">
-                <Gift className="size-3.5" /> {copy.badge}
+            <div className={`relative z-20 ${phase === 'won' ? 'flex h-full flex-col justify-center p-5 pt-14 sm:block sm:h-auto sm:p-8' : 'p-5 sm:p-8'}`}>
+              <div className={phase === 'won' ? 'hidden sm:block' : ''}>
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#7fff00]/40 bg-[#7fff00]/10 px-3 py-1.5 text-[0.65rem] font-black uppercase tracking-[0.2em] text-[#9cff45]">
+                  <Gift className="size-3.5" /> {copy.badge}
+                </div>
+                <h2 id="tic-tac-toe-title" className="mt-4 pr-10 text-3xl font-black leading-none tracking-tight text-white sm:text-4xl">{copy.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-white/70">{copy.intro}</p>
               </div>
-              <h2 id="tic-tac-toe-title" className="mt-4 pr-10 text-3xl font-black leading-none tracking-tight text-white sm:text-4xl">{copy.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-white/70">{copy.intro}</p>
 
-              <div className="mx-auto mt-5 grid w-full max-w-[18rem] grid-cols-3 gap-2" role="grid" aria-label={copy.board}>
+              <div className={`mx-auto mt-5 w-full max-w-[18rem] grid-cols-3 gap-2 ${phase === 'won' ? 'hidden sm:grid' : 'grid'}`} role="grid" aria-label={copy.board}>
                 {board.map((cell, index) => {
                   const isWinner = winningLine.includes(index);
                   return (
@@ -234,18 +236,18 @@ export function TicTacToeGame({ open, language, onClose, onViewModels }: { open:
                 })}
               </div>
 
-              <div className="mt-3 flex min-h-9 items-center justify-center text-center text-sm font-bold text-white" aria-live="polite">
+              <div className={`mt-3 min-h-9 items-center justify-center text-center text-sm font-bold text-white ${phase === 'won' ? 'hidden sm:flex' : 'flex'}`} aria-live="polite">
                 {botThinking && <Sparkles className="mr-2 size-4 animate-pulse text-[#8cff1a]" />}{status}
               </div>
 
               {phase === 'won' && (
-                <motion.div initial={{ opacity: 0, y: 18, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.25, type: 'spring', stiffness: 240, damping: 18 }} className="mt-2">
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#7fff00]/50 bg-[#7fff00]/15 p-3.5 text-white">
-                    <motion.span animate={{ rotate: [0, -12, 12, -7, 7, 0], scale: [1, 1.25, 1] }} transition={{ duration: 0.8, delay: 0.3 }} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#7fff00] text-black"><Trophy className="size-5" /></motion.span>
-                    <div><p className="font-black text-white">{copy.bravo}</p><p className="mt-0.5 text-xs font-semibold text-white/75">{copy.choose}</p></div>
+                <motion.div initial={{ opacity: 0, y: 18, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.25, type: 'spring', stiffness: 240, damping: 18 }} className="sm:mt-2">
+                  <div role="status" aria-live="polite" className="flex items-center gap-3 rounded-2xl border border-[#7fff00]/50 bg-[#7fff00]/15 p-4 text-white">
+                    <motion.span animate={{ rotate: [0, -12, 12, -7, 7, 0], scale: [1, 1.25, 1] }} transition={{ duration: 0.8, delay: 0.3 }} className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#7fff00] text-black"><Trophy className="size-6" /></motion.span>
+                    <div><p id="tic-tac-toe-result-title" className="font-black text-white">{copy.bravo}</p><p className="mt-0.5 text-xs font-semibold text-white/75">{copy.choose}</p></div>
                   </div>
 
-                  <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  <div className="mt-4 grid grid-cols-3 gap-2.5">
                     {(Object.keys(GAME_PRIZE_LABELS) as GamePrizeKey[]).map((prize, index) => {
                       const Icon = prizeIcons[prize];
                       const selected = roundPrize === prize;
@@ -259,9 +261,9 @@ export function TicTacToeGame({ open, language, onClose, onViewModels }: { open:
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: locked ? 0.45 : 1, y: 0, scale: selected ? 1.03 : 1 }}
                           transition={{ delay: 0.38 + index * 0.08 }}
-                          className={`flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border px-2 py-3 text-center text-xs font-black transition ${selected ? 'border-[#7fff00] bg-[#7fff00] text-black shadow-[0_0_28px_rgba(127,255,0,0.25)]' : 'border-white/25 bg-white/10 text-white hover:border-[#7fff00] hover:bg-[#7fff00]/15'} disabled:cursor-default`}
+                          className={`flex min-h-28 flex-col items-center justify-center gap-2.5 rounded-2xl border px-1.5 py-3 text-center text-[0.7rem] font-black leading-tight transition sm:min-h-24 sm:px-2 sm:text-xs ${selected ? 'border-[#7fff00] bg-[#7fff00] text-black shadow-[0_0_28px_rgba(127,255,0,0.25)]' : 'border-white/25 bg-white/10 text-white hover:border-[#7fff00] hover:bg-[#7fff00]/15'} disabled:cursor-default`}
                         >
-                          <Icon className="size-6" />
+                          <Icon className="size-7 sm:size-6" />
                           <span>{prizeLabels[prize]}</span>
                         </motion.button>
                       );
@@ -272,12 +274,12 @@ export function TicTacToeGame({ open, language, onClose, onViewModels }: { open:
               )}
 
               {phase !== 'playing' && (
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <button type="button" onClick={restart} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/35 bg-white/10 px-5 text-sm font-black uppercase tracking-wider text-white transition hover:border-[#7fff00] hover:bg-white/15">
+                <div className={`mt-4 grid gap-2.5 ${phase === 'won' && claimedPrize ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                  <button type="button" onClick={restart} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-white/35 bg-white/10 px-2 text-[0.7rem] font-black uppercase tracking-wide text-white transition hover:border-[#7fff00] hover:bg-white/15 sm:min-h-12 sm:px-5 sm:text-sm sm:tracking-wider">
                     <RotateCcw className="size-4" /> {copy.replay}
                   </button>
                   {claimedPrize && (
-                    <button type="button" onClick={onViewModels} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#7fff00] px-5 text-sm font-black uppercase tracking-wider text-black shadow-[0_0_25px_rgba(127,255,0,0.2)] transition hover:bg-[#a4ff4d]">
+                    <button type="button" onClick={onViewModels} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#7fff00] px-2 text-[0.7rem] font-black uppercase tracking-wide text-black shadow-[0_0_25px_rgba(127,255,0,0.2)] transition hover:bg-[#a4ff4d] sm:min-h-12 sm:px-5 sm:text-sm sm:tracking-wider">
                       <Trophy className="size-4" /> {copy.models}
                     </button>
                   )}

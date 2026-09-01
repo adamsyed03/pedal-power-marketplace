@@ -1238,6 +1238,20 @@ test('tic-tac-toe gives about half of first attempts a win and assists the secon
   assert.equal(simulate(2, 1000), 1, 'the assisted second attempt should give a practical player the win');
 });
 
+test('mobile tic-tac-toe win state replaces the board with compact prize choices', () => {
+  const game = readFileSync(new URL('../src/app/components/TicTacToeGame.tsx', import.meta.url), 'utf8');
+  assert.match(game, /phase === 'won' \? 'hidden sm:block' : ''/);
+  assert.match(game, /phase === 'won' \? 'hidden sm:grid' : 'grid'/);
+  assert.match(game, /phase === 'won' \? 'hidden sm:flex' : 'flex'/);
+  assert.match(game, /aria-labelledby=\{phase === 'won' \? 'tic-tac-toe-result-title' : 'tic-tac-toe-title'\}/);
+  assert.match(game, /id="tic-tac-toe-result-title"/);
+  assert.match(game, /h-\[58dvh\] min-h-\[25rem\] max-h-\[29rem\]/);
+  assert.match(game, /flex h-full flex-col justify-center/);
+  assert.match(game, /mt-4 grid grid-cols-3 gap-2\.5/);
+  assert.match(game, /min-h-28 flex-col/);
+  assert.match(game, /phase === 'won' && claimedPrize \? 'grid-cols-2'/);
+});
+
 test('game prizes are validated, selectable, and attached to orders without changing delivery', () => {
   assert.equal(normalizeGamePrize('lock'), 'lock');
   assert.equal(normalizeGamePrize('gloves'), 'gloves');
