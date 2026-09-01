@@ -1,18 +1,25 @@
 import { FormEvent, useCallback, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones } from 'lucide-react';
+import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones, Gift } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { ScrollyCanvas } from './components/ScrollyCanvas';
 import { Overlay } from './components/Overlay';
 import { LeadContactModal } from './components/LeadContactModal';
 import { PaymentBranding } from './components/PaymentBranding';
 const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
+const TicTacToeGame = lazy(() => import('./components/TicTacToeGame').then((m) => ({ default: m.TicTacToeGame })));
 import { submitLead } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
 import { publicAsset } from '../lib/assets';
 
 type Language = 'en' | 'sr' | 'ru';
 type Localized<T> = Record<Language, T>;
+
+const modelDisplayPosition: Record<string, number> = {
+  cargo: 0,
+  core: 1,
+  glide: 2,
+};
 
 const homeCopyEn = {
   heroTitle: 'Pogon electric bikes',
@@ -28,6 +35,7 @@ const homeCopyEn = {
   modelsCopy: 'Three models. One vision. Endless possibilities.',
   bestSeller: 'Best seller',
   recommended: 'Recommended',
+  sale: 'Sale',
   newBadge: 'New',
   buyNow: 'Buy now',
   glideDescription: 'A comfortable, reliable electric city bike for everyday use.',
@@ -49,7 +57,7 @@ const homeCopyEn = {
 
 const homeCopySr = {
   heroTitle: 'Pogon električni bicikli',
-  heroSub: 'Električni bicikli za grad, tempo i planove koji ne čekaju.',
+  heroSub: 'Auto je za more, Pogon je za grad',
   heroPrimary: 'Zakaži test vožnju',
   heroSecondary: 'Zašto Pogon',
   finalTitle: 'Izaberi model i pokreni gradsku rutinu',
@@ -61,6 +69,7 @@ const homeCopySr = {
   modelsCopy: 'Tri modela. Jedna vizija. Beskonačne mogućnosti.',
   bestSeller: 'Najprodavaniji',
   recommended: 'Preporučeno',
+  sale: 'Akcija',
   newBadge: 'Novo',
   buyNow: 'Kupi Sada',
   glideDescription: 'Gradski e-bicikl za udobnu i pouzdanu vožnju svaki dan.',
@@ -94,6 +103,7 @@ const homeCopyRu = {
   modelsCopy: 'Три модели. Одна идея. Больше свободы каждый день.',
   bestSeller: 'Хит продаж',
   recommended: 'Рекомендуем',
+  sale: 'Акция',
   newBadge: 'Новинка',
   buyNow: 'Купить сейчас',
   glideDescription: 'Комфортный и надёжный городской электровелосипед на каждый день.',
@@ -185,6 +195,10 @@ export default function App() {
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
   const [leadModalSource, setLeadModalSource] = useState<string | null>(null);
   const [isContactWidgetOpen, setIsContactWidgetOpen] = useState(false);
+  const [showModelsShortcut, setShowModelsShortcut] = useState(false);
+  const [isGameLoaded, setIsGameLoaded] = useState(false);
+  const [isGameOpen, setIsGameOpen] = useState(false);
+  const [isGameLauncherCompact, setIsGameLauncherCompact] = useState(() => window.scrollY > 96);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [testRideForm, setTestRideForm] = useState({ name: '', phone: '', city: '', preferredTime: '' });
   const [testRideFormStatus, setTestRideFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
@@ -214,6 +228,11 @@ export default function App() {
   const pageScrollTimeout = useRef<number | null>(null);
   const copy = homeCopy[lang];
   const tr = <T,>(translations: Localized<T>) => translations[lang];
+  const gameLauncherCopy = tr({
+    sr: { aria: 'Igraj iks-oks i osvoji nagradu', compact: 'Igraj i osvoji', highlight: 'Osvoji poklon', action: 'Igraj iks-oks' },
+    en: { aria: 'Play tic-tac-toe and win a gift', compact: 'Play and win', highlight: 'Win a gift', action: 'Play tic-tac-toe' },
+    ru: { aria: 'Играй в крестики-нолики и выиграй подарок', compact: 'Играй и выиграй', highlight: 'Выиграй подарок', action: 'Играй в крестики-нолики' },
+  });
   const isSavingsQuizRoute = window.location.pathname.replace(/\/+$/, '') === '/kviz';
   const batteryWh = Math.round(rangeCalculator.voltage * rangeCalculator.ampHours);
   const chemistryFactor = rangeCalculator.chemistry === 'lead' ? 0.5 : 0.9;
@@ -363,6 +382,8 @@ export default function App() {
   });
   const whatsappHref = buildWhatsappLink(testRideWhatsappText);
   const closeLeadModal = useCallback(() => setLeadModalSource(null), []);
+  const openContactWidget = useCallback(() => setIsContactWidgetOpen(true), []);
+  const closeContactWidget = useCallback(() => setIsContactWidgetOpen(false), []);
   const openLeadModal = (source: string) => {
     trackEvent(source.includes('hero') ? 'primary_cta_click' : 'test_ride_click', { source });
     setLeadModalSource(source);
@@ -373,6 +394,23 @@ export default function App() {
   };
   const handlePhoneClick = (source: string) => trackEvent('phone_call_click', { source });
   const handleWhatsappClick = (source: string) => trackEvent('whatsapp_click', { source });
+  const handleModelsShortcutClick = () => {
+    const modelsSection = document.getElementById('modeli');
+    if (!modelsSection) return;
+
+    const navHeight = document.querySelector('nav')?.clientHeight ?? 0;
+    const targetTop = Math.max(0, modelsSection.getBoundingClientRect().top + window.scrollY - navHeight - 8);
+    trackEvent('models_shortcut_click', { source: 'floating-scroll-shortcut' });
+    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+  };
+  const openGame = () => {
+    setIsGameLoaded(true);
+    setIsGameOpen(true);
+  };
+  const viewModelsFromGame = () => {
+    setIsGameOpen(false);
+    handleModelsShortcutClick();
+  };
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 1024px)');
@@ -380,6 +418,50 @@ export default function App() {
     updateViewport();
     mediaQuery.addEventListener('change', updateViewport);
     return () => mediaQuery.removeEventListener('change', updateViewport);
+  }, []);
+
+  useEffect(() => {
+    const modelsSection = document.getElementById('modeli');
+    if (!modelsSection) return;
+
+    let animationFrame = 0;
+    const updateShortcutVisibility = () => {
+      animationFrame = 0;
+      const modelsRect = modelsSection.getBoundingClientRect();
+      const modelsAreVisible = modelsRect.top < window.innerHeight * 0.85 && modelsRect.bottom > window.innerHeight * 0.15;
+      const hasStartedScrolling = window.scrollY > Math.min(320, window.innerHeight * 0.35);
+      setShowModelsShortcut(hasStartedScrolling && !modelsAreVisible);
+    };
+    const scheduleVisibilityUpdate = () => {
+      if (!animationFrame) animationFrame = window.requestAnimationFrame(updateShortcutVisibility);
+    };
+
+    updateShortcutVisibility();
+    window.addEventListener('scroll', scheduleVisibilityUpdate, { passive: true });
+    window.addEventListener('resize', scheduleVisibilityUpdate);
+    return () => {
+      window.removeEventListener('scroll', scheduleVisibilityUpdate);
+      window.removeEventListener('resize', scheduleVisibilityUpdate);
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+    };
+  }, []);
+
+  useEffect(() => {
+    let animationFrame = 0;
+    const updateGameLauncher = () => {
+      animationFrame = 0;
+      setIsGameLauncherCompact(window.scrollY > 96);
+    };
+    const scheduleUpdate = () => {
+      if (!animationFrame) animationFrame = window.requestAnimationFrame(updateGameLauncher);
+    };
+
+    updateGameLauncher();
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate);
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+    };
   }, []);
 
   useEffect(() => {
@@ -763,7 +845,7 @@ export default function App() {
             'Motor u zadnjem točku',
             'Aluminijumski ram',
             'Hidraulične kočnice',
-            'Nosivost 110 kg',
+            'Nosivost 120 kg',
             'Domet 90 km',
             'GPS sigurnosne funkcije',
           ],
@@ -771,7 +853,7 @@ export default function App() {
             'Rear hub motor',
             'Aluminum frame',
             'Hydraulic brakes',
-            '110 kg load capacity',
+            '120 kg load capacity',
             'Up to 90 km range',
             'GPS security features',
           ],
@@ -779,7 +861,7 @@ export default function App() {
             'Заднее мотор-колесо',
             'Алюминиевая рама',
             'Гидравлические тормоза',
-            'Грузоподъёмность 110 кг',
+            'Грузоподъёмность 120 кг',
             'Запас хода до 90 км',
             'GPS-функции безопасности',
           ],
@@ -788,8 +870,8 @@ export default function App() {
     {
       key: 'core',
       name: 'Core',
-      badgeKey: 'recommended' as const,
-      badgeClass: 'bg-primary-foreground text-primary px-3 py-1 rounded-full text-xs font-bold uppercase',
+      badgeKey: 'sale' as const,
+      badgeClass: 'bg-black text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-lg',
       image: { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core electric bike main product photo' },
       gallery: [
         { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core main product photo' },
@@ -798,7 +880,8 @@ export default function App() {
         { src: publicAsset('Cargo 2.jpg'), alt: 'Pogon Core product photo 2' },
       ],
       description: copy.coreDescription,
-      price: '135.000,00 RSD',
+      originalPrice: '135.000,00 RSD',
+      price: '130.000,00 RSD',
       mobileSpecs: { range: '140 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
@@ -870,7 +953,7 @@ export default function App() {
           ],
       }),
     },
-  ];
+  ].sort((left, right) => modelDisplayPosition[left.key] - modelDisplayPosition[right.key]);
 
   const lightboxModel = bikeModels.find((model) => model.key === activeLightboxProduct);
   const lightboxGallery = lightboxModel && 'gallery' in lightboxModel ? lightboxModel.gallery : undefined;
@@ -1145,7 +1228,7 @@ export default function App() {
 
       {isDesktop && (
       <div>
-        <ScrollyCanvas frameCount={30}>
+        <ScrollyCanvas frameCount={20}>
           <Overlay
             copy={copy}
             onBookTestRide={() => openLeadModal('desktop-hero')}
@@ -1260,7 +1343,7 @@ export default function App() {
 
               <div className="grid grid-cols-3 gap-3 pt-7 border-t border-border/50">
                 <div className="text-center">
-                  <div className="text-3xl sm:text-4xl font-black tracking-tight">110<span className="text-lg sm:text-2xl text-foreground/40">km</span></div>
+                  <div className="text-3xl sm:text-4xl font-black tracking-tight">140<span className="text-lg sm:text-2xl text-foreground/40">km</span></div>
                   <div className="text-[0.65rem] sm:text-xs uppercase tracking-wider text-foreground/50 mt-1">{copy.range}</div>
                 </div>
                 <div className="text-center">
@@ -1297,7 +1380,7 @@ export default function App() {
                 {/* Rating badge inside the image corner, no negative positioning */}
                 <div className="absolute bottom-3 left-3 flex items-center gap-2.5 rounded-xl bg-white/90 backdrop-blur-sm border border-border/30 px-3 py-2 shadow-lg">
                   <Star className="size-4 fill-primary stroke-primary shrink-0" />
-                  <span className="text-sm font-black">4.9</span>
+                  <span className="text-sm font-black">5.0</span>
                   <span className="text-xs text-foreground/50 font-medium">rating</span>
                 </div>
               </div>
@@ -1447,6 +1530,7 @@ export default function App() {
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3.5 pb-3 pt-12 text-white lg:hidden">
                       <div className="max-w-[78%] text-left">
                         <div className="text-xl font-black leading-none drop-shadow-md">{model.name}</div>
+                        {model.originalPrice ? <div className="mt-1 text-xs font-bold text-white/55 line-through decoration-2">{model.originalPrice}</div> : null}
                         <div className="mt-2 flex items-center gap-1.5 text-white/65">
                           <span className="text-2xl font-black leading-none tracking-tight text-white drop-shadow-md">{model.price}</span>
                         </div>
@@ -1513,7 +1597,8 @@ export default function App() {
                     ))}
                   </div>
                   <div className={`pt-2 lg:pt-4 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
-                    <div className={`mb-3 hidden items-center gap-2 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
+                    <div className={`mb-3 hidden flex-col items-start gap-0.5 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
+                      {model.originalPrice ? <span className="text-base font-bold opacity-60 line-through decoration-2">{model.originalPrice}</span> : null}
                       <span className="text-4xl font-black tracking-tight">{model.price}</span>
                     </div>
                     <div className="mb-3 grid grid-cols-3 gap-1.5 lg:hidden">
@@ -2491,28 +2576,92 @@ export default function App() {
         </div>
       </footer>
 
-      <div className="fixed bottom-4 right-4 z-[70] hidden flex-col items-end gap-3 sm:bottom-6 sm:right-6 md:flex">
+      <motion.button
+        layout
+        type="button"
+        onClick={openGame}
+        initial={{ opacity: 0, x: -24, scale: 0.82 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        transition={{ layout: { type: 'spring', stiffness: 360, damping: 28 }, opacity: { duration: 0.3 }, x: { type: 'spring', stiffness: 300, damping: 24 }, scale: { type: 'spring', stiffness: 300, damping: 22 } }}
+        className={`group fixed bottom-[5.5rem] left-3 z-[65] inline-flex items-center rounded-full border border-white/20 bg-[#080808] font-black uppercase text-white shadow-[0_16px_48px_rgba(0,0,0,0.34)] transition-[padding,gap,transform] duration-300 hover:scale-[1.04] active:scale-[0.98] md:bottom-6 md:left-6 ${isGameLauncherCompact ? 'gap-2 py-2 pl-2 pr-3 text-[0.65rem] tracking-[0.12em] md:py-2.5 md:pr-4 md:text-xs' : 'gap-3 py-3 pl-3 pr-5 text-xs tracking-[0.1em] sm:py-3.5 sm:pl-3.5 sm:pr-6 sm:text-sm'}`}
+        aria-label={gameLauncherCopy.aria}
+      >
+        {!isGameLauncherCompact && (
+          <motion.span
+            className="pointer-events-none absolute -inset-1 rounded-full border-2 border-[#7fff00]/70"
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: [0, 0.75, 0], scale: [0.94, 1.08, 1.14] }}
+            transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 0.7, ease: 'easeOut' }}
+            aria-hidden="true"
+          />
+        )}
+        <span className={`relative flex shrink-0 items-center justify-center rounded-full bg-[#7fff00] text-black shadow-[0_0_22px_rgba(127,255,0,0.35)] transition-[width,height] duration-300 ${isGameLauncherCompact ? 'size-8' : 'size-11 sm:size-12'}`}>
+          <Gift className={isGameLauncherCompact ? 'size-4' : 'size-5 sm:size-6'} strokeWidth={2.6} />
+        </span>
+        <AnimatePresence mode="popLayout" initial={false}>
+          {isGameLauncherCompact ? (
+            <motion.span key="compact" initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="whitespace-nowrap">{gameLauncherCopy.compact}</motion.span>
+          ) : (
+            <motion.span key="expanded" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="flex flex-col items-start leading-tight">
+              <span className="text-[#9cff45]">{gameLauncherCopy.highlight}</span>
+              <span className="mt-1 whitespace-nowrap text-white">{gameLauncherCopy.action}</span>
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </motion.button>
+
+      {isGameLoaded && (
+        <Suspense fallback={null}>
+          <TicTacToeGame open={isGameOpen} language={lang} onClose={() => setIsGameOpen(false)} onViewModels={viewModelsFromGame} />
+        </Suspense>
+      )}
+
+      <AnimatePresence>
+        {showModelsShortcut && (
+          <motion.div
+            className="fixed right-2 top-1/2 z-[55] -translate-y-1/2 sm:right-4"
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 24 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            <button
+              type="button"
+              onClick={handleModelsShortcutClick}
+              className="group inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/95 py-1.5 pl-3 pr-1.5 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black shadow-[0_12px_35px_rgba(0,0,0,0.18)] backdrop-blur-md transition-transform hover:scale-[1.04] active:scale-[0.98] sm:gap-2.5 sm:pl-4 sm:text-xs"
+              aria-label={tr({ sr: 'Vidi modele', en: 'View models', ru: 'Смотреть модели' })}
+            >
+              <span className="whitespace-nowrap">{tr({ sr: 'Vidi modele', en: 'View models', ru: 'Смотреть модели' })}</span>
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-black text-[#7fff00] transition-transform group-hover:translate-x-0.5 sm:size-9">
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="fixed bottom-4 right-4 z-[70] hidden flex-col items-end gap-3 sm:bottom-6 sm:right-6 md:flex" onPointerDown={(event) => event.stopPropagation()}>
         {isContactWidgetOpen && (
-          <div className="w-[min(20rem,calc(100vw-2rem))] rounded-3xl border border-black/10 bg-white p-5 text-black shadow-[0_24px_70px_rgba(0,0,0,0.2)]">
+          <div id="contact-widget-panel" className="w-[min(20rem,calc(100vw-2rem))] rounded-3xl border border-black/10 bg-white p-5 text-black shadow-[0_24px_70px_rgba(0,0,0,0.2)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#65c900]">POGON</p>
                 <h3 className="mt-1 text-lg font-black">{tr({ sr: 'Tu smo da pomognemo', en: 'We’re here to help', ru: 'Мы рядом, чтобы помочь' })}</h3>
               </div>
-              <button type="button" onClick={() => setIsContactWidgetOpen(false)} aria-label={copy.close} className="rounded-full p-1.5 text-black/40 hover:bg-black/5 hover:text-black"><X className="size-4" /></button>
+              <button type="button" onClick={closeContactWidget} aria-label={copy.close} className="rounded-full p-1.5 text-black/40 hover:bg-black/5 hover:text-black"><X className="size-4" /></button>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-black/55">{tr({
               sr: 'Razgovarajte sa Pogon stručnjakom i pronađite pravi bicikl za vas.',
               en: 'Talk with a Pogon specialist and find the right bike for you.',
               ru: 'Поговори со специалистом Pogon, и вместе подберём подходящий велосипед.',
             })}</p>
-            <button type="button" onClick={() => { setIsContactWidgetOpen(false); openLeadModal('specialist-contact'); }} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]">
+            <button type="button" onClick={() => { closeContactWidget(); openLeadModal('specialist-contact'); }} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]">
               <MessageCircle className="size-4 text-[#7fff00]" />
               {tr({ sr: 'Zakaži razgovor', en: 'Book a call', ru: 'Записаться на звонок' })}
             </button>
           </div>
         )}
-        <button type="button" onClick={() => setIsContactWidgetOpen((current) => !current)} aria-expanded={isContactWidgetOpen} className="group inline-flex items-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-bold text-white shadow-[0_12px_35px_rgba(0,0,0,0.3)] transition-transform hover:scale-[1.04] sm:px-5">
+        <button type="button" onClick={openContactWidget} aria-controls="contact-widget-panel" aria-expanded={isContactWidgetOpen} className="group inline-flex items-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-bold text-white shadow-[0_12px_35px_rgba(0,0,0,0.3)] transition-transform hover:scale-[1.04] sm:px-5">
           <span className="flex size-8 items-center justify-center rounded-full bg-[#7fff00] text-black"><MessageCircle className="size-4" /></span>
           <span>{tr({ sr: 'Kontaktirajte nas', en: 'Contact us', ru: 'Связаться с нами' })}</span>
         </button>

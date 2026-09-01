@@ -23,7 +23,10 @@ import { createLookupToken, hashLookupToken, rateLimit } from '../api/_lib/secur
 import { validateCheckout } from '../api/_lib/validation.mjs';
 import { getPublicUrls } from '../api/_lib/urls.mjs';
 import { offeredInstallments, resolveDeliveryFee } from '../api/_lib/delivery.mjs';
+import { applyGamePrizeToDelivery, attachGamePrize, normalizeGamePrize } from '../api/_lib/game-prize.mjs';
+import { availableMoves, chooseBotMove, createBotStyle, FRIENDLY_GAME_RATE, gameResult } from '../src/lib/ticTacToe.mjs';
 import { insertOrder } from '../api/_lib/supabase.mjs';
+import { listPaidOrders, verifyAdminAccessToken } from '../api/_lib/admin-orders.mjs';
 
 const testEnv = {
   NESTPAY_ENV: 'test', NESTPAY_MERCHANT_ID: '13IN004634', NESTPAY_STORE_KEY: 'STOREKEY',
@@ -36,7 +39,7 @@ const productionEnv = {
 };
 
 test('server calculates authoritative product total and ignores browser price', () => {
-  assert.deepEqual(calculateOrderTotal('core', 2).totalRsd, 270_000);
+  assert.deepEqual(calculateOrderTotal('core', 2).totalRsd, 260_000);
   assert.throws(() => calculateOrderTotal('core', 0), /INVALID_QUANTITY/);
   assert.throws(() => calculateOrderTotal('unknown', 1), /INVALID_PRODUCT/);
 });
@@ -44,7 +47,7 @@ test('server calculates authoritative product total and ignores browser price', 
 test('mixed-model totals are authoritative and quantities are not capped at five', () => {
   const cart = calculateCartTotal([{ product: 'glide', quantity: 7 }, { product: 'core', quantity: 2 }]);
   assert.equal(cart.totalQuantity, 9);
-  assert.equal(cart.subtotalRsd, 1_425_000);
+  assert.equal(cart.subtotalRsd, 1_415_000);
   assert.throws(() => calculateCartTotal([{ product: 'glide', quantity: 1 }, { product: 'glide', quantity: 2 }]), /DUPLICATE_PRODUCT/);
 });
 
@@ -55,15 +58,15 @@ test('MILEBANJA sets each Cargo bike to 120,000 RSD without discounting other mo
   ]);
   const discounted = applyPromotion(cart, '  milebanja  ');
   assert.equal(discounted.promoCode, 'MILEBANJA');
-  assert.equal(discounted.originalSubtotalRsd, 395_000);
+  assert.equal(discounted.originalSubtotalRsd, 390_000);
   assert.equal(discounted.discountRsd, 20_000);
-  assert.equal(discounted.subtotalRsd, 375_000);
+  assert.equal(discounted.subtotalRsd, 370_000);
   assert.deepEqual(discounted.items.find((item) => item.product === 'cargo'), {
     product: 'cargo', name: 'Pogon Cargo', quantity: 2,
     originalUnitPriceRsd: 130_000, unitPriceRsd: 120_000,
     lineTotalRsd: 240_000, discountRsd: 20_000, promoCode: 'MILEBANJA',
   });
-  assert.equal(discounted.items.find((item) => item.product === 'core').unitPriceRsd, 135_000);
+  assert.equal(discounted.items.find((item) => item.product === 'core').unitPriceRsd, 130_000);
 });
 
 test('NBGD subtracts 5,000 RSD once from any order', () => {
@@ -73,10 +76,10 @@ test('NBGD subtracts 5,000 RSD once from any order', () => {
   ]);
   const discounted = applyPromotion(cart, ' nbgd ');
   assert.equal(discounted.promoCode, 'NBGD');
-  assert.equal(discounted.originalSubtotalRsd, 465_000);
+  assert.equal(discounted.originalSubtotalRsd, 460_000);
   assert.equal(discounted.discountRsd, 5_000);
-  assert.equal(discounted.subtotalRsd, 460_000);
-  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 460_000);
+  assert.equal(discounted.subtotalRsd, 455_000);
+  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 455_000);
   assert.equal(discounted.items[0].discountRsd, 5_000);
   assert.equal(discounted.items[0].promoCode, 'NBGD');
 });
@@ -665,6 +668,29 @@ test('order persistence sends a PENDING order through the server-only database c
   assert.match(captured.url, /\/rest\/v1\/orders$/);
 });
 
+test('completed-order admin access verifies the existing admin and returns only PAID fulfillment fields', async () => {
+  const env = { SUPABASE_URL: 'https://database.invalid', SUPABASE_SERVICE_ROLE_KEY: 'server-only' };
+  let authRequest;
+  assert.equal(await verifyAdminAccessToken('a'.repeat(40), env, async (url, init) => {
+    authRequest = { url, init };
+    return { ok: true, json: async () => ({ email: 'PogonMobility@gmail.com' }) };
+  }), true);
+  assert.match(authRequest.url, /\/auth\/v1\/user$/);
+  assert.equal(authRequest.init.headers.Authorization, `Bearer ${'a'.repeat(40)}`);
+  assert.equal(await verifyAdminAccessToken('b'.repeat(40), env, async () => ({ ok: true, json: async () => ({ email: 'visitor@example.com' }) })), false);
+
+  let ordersRequest;
+  const rows = await listPaidOrders(env, async (url, init) => {
+    ordersRequest = { url, init };
+    return { ok: true, status: 200, json: async () => [{ order_id: 'PGN-2026-PAID', payment_status: 'PAID', order_items: [{ gamePrizeLabel: 'Kaciga' }] }] };
+  });
+  assert.equal(rows[0].order_items[0].gamePrizeLabel, 'Kaciga');
+  assert.match(ordersRequest.url, /payment_status=eq\.PAID/);
+  assert.match(ordersRequest.url, /order_items/);
+  assert.match(ordersRequest.url, /limit=200/);
+  assert.doesNotMatch(ordersRequest.url, /lookup_token_hash|idempotency_key|confirmation_email_claim/);
+});
+
 test('hosted checkout validation accepts only an ordinary one-payment order', () => {
   const base = { product: 'glide', quantity: 1, installmentCount: 1, captchaToken: 'a'.repeat(20), termsAccepted: true, deliveryMethod: 'courier', customer: { firstName: 'A', lastName: 'B', email: 'a@b.rs', phone: '12345678', street: 'Ulica 1', city: 'Beograd', postalCode: '11000' } };
   assert.equal(validateCheckout(base).installmentCount, 1);
@@ -919,6 +945,39 @@ test('initial HTML keeps SEO content without flashing unstyled fallback copy', (
   assert.match(html, /<noscript>[\s\S]*<h1>Pogon električni bicikli<\/h1>/);
 });
 
+test('customer-facing model order is Cargo, Core, Glide', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  assert.match(app, /modelDisplayPosition[\s\S]*cargo:\s*0,[\s\S]*core:\s*1,[\s\S]*glide:\s*2/);
+
+  const products = readFileSync(new URL('../src/lib/products.ts', import.meta.url), 'utf8');
+  assert.ok(products.indexOf('Pogon Cargo') < products.indexOf('Pogon Core'));
+  assert.ok(products.indexOf('Pogon Core') < products.indexOf('Pogon Glide'));
+
+  for (const path of ['../public/elektricni-bicikli/index.html', '../index.html']) {
+    const html = readFileSync(new URL(path, import.meta.url), 'utf8');
+    const source = html.slice(html.indexOf('itemListElement'));
+    const cargo = source.indexOf('Pogon Cargo');
+    const core = source.indexOf('Pogon Core');
+    const glide = source.indexOf('Pogon Glide');
+    assert.ok(cargo >= 0 && cargo < core && core < glide, `${path} must order Cargo, Core, Glide`);
+  }
+});
+
+test('contact widget reopens reliably and landing specifications stay current', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  const overlay = readFileSync(new URL('../src/app/components/Overlay.tsx', import.meta.url), 'utf8');
+
+  assert.match(app, /openContactWidget = useCallback\(\(\) => setIsContactWidgetOpen\(true\)/);
+  assert.match(app, /closeContactWidget = useCallback\(\(\) => setIsContactWidgetOpen\(false\)/);
+  assert.match(app, /onClick=\{openContactWidget\}/);
+  assert.doesNotMatch(app, /setIsContactWidgetOpen\(\(current\) => !current\)/);
+  for (const capacity of ['Nosivost 120 kg', '120 kg load capacity', 'Грузоподъёмность 120 кг']) {
+    assert.match(app, new RegExp(capacity));
+  }
+  assert.match(app, />140<span[^>]*>km<\/span>/);
+  assert.match(overlay, /\['140km', copy\.range\]/);
+});
+
 test('checkout visibly declares canonical RSD and VAT terms before payment', () => {
   const checkout = readFileSync(new URL('../src/app/components/Checkout.tsx', import.meta.url), 'utf8');
   assert.match(checkout, /Sve cene su sa uračunatim PDV-om i nema dodatnih ili skrivenih troškova\./);
@@ -930,7 +989,7 @@ test('checkout visibly declares canonical RSD and VAT terms before payment', () 
   assert.match(checkout, /Izbor broja rata prikazuje se na stranici banke nakon unosa kartice/);
   assert.match(checkout, /samo karticama koje je izdala Banca Intesa/);
   assert.match(checkout, /Konačan iznos za plaćanje na rate može biti približno 10% viši/);
-  assert.match(checkout, /\{formatRsd\(3900\)\}/);
+  assert.match(checkout, /formatRsd\(3900\)/);
   const money = readFileSync(new URL('../src/lib/products.ts', import.meta.url), 'utf8');
   assert.match(money, /minimumFractionDigits:\s*2/);
   assert.match(money, /maximumFractionDigits:\s*2/);
@@ -1049,4 +1108,172 @@ test('RSD-only policies disclose possible issuer conversion for foreign-currency
     assert.match(source, /kartica vezana za račun u drugoj valuti/);
     assert.match(source, /kursu, koji Pogonu nije\s+poznat/);
   }
+});
+
+test('floating model shortcut appears during long-page scrolling and targets the model cards', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  assert.match(app, /showModelsShortcut/);
+  assert.match(app, /models_shortcut_click/);
+  assert.match(app, /document\.getElementById\('modeli'\)/);
+  assert.match(app, /sr: 'Vidi modele', en: 'View models'/);
+  assert.match(app, /window\.scrollTo\(\{ top: targetTop, behavior: 'smooth' \}\)/);
+  assert.match(app, /isGameLauncherCompact/);
+  assert.match(app, /window\.scrollY > 96/);
+  assert.match(app, /Osvoji poklon/);
+  assert.match(app, /bg-\[#7fff00\] text-black/);
+});
+
+test('initial page load defers analytics packages and heavy hero frame preloading', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const analytics = readFileSync(new URL('../src/lib/analytics.ts', import.meta.url), 'utf8');
+  const scrolly = readFileSync(new URL('../src/app/components/ScrollyCanvas.tsx', import.meta.url), 'utf8');
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(analytics, /^import posthog from 'posthog-js'/m);
+  assert.match(analytics, /await import\('posthog-js'\)/);
+  assert.match(html, /window\.addEventListener\('load'[\s\S]*googletagmanager\.com\/gtag\/js/);
+  assert.match(html, /window\.addEventListener\('load'[\s\S]*connect\.facebook\.net\/en_US\/fbevents\.js/);
+  assert.match(scrolly, /constrainedConnection/);
+  assert.match(scrolly, /3500/);
+  assert.doesNotMatch(scrolly, /fallbackSrc = publicAsset\('Excellent4\.optimized\.jpg'\)/);
+  assert.match(app, /<ScrollyCanvas frameCount=\{20\}>/);
+});
+
+test('Serbian landing hero uses the current city campaign line', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  const overlay = readFileSync(new URL('../src/app/components/Overlay.tsx', import.meta.url), 'utf8');
+  for (const source of [app, overlay]) assert.match(source, /Auto je za more, Pogon je za grad/);
+});
+
+test('landing rating and Core sale badge remain clearly visible', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  assert.match(app, />5\.0<\/span>/);
+  assert.match(app, /badgeKey: 'sale'[\s\S]*badgeClass: 'bg-black text-white/);
+});
+
+test('admin CRM includes an authenticated PAID-orders panel with game prizes', () => {
+  const route = readFileSync(new URL('../api/admin/orders.ts', import.meta.url), 'utf8');
+  const admin = readFileSync(new URL('../src/app/components/AdminLeads.tsx', import.meta.url), 'utf8');
+  const panel = readFileSync(new URL('../src/app/components/AdminOrdersPanel.tsx', import.meta.url), 'utf8');
+  const client = readFileSync(new URL('../src/lib/supabase.ts', import.meta.url), 'utf8');
+  assert.match(route, /verifyAdminAccessToken/);
+  assert.match(route, /Cache-Control', 'private, no-store/);
+  assert.doesNotMatch(route, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.match(client, /Authorization: `Bearer \$\{accessToken\}`/);
+  assert.match(client, /ADMIN_ORDERS_API_NOT_RUNNING/);
+  assert.match(admin, /fetchPaidOrders/);
+  assert.match(admin, /npm run dev:fullstack/);
+  assert.match(admin, /<AdminOrdersPanel/);
+  assert.match(panel, /Completed orders/);
+  assert.match(panel, /gamePrizeLabel/);
+  assert.match(panel, /Export orders CSV/);
+  const viteConfig = readFileSync(new URL('../vite.config.ts', import.meta.url), 'utf8');
+  assert.match(viteConfig, /adminOrdersDevApi/);
+  assert.match(viteConfig, /use\('\/api\/admin\/orders'/);
+  assert.doesNotMatch(viteConfig, /api\/checkout|api\/nestpay/);
+});
+
+test('Core sale is displayed consistently and the server charges 130,000 RSD', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  const products = readFileSync(new URL('../src/lib/products.ts', import.meta.url), 'utf8');
+  const checkout = readFileSync(new URL('../src/app/components/Checkout.tsx', import.meta.url), 'utf8');
+  const home = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const corePage = readFileSync(new URL('../public/elektricni-bicikli/core/index.html', import.meta.url), 'utf8');
+
+  assert.equal(calculateOrderTotal('core', 1).unitPriceRsd, 130_000);
+  assert.match(app, /badgeKey: 'sale'/);
+  assert.match(app, /originalPrice: '135\.000,00 RSD'[\s\S]*price: '130\.000,00 RSD'/);
+  assert.match(products, /priceRsd: 130_000, listPriceRsd: 135_000/);
+  assert.match(checkout, /entry\.listPriceRsd/);
+  for (const html of [home, corePage]) assert.match(html, /"price"\s*:\s*"130000"/);
+});
+
+test('tic-tac-toe gives about half of first attempts a win and assists the second attempt', () => {
+  assert.equal(FRIENDLY_GAME_RATE, 0.445);
+  assert.equal(createBotStyle(() => 0.444, 1), 'friendly');
+  assert.equal(createBotStyle(() => 0.446, 1), 'competitive');
+  assert.equal(createBotStyle(() => 0.999, 2), 'assisted');
+  assert.equal(createBotStyle(() => 0.999, 8), 'assisted');
+  assert.equal(gameResult(['X', 'X', 'X', null, 'O', null, 'O', null, null]).winner, 'X');
+  assert.equal(chooseBotMove(['O', 'O', null, 'X', 'X', null, null, null, null], 'friendly', () => 0.99), 2, 'bot must always take its own win');
+  assert.notEqual(chooseBotMove(['O', 'O', null, 'X', 'X', null, null, null, null], 'assisted', () => 0), 2, 'assisted bot must leave the player winning move open');
+
+  let seed = 20260901;
+  const random = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+  const winningMove = (board, mark) => availableMoves(board).find((index) => {
+    const next = [...board];
+    next[index] = mark;
+    return gameResult(next)?.winner === mark;
+  });
+  const practicalPlayerMove = (board) => {
+    const finish = winningMove(board, 'X');
+    if (finish !== undefined) return finish;
+    const block = winningMove(board, 'O');
+    if (block !== undefined) return block;
+    if (board[4] === null) return 4;
+    const corners = [0, 2, 6, 8].filter((index) => board[index] === null);
+    if (corners.length) return corners[Math.floor(random() * corners.length)];
+    const moves = availableMoves(board);
+    return moves[Math.floor(random() * moves.length)];
+  };
+
+  const simulate = (attemptNumber, games) => {
+    let wins = 0;
+    for (let game = 0; game < games; game += 1) {
+      const board = Array(9).fill(null);
+      const style = createBotStyle(random, attemptNumber);
+      while (!gameResult(board)) {
+        board[practicalPlayerMove(board)] = 'X';
+        if (gameResult(board)) break;
+        const botMove = chooseBotMove(board, style, random);
+        if (botMove !== undefined) board[botMove] = 'O';
+      }
+      if (gameResult(board)?.winner === 'X') wins += 1;
+    }
+    return wins / games;
+  };
+
+  const firstAttemptWinRate = simulate(1, 5000);
+  assert.ok(firstAttemptWinRate >= 0.47 && firstAttemptWinRate <= 0.53, `expected a roughly 50% first-attempt win rate, received ${firstAttemptWinRate}`);
+  assert.equal(simulate(2, 1000), 1, 'the assisted second attempt should give a practical player the win');
+});
+
+test('game prizes are validated, selectable, and attached to orders without changing delivery', () => {
+  assert.equal(normalizeGamePrize('lock'), 'lock');
+  assert.equal(normalizeGamePrize('gloves'), 'gloves');
+  assert.equal(normalizeGamePrize('helmet'), 'helmet');
+  assert.throws(() => normalizeGamePrize('free-delivery'), /INVALID_GAME_PRIZE/);
+  assert.throws(() => normalizeGamePrize('made-up-prize'), /INVALID_GAME_PRIZE/);
+  assert.deepEqual(applyGamePrizeToDelivery('helmet', 'courier', { exact: true, feeRsd: 3900, source: 'fixed_server_config' }), { exact: true, feeRsd: 3900, source: 'fixed_server_config' });
+  assert.deepEqual(attachGamePrize([{ product: 'core' }], 'gloves')[0], { product: 'core', gamePrize: 'gloves', gamePrizeLabel: 'Rukavice za vožnju' });
+  const validCheckout = { product: 'core', quantity: 1, installmentCount: 1, captchaToken: 'a'.repeat(20), termsAccepted: true, deliveryMethod: 'courier', gamePrize: 'lock', customer: { firstName: 'A', lastName: 'B', email: 'a@b.rs', phone: '12345678', street: 'Ulica 1', city: 'Beograd', postalCode: '11000' } };
+  assert.equal(validateCheckout(validCheckout).gamePrize, 'lock');
+  assert.throws(() => validateCheckout({ ...validCheckout, gamePrize: 'fake-prize' }), /INVALID_GAME_PRIZE/);
+  const confirmation = buildPaymentConfirmation({ orderId: 'PGN-GAME', paymentStatus: 'PAID', customerName: 'Kupac', email: 'a@b.rs', street: 'Ulica 1', postalCode: '11000', city: 'Beograd', deliveryMethod: 'courier', deliveryFeeRsd: 3900, items: [{ product: 'core', name: 'Pogon Core', quantity: 1, unitPriceRsd: 130000, lineTotalRsd: 130000, gamePrizeLabel: 'Rukavice za vožnju' }], subtotalRsd: 130000, totalRsd: 133900 }, { legalName: 'POGON MOBILITY DOO' });
+  assert.match(confirmation.html, /Osvojena nagrada 1/);
+  assert.match(confirmation.html, /Rukavice za vožnju/);
+
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  const game = readFileSync(new URL('../src/app/components/TicTacToeGame.tsx', import.meta.url), 'utf8');
+  const gamePrizes = readFileSync(new URL('../src/lib/gamePrize.ts', import.meta.url), 'utf8');
+  const checkout = readFileSync(new URL('../src/app/components/Checkout.tsx', import.meta.url), 'utf8');
+  assert.match(app, /lazy\(\(\) => import\('\.\/components\/TicTacToeGame'\)/);
+  for (const prize of ['Besplatan lanac', 'Rukavice za vožnju', 'Kaciga']) assert.match(gamePrizes, new RegExp(prize));
+  assert.match(game, /claimPrize/);
+  assert.match(game, /storeGamePrize\(prize\)/);
+  assert.match(game, /Igraj ponovo/);
+  assert.match(game, /confettiPieces/);
+  assert.match(game, /poklon koji dobijaš uz kupovinu Pogon bicikla/);
+  assert.match(game, /bravo: 'Bravo!'/);
+  assert.doesNotMatch(game, /Bravo — pobeda|Pobeda!/);
+  assert.match(app, /const gameLauncherCopy = tr\(/);
+  assert.match(app, /compact: 'Play and win'/);
+  assert.match(app, /compact: 'Играй и выиграй'/);
+  assert.match(app, /language=\{lang\}/);
+  assert.match(game, /const gameCopy =/);
+  assert.match(game, /\{copy\.badge\}/);
+  assert.match(game, /Free bike lock/);
+  assert.match(game, /Бесплатный велозамок/);
+  assert.doesNotMatch(checkout, /gamePrize === 'free-delivery'/);
+  assert.match(checkout, /gamePrize,/);
 });

@@ -39,6 +39,7 @@ export function buildPaymentConfirmation(order, merchant) {
       [`Kod za popust ${index + 1}`, unavailable(item.promoCode)],
       [`Popust ${index + 1}`, rsd(-Number(item.discountRsd))],
     ] : []),
+    ...(item.gamePrizeLabel ? [[`Osvojena nagrada ${index + 1}`, unavailable(item.gamePrizeLabel)]] : []),
     [`Ukupno za proizvod ${index + 1}`, rsd(item.lineTotalRsd)],
   ]);
   const rows = [

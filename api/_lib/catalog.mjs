@@ -1,6 +1,6 @@
 export const PRODUCTS = Object.freeze({
   glide: Object.freeze({ key: 'glide', name: 'Pogon Glide', unitPriceRsd: 165_000 }),
-  core: Object.freeze({ key: 'core', name: 'Pogon Core', unitPriceRsd: 135_000 }),
+  core: Object.freeze({ key: 'core', name: 'Pogon Core', unitPriceRsd: 130_000 }),
   cargo: Object.freeze({ key: 'cargo', name: 'Pogon Cargo', unitPriceRsd: 130_000 }),
 });
 

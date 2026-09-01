@@ -10,13 +10,20 @@
           document.documentElement.dataset.appRoute = path === '/' ? 'home' : 'internal';
         })();
       </script>
-      <!-- Google tag (gtag.js) -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18415875509"></script>
+      <!-- Queue Google Ads immediately; load its network script after the first screen. -->
       <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'AW-18415875509');
+        window.addEventListener('load', function () {
+          window.setTimeout(function () {
+            var script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-18415875509';
+            document.head.appendChild(script);
+          }, 1200);
+        }, { once: true });
       </script>
       <title>Pogon | Električni bicikli za grad</title>
       <meta name="description" content="Pogon električni bicikli za svakodnevnu gradsku vožnju. Istraži modele Glide, Core i Cargo, uporedi karakteristike i zakaži test vožnju u Beogradu." />
@@ -103,11 +110,11 @@
                 "position": 1,
                 "item": {
                   "@type": "Product",
-                  "name": "Pogon Glide",
-                  "image": "https://ridepogon.com/Glide%20main.jpg",
-                  "description": "Gradski električni bicikl za udobnu i pouzdanu svakodnevnu vožnju.",
+                  "name": "Pogon Cargo",
+                  "image": "https://ridepogon.com/Core%20main.jpg",
+                  "description": "Električni teretni bicikl za praktičan prevoz kroz grad.",
                   "brand": { "@type": "Brand", "name": "Pogon" },
-                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "165000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/elektricni-bicikli/glide/" }
+                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "130000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/elektricni-bicikli/cargo/" }
                 }
               },
               {
@@ -119,7 +126,7 @@
                   "image": "https://ridepogon.com/Cargo%20Main.jpg",
                   "description": "Sklopivi električni bicikl sa širokim gumama za gradsku vožnju.",
                   "brand": { "@type": "Brand", "name": "Pogon" },
-                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "135000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/elektricni-bicikli/core/" }
+                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "130000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/elektricni-bicikli/core/" }
                 }
               },
               {
@@ -127,11 +134,11 @@
                 "position": 3,
                 "item": {
                   "@type": "Product",
-                  "name": "Pogon Cargo",
-                  "image": "https://ridepogon.com/Core%20main.jpg",
-                  "description": "Električni teretni bicikl za praktičan prevoz kroz grad.",
+                  "name": "Pogon Glide",
+                  "image": "https://ridepogon.com/Glide%20main.jpg",
+                  "description": "Gradski električni bicikl za udobnu i pouzdanu svakodnevnu vožnju.",
                   "brand": { "@type": "Brand", "name": "Pogon" },
-                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "130000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/elektricni-bicikli/cargo/" }
+                  "offers": { "@type": "Offer", "priceCurrency": "RSD", "price": "165000", "availability": "https://schema.org/InStock", "url": "https://ridepogon.com/elektricni-bicikli/glide/" }
                 }
               }
             ]
@@ -139,20 +146,23 @@
         ]
       }
       </script>
-      <!-- Meta Pixel Code -->
+      <!-- Queue Meta events immediately; load its network script after the first screen. -->
       <script>
-      !function(f,b,e,v,n,t,s)
+      !function(f,n)
       {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
       n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[]}(window);
       fbq('init', '1345566057642265');
       fbq('track', 'PageView');
+      window.addEventListener('load', function () {
+        window.setTimeout(function () {
+          var script = document.createElement('script');
+          script.async = true;
+          script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+          document.head.appendChild(script);
+        }, 1500);
+      }, { once: true });
       </script>
-      <!-- End Meta Pixel Code -->
       <style>
         :root { color-scheme: light; background: #fff; }
         html, body { min-height: 100%; margin: 0; }

@@ -1,3 +1,5 @@
+import { normalizeGamePrize } from './game-prize.mjs';
+
 const text = (value, max) => typeof value === 'string' && value.trim().length > 0 && value.trim().length <= max ? value.trim() : null;
 
 export function validateCheckout(input) {
@@ -16,6 +18,7 @@ export function validateCheckout(input) {
     promoCode: input?.promoCode === undefined || input?.promoCode === null || input?.promoCode === ''
       ? null
       : text(input.promoCode, 40),
+    gamePrize: normalizeGamePrize(input?.gamePrize),
     termsAccepted: input?.termsAccepted === true,
   };
   if (!result.captchaToken) throw new Error('INVALID_CAPTCHA');

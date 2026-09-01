@@ -55,6 +55,39 @@ export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at'>) => {
   trackGoogleAdsLead();
 };
 
+export type PaidOrderItem = {
+  product: string;
+  name: string;
+  quantity: number;
+  unitPriceRsd: number;
+  lineTotalRsd: number;
+  gamePrize?: string;
+  gamePrizeLabel?: string;
+};
+
+export type PaidOrder = {
+  orderId: string;
+  createdAt: string;
+  customerName: string;
+  email: string;
+  phone: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  deliveryMethod: 'courier' | 'pickup';
+  installmentCount: number;
+  status: 'PAID';
+  product: string;
+  quantity: number;
+  unitPriceRsd: number;
+  subtotalRsd: number;
+  deliveryFeeRsd: number;
+  totalRsd: number;
+  items: PaidOrderItem[];
+  transactionId: string | null;
+  transactionDate: string | null;
+};
+
 export const signInAdmin = async (password: string): Promise<AdminSession> => {
   const response = await request('/auth/v1/token?grant_type=password', {
     method: 'POST',
@@ -78,6 +111,20 @@ export const fetchLeads = async (accessToken: string) => {
     accessToken,
   );
   return response.json() as Promise<Lead[]>;
+};
+
+export const fetchPaidOrders = async (accessToken: string) => {
+  const response = await fetch('/api/admin/orders', {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: 'no-store',
+  });
+  if (!response.ok) throw new Error(response.status === 401 ? 'ADMIN_SESSION_EXPIRED' : 'PAID_ORDERS_UNAVAILABLE');
+  if (!response.headers.get('content-type')?.toLowerCase().includes('application/json')) {
+    throw new Error('ADMIN_ORDERS_API_NOT_RUNNING');
+  }
+  const body = await response.json() as { orders?: PaidOrder[] };
+  return Array.isArray(body.orders) ? body.orders : [];
 };
 
 export const updateLead = async (

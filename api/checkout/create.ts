@@ -6,6 +6,7 @@ import { createLookupToken, hashLookupToken, rateLimit, requestIp } from '../_li
 import { findOrderByIdempotency, insertOrder, patchOrder } from '../_lib/supabase.mjs';
 import { validateCheckout } from '../_lib/validation.mjs';
 import { offeredInstallments, resolveDeliveryFee } from '../_lib/delivery.mjs';
+import { applyGamePrizeToDelivery, attachGamePrize } from '../_lib/game-prize.mjs';
 import { isNestPayConfigured } from '../_lib/nestpay.mjs';
 
 const cardPageUrl = (orderId: string, token: string) =>
@@ -60,14 +61,15 @@ export default async function handler(request: any, response: any) {
     if (!await verifyCaptcha(input.captchaToken, ip)) return response.status(400).json({ error: 'Bezbednosna provera nije uspela.' });
     const cart = applyPromotion(calculateCartTotal(input.items), input.promoCode);
     requestedPromoCode = cart.promoCode;
-    const delivery = resolveDeliveryFee(input.deliveryMethod);
+    const delivery = applyGamePrizeToDelivery(input.gamePrize, input.deliveryMethod, resolveDeliveryFee(input.deliveryMethod));
+    const orderItems = attachGamePrize(cart.items, input.gamePrize);
     const lookupToken = createLookupToken();
     const order = await insertOrder({
       order_id: cart.promoCode && isSingleUsePromotion(cart.promoCode)
         ? singleUsePromotionOrderId(cart.promoCode)
         : createOrderId(),
       product: cart.items[0].product, quantity: cart.totalQuantity,
-      unit_price_rsd: cart.items[0].unitPriceRsd, order_items: cart.items, subtotal_rsd: cart.subtotalRsd,
+      unit_price_rsd: cart.items[0].unitPriceRsd, order_items: orderItems, subtotal_rsd: cart.subtotalRsd,
       delivery_fee_rsd: delivery.feeRsd,
       total_rsd: delivery.exact ? cart.subtotalRsd + delivery.feeRsd : null,
       customer_name: `${input.firstName} ${input.lastName}`, email: input.email,

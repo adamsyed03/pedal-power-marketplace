@@ -1,5 +1,3 @@
-import posthog from 'posthog-js';
-
 export type AnalyticsEvent =
   | 'site_loaded'
   | 'phone_call_click'
@@ -7,16 +5,24 @@ export type AnalyticsEvent =
   | 'test_ride_click'
   | 'test_ride_form_submit'
   | 'primary_cta_click'
-  | 'savings_quiz_route_view';
+  | 'savings_quiz_route_view'
+  | 'checkout_started'
+  | 'models_shortcut_click';
 
 const fallbackPosthogKey = 'phc_AsUGwDMvHs5gKmH5ayPcu2kWPFHRijRJD4fq43CoE56e';
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY || fallbackPosthogKey;
 const posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
 const isBrowser = typeof window !== 'undefined';
 const posthogKeySource = import.meta.env.VITE_POSTHOG_KEY ? 'env' : 'fallback';
+type PostHogClient = (typeof import('posthog-js'))['default'];
+type QueuedEvent = { eventName: AnalyticsEvent; properties: Record<string, string> };
+
+let posthogClient: PostHogClient | null = null;
+let analyticsLoadStarted = false;
+const queuedEvents: QueuedEvent[] = [];
 
 type AnalyticsWindow = Window & {
-  posthog?: typeof posthog;
+  posthog?: PostHogClient;
   __pogonAnalytics?: {
     packageLoaded: boolean;
     keyPresent: boolean;
@@ -29,51 +35,33 @@ type AnalyticsWindow = Window & {
   };
 };
 
-export const initAnalytics = () => {
-  if (!isBrowser) {
-    return;
-  }
-
+const loadAnalyticsPackage = async () => {
+  if (!isBrowser || analyticsLoadStarted || !posthogKey) return;
+  analyticsLoadStarted = true;
   const analyticsWindow = window as AnalyticsWindow;
-  analyticsWindow.posthog = posthog;
-  analyticsWindow.__pogonAnalytics = {
-    packageLoaded: true,
-    keyPresent: Boolean(posthogKey),
-    keySource: posthogKeySource,
-    host: posthogHost,
-    initialized: false,
-  };
+  try {
+    const { default: posthog } = await import('posthog-js');
+    posthogClient = posthog;
+    analyticsWindow.posthog = posthog;
+    analyticsWindow.__pogonAnalytics = {
+      packageLoaded: true,
+      keyPresent: true,
+      keySource: posthogKeySource,
+      host: posthogHost,
+      initialized: false,
+    };
 
-  if (!posthogKey) {
-    if (isBrowser) {
-      console.warn('[posthog] Missing VITE_POSTHOG_KEY. Analytics is disabled for this build.');
-    }
-    return;
-  }
-
-  posthog.init(posthogKey, {
-    api_host: posthogHost,
-    defaults: '2026-05-30',
-    capture_pageview: true,
-    person_profiles: 'identified_only',
-    disable_session_recording: false,
-    session_recording: {
-      enabled: true,
-      maskAllInputs: true,
-    },
-    loaded: (posthogInstance) => {
-      analyticsWindow.__pogonAnalytics = {
-        packageLoaded: true,
-        keyPresent: true,
-        keySource: posthogKeySource,
-        host: posthogHost,
-        initialized: true,
-        sessionId: posthogInstance.get_session_id(),
-        sessionRecordingStarted: posthogInstance.sessionRecordingStarted(),
-        sessionReplayUrl: posthogInstance.get_session_replay_url(),
-      };
-      posthogInstance.startSessionRecording(true);
-      window.setTimeout(() => {
+    posthog.init(posthogKey, {
+      api_host: posthogHost,
+      defaults: '2026-05-30',
+      capture_pageview: true,
+      person_profiles: 'identified_only',
+      disable_session_recording: false,
+      session_recording: {
+        enabled: true,
+        maskAllInputs: true,
+      },
+      loaded: (posthogInstance) => {
         analyticsWindow.__pogonAnalytics = {
           packageLoaded: true,
           keyPresent: true,
@@ -84,19 +72,58 @@ export const initAnalytics = () => {
           sessionRecordingStarted: posthogInstance.sessionRecordingStarted(),
           sessionReplayUrl: posthogInstance.get_session_replay_url(),
         };
-        posthogInstance.capture('session_replay_debug', {
+        posthogInstance.startSessionRecording(true);
+        queuedEvents.splice(0).forEach(({ eventName, properties }) => posthogInstance.capture(eventName, properties));
+        window.setTimeout(() => {
+          analyticsWindow.__pogonAnalytics = {
+            packageLoaded: true,
+            keyPresent: true,
+            keySource: posthogKeySource,
+            host: posthogHost,
+            initialized: true,
+            sessionId: posthogInstance.get_session_id(),
+            sessionRecordingStarted: posthogInstance.sessionRecordingStarted(),
+            sessionReplayUrl: posthogInstance.get_session_replay_url(),
+          };
+          posthogInstance.capture('session_replay_debug', {
+            source: 'posthog_js_init',
+            keySource: posthogKeySource,
+            sessionRecordingStarted: String(posthogInstance.sessionRecordingStarted()),
+            sessionReplayUrl: posthogInstance.get_session_replay_url(),
+          });
+        }, 1500);
+        posthogInstance.capture('site_loaded', {
           source: 'posthog_js_init',
           keySource: posthogKeySource,
-          sessionRecordingStarted: String(posthogInstance.sessionRecordingStarted()),
-          sessionReplayUrl: posthogInstance.get_session_replay_url(),
         });
-      }, 1500);
-      posthogInstance.capture('site_loaded', {
-        source: 'posthog_js_init',
-        keySource: posthogKeySource,
-      });
-    },
-  });
+      },
+    });
+  } catch (error) {
+    analyticsLoadStarted = false;
+    console.warn('[posthog] Analytics package failed to load.', error);
+  }
+};
+
+export const initAnalytics = () => {
+  if (!isBrowser) return;
+
+  const analyticsWindow = window as AnalyticsWindow;
+  analyticsWindow.__pogonAnalytics = {
+    packageLoaded: false,
+    keyPresent: Boolean(posthogKey),
+    keySource: posthogKeySource,
+    host: posthogHost,
+    initialized: false,
+  };
+
+  if (!posthogKey) {
+    console.warn('[posthog] Missing VITE_POSTHOG_KEY. Analytics is disabled for this build.');
+    return;
+  }
+
+  const startAfterFirstPaint = () => window.setTimeout(() => void loadAnalyticsPackage(), 900);
+  if (document.readyState === 'complete') startAfterFirstPaint();
+  else window.addEventListener('load', startAfterFirstPaint, { once: true });
 };
 
 export const trackEvent = (eventName: AnalyticsEvent, properties: Record<string, string> = {}) => {
@@ -105,5 +132,10 @@ export const trackEvent = (eventName: AnalyticsEvent, properties: Record<string,
     return;
   }
 
-  posthog.capture(eventName, properties);
+  if (posthogClient) {
+    posthogClient.capture(eventName, properties);
+    return;
+  }
+
+  if (queuedEvents.length < 50) queuedEvents.push({ eventName, properties });
 };

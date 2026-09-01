@@ -21,7 +21,7 @@ export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps)
   const frameRequestRef = useRef(0);
   const currentFrameRef = useRef(0);
   const targetFrameRef = useRef(0);
-  const fallbackSrc = publicAsset('Excellent4.optimized.jpg');
+  const requestFrameRef = useRef<(index: number) => void>(() => undefined);
   const sequenceFallbackSrc = framePath(0);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const scrollProgress = useMotionValue(0);
@@ -89,6 +89,11 @@ export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps)
 
     scrollProgress.set(progress);
     targetFrameRef.current = frameIndex;
+    if (!imagesRef.current[frameIndex]) {
+      requestFrameRef.current(frameIndex);
+      requestFrameRef.current(Math.max(0, frameIndex - 1));
+      requestFrameRef.current(Math.min(frameCount - 1, frameIndex + 1));
+    }
     drawFrame(frameIndex);
   }, [drawFrame, frameCount, scrollProgress]);
 
@@ -96,26 +101,37 @@ export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps)
     let cancelled = false;
     let preloadTimer = 0;
     let nextFrame = 1;
+    const frameRequests = new Map<number, Promise<void>>();
     imagesRef.current = [];
 
-    const loadFrame = (index: number) => new Promise<void>((resolve) => {
+    const loadFrame = (index: number) => {
+      if (index < 0 || index >= frames.length) return Promise.resolve();
+      const existingRequest = frameRequests.get(index);
+      if (existingRequest) return existingRequest;
+
       const src = frames[index];
-      const image = new Image();
-      image.decoding = 'async';
-      image.fetchPriority = index === 0 ? 'high' : 'low';
-      image.onload = () => {
-        if (!cancelled) {
-          imagesRef.current[index] = image;
-          if (index === 0 || index === targetFrameRef.current) drawFrame(index);
-        }
-        resolve();
-      };
-      image.onerror = () => {
-        console.warn(`Failed to load scrolly frame: ${src}`);
-        resolve();
-      };
-      image.src = src;
-    });
+      const request = new Promise<void>((resolve) => {
+        const image = new Image();
+        image.decoding = 'async';
+        image.fetchPriority = index === 0 ? 'high' : 'low';
+        image.onload = () => {
+          if (!cancelled) {
+            imagesRef.current[index] = image;
+            if (index === 0 || index === targetFrameRef.current) drawFrame(index);
+          }
+          resolve();
+        };
+        image.onerror = () => {
+          console.warn(`Failed to load scrolly frame: ${src}`);
+          resolve();
+        };
+        image.src = src;
+      });
+      frameRequests.set(index, request);
+      return request;
+    };
+
+    requestFrameRef.current = (index: number) => { void loadFrame(index); };
 
     const loadWorker = async () => {
       while (!cancelled && nextFrame < frames.length) {
@@ -126,14 +142,19 @@ export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps)
 
     void loadFrame(0).then(() => {
       if (!cancelled) {
-        preloadTimer = window.setTimeout(() => {
-          if (!cancelled) void Promise.all(Array.from({ length: 2 }, loadWorker));
-        }, 600);
+        const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+        const constrainedConnection = connection?.saveData || ['slow-2g', '2g', '3g'].includes(connection?.effectiveType ?? '');
+        if (!constrainedConnection) {
+          preloadTimer = window.setTimeout(() => {
+            if (!cancelled) void loadWorker();
+          }, 3500);
+        }
       }
     });
 
     return () => {
       cancelled = true;
+      requestFrameRef.current = () => undefined;
       window.clearTimeout(preloadTimer);
     };
   }, [drawFrame, frames]);
@@ -166,13 +187,6 @@ export function ScrollyCanvas({ children, frameCount = 20 }: ScrollyCanvasProps)
   return (
     <section ref={sectionRef} id="top" className="relative h-[200vh] bg-black text-white">
       <div className="sticky top-0 h-screen w-full overflow-hidden">
-        <img
-          src={fallbackSrc}
-          alt=""
-          aria-hidden="true"
-          fetchPriority="high"
-          className="absolute inset-0 h-full w-full object-cover object-center opacity-100"
-        />
         <img
           src={sequenceFallbackSrc}
           alt=""
