@@ -1006,7 +1006,7 @@ test('purchase terms contain Marina inspection items 2.1.1, 2.1.4 and the suppli
   const terms = readFileSync(new URL('../src/app/components/PurchaseTerms.tsx', import.meta.url), 'utf8');
   for (const expected of [
     'POGON MOBILITY DOO', 'Temišvarska 25B, Beograd', 'Nespecijalizovana trgovina na veliko (4690)',
-    '22162721', '115472260', 'ridepogon.com', '+381 69 69 2345', 'pogonmobility@gmail.com',
+    '22162721', '115472260', 'ridepogon.com', '+381 63 150 5005', 'pogonmobility@gmail.com',
     'Kontakt podaci — korisnički servis', 'Zaštita poverljivih podataka o transakciji',
     'poverljive informacija se prenose putem javne mreže u zaštićenoj (kriptovanoj) formi',
     'kompletni proces naplate obavlja na stranicama banke',
@@ -1121,6 +1121,39 @@ test('floating model shortcut appears during long-page scrolling and targets the
   assert.match(app, /window\.scrollY > 96/);
   assert.match(app, /Osvoji poklon/);
   assert.match(app, /bg-\[#7fff00\] text-black/);
+});
+
+test('tic-tac-toe models action centers the active product card', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  assert.match(app, /source: 'tic-tac-toe-win'/);
+  assert.match(app, /prefers-reduced-motion: reduce/);
+  assert.match(app, /window\.requestAnimationFrame\(\(\) => \{\s*window\.requestAnimationFrame/s);
+  assert.match(app, /const target = cards\[activeProduct\] \?\? cards\[0\] \?\? container/);
+  assert.match(app, /target\.scrollIntoView\(\{ behavior, block: 'center', inline: 'center' \}\)/);
+});
+
+test('all business call and WhatsApp references use 063 150 5005', () => {
+  const contactFiles = [
+    '../index.html',
+    '../api/_lib/merchant.mjs',
+    '../src/app/App.tsx',
+    '../src/app/components/BusinessInfo.tsx',
+    '../src/app/components/Overlay.tsx',
+    '../src/app/components/PurchaseTerms.tsx',
+    '../src/app/components/CustomerPolicy.tsx',
+    '../src/app/components/Checkout.tsx',
+    '../public/elektricni-bicikli/index.html',
+    '../public/elektricni-bicikli/core/index.html',
+    '../public/elektricni-bicikli/cargo/index.html',
+    '../public/elektricni-bicikli/glide/index.html',
+    '../tmp_redesign/src/app/App.tsx',
+  ];
+  for (const relativePath of contactFiles) {
+    const source = readFileSync(new URL(relativePath, import.meta.url), 'utf8');
+    const digits = source.replace(/\D/g, '');
+    assert.doesNotMatch(digits, /38169692345|069692345|381631505003|0631505003/, relativePath);
+    assert.match(digits, /381631505005|0631505005/, relativePath);
+  }
 });
 
 test('initial page load defers analytics packages and heavy hero frame preloading', () => {

@@ -11,7 +11,7 @@ export function BusinessInfo() {
           <div><dt className="text-black/50">Delatnost i šifra</dt><dd className="font-bold">Nespecijalizovana trgovina na veliko (4690)</dd></div>
           <div><dt className="text-black/50">Sedište</dt><dd className="font-bold">Temišvarska 25B, Beograd</dd></div>
           <div><dt className="text-black/50">Web</dt><dd className="font-bold">ridepogon.com</dd></div>
-          <div><dt className="text-black/50">Telefon</dt><dd className="font-bold"><a href="tel:+38169692345">069 69 2345</a></dd></div>
+          <div><dt className="text-black/50">Telefon</dt><dd className="font-bold"><a href="tel:+381631505005">063 150 5005</a></dd></div>
           <div><dt className="text-black/50">Email</dt><dd className="font-bold"><a href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a></dd></div>
         </dl>
         <h2 className="mt-10 text-2xl font-black">Dostava i preuzimanje</h2>

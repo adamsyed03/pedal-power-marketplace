@@ -325,7 +325,7 @@ export function Checkout() {
                 {status === 'submitting' ? 'Priprema plaćanja…' : <>Nastavi na plaćanje <ChevronRight className="size-5 transition-transform group-hover:translate-x-0.5" /></>}
               </button>
               <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-black/40"><LockKeyhole className="size-3.5" /> Pogon ne čuva broj kartice ni sigurnosni kod</div>
-              <a href="tel:+38169692345" className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-black/55 transition hover:text-black"><Phone className="size-3.5" /> Za veću porudžbinu pozovi +381 69 692 345</a>
+              <a href="tel:+381631505005" className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-black/55 transition hover:text-black"><Phone className="size-3.5" /> Za veću porudžbinu pozovi +381 63 150 5005</a>
               <nav aria-label="Informacije za kupce" className="mt-4 flex flex-wrap justify-center gap-x-3 gap-y-2 text-[11px] text-black/50">
                 <a href="/informacije-o-trgovcu" className="underline hover:text-black">Podaci o trgovcu</a>
                 <a href="/dostava" className="underline hover:text-black">Dostava</a>

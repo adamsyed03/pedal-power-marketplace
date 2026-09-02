@@ -3,7 +3,7 @@ export const CANONICAL_MERCHANT = Object.freeze({
   pib: '115472260',
   address: 'Temišvarska 25B, Beograd',
   email: 'pogonmobility@gmail.com',
-  phone: '+381 69 692 345',
+  phone: '+381 63 150 5005',
 });
 
 export function publicMerchantData(env = process.env) {

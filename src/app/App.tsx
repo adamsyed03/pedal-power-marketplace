@@ -372,8 +372,8 @@ export default function App() {
         footerLegal: ['Конфиденциальность', 'Условия', 'Cookies'],
       },
   });
-  const whatsappNumber = '38169692345';
-  const phoneHref = 'tel:+38169692345';
+  const whatsappNumber = '381631505005';
+  const phoneHref = 'tel:+381631505005';
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
   const testRideWhatsappText = tr({
     sr: 'Zdravo, želim da zakažem test vožnju Pogon e-bike-a.',
@@ -409,7 +409,17 @@ export default function App() {
   };
   const viewModelsFromGame = () => {
     setIsGameOpen(false);
-    handleModelsShortcutClick();
+    trackEvent('models_shortcut_click', { source: 'tic-tac-toe-win' });
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const container = productScrollRef.current;
+        if (!container) return;
+        const cards = Array.from(container.children) as HTMLElement[];
+        const target = cards[activeProduct] ?? cards[0] ?? container;
+        target.scrollIntoView({ behavior, block: 'center', inline: 'center' });
+      });
+    });
   };
 
   useEffect(() => {
@@ -1675,9 +1685,9 @@ export default function App() {
               </span>
               <p>
                 {tr({
-                  sr: <>Ako želite kupiti na rate ili preko administrativnih zabrana, pozovite nas na <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
-                  en: <>For installment purchases or payroll deduction arrangements, call us at <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
-                  ru: <>Для покупки в рассрочку или через удержание из заработной платы позвоните нам по номеру <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
+                  sr: <>Ako želite kupiti na rate ili preko administrativnih zabrana, pozovite nas na <a href="tel:+381631505005" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 150 5005</a>.</>,
+                  en: <>For installment purchases or payroll deduction arrangements, call us at <a href="tel:+381631505005" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 150 5005</a>.</>,
+                  ru: <>Для покупки в рассрочку или через удержание из заработной платы позвоните нам по номеру <a href="tel:+381631505005" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 150 5005</a>.</>,
                 })}
               </p>
             </div>

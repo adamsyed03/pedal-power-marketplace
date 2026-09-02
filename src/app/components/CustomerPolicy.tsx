@@ -28,7 +28,7 @@ function PolicyLayout({ title, children }: { title: string; children: ReactNode 
 }
 
 function ContactLinks() {
-  return <p>Kontaktirajte nas telefonom na <a className="font-bold underline" href="tel:+38169692345">+381 69 692 345</a> ili emailom na <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a>.</p>;
+  return <p>Kontaktirajte nas telefonom na <a className="font-bold underline" href="tel:+381631505005">+381 63 150 5005</a> ili emailom na <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a>.</p>;
 }
 
 export function CustomerPolicy({ page }: { page: 'contact' | 'delivery' | 'complaints' | 'refunds' | 'privacy' | 'security' }) {

@@ -14,14 +14,14 @@ export function PurchaseTerms() {
           <div><dt className="text-black/50">Matični broj</dt><dd className="font-bold">22162721</dd></div>
           <div><dt className="text-black/50">Poreski identifikacioni broj (PIB)</dt><dd className="font-bold">115472260</dd></div>
           <div><dt className="text-black/50">Web adresa</dt><dd className="font-bold"><a className="underline" href="https://ridepogon.com">ridepogon.com</a></dd></div>
-          <div><dt className="text-black/50">Kontakt telefon</dt><dd className="font-bold"><a className="underline" href="tel:+38169692345">+381 69 69 2345</a></dd></div>
+          <div><dt className="text-black/50">Kontakt telefon</dt><dd className="font-bold"><a className="underline" href="tel:+381631505005">+381 63 150 5005</a></dd></div>
           <div><dt className="text-black/50">Kontakt email</dt><dd className="font-bold"><a className="underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a></dd></div>
         </dl>
 
         <h2 className="mt-8 text-2xl font-black">Kontakt podaci — korisnički servis</h2>
         <p className="mt-3 leading-7 text-black/70">
           Za informacije o narudžbini, reklamacije ili otkazivanje porudžbine obratite nam se na adresi
-          Temišvarska 25B, Beograd, telefonom na <a className="font-bold underline" href="tel:+38169692345">+381 69 69 2345</a> ili
+          Temišvarska 25B, Beograd, telefonom na <a className="font-bold underline" href="tel:+381631505005">+381 63 150 5005</a> ili
           emailom na <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a>.
         </p>
 
