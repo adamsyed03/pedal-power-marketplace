@@ -1132,6 +1132,20 @@ test('tic-tac-toe models action centers the active product card', () => {
   assert.match(app, /target\.scrollIntoView\(\{ behavior, block: 'center', inline: 'center' \}\)/);
 });
 
+test('mobile Prevuci bar swipes between product models without hijacking vertical scroll', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  assert.match(app, /MODEL_BAR_SWIPE_THRESHOLD_PX = 40/);
+  assert.match(app, /MODEL_BAR_HORIZONTAL_DOMINANCE = 1\.25/);
+  assert.match(app, /data-model-swipe-control/);
+  assert.match(app, /touch-pan-y select-none/);
+  assert.match(app, /startIndex: getCenteredProductIndex\(\) \?\? activeProduct/);
+  assert.match(app, /Math\.abs\(deltaX\) <= Math\.abs\(deltaY\) \* MODEL_BAR_HORIZONTAL_DOMINANCE/);
+  assert.match(app, /const direction = deltaX < 0 \? 1 : -1/);
+  assert.match(app, /Math\.max\(0, Math\.min\(gesture\.startIndex \+ direction, bikeModels\.length - 1\)\)/);
+  assert.match(app, /onPointerCancel/);
+  assert.match(app, /onLostPointerCapture/);
+});
+
 test('all business call and WhatsApp references use 063 150 5005', () => {
   const contactFiles = [
     '../index.html',

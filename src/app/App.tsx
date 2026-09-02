@@ -20,6 +20,8 @@ const modelDisplayPosition: Record<string, number> = {
   core: 1,
   glide: 2,
 };
+const MODEL_BAR_SWIPE_THRESHOLD_PX = 40;
+const MODEL_BAR_HORIZONTAL_DOMINANCE = 1.25;
 
 const homeCopyEn = {
   heroTitle: 'Pogon electric bikes',
@@ -222,6 +224,7 @@ export default function App() {
   });
   const popupShownRef = useRef(false);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
+  const modelBarSwipeRef = useRef<{ pointerId: number; startX: number; startY: number; startIndex: number } | null>(null);
   const savingsQuizRef = useRef<HTMLElement | null>(null);
   const pageRootRef = useRef<HTMLDivElement | null>(null);
   const scrollLockTimeout = useRef<number | null>(null);
@@ -690,11 +693,11 @@ export default function App() {
     }
   };
 
-  const updateActiveProduct = () => {
+  const getCenteredProductIndex = () => {
     const container = productScrollRef.current;
-    if (!container) return;
+    if (!container) return null;
     const children = Array.from(container.children) as HTMLElement[];
-    if (children.length === 0) return;
+    if (children.length === 0) return null;
     const center = container.scrollLeft + container.clientWidth / 2;
     let nearestIndex = 0;
     let nearestDistance = Infinity;
@@ -706,7 +709,12 @@ export default function App() {
         nearestIndex = index;
       }
     });
-    setActiveProduct(nearestIndex);
+    return nearestIndex;
+  };
+
+  const updateActiveProduct = () => {
+    const nearestIndex = getCenteredProductIndex();
+    if (nearestIndex !== null) setActiveProduct(nearestIndex);
   };
 
   const snapToProduct = (index: number) => {
@@ -718,6 +726,19 @@ export default function App() {
     const offset = target.offsetLeft - (container.clientWidth - target.clientWidth) / 2;
     container.scrollTo({ left: offset, behavior: 'smooth' });
     setActiveProduct(index);
+  };
+
+  const finishModelBarSwipe = (pointerId: number, endX: number, endY: number) => {
+    const gesture = modelBarSwipeRef.current;
+    if (!gesture || gesture.pointerId !== pointerId) return;
+    modelBarSwipeRef.current = null;
+    const deltaX = endX - gesture.startX;
+    const deltaY = endY - gesture.startY;
+    if (Math.abs(deltaX) < MODEL_BAR_SWIPE_THRESHOLD_PX
+      || Math.abs(deltaX) <= Math.abs(deltaY) * MODEL_BAR_HORIZONTAL_DOMINANCE) return;
+    const direction = deltaX < 0 ? 1 : -1;
+    const targetIndex = Math.max(0, Math.min(gesture.startIndex + direction, bikeModels.length - 1));
+    if (targetIndex !== gesture.startIndex) snapToProduct(targetIndex);
   };
 
   const handleProductScroll = () => {
@@ -1428,7 +1449,32 @@ export default function App() {
           </div>
 
           <div className="mb-4 flex items-center justify-center lg:hidden">
-            <div className="inline-flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 text-[0.65rem] font-bold uppercase tracking-[0.22em] text-foreground/70 shadow-sm">
+            <div
+              data-model-swipe-control
+              role="group"
+              aria-label={tr({ sr: 'Prevuci levo ili desno da promeniš model', en: 'Swipe left or right to change model', ru: 'Проведи влево или вправо, чтобы сменить модель' })}
+              onPointerDown={(event) => {
+                if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+                modelBarSwipeRef.current = {
+                  pointerId: event.pointerId,
+                  startX: event.clientX,
+                  startY: event.clientY,
+                  startIndex: getCenteredProductIndex() ?? activeProduct,
+                };
+                event.currentTarget.setPointerCapture(event.pointerId);
+              }}
+              onPointerUp={(event) => {
+                finishModelBarSwipe(event.pointerId, event.clientX, event.clientY);
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+              }}
+              onPointerCancel={(event) => {
+                if (modelBarSwipeRef.current?.pointerId === event.pointerId) modelBarSwipeRef.current = null;
+              }}
+              onLostPointerCapture={(event) => {
+                if (modelBarSwipeRef.current?.pointerId === event.pointerId) modelBarSwipeRef.current = null;
+              }}
+              className="inline-flex touch-pan-y select-none items-center gap-3 rounded-full border border-border bg-card px-4 py-2 text-[0.65rem] font-bold uppercase tracking-[0.22em] text-foreground/70 shadow-sm cursor-grab active:cursor-grabbing"
+            >
               <span aria-hidden="true">‹</span>
               <span className="relative h-2 w-10 overflow-hidden rounded-full bg-foreground/10">
                 <span className="swipe-hint-dot absolute left-1 top-1/2 h-1.5 w-4 -translate-y-1/2 rounded-full bg-primary"></span>
