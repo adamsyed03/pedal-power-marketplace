@@ -375,8 +375,8 @@ export default function App() {
         footerLegal: ['Конфиденциальность', 'Условия', 'Cookies'],
       },
   });
-  const whatsappNumber = '381631505005';
-  const phoneHref = 'tel:+381631505005';
+  const whatsappNumber = '381631505003';
+  const phoneHref = 'tel:+381631505003';
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
   const testRideWhatsappText = tr({
     sr: 'Zdravo, želim da zakažem test vožnju Pogon e-bike-a.',
@@ -1731,9 +1731,9 @@ export default function App() {
               </span>
               <p>
                 {tr({
-                  sr: <>Ako želite kupiti na rate ili preko administrativnih zabrana, pozovite nas na <a href="tel:+381631505005" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 150 5005</a>.</>,
-                  en: <>For installment purchases or payroll deduction arrangements, call us at <a href="tel:+381631505005" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 150 5005</a>.</>,
-                  ru: <>Для покупки в рассрочку или через удержание из заработной платы позвоните нам по номеру <a href="tel:+381631505005" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 150 5005</a>.</>,
+                  sr: <>Ako želite kupiti na rate ili preko administrativnih zabrana, pozovite nas na <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
+                  en: <>For installment purchases or payroll deduction arrangements, call us at <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
+                  ru: <>Для покупки в рассрочку или через удержание из заработной платы позвоните нам по номеру <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
                 })}
               </p>
             </div>

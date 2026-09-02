@@ -149,7 +149,7 @@ export default function App() {
         copyright: 'All rights reserved.',
         footerLegal: ['Privacy', 'Terms', 'Cookies'],
       };
-  const whatsappNumber = '381631505005';
+  const whatsappNumber = '381631505003';
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
   const footerSupportMessages = lang === 'sr'
     ? [
