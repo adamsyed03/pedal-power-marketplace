@@ -562,11 +562,32 @@ export default function App() {
     en: 'Pogon is an e-bike for city routines: stable, comfortable and ready to test before you decide.',
     ru: 'Pogon, электровелосипед для городского ритма: устойчивый, удобный и готовый к тест-драйву, прежде чем ты примешь решение.',
   });
-  const reviews = [
+  type CustomerReview = {
+    name: string;
+    location: string;
+    rating: number;
+    text: Localized<string>;
+    photo?: {
+      src: string;
+      alt: string;
+      caption: Localized<string>;
+    };
+  };
+
+  const reviews: CustomerReview[] = [
     {
       name: 'Vuk Rankovic',
       location: 'Beograd',
       rating: 5,
+      photo: {
+        src: publicAsset('vukglidereview.jpg'),
+        alt: 'Pogon Glide električni bicikl korisnika Vuka pored jezera u Beogradu',
+        caption: {
+          sr: 'Fotografija kupca · Pogon Glide',
+          en: 'Customer photo · Pogon Glide',
+          ru: 'Фото клиента · Pogon Glide',
+        },
+      },
       text: {
         sr: 'Ovaj Pogon model je totalno promenio moje gradske vožnje: tiho, snažno i pouzdano.',
         en: 'This Pogon model totally changed my city rides: quiet, powerful and reliable.',
@@ -1124,6 +1145,16 @@ export default function App() {
           .review-card {
             min-width: min(20rem, calc(100vw - 4rem));
             max-width: min(20rem, calc(100vw - 4rem));
+          }
+          .review-card--photo {
+            min-width: min(22rem, calc(100vw - 3rem));
+            max-width: min(22rem, calc(100vw - 3rem));
+          }
+        }
+        @media (min-width: 640px) {
+          .review-card--photo {
+            min-width: 25rem;
+            max-width: 25rem;
           }
         }
       `}</style>
@@ -2188,26 +2219,43 @@ export default function App() {
             <h2 className="text-3xl sm:text-5xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-6 tracking-tight">{copy.customerReviews}</h2>
           </div>
           <div className="overflow-hidden rounded-[2rem] border border-border/50 bg-background/90">
-            <div className="review-marquee flex gap-4 px-6 py-6 min-w-full">
+            <div className="review-marquee flex items-start gap-4 px-6 py-6 min-w-full">
               {reviewLoop.map((review, index) => (
                 <div
                   key={`${review.name}-${index}`}
-                  className="review-card min-w-[47vw] max-w-[47vw] sm:min-w-[22rem] md:min-w-[24rem] lg:min-w-[18rem] lg:max-w-[18rem] flex-shrink-0 rounded-3xl border border-border/60 bg-card/90 p-5 sm:p-6 shadow-md snap-center"
+                  className={`review-card ${review.photo ? 'review-card--photo overflow-hidden p-0' : 'p-5 sm:p-6'} min-w-[47vw] max-w-[47vw] sm:min-w-[22rem] md:min-w-[24rem] lg:min-w-[18rem] lg:max-w-[18rem] flex-shrink-0 rounded-3xl border border-border/60 bg-card/90 shadow-md snap-center`}
                 >
-                  <div className="flex gap-1 mb-3">
-                    {Array.from({ length: review.rating }).map((_, starIndex) => (
-                      <Star key={`star-${index}-${starIndex}`} className="size-5 fill-yellow-400 stroke-yellow-400" />
-                    ))}
-                    {Array.from({ length: 5 - review.rating }).map((_, starIndex) => (
-                      <Star key={`star-empty-${index}-${starIndex}`} className="size-5 fill-foreground/30 stroke-foreground/30" />
-                    ))}
-                  </div>
-                  <p className="text-foreground/80 mb-4 leading-relaxed">
-                    {reviewText(review)}
-                  </p>
-                  <div>
-                    <div className="font-semibold">{review.name}</div>
-                    {review.location ? <div className="text-sm text-foreground/60">{review.location}</div> : null}
+                  {review.photo ? (
+                    <figure className="relative aspect-[16/9] overflow-hidden bg-black">
+                      <ImageWithFallback
+                        src={review.photo.src}
+                        alt={review.photo.alt}
+                        width={1600}
+                        height={901}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.025]"
+                      />
+                      <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-5 pb-4 pt-12 text-xs font-black uppercase tracking-[0.14em] text-white">
+                        {review.photo.caption[lang]}
+                      </figcaption>
+                    </figure>
+                  ) : null}
+                  <div className={review.photo ? 'p-5 sm:p-6' : ''}>
+                    <div className="mb-3 flex gap-1" aria-label={`${review.rating} od 5 zvezdica`}>
+                      {Array.from({ length: review.rating }).map((_, starIndex) => (
+                        <Star key={`star-${index}-${starIndex}`} className="size-5 fill-yellow-400 stroke-yellow-400" />
+                      ))}
+                      {Array.from({ length: 5 - review.rating }).map((_, starIndex) => (
+                        <Star key={`star-empty-${index}-${starIndex}`} className="size-5 fill-foreground/30 stroke-foreground/30" />
+                      ))}
+                    </div>
+                    <p className="mb-4 leading-relaxed text-foreground/80">
+                      {reviewText(review)}
+                    </p>
+                    <div>
+                      <div className="font-semibold">{review.name}</div>
+                      {review.location ? <div className="text-sm text-foreground/60">{review.location}</div> : null}
+                    </div>
                   </div>
                 </div>
               ))}
