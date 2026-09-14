@@ -15,6 +15,10 @@ export type Lead = {
   created_at: string;
   city: string | null;
   country: string | null;
+  todo: string | null;
+  medium: string | null;
+  stage: string | null;
+  outcome: string | null;
   date_contacted: string | null;
   comment: string | null;
 };
@@ -44,7 +48,7 @@ const request = async (path: string, init: RequestInit = {}, accessToken = SUPAB
   return response;
 };
 
-export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at'>) => {
+export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at' | 'todo' | 'medium' | 'stage' | 'outcome'>) => {
   const { name, phone, source, language, city, comment } = lead;
   await request('/rest/v1/leads', {
     method: 'POST',
@@ -105,12 +109,22 @@ export const refreshAdminSession = async (refreshToken: string): Promise<AdminSe
 };
 
 export const fetchLeads = async (accessToken: string) => {
-  const response = await request(
-    '/rest/v1/leads?select=id,name,phone,source,language,created_at,city,country,date_contacted,comment&order=created_at.desc',
-    { method: 'GET' },
-    accessToken,
-  );
-  return response.json() as Promise<Lead[]>;
+  try {
+    const response = await request(
+      '/rest/v1/leads?select=id,name,phone,source,language,created_at,city,country,todo,medium,stage,outcome,date_contacted,comment&order=created_at.desc',
+      { method: 'GET' },
+      accessToken,
+    );
+    return response.json() as Promise<Lead[]>;
+  } catch {
+    const response = await request(
+      '/rest/v1/leads?select=id,name,phone,source,language,created_at,city,country,date_contacted,comment&order=created_at.desc',
+      { method: 'GET' },
+      accessToken,
+    );
+    const legacyLeads = await response.json() as Omit<Lead, 'todo' | 'medium' | 'stage' | 'outcome'>[];
+    return legacyLeads.map((lead) => ({ ...lead, todo: null, medium: null, stage: null, outcome: null }));
+  }
 };
 
 export const fetchPaidOrders = async (accessToken: string) => {
@@ -130,7 +144,7 @@ export const fetchPaidOrders = async (accessToken: string) => {
 export const updateLead = async (
   accessToken: string,
   id: string,
-  changes: Partial<Pick<Lead, 'city' | 'country' | 'date_contacted' | 'comment'>>,
+  changes: Partial<Pick<Lead, 'city' | 'country' | 'todo' | 'medium' | 'stage' | 'outcome' | 'date_contacted' | 'comment'>>,
 ) => {
   await request(
     `/rest/v1/leads?id=eq.${encodeURIComponent(id)}`,

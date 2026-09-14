@@ -6,6 +6,10 @@ create table if not exists public.leads (
   language text not null default 'sr' check (language in ('sr', 'en')),
   city text,
   country text,
+  todo text,
+  medium text,
+  stage text,
+  outcome text,
   date_contacted date,
   comment text,
   created_at timestamptz not null default now()
@@ -13,6 +17,10 @@ create table if not exists public.leads (
 
 alter table public.leads add column if not exists city text;
 alter table public.leads add column if not exists country text;
+alter table public.leads add column if not exists todo text;
+alter table public.leads add column if not exists medium text;
+alter table public.leads add column if not exists stage text;
+alter table public.leads add column if not exists outcome text;
 alter table public.leads add column if not exists date_contacted date;
 alter table public.leads add column if not exists comment text;
 
@@ -37,5 +45,5 @@ to authenticated
 using (lower(auth.jwt() ->> 'email') = 'pogonmobility@gmail.com')
 with check (lower(auth.jwt() ->> 'email') = 'pogonmobility@gmail.com');
 
-grant update (city, country, date_contacted, comment) on public.leads to authenticated;
+grant update (city, country, todo, medium, stage, outcome, date_contacted, comment) on public.leads to authenticated;
 revoke delete on public.leads from anon, authenticated;

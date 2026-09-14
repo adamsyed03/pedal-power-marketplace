@@ -345,7 +345,7 @@ export default function App() {
         technologyTitle: 'Tehnologija Koja Pokreće',
         technologyCards: [
           { title: 'Napredna Baterija', body: 'Samsung SDI ćelije sa inteligentnim BMS sistemom za optimalnu autonomiju' },
-          { title: 'Bafang Motor', body: 'Premium mid-drive motor sa 45Nm obrtnog momenta' },
+          { title: 'Električna asistencija', body: 'Motor od 250 W u zadnjem točku pruža mirnu i pouzdanu podršku tokom gradske vožnje' },
           { title: 'Smart Kontrola', body: 'Kolor displej sa GPS navigacijom i praćenjem performansi' },
           { title: 'Sigurnost', body: 'Shimano hidraulične kočnice i integrisani LED svetlosni sistem' },
         ],
@@ -375,7 +375,7 @@ export default function App() {
         technologyTitle: 'Technology That Moves You',
         technologyCards: [
           { title: 'Advanced Battery', body: 'Samsung SDI cells with an intelligent BMS system for optimal range' },
-          { title: 'Bafang Motor', body: 'Premium mid-drive motor with 45Nm of torque' },
+          { title: 'Electric assistance', body: 'A 250 W rear-hub motor provides smooth, reliable support for everyday city riding' },
           { title: 'Smart Control', body: 'Color display with GPS navigation and performance tracking' },
           { title: 'Safety', body: 'Shimano hydraulic brakes and an integrated LED lighting system' },
         ],
@@ -405,7 +405,7 @@ export default function App() {
         technologyTitle: 'Технологии, которые двигают тебя вперёд',
         technologyCards: [
           { title: 'Современная батарея', body: 'Ячейки Samsung SDI и умная BMS-система для оптимального запаса хода' },
-          { title: 'Мотор Bafang', body: 'Премиальный mid-drive мотор с крутящим моментом 45 Нм' },
+          { title: 'Электрическая поддержка', body: 'Мотор мощностью 250 Вт в заднем колесе обеспечивает плавную и надёжную поддержку в городе' },
           { title: 'Умное управление', body: 'Цветной дисплей с GPS-навигацией и отслеживанием показателей' },
           { title: 'Безопасность', body: 'Гидравлические тормоза Shimano и встроенная LED-система освещения' },
         ],
