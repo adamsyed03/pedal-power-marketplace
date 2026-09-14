@@ -34,15 +34,15 @@ function ContactLinks() {
 export function CustomerPolicy({ page }: { page: 'contact' | 'delivery' | 'complaints' | 'refunds' | 'privacy' | 'security' }) {
   if (page === 'contact') return (
     <PolicyLayout title="Kontakt i korisnička podrška">
-      <section><h2 className="text-2xl font-black text-black">Pogon Mobility d.o.o.</h2><p className="mt-3">Temišvarska 25B, Beograd · PIB 115472260 · MB 22162721</p></section>
-      <section><h2 className="text-2xl font-black text-black">Kako da nas kontaktirate</h2><div className="mt-3"><ContactLinks /></div><p className="mt-3">Za pitanje o porudžbini navedite broj porudžbine kako bismo je lakše pronašli.</p></section>
+      <section><h2 className="text-2xl font-black text-black">Pogon Mobility d.o.o.</h2><p className="mt-3">Registrovano sedište: Temišvarska 25B, Beograd · PIB 115472260 · MB 22162721</p><p className="mt-3">Registrovano sedište nije prodajni salon, test centar, servis niti mesto za lično preuzimanje. Na toj adresi nema izloženih bicikala i posete kupaca nisu moguće.</p></section>
+      <section><h2 className="text-2xl font-black text-black">Kako da nas kontaktirate</h2><div className="mt-3"><ContactLinks /></div><p className="mt-3">Korisnička podrška i zakazivanje dostupni su od ponedeljka do subote, od 09 do 18 h. Za pitanje o porudžbini navedite broj porudžbine kako bismo je lakše pronašli.</p></section>
     </PolicyLayout>
   );
 
   if (page === 'delivery') return (
     <PolicyLayout title="Dostava i preuzimanje">
       <section><h2 className="text-2xl font-black text-black">Kurirska dostava</h2><p className="mt-3">Dostava je dostupna na teritoriji cele Srbije. Za modele koji su na stanju očekivani rok dostave je 1–3 radna dana. Naknada za kurirsku dostavu iznosi 3.900,00 RSD po porudžbini i prikazuje se u konačnoj specifikaciji pre plaćanja.</p></section>
-      <section><h2 className="text-2xl font-black text-black">Lično preuzimanje</h2><p className="mt-3">Lično preuzimanje na adresi Save Maskovica 3, Beograd je bez naknade. Termin se potvrđuje nakon provere dostupnosti modela.</p></section>
+      <section><h2 className="text-2xl font-black text-black">Lično preuzimanje</h2><p className="mt-3">Lično preuzimanje iz skladišta na adresi Save Maskovica 3, Beograd je bez naknade i dostupno je isključivo nakon unapred dogovorenog i potvrđenog termina. Lokacija nije prodajni salon i nenajavljene posete nisu moguće.</p></section>
       <section><h2 className="text-2xl font-black text-black">Dostupnost robe</h2><p className="mt-3">Rok dostave važi kada je izabrani model na stanju. Ako isporuka nije moguća u očekivanom roku, Pogon kontaktira kupca radi dogovora pre dalje obrade.</p></section>
       <section><h2 className="text-2xl font-black text-black">Ograničenja dostave</h2><p className="mt-3">Porudžbine putem ove prodavnice isporučuju se isključivo u Republici Srbiji. Međunarodna dostava i izvoz nisu dostupni, pa se na ove porudžbine ne primenjuju carinski ni uvozni troškovi.</p></section>
     </PolicyLayout>

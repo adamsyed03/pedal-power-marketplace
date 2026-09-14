@@ -3,6 +3,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "routes": [
+    { "src": "/(.*)", "has": [{ "type": "host", "value": "www.ridepogon.com" }], "headers": { "Location": "https://ridepogon.com/$1" }, "status": 308 },
+    { "src": "/checkout", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
+    { "src": "/payment/(.*)", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
+    { "src": "/api/(.*)", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
     { "handle": "filesystem" },
     { "src": "/.*", "dest": "/index.html" }
   ]

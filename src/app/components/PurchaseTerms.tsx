@@ -9,7 +9,7 @@ export function PurchaseTerms() {
         <h2 className="mt-10 text-2xl font-black">Osnovni podaci o firmi</h2>
         <dl className="mt-4 grid gap-3 rounded-2xl bg-black/[0.025] p-5 text-sm sm:grid-cols-2">
           <div><dt className="text-black/50">Pun naziv pravnog subjekta</dt><dd className="font-bold">POGON MOBILITY DOO</dd></div>
-          <div><dt className="text-black/50">Adresa</dt><dd className="font-bold">Temišvarska 25B, Beograd</dd></div>
+          <div><dt className="text-black/50">Registrovano sedište</dt><dd className="font-bold">Temišvarska 25B, Beograd</dd></div>
           <div><dt className="text-black/50">Delatnost i šifra delatnosti</dt><dd className="font-bold">Nespecijalizovana trgovina na veliko (4690)</dd></div>
           <div><dt className="text-black/50">Matični broj</dt><dd className="font-bold">22162721</dd></div>
           <div><dt className="text-black/50">Poreski identifikacioni broj (PIB)</dt><dd className="font-bold">115472260</dd></div>
@@ -17,10 +17,11 @@ export function PurchaseTerms() {
           <div><dt className="text-black/50">Kontakt telefon</dt><dd className="font-bold"><a className="underline" href="tel:+381631505003">+381 63 15 05 003</a></dd></div>
           <div><dt className="text-black/50">Kontakt email</dt><dd className="font-bold"><a className="underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a></dd></div>
         </dl>
+        <p className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">Registrovano sedište nije prodajni salon, test centar, servis niti mesto za lično preuzimanje. Na toj adresi nema izloženih bicikala i posete kupaca nisu moguće.</p>
 
         <h2 className="mt-8 text-2xl font-black">Kontakt podaci — korisnički servis</h2>
         <p className="mt-3 leading-7 text-black/70">
-          Za informacije o narudžbini, reklamacije ili otkazivanje porudžbine obratite nam se na adresi
+          Za informacije o narudžbini, reklamacije ili otkazivanje porudžbine obratite nam se pisanim putem na registrovano sedište
           Temišvarska 25B, Beograd, telefonom na <a className="font-bold underline" href="tel:+381631505003">+381 63 15 05 003</a> ili
           emailom na <a className="font-bold underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a>.
         </p>
@@ -63,8 +64,9 @@ export function PurchaseTerms() {
 
         <h2 className="mt-8 text-2xl font-black">Lično preuzimanje</h2>
         <p className="mt-3 leading-7 text-black/70">
-          Lično preuzimanje dostupno je na adresi Save Maskovica 3, Beograd. Termin
-          preuzimanja potvrđuje se sa Pogon timom nakon provere dostupnosti modela.
+          Lično preuzimanje iz skladišta dostupno je na adresi Save Maskovica 3,
+          Beograd, isključivo nakon unapred dogovorenog i potvrđenog termina sa Pogon
+          timom. Lokacija nije prodajni salon i nenajavljene posete nisu moguće.
         </p>
 
         <h2 className="mt-8 text-2xl font-black">Potvrda porudžbine</h2>

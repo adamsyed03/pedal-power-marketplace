@@ -999,7 +999,7 @@ export default function App() {
                 <div className="relative">
                   <img src="/Logo.png" alt="POGON" className="h-12 w-auto sm:h-20" />
                 </div>
-                <a href="https://instagram.com/pogonrs" target="_blank" rel="noreferrer" aria-label="Pogon Instagram" className="size-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors md:mt-6">
+                <a href="https://instagram.com/pogon.rs" target="_blank" rel="noreferrer" aria-label="Pogon Instagram @pogon.rs" className="size-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors md:mt-6">
                   <Instagram className="size-5" />
                 </a>
               </div>

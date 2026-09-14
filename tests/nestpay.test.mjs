@@ -1211,7 +1211,11 @@ test('admin CRM includes an authenticated PAID-orders panel with game prizes', (
   assert.match(admin, /fetchPaidOrders/);
   assert.match(admin, /npm run dev:fullstack/);
   assert.match(admin, /<AdminOrdersPanel/);
+  assert.match(admin, /aria-controls="completed-orders"/);
+  assert.match(admin, /ordersSection\.scrollIntoView\(\{ behavior, block: 'start' \}\)/);
   assert.match(panel, /Completed orders/);
+  assert.match(panel, /id="completed-orders"/);
+  assert.match(panel, /scroll-mt-6/);
   assert.match(panel, /gamePrizeLabel/);
   assert.match(panel, /Export orders CSV/);
   const viteConfig = readFileSync(new URL('../vite.config.ts', import.meta.url), 'utf8');

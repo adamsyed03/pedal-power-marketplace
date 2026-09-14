@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarCheck, Check, Download, Lock, LogOut, RefreshCw, Target, Users } from 'lucide-react';
+import { CalendarCheck, Check, Download, Lock, LogOut, PackageCheck, RefreshCw, Target, Users } from 'lucide-react';
 import { AdminSession, fetchLeads, fetchPaidOrders, Lead, PaidOrder, refreshAdminSession, signInAdmin, SUPABASE_ADMIN_EMAIL, updateLead } from '../../lib/supabase';
 import { AdminOrdersPanel } from './AdminOrdersPanel';
 
@@ -104,6 +104,14 @@ export function AdminLeads() {
     setPaidOrdersError('');
   };
 
+  const scrollToOrders = () => {
+    const ordersSection = document.getElementById('completed-orders');
+    if (!ordersSection) return;
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    ordersSection.scrollIntoView({ behavior, block: 'start' });
+    ordersSection.focus({ preventScroll: true });
+  };
+
   const editLead = (id: string, changes: Partial<Lead>) => {
     setLeads((current) => current.map((lead) => lead.id === id ? { ...lead, ...changes } : lead));
   };
@@ -175,6 +183,7 @@ export function AdminLeads() {
             <p className="mt-2 text-sm text-black/55">Shared Supabase database · {leads.length} {leads.length === 1 ? 'lead' : 'leads'} · {paidOrders.length} paid {paidOrders.length === 1 ? 'order' : 'orders'}</p>
           </div>
           <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={scrollToOrders} aria-controls="completed-orders" className="inline-flex items-center gap-2 rounded-full bg-[#7fff00] px-5 py-3 text-sm font-black text-black shadow-sm transition hover:bg-[#70e600]"><PackageCheck className="size-4" />Completed orders<span className="rounded-full bg-black px-2 py-0.5 text-xs text-[#7fff00]">{paidOrdersError ? '!' : paidOrders.length}</span></button>
             <button type="button" onClick={() => void refresh()} disabled={loading} className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold disabled:opacity-40"><RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} />Refresh</button>
             <button type="button" onClick={exportCsv} disabled={!leads.length} className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white disabled:opacity-35"><Download className="size-4" />Export CSV</button>
             <button type="button" onClick={logout} className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white px-4 py-3 text-sm font-bold"><LogOut className="size-4" /><span className="hidden sm:inline">Log out</span></button>

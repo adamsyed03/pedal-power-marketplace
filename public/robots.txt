@@ -3,5 +3,6 @@ Allow: /
 Disallow: /admin
 Disallow: /checkout
 Disallow: /payment/
+Disallow: /api/
 
 Sitemap: https://ridepogon.com/sitemap.xml

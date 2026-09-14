@@ -41,12 +41,12 @@ export function AdminOrdersPanel({ orders, loading, error }: { orders: PaidOrder
   };
 
   return (
-    <section className="mt-7 overflow-hidden rounded-3xl border border-black/10 bg-white shadow-sm">
+    <section id="completed-orders" tabIndex={-1} aria-labelledby="completed-orders-heading" className="mt-7 scroll-mt-6 overflow-hidden rounded-3xl border border-black/10 bg-white shadow-sm outline-none">
       <header className="flex flex-col gap-4 border-b border-black/10 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
           <div className="flex items-center gap-2">
             <span className="flex size-9 items-center justify-center rounded-xl bg-black text-[#7fff00]"><PackageCheck className="size-4.5" /></span>
-            <div><h2 className="text-xl font-black tracking-tight">Completed orders</h2><p className="mt-0.5 text-xs text-black/45">Successfully paid orders only</p></div>
+            <div><h2 id="completed-orders-heading" className="text-xl font-black tracking-tight">Completed orders</h2><p className="mt-0.5 text-xs text-black/45">Successfully paid orders only</p></div>
           </div>
         </div>
         <button type="button" onClick={exportCsv} disabled={!orders.length || Boolean(error)} className="inline-flex items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-4 py-2.5 text-sm font-bold transition hover:border-black/35 disabled:opacity-35"><Download className="size-4" />Export orders CSV</button>

@@ -11,6 +11,7 @@ const TicTacToeGame = lazy(() => import('./components/TicTacToeGame').then((m) =
 import { submitLead } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
 import { publicAsset } from '../lib/assets';
+import { setHomeMetadata, setPageMetadata } from '../lib/seo';
 
 type Language = 'en' | 'sr' | 'ru';
 type Localized<T> = Record<Language, T>;
@@ -236,7 +237,58 @@ export default function App() {
     en: { aria: 'Play tic-tac-toe and win a gift', compact: 'Play and win', highlight: 'Win a gift', action: 'Play tic-tac-toe' },
     ru: { aria: 'Играй в крестики-нолики и выиграй подарок', compact: 'Играй и выиграй', highlight: 'Выиграй подарок', action: 'Играй в крестики-нолики' },
   });
-  const isSavingsQuizRoute = window.location.pathname.replace(/\/+$/, '') === '/kviz';
+  const normalizedPath = window.location.pathname.replace(/\/+$/, '');
+  const isSavingsQuizRoute = normalizedPath === '/kviz';
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('admin') === '1') return;
+    if (normalizedPath !== '' && !isSavingsQuizRoute) return;
+
+    if (isSavingsQuizRoute) {
+      const quizContent = {
+        sr: {
+          title: 'Kalkulator uštede za električni bicikl | Pogon',
+          description: 'Izračunaj koliko možeš da uštediš zamenom gradskih vožnji automobilom za električni bicikl.',
+          language: 'sr-Latn',
+        },
+        en: {
+          title: 'Electric bike savings calculator | Pogon',
+          description: 'Estimate how much you could save by replacing city car journeys with an electric bike.',
+          language: 'en',
+        },
+        ru: {
+          title: 'Калькулятор экономии на электровелосипеде | Pogon',
+          description: 'Рассчитайте экономию при замене городских поездок на автомобиле электровелосипедом.',
+          language: 'ru',
+        },
+      }[lang];
+      const path = lang === 'sr' ? '/kviz' : `/kviz?lang=${lang}`;
+
+      setPageMetadata({
+        ...quizContent,
+        path,
+        structuredData: {
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: quizContent.title,
+          description: quizContent.description,
+          url: `https://ridepogon.com${path}`,
+          applicationCategory: 'FinanceApplication',
+          operatingSystem: 'Any',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'RSD' },
+        },
+      });
+
+      const nextUrl = `${path}${window.location.hash}`;
+      window.history.replaceState(window.history.state, '', nextUrl);
+      return;
+    }
+
+    setHomeMetadata(lang);
+
+    const nextUrl = lang === 'sr' ? '/' : `/?lang=${lang}`;
+    window.history.replaceState(window.history.state, '', `${nextUrl}${window.location.hash}`);
+  }, [isSavingsQuizRoute, lang, normalizedPath]);
   const batteryWh = Math.round(rangeCalculator.voltage * rangeCalculator.ampHours);
   const chemistryFactor = rangeCalculator.chemistry === 'lead' ? 0.5 : 0.9;
   const batteryHealth = 0.8;
@@ -301,7 +353,7 @@ export default function App() {
         services: [
           { title: 'GPS sigurnosni sistemi', body: 'Pametni sistem za sigurnost i zaštitu tokom svake vožnje' },
           { title: '2 Godine Garancije', body: 'Proširena garancija na sve komponente i besplatni servis prve godine' },
-          { title: 'Test Vožnja', body: 'Zakažite besplatnu test vožnju u našim salonima u Beogradu i Novom Sadu' },
+          { title: 'Test Vožnja', body: 'Zakažite besplatnu test vožnju u test centrima u Beogradu, Novom Sadu, Kragujevcu i Nišu' },
         ],
         ctaBullets: ['GPS sigurnosni sistemi', '2 godine garancije', 'Transparentna cena'],
         footerBody: 'Lideri u premium električnim biciklima. Transformišemo urbanu mobilnost jednu vožnju po vožnju.',
@@ -331,7 +383,7 @@ export default function App() {
         services: [
           { title: 'GPS security systems', body: 'Smart security and protection for every ride' },
           { title: '2-Year Warranty', body: 'Extended warranty on all components and free service in the first year' },
-          { title: 'Test Ride', body: 'Book a free test ride in our showrooms in Belgrade and Novi Sad' },
+          { title: 'Test Ride', body: 'Book a free test ride at a test centre in Belgrade, Novi Sad, Kragujevac or Niš' },
         ],
         ctaBullets: ['GPS security systems', '2-year warranty', 'Transparent pricing'],
         footerBody: 'Leaders in premium electric bikes. Transforming urban mobility one ride at a time.',
@@ -361,7 +413,7 @@ export default function App() {
         services: [
           { title: 'GPS-системы безопасности', body: 'Умная защита и спокойствие в каждой поездке' },
           { title: 'Гарантия 2 года', body: 'Расширенная гарантия на все компоненты и бесплатный сервис в первый год' },
-          { title: 'Тест-драйв', body: 'Запишись на бесплатный тест-драйв в наших шоурумах в Белграде и Нови-Саде' },
+          { title: 'Тест-драйв', body: 'Запишись на бесплатный тест-драйв в тест-центре в Белграде, Нови-Саде, Крагуеваце или Нише' },
         ],
         ctaBullets: ['GPS-системы безопасности', 'Гарантия 2 года', 'Прозрачная цена'],
         footerBody: 'Лидеры в премиальных электровелосипедах. Меняем городскую мобильность, поездка за поездкой.',
@@ -624,34 +676,34 @@ export default function App() {
   const faqItems = tr({
     sr: [
         { question: 'Koliki je domet?', answer: 'Realni domet zavisi od rute, težine vozača, temperature i nivoa asistencije. Najbolje ga proveriš na test vožnji.' },
-        { question: 'Da li mogu da probam bicikl pre kupovine?', answer: 'Da. Zakaži termin i probaj bicikl pre odluke, bez pritiska.' },
+        { question: 'Da li mogu da probam bicikl pre kupovine?', answer: 'Da. Besplatne test vožnje zakazuju se u Beogradu, Novom Sadu, Kragujevcu i Nišu, od ponedeljka do subote od 09 do 18 h.' },
         { question: 'Da li je legalan za vožnju?', answer: 'Modeli su podešeni za gradsku vožnju i legalnu upotrebu u skladu sa pravilima za e-bike.' },
         { question: 'Da li treba dozvola?', answer: 'Za standardnu e-bike vožnju nije potrebna posebna dozvola.' },
         { question: 'Koliko traje punjenje?', answer: 'Potpuno punjenje traje do 6 sati, u zavisnosti od baterije i početnog nivoa napunjenosti.' },
         { question: 'Šta ako se pokvari?', answer: 'Tu su servis i podrška. Javiš nam se i dogovaramo najbrže rešenje.' },
-        { question: 'Da li imate servis?', answer: 'Da, nudimo servisnu podršku i pomoć oko održavanja.' },
+        { question: 'Da li imate servis?', answer: 'Da. Servisna podrška je dostupna u više gradova. Za najbližu servisnu lokaciju, uslove i radno vreme pošalji nam poruku na WhatsApp na 063 15 05 003.' },
         { question: 'Da li može uzbrdo?', answer: 'Da. Motor pomaže na usponima, a test vožnja najbolje pokaže kako radi na tvojoj ruti.' },
         { question: 'Kako se plaća?', answer: 'Plaćanje dogovaramo direktno, uz jasne informacije pre kupovine.' },
       ],
     en: [
         { question: 'What is the range?', answer: 'Real range depends on route, rider weight, temperature and assist level. A test ride is the easiest check.' },
-        { question: 'Can I try the bike before buying?', answer: 'Yes. Book a slot and try it before deciding, without pressure.' },
+        { question: 'Can I try the bike before buying?', answer: 'Yes. Free test rides can be booked in Belgrade, Novi Sad, Kragujevac and Niš, Monday to Saturday from 09:00 to 18:00.' },
         { question: 'Is it road legal?', answer: 'The bikes are set up for city riding and legal e-bike use.' },
         { question: 'Do I need a licence?', answer: 'No special licence is needed for standard e-bike riding.' },
         { question: 'How long does charging take?', answer: 'A full charge takes up to 6 hours, depending on the battery and starting charge level.' },
         { question: 'What if it breaks?', answer: 'Service and support are available. Contact us and we will arrange the quickest solution.' },
-        { question: 'Do you offer service?', answer: 'Yes, we provide service support and maintenance help.' },
+        { question: 'Do you offer service?', answer: 'Yes. Service support is available in several cities. Message us on WhatsApp at +381 63 15 05 003 for the nearest location, current services and opening hours.' },
         { question: 'Can it go uphill?', answer: 'Yes. The motor helps on climbs, and a test ride shows how it feels on your route.' },
         { question: 'How do I pay?', answer: 'Payment is arranged directly with clear information before purchase.' },
       ],
     ru: [
         { question: 'Какой запас хода?', answer: 'Реальный запас хода зависит от маршрута, веса, температуры и уровня поддержки мотора. Проще всего проверить это на тест-драйве.' },
-        { question: 'Можно попробовать велосипед перед покупкой?', answer: 'Да! Запишись на удобное время и попробуй велосипед перед решением, без давления и обязательств.' },
+        { question: 'Можно попробовать велосипед перед покупкой?', answer: 'Да. Бесплатный тест-драйв можно записать в Белграде, Нови-Саде, Крагуеваце и Нише с понедельника по субботу, с 09:00 до 18:00.' },
         { question: 'Он легален для езды по дорогам?', answer: 'Да, модели настроены для городской езды и полностью соответствуют правилам для электровелосипедов.' },
         { question: 'Нужны ли права?', answer: 'Нет, для обычной езды на электровелосипеде специальные права не нужны.' },
         { question: 'Сколько длится зарядка?', answer: 'Полная зарядка занимает до 6 часов, в зависимости от батареи и начального уровня заряда.' },
         { question: 'А если что-то сломается?', answer: 'Не переживай, у нас есть сервис и поддержка. Напиши нам, и мы быстро всё решим.' },
-        { question: 'У вас есть сервис?', answer: 'Да, мы поможем с обслуживанием и ремонтом.' },
+        { question: 'У вас есть сервис?', answer: 'Да. Сервисная поддержка доступна в нескольких городах. Напиши нам в WhatsApp по номеру +381 63 15 05 003, чтобы узнать ближайшую точку, услуги и время работы.' },
         { question: 'Он едет в гору?', answer: 'Да! Мотор помогает на подъёмах, а тест-драйв лучше всего покажет, как он ведёт себя на твоём маршруте.' },
         { question: 'Как оплатить?', answer: 'Оплату согласуем напрямую, вся информация будет понятна до покупки.' },
       ],
@@ -1682,6 +1734,14 @@ export default function App() {
                       <CalendarCheck className="size-3.5" />
                       {copy.heroPrimary}
                     </button>
+                    <a
+                      href={`/elektricni-bicikli/${model.key}/`}
+                      className={`mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors ${
+                        model.isFeatured ? 'border-white/35 text-primary-foreground/80 hover:bg-white/10' : 'border-border text-foreground/60 hover:border-primary/60 hover:text-foreground'
+                      }`}
+                    >
+                      {tr({ sr: 'Detalji modela', en: 'Model details', ru: 'Подробнее о модели' })}
+                    </a>
                     <button
                       type="button"
                       onClick={() => openCheckout(model.key)}
@@ -2571,7 +2631,7 @@ export default function App() {
                 <div className="relative">
                   <img src={publicAsset('Logo.png')} alt="POGON" className="h-12 w-auto sm:h-20" />
                 </div>
-                <a href="https://instagram.com/pogonrs" target="_blank" rel="noreferrer" aria-label="Pogon Instagram" className="size-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors md:mt-6">
+                <a href="https://instagram.com/pogon.rs" target="_blank" rel="noreferrer" aria-label="Pogon Instagram @pogon.rs" className="size-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors md:mt-6">
                   <Instagram className="size-5" />
                 </a>
               </div>
@@ -2581,10 +2641,11 @@ export default function App() {
             <div>
               <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 sm:mb-4">{ui.footerProducts}</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-foreground/60">
-                <li><a href="#modeli" className="hover:text-foreground transition-colors">Glide</a></li>
-                <li><a href="#modeli" className="hover:text-foreground transition-colors">Core</a></li>
-                <li><a href="#modeli" className="hover:text-foreground transition-colors">Cargo</a></li>
+                <li><a href="/elektricni-bicikli/glide/" className="hover:text-foreground transition-colors">Glide</a></li>
+                <li><a href="/elektricni-bicikli/core/" className="hover:text-foreground transition-colors">Core</a></li>
+                <li><a href="/elektricni-bicikli/cargo/" className="hover:text-foreground transition-colors">Cargo</a></li>
                 <li><a href="/elektricni-bicikli/" className="hover:text-foreground transition-colors">Električni bicikli</a></li>
+                <li><a href="/electric-bikes/" lang="en" className="hover:text-foreground transition-colors">Electric bikes</a></li>
                 <li><a href="/#modeli" className="hover:text-foreground transition-colors">{ui.footerCompare}</a></li>
               </ul>
             </div>
