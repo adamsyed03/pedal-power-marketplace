@@ -2,8 +2,6 @@ import { FormEvent, useCallback, useState, useEffect, useRef, lazy, Suspense } f
 import { ImageWithFallback } from './components/ImageWithFallback';
 import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones, Gift } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
-import { ScrollyCanvas } from './components/ScrollyCanvas';
-import { Overlay } from './components/Overlay';
 import { LeadContactModal } from './components/LeadContactModal';
 import { PaymentBranding } from './components/PaymentBranding';
 const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
@@ -1157,6 +1155,68 @@ export default function App() {
             max-width: 25rem;
           }
         }
+        @media (min-width: 1024px) {
+          html {
+            font-size: 15px;
+          }
+        }
+        @media (min-width: 1024px) and (max-height: 900px) {
+          html {
+            font-size: 14px;
+          }
+          #modeli .desktop-product-card {
+            border-radius: 1.15rem;
+          }
+          #modeli .desktop-product-image {
+            aspect-ratio: 2.15 / 1;
+          }
+          #modeli .desktop-product-thumbs {
+            gap: 0.3rem;
+            padding: 0.35rem;
+          }
+          #modeli .desktop-product-thumb {
+            width: 2.5rem;
+            border-radius: 0.55rem;
+          }
+          #modeli .desktop-product-body {
+            padding: 0.65rem 0.8rem 0.75rem;
+          }
+          #modeli .desktop-product-name {
+            margin-bottom: 0.2rem;
+            font-size: 1rem;
+            line-height: 1.15;
+          }
+          #modeli .desktop-product-points {
+            column-gap: 1rem;
+            row-gap: 0.2rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.74rem;
+            line-height: 1.22;
+          }
+          #modeli .desktop-product-point {
+            min-height: 1.4rem;
+            gap: 0.45rem;
+          }
+          #modeli .desktop-product-purchase {
+            padding-top: 0.45rem;
+          }
+          #modeli .desktop-product-price-block {
+            gap: 0;
+            margin-bottom: 0.45rem;
+          }
+          #modeli .desktop-product-original-price {
+            font-size: 0.72rem;
+          }
+          #modeli .desktop-product-price {
+            font-size: 1.65rem;
+            line-height: 1;
+          }
+          #modeli .desktop-product-action {
+            padding-top: 0.4rem;
+            padding-bottom: 0.4rem;
+            font-size: 0.55rem;
+          }
+        }
       `}</style>
 
       <AnimatePresence>
@@ -1342,13 +1402,46 @@ export default function App() {
 
       {isDesktop && (
       <div>
-        <ScrollyCanvas frameCount={20}>
-          <Overlay
-            copy={copy}
-            onBookTestRide={() => openLeadModal('desktop-hero')}
-            phoneHref="#zasto-pogon"
+        <section id="top" className="relative flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden bg-black px-6 py-28 text-white">
+          <img
+            src={publicAsset('Excellent4.optimized.jpg')}
+            alt="Pogon električni bicikl u gradskoj vožnji"
+            fetchPriority="high"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-center"
           />
-        </ScrollyCanvas>
+          <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
+          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center text-center">
+            <h1 className="max-w-4xl text-7xl font-black uppercase leading-[0.88] tracking-normal text-white lg:text-8xl xl:text-9xl">
+              {copy.heroTitle}
+            </h1>
+            <p className="mt-7 max-w-xl text-lg font-light leading-relaxed text-white/80">
+              {copy.heroSub}
+            </p>
+            <div className="mt-10 grid w-full max-w-3xl grid-cols-3 gap-4 rounded-3xl border border-white/15 bg-black/40 p-5 shadow-2xl shadow-black/30 backdrop-blur-md">
+              {[
+                ['140km', copy.range],
+                [`${copy.fromText} 250w`, copy.power],
+                [`${copy.fromText} 25km/h`, copy.topSpeed],
+              ].map(([value, label]) => (
+                <div key={label} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5">
+                  <div className="text-3xl font-black leading-none">{value}</div>
+                  <div className="mt-2 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-white/55">{label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-7 flex gap-3">
+              <button type="button" onClick={() => openLeadModal('desktop-hero')} className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-black transition-transform hover:scale-[1.03] active:scale-[0.98]">
+                <CalendarCheck className="size-4" />
+                {copy.heroPrimary}
+              </button>
+              <a href="#zasto-pogon" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-colors hover:bg-white/15 active:scale-[0.98]">
+                <ArrowRight className="size-4" />
+                {copy.heroSecondary}
+              </a>
+            </div>
+          </div>
+        </section>
         <div className="hidden border-b border-border/60 bg-white/90 py-4 lg:block">
           <div className="mx-auto max-w-7xl overflow-hidden px-6 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
             <div className="trust-conveyor flex gap-3">
@@ -1518,12 +1611,12 @@ export default function App() {
       </section>
 
       {/* Product Showcase */}
-      <section id="modeli" className="relative overflow-hidden bg-background pt-8 pb-14 text-foreground sm:pt-10 sm:pb-28 lg:pt-12 lg:pb-20">
+      <section id="modeli" className="relative overflow-hidden bg-background pt-8 pb-14 text-foreground sm:pt-10 sm:pb-28 lg:pt-7 lg:pb-10">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-accent/20"></div>
         <div className="relative max-w-7xl mx-auto px-6">
-          <div className="text-center mb-8 md:mb-20 lg:mb-10">
+          <div className="text-center mb-8 md:mb-20 lg:mb-6">
             <div className="inline-block px-4 py-1 bg-primary/10 rounded-full text-xs uppercase tracking-widest font-semibold mb-4 lg:mb-3">{copy.premiumSeries}</div>
-            <h2 className="text-4xl md:text-6xl lg:text-5xl font-black mb-4 md:mb-6 lg:mb-3 tracking-tight">
+            <h2 className="text-4xl md:text-6xl lg:text-4xl font-black mb-4 md:mb-6 lg:mb-2 tracking-tight">
               {tr({ sr: 'Pogon modeli električnih bicikala', en: 'Pogon electric bike models', ru: 'Модели электровелосипедов Pogon' })}
             </h2>
             <p className="text-base sm:text-xl lg:text-base text-foreground/60 max-w-2xl mx-auto font-light">
@@ -1571,7 +1664,7 @@ export default function App() {
             <div
               ref={productScrollRef}
               onScroll={handleProductScroll}
-              className="grid grid-flow-col auto-cols-[minmax(17.5rem,calc(100vw-3rem))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 sm:auto-cols-[21rem] lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-5 snap-x snap-mandatory"
+              className="grid grid-flow-col auto-cols-[minmax(17.5rem,calc(100vw-3rem))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 sm:auto-cols-[21rem] lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-3 snap-x snap-mandatory"
             >
               {bikeModels.map((model) => {
                 const gallery = 'gallery' in model ? model.gallery : undefined;
@@ -1601,12 +1694,12 @@ export default function App() {
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true, amount: 0.25 }}
                   transition={{ duration: 0.52, delay: bikeModels.findIndex((bike) => bike.key === model.key) * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                  className={`group snap-center sm:snap-start min-w-0 overflow-hidden rounded-3xl transition-all duration-300 ${model.isFeatured ? 'bg-primary text-primary-foreground border-2 border-primary shadow-2xl hover:-translate-y-2 hover:shadow-2xl lg:product-soft-float' : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2'}`}
+                  className={`desktop-product-card group snap-center sm:snap-start min-w-0 overflow-hidden rounded-3xl transition-all duration-300 ${model.isFeatured ? 'bg-primary text-primary-foreground border-2 border-primary shadow-2xl hover:-translate-y-2 hover:shadow-2xl lg:product-soft-float' : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2'}`}
                 >
                 <div className="relative overflow-hidden rounded-t-3xl">
                   {model.isFeatured ? <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80"></div> : null}
                   <div
-                    className="aspect-[4/5] overflow-hidden relative bg-black cursor-pointer group sm:aspect-[5/4] lg:aspect-[3/2]"
+                    className="desktop-product-image aspect-[4/5] overflow-hidden relative bg-black cursor-pointer group sm:aspect-[5/4] lg:aspect-[2/1]"
                     onClick={handleImagePanelClick}
                   >
                     <motion.div
@@ -1632,7 +1725,7 @@ export default function App() {
                             event.stopPropagation();
                             setGalleryImage((selectedGalleryIndex - 1 + gallery.length) % gallery.length);
                           }}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65 lg:h-8 lg:w-8"
                         >
                           ‹
                         </button>
@@ -1643,7 +1736,7 @@ export default function App() {
                             event.stopPropagation();
                             setGalleryImage((selectedGalleryIndex + 1) % gallery.length);
                           }}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65 lg:h-8 lg:w-8"
                         >
                           ›
                         </button>
@@ -1658,12 +1751,12 @@ export default function App() {
                           setActiveLightboxProduct(model.key);
                           setLightboxZoom(1);
                         }}
-                        className="absolute bottom-4 right-4 z-30 hidden h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65 sm:inline-flex"
+                        className="absolute bottom-4 right-4 z-30 hidden h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-black/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/65 sm:inline-flex lg:bottom-2.5 lg:right-2.5 lg:h-8 lg:w-8"
                       >
-                        <ZoomIn className="size-5" />
+                        <ZoomIn className="size-5 lg:size-4" />
                       </button>
                     ) : null}
-                    <div className={`absolute top-4 right-4 z-20 ${model.badgeClass}`}>
+                    <div className={`absolute top-4 right-4 z-20 lg:right-2 lg:top-2 lg:origin-top-right lg:scale-90 ${model.badgeClass}`}>
                       {copy[model.badgeKey]}
                     </div>
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3.5 pb-3 pt-12 text-white lg:hidden">
@@ -1697,7 +1790,7 @@ export default function App() {
                     </div>
                   </div>
                   {gallery ? (
-                    <div className="relative z-40 flex gap-1.5 overflow-x-auto border-t border-border bg-white p-1.5 shadow-inner lg:p-2">
+                    <div className="desktop-product-thumbs relative z-40 flex gap-1.5 overflow-x-auto border-t border-border bg-white p-1.5 shadow-inner lg:p-1.5">
                       {gallery.map((image, index) => (
                         <button
                           key={image.src}
@@ -1707,7 +1800,7 @@ export default function App() {
                             event.stopPropagation();
                             setGalleryImage(index);
                           }}
-                          className={`aspect-square w-12 flex-none overflow-hidden rounded-xl border bg-white p-0.5 shadow-sm ring-offset-2 ring-offset-white transition-all sm:w-14 lg:w-14 ${
+                          className={`desktop-product-thumb aspect-square w-12 flex-none overflow-hidden rounded-xl border bg-white p-0.5 shadow-sm ring-offset-2 ring-offset-white transition-all sm:w-14 lg:w-11 ${
                             selectedGalleryIndex === index ? 'border-primary ring-2 ring-primary' : 'border-border hover:border-primary/60 hover:ring-2 hover:ring-primary/30'
                           }`}
                         >
@@ -1722,23 +1815,23 @@ export default function App() {
                     </div>
                   ) : null}
                 </div>
-                <div className="p-3 sm:p-4 lg:p-5">
-                  <h3 className={`hidden lg:block text-xl font-bold mb-1.5 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{model.name}</h3>
-                  <div className="hidden lg:grid grid-cols-2 gap-x-7 gap-y-2.5 mb-4 text-[0.9rem] font-medium leading-snug">
+                <div className="desktop-product-body p-3 sm:p-4 lg:p-3.5">
+                  <h3 className={`desktop-product-name hidden lg:block text-lg font-bold mb-1 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{model.name}</h3>
+                  <div className="desktop-product-points hidden lg:grid grid-cols-2 gap-x-5 gap-y-1.5 mb-2.5 text-[0.8rem] font-medium leading-snug">
                     {model.points.map((point, index) => (
                       <div
                         key={`${model.key}-desktop-point-${index}`}
-                        className={`flex min-h-[2.05rem] items-start gap-2.5 ${model.isFeatured ? 'text-primary-foreground/88' : 'text-foreground/70'}`}
+                        className={`desktop-product-point flex min-h-[1.65rem] items-start gap-2 ${model.isFeatured ? 'text-primary-foreground/88' : 'text-foreground/70'}`}
                       >
                         <span className={`mt-[0.48rem] size-1.5 shrink-0 rounded-full ${model.isFeatured ? 'bg-primary-foreground/75' : 'bg-primary/75'}`} />
                         <span>{point}</span>
                       </div>
                     ))}
                   </div>
-                  <div className={`pt-2 lg:pt-4 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
-                    <div className={`mb-3 hidden flex-col items-start gap-0.5 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
-                      {model.originalPrice ? <span className="text-base font-bold opacity-60 line-through decoration-2">{model.originalPrice}</span> : null}
-                      <span className="text-4xl font-black tracking-tight">{model.price}</span>
+                  <div className={`desktop-product-purchase pt-2 lg:pt-2.5 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
+                    <div className={`desktop-product-price-block mb-2 hidden flex-col items-start gap-0.5 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
+                      {model.originalPrice ? <span className="desktop-product-original-price text-sm font-bold opacity-60 line-through decoration-2">{model.originalPrice}</span> : null}
+                      <span className="desktop-product-price text-[1.9rem] font-black leading-none tracking-tight">{model.price}</span>
                     </div>
                     <div className="mb-3 grid grid-cols-3 gap-1.5 lg:hidden">
                       {[
@@ -1760,14 +1853,14 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => openLeadModal(`model-${model.name}`)}
-                      className={`w-full inline-flex items-center justify-center gap-2 py-2.5 lg:py-2.5 rounded-full transition-all font-semibold uppercase text-[0.62rem] sm:text-xs lg:text-xs tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                      className={`desktop-product-action w-full inline-flex items-center justify-center gap-2 py-2.5 lg:py-2 rounded-full transition-all font-semibold uppercase text-[0.62rem] sm:text-xs lg:text-[0.62rem] tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                     >
                       <CalendarCheck className="size-3.5" />
                       {copy.heroPrimary}
                     </button>
                     <a
                       href={`/elektricni-bicikli/${model.key}/`}
-                      className={`mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors ${
+                      className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${
                         model.isFeatured ? 'border-white/35 text-primary-foreground/80 hover:bg-white/10' : 'border-border text-foreground/60 hover:border-primary/60 hover:text-foreground'
                       }`}
                     >
@@ -1776,7 +1869,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => openCheckout(model.key)}
-                      className={`mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 lg:py-2 text-[0.56rem] font-semibold uppercase tracking-wider active:scale-[0.98] ${
+                      className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider active:scale-[0.98] lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${
                         model.isFeatured ? 'border-white/35 text-primary-foreground/80' : 'border-border text-foreground/60'
                       }`}
                     >

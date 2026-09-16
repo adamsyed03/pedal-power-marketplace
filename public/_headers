@@ -1,6 +1,3 @@
-/sequence/*
-  Cache-Control: public, max-age=2592000
-
 /*.jpg
   Cache-Control: public, max-age=2592000
 

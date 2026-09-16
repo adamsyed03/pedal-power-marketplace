@@ -965,7 +965,6 @@ test('customer-facing model order is Cargo, Core, Glide', () => {
 
 test('contact widget reopens reliably and landing specifications stay current', () => {
   const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
-  const overlay = readFileSync(new URL('../src/app/components/Overlay.tsx', import.meta.url), 'utf8');
 
   assert.match(app, /openContactWidget = useCallback\(\(\) => setIsContactWidgetOpen\(true\)/);
   assert.match(app, /closeContactWidget = useCallback\(\(\) => setIsContactWidgetOpen\(false\)/);
@@ -975,7 +974,7 @@ test('contact widget reopens reliably and landing specifications stay current', 
     assert.match(app, new RegExp(capacity));
   }
   assert.match(app, />140<span[^>]*>km<\/span>/);
-  assert.match(overlay, /\['140km', copy\.range\]/);
+  assert.match(app, /\['140km', copy\.range\]/);
 });
 
 test('checkout visibly declares canonical RSD and VAT terms before payment', () => {
@@ -1152,7 +1151,6 @@ test('all business call and WhatsApp references use 063 15 05 003', () => {
     '../api/_lib/merchant.mjs',
     '../src/app/App.tsx',
     '../src/app/components/BusinessInfo.tsx',
-    '../src/app/components/Overlay.tsx',
     '../src/app/components/PurchaseTerms.tsx',
     '../src/app/components/CustomerPolicy.tsx',
     '../src/app/components/Checkout.tsx',
@@ -1170,26 +1168,40 @@ test('all business call and WhatsApp references use 063 15 05 003', () => {
   }
 });
 
-test('initial page load defers analytics packages and heavy hero frame preloading', () => {
+test('initial page load defers analytics packages and avoids heavy hero frame preloading', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const analytics = readFileSync(new URL('../src/lib/analytics.ts', import.meta.url), 'utf8');
-  const scrolly = readFileSync(new URL('../src/app/components/ScrollyCanvas.tsx', import.meta.url), 'utf8');
   const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
 
   assert.doesNotMatch(analytics, /^import posthog from 'posthog-js'/m);
   assert.match(analytics, /await import\('posthog-js'\)/);
   assert.match(html, /window\.addEventListener\('load'[\s\S]*googletagmanager\.com\/gtag\/js/);
   assert.match(html, /window\.addEventListener\('load'[\s\S]*connect\.facebook\.net\/en_US\/fbevents\.js/);
-  assert.match(scrolly, /constrainedConnection/);
-  assert.match(scrolly, /3500/);
-  assert.doesNotMatch(scrolly, /fallbackSrc = publicAsset\('Excellent4\.optimized\.jpg'\)/);
-  assert.match(app, /<ScrollyCanvas frameCount=\{20\}>/);
+  assert.match(html, /preload[^>]+Excellent4\.optimized\.jpg[^>]+fetchpriority="high"/);
+  assert.match(app, /src=\{publicAsset\('Excellent4\.optimized\.jpg'\)\}/);
+  assert.doesNotMatch(app, /ScrollyCanvas|sequence\/ezgif-frame/);
+  assert.equal(existsSync(new URL('../public/sequence', import.meta.url)), false);
+});
+
+test('production routing serves known SPA pages and returns a real 404 for unknown URLs', () => {
+  const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+  const spaRoute = config.routes.find((route) => route.dest === '/index.html');
+  const fallbackRoute = config.routes.at(-1);
+  const knownRoutes = ['/checkout', '/kviz', '/kontakt', '/uslovi-kupovine', '/payment/success'];
+
+  assert.ok(spaRoute);
+  const spaPattern = new RegExp(spaRoute.src);
+  for (const route of knownRoutes) assert.equal(spaPattern.test(route), true, route);
+  assert.equal(spaPattern.test('/definitely-not-a-real-page'), false);
+  assert.equal(fallbackRoute.status, 404);
+  assert.equal(fallbackRoute.dest, '/404.html');
+  assert.equal(existsSync(new URL('../public/404.html', import.meta.url)), true);
+  assert.match(readFileSync(new URL('../public/404.html', import.meta.url), 'utf8'), /name="robots" content="noindex,follow"/);
 });
 
 test('Serbian landing hero uses the current city campaign line', () => {
   const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
-  const overlay = readFileSync(new URL('../src/app/components/Overlay.tsx', import.meta.url), 'utf8');
-  for (const source of [app, overlay]) assert.match(source, /Auto je za more, Pogon je za grad/);
+  assert.match(app, /Auto je za more, Pogon je za grad/);
 });
 
 test('landing rating and Core sale badge remain clearly visible', () => {
