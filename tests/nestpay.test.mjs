@@ -973,8 +973,9 @@ test('contact widget reopens reliably and landing specifications stay current', 
   for (const capacity of ['Nosivost 120 kg', '120 kg load capacity', 'Грузоподъёмность 120 кг']) {
     assert.match(app, new RegExp(capacity));
   }
-  assert.match(app, />140<span[^>]*>km<\/span>/);
-  assert.match(app, /\['140km', copy\.range\]/);
+  assert.match(app, /value: tr\(\{ sr: 'Do 140 km'/);
+  assert.match(app, /value: tr\(\{ sr: 'Do 12 rata'/);
+  assert.match(app, /value: tr\(\{ sr: '2 godine'/);
 });
 
 test('checkout visibly declares canonical RSD and VAT terms before payment', () => {
@@ -1199,9 +1200,12 @@ test('production routing serves known SPA pages and returns a real 404 for unkno
   assert.match(readFileSync(new URL('../public/404.html', import.meta.url), 'utf8'), /name="robots" content="noindex,follow"/);
 });
 
-test('Serbian landing hero uses the current city campaign line', () => {
+test('Serbian landing hero uses the benefit-led city campaign copy', () => {
   const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
-  assert.match(app, /Auto je za more, Pogon je za grad/);
+  assert.match(app, /Zaboravi gužvu, parking i gorivo\./);
+  assert.match(app, /Uštedi vreme, novac i živce uz domet do 140 km\./);
+  assert.match(app, /value: tr\(\{ sr: 'Do 12 rata'/);
+  assert.match(app, /label: tr\(\{ sr: 'Garancije'/);
 });
 
 test('landing rating and Core sale badge remain clearly visible', () => {
@@ -1249,6 +1253,36 @@ test('Core sale is displayed consistently and the server charges 130,000 RSD', (
   assert.match(products, /priceRsd: 130_000, listPriceRsd: 135_000/);
   assert.match(checkout, /entry\.listPriceRsd/);
   for (const html of [home, corePage]) assert.match(html, /"price"\s*:\s*"130000"/);
+});
+
+test('model cards link directly to preselected checkout while SEO product pages remain complete', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  assert.match(app, /href=\{`\/checkout\?model=\$\{model\.key\}`\}/);
+  assert.doesNotMatch(app, /href=\{`\/elektricni-bicikli\/\$\{model\.key\}\/`\}/);
+  assert.doesNotMatch(app, /sr: 'Pogledaj model', en: 'See model'/);
+  assert.match(app, /sr: \[[\s\S]*'NFC kartice za otključavanje'[\s\S]*en: \[[\s\S]*'NFC unlock cards'/);
+  assert.doesNotMatch(app, /openCheckout/);
+
+  for (const model of ['cargo', 'core', 'glide']) {
+    const html = readFileSync(new URL(`../public/elektricni-bicikli/${model}/index.html`, import.meta.url), 'utf8');
+    const visibleText = html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .trim()
+      .split(/\s+/);
+
+    assert.equal((html.match(/<h1\b/gi) || []).length, 1, `${model} should have one H1`);
+    assert.ok(visibleText.length >= 450, `${model} should have substantial visible copy`);
+    assert.match(html, new RegExp(`<link rel="canonical" href="https://ridepogon\\.com/elektricni-bicikli/${model}/">`));
+    assert.match(html, /<meta property="og:type" content="product">/);
+    assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
+    assert.match(html, /"@type":"Product"/);
+    assert.match(html, /"@type":"FAQPage"/);
+    assert.match(html, /"shippingDetails"/);
+    assert.match(html, /"hasMerchantReturnPolicy"/);
+    assert.match(html, new RegExp(`href="/checkout\\?model=${model}"`));
+  }
 });
 
 test('tic-tac-toe gives about half of first attempts a win and assists the second attempt', () => {

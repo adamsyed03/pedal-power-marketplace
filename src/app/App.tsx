@@ -23,10 +23,10 @@ const MODEL_BAR_SWIPE_THRESHOLD_PX = 40;
 const MODEL_BAR_HORIZONTAL_DOMINANCE = 1.25;
 
 const homeCopyEn = {
-  heroTitle: 'Pogon electric bikes',
-  heroSub: 'Electric bikes for city commutes and plans that don’t wait.',
+  heroTitle: 'Forget traffic, parking, and fuel.',
+  heroSub: 'Electric bikes for everyday city riding. Save time, money, and stress with up to 140 km of range.',
   heroPrimary: 'Book a test ride',
-  heroSecondary: 'Why Pogon',
+  heroSecondary: 'View models',
   finalTitle: 'Choose a model and kickstart your city routine',
   finalBody: "Message us on WhatsApp and we'll help you pick the right Pogon.",
   finalPrimary: 'View models',
@@ -57,10 +57,10 @@ const homeCopyEn = {
 };
 
 const homeCopySr = {
-  heroTitle: 'Pogon električni bicikli',
-  heroSub: 'Auto je za more, Pogon je za grad',
+  heroTitle: 'Zaboravi gužvu, parking i gorivo.',
+  heroSub: 'Električni bicikli za svakodnevnu vožnju kroz grad. Uštedi vreme, novac i živce uz domet do 140 km.',
   heroPrimary: 'Zakaži test vožnju',
-  heroSecondary: 'Zašto Pogon',
+  heroSecondary: 'Pogledaj modele',
   finalTitle: 'Izaberi model i pokreni gradsku rutinu',
   finalBody: 'Javi nam se na WhatsApp i pomoći ćemo ti da izabereš pravi Pogon.',
   finalPrimary: 'Pogledaj modele',
@@ -91,10 +91,10 @@ const homeCopySr = {
 };
 
 const homeCopyRu = {
-  heroTitle: 'Pogon электровелосипеды',
-  heroSub: 'Электровелосипеды для города, ежедневных поездок и планов, которые не ждут.',
+  heroTitle: 'Забудьте о пробках, парковке и топливе.',
+  heroSub: 'Электровелосипеды для ежедневных поездок по городу. Экономьте время, деньги и нервы с запасом хода до 140 км.',
   heroPrimary: 'Записаться на тест-драйв',
-  heroSecondary: 'Почему Pogon',
+  heroSecondary: 'Смотреть модели',
   finalTitle: 'Выбери модель и запусти свой городской ритм',
   finalBody: 'Напиши нам в WhatsApp, и мы поможем выбрать подходящий Pogon.',
   finalPrimary: 'Смотреть модели',
@@ -230,6 +230,20 @@ export default function App() {
   const pageScrollTimeout = useRef<number | null>(null);
   const copy = homeCopy[lang];
   const tr = <T,>(translations: Localized<T>) => translations[lang];
+  const heroBenefits = [
+    {
+      value: tr({ sr: 'Do 140 km', en: 'Up to 140 km', ru: 'До 140 км' }),
+      label: tr({ sr: 'Dometa', en: 'Range', ru: 'Запас хода' }),
+    },
+    {
+      value: tr({ sr: 'Do 12 rata', en: 'Up to 12 payments', ru: 'До 12 платежей' }),
+      label: tr({ sr: 'Finansiranje', en: 'Financing', ru: 'Рассрочка' }),
+    },
+    {
+      value: tr({ sr: '2 godine', en: '2 years', ru: '2 года' }),
+      label: tr({ sr: 'Garancije', en: 'Warranty', ru: 'Гарантия' }),
+    },
+  ];
   const gameLauncherCopy = tr({
     sr: { aria: 'Igraj iks-oks i osvoji nagradu', compact: 'Igraj i osvoji', highlight: 'Osvoji poklon', action: 'Igraj iks-oks' },
     en: { aria: 'Play tic-tac-toe and win a gift', compact: 'Play and win', highlight: 'Win a gift', action: 'Play tic-tac-toe' },
@@ -440,10 +454,6 @@ export default function App() {
   const openLeadModal = (source: string) => {
     trackEvent(source.includes('hero') ? 'primary_cta_click' : 'test_ride_click', { source });
     setLeadModalSource(source);
-  };
-  const openCheckout = (model: string) => {
-    trackEvent('checkout_started', { source: 'model-card', model });
-    window.location.assign(`/checkout?model=${encodeURIComponent(model.toLowerCase())}`);
   };
   const handlePhoneClick = (source: string) => trackEvent('phone_call_click', { source });
   const handleWhatsappClick = (source: string) => trackEvent('whatsapp_click', { source });
@@ -946,7 +956,7 @@ export default function App() {
         sr: [
             'Motor u zadnjem točku',
             'Aluminijumski ram',
-            'Hidraulične kočnice',
+            'NFC kartice za otključavanje',
             'Nosivost 120 kg',
             'Domet 90 km',
             'GPS sigurnosne funkcije',
@@ -954,7 +964,7 @@ export default function App() {
         en: [
             'Rear hub motor',
             'Aluminum frame',
-            'Hydraulic brakes',
+            'NFC unlock cards',
             '120 kg load capacity',
             'Up to 90 km range',
             'GPS security features',
@@ -962,7 +972,7 @@ export default function App() {
         ru: [
             'Заднее мотор-колесо',
             'Алюминиевая рама',
-            'Гидравлические тормоза',
+            'NFC-карты для разблокировки',
             'Грузоподъёмность 120 кг',
             'Запас хода до 90 км',
             'GPS-функции безопасности',
@@ -1168,7 +1178,7 @@ export default function App() {
             border-radius: 1.15rem;
           }
           #modeli .desktop-product-image {
-            aspect-ratio: 2.15 / 1;
+            aspect-ratio: 1.25 / 1;
           }
           #modeli .desktop-product-thumbs {
             gap: 0.3rem;
@@ -1371,7 +1381,7 @@ export default function App() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         <div className="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-2.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-1.5">
-          <div className="w-full flex h-8 items-center justify-between gap-2 rounded-full border border-black/10 bg-white/90 px-2 shadow-[0_15px_40px_rgba(0,0,0,0.12)] backdrop-blur-md sm:h-auto sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:h-9 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
+          <div className="relative w-full flex h-8 items-center justify-between gap-2 rounded-full border border-black/10 bg-white/90 px-2 shadow-[0_15px_40px_rgba(0,0,0,0.12)] backdrop-blur-md sm:h-auto sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:h-9 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
             <a href="#top" aria-label="Back to home" className="relative inline-flex h-8 w-28 items-center rounded-full bg-white shadow-sm transition-transform hover:-translate-y-0.5 sm:h-auto sm:w-auto sm:px-4 sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
               <div className="flex items-center justify-center">
                 <img src={publicAsset('Logo.png')} alt="POGON" className="pointer-events-none absolute left-1/2 top-1/2 h-20 w-36 -translate-x-1/2 -translate-y-1/2 object-cover object-center sm:hidden" />
@@ -1379,22 +1389,22 @@ export default function App() {
               </div>
             </a>
 
-            <div className="hidden md:flex flex-1 items-center justify-center gap-4 text-xs uppercase tracking-wider text-black/65">
+            <div className="absolute left-1/2 hidden -translate-x-1/2 items-center justify-center gap-4 text-xs uppercase tracking-wider text-black/65 md:flex">
               <a href="#modeli" className="transition-colors hover:text-black">{ui.navModels}</a>
               <a href="#iskustva" className="transition-colors hover:text-black">{ui.navReviews}</a>
             </div>
 
             <div className="hidden md:flex items-center gap-1.5">
               <button type="button" onClick={() => openLeadModal('purchase-general')} className="inline-flex items-center justify-center rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs font-medium uppercase tracking-wider text-black/75 transition-all hover:bg-black/10">{copy.buyNow}</button>
-              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SR</button>
-              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>EN</button>
-              <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RU</button>
+              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
+              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
+              <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
             </div>
 
             <div className="flex items-center md:hidden gap-1">
-              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SR</button>
-              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>EN</button>
-              <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RU</button>
+              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
+              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
+              <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
             </div>
           </div>
         </div>
@@ -1412,20 +1422,16 @@ export default function App() {
           />
           <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center text-center">
-            <h1 className="max-w-4xl text-7xl font-black uppercase leading-[0.88] tracking-normal text-white lg:text-8xl xl:text-9xl">
+            <h1 className="max-w-4xl text-balance text-[clamp(2.65rem,4.5vw,4.5rem)] font-black leading-[0.98] tracking-[-0.035em] text-white">
               {copy.heroTitle}
             </h1>
-            <p className="mt-7 max-w-xl text-lg font-light leading-relaxed text-white/80">
+            <p className="mt-6 max-w-2xl text-lg font-light leading-relaxed text-white/80">
               {copy.heroSub}
             </p>
-            <div className="mt-10 grid w-full max-w-3xl grid-cols-3 gap-4 rounded-3xl border border-white/15 bg-black/40 p-5 shadow-2xl shadow-black/30 backdrop-blur-md">
-              {[
-                ['140km', copy.range],
-                [`${copy.fromText} 250w`, copy.power],
-                [`${copy.fromText} 25km/h`, copy.topSpeed],
-              ].map(([value, label]) => (
+            <div className="mt-9 grid w-full max-w-3xl grid-cols-3 gap-4 rounded-3xl border border-white/15 bg-black/40 p-5 shadow-2xl shadow-black/30 backdrop-blur-md">
+              {heroBenefits.map(({ value, label }) => (
                 <div key={label} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5">
-                  <div className="text-3xl font-black leading-none">{value}</div>
+                  <div className="text-2xl font-black leading-none sm:text-3xl">{value}</div>
                   <div className="mt-2 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-white/55">{label}</div>
                 </div>
               ))}
@@ -1435,7 +1441,7 @@ export default function App() {
                 <CalendarCheck className="size-4" />
                 {copy.heroPrimary}
               </button>
-              <a href="#zasto-pogon" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-colors hover:bg-white/15 active:scale-[0.98]">
+              <a href="#modeli" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-colors hover:bg-white/15 active:scale-[0.98]">
                 <ArrowRight className="size-4" />
                 {copy.heroSecondary}
               </a>
@@ -1487,30 +1493,10 @@ export default function App() {
 
               <div className="space-y-4">
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-foreground/55">Pogon Mobility</p>
-                {lang === 'sr' ? (
-                  <h1 className="text-[clamp(2.1rem,13vw,3.4rem)] font-black uppercase leading-[0.9] tracking-[-0.05em]">
-                    <span className="relative inline-block px-3 py-2">
-                      Pogon
-                      <svg
-                        aria-hidden="true"
-                        viewBox="0 0 240 78"
-                        preserveAspectRatio="none"
-                        className="pointer-events-none absolute -inset-x-5 -inset-y-3 h-[calc(100%+1.5rem)] w-[calc(100%+2.5rem)] overflow-visible"
-                      >
-                        <ellipse pathLength="1" cx="120" cy="39" rx="115" ry="32" fill="none" stroke="#7fff00" strokeWidth="3.2" strokeLinecap="round" className="mobile-pencil-circle" />
-                        <ellipse pathLength="1" cx="121" cy="38" rx="112" ry="35" fill="none" stroke="#7fff00" strokeWidth="1.2" strokeLinecap="round" className="mobile-pencil-circle mobile-pencil-circle-secondary" transform="rotate(-2 120 39)" />
-                      </svg>
-                    </span>
-                    <span className="mt-3 block text-[0.48em] tracking-[0.08em]">Električni bicikli</span>
-                  </h1>
-                ) : (
-                  <>
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[0.95] tracking-tight">
-                      {copy.heroTitle}
-                    </h1>
-                    <div className="h-1 w-20 bg-primary mx-auto lg:mx-0"></div>
-                  </>
-                )}
+                <h1 className="mx-auto max-w-lg text-balance text-[clamp(2.15rem,10vw,3.4rem)] font-black leading-[0.96] tracking-[-0.04em]">
+                  {copy.heroTitle}
+                </h1>
+                <div className="h-1 w-20 bg-primary mx-auto lg:mx-0"></div>
               </div>
 
               <p className="text-base sm:text-lg md:text-xl text-foreground/60 leading-relaxed max-w-lg mx-auto lg:mx-0 font-light">
@@ -1526,7 +1512,7 @@ export default function App() {
                   <CalendarCheck className="size-5" />
                   {copy.heroPrimary}
                 </button>
-                <a href="#zasto-pogon"
+                <a href="#modeli"
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-border px-6 sm:px-8 py-4 rounded-full hover:bg-accent transition-all active:scale-[0.98] text-sm uppercase tracking-wider font-bold"
                 >
                   <ArrowRight className="size-5" />
@@ -1549,24 +1535,12 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-3 gap-3 pt-7 border-t border-border/50">
-                <div className="text-center">
-                  <div className="text-3xl sm:text-4xl font-black tracking-tight">140<span className="text-lg sm:text-2xl text-foreground/40">km</span></div>
-                  <div className="text-[0.65rem] sm:text-xs uppercase tracking-wider text-foreground/50 mt-1">{copy.range}</div>
-                </div>
-                <div className="text-center">
-                  <div className="inline-flex items-end gap-1 text-black justify-center">
-                    <span className="text-[0.7rem] lowercase tracking-[0.18em] text-foreground/60">{copy.fromText}</span>
-                    <span className="text-3xl sm:text-4xl font-black tracking-tight">250<span className="text-lg sm:text-2xl text-foreground/40">w</span></span>
+                {heroBenefits.map(({ value, label }) => (
+                  <div key={`mobile-${label}`} className="min-w-0 text-center">
+                    <div className="text-[clamp(1rem,4.8vw,1.5rem)] font-black leading-tight tracking-tight">{value}</div>
+                    <div className="mt-1 text-[0.55rem] font-bold uppercase tracking-wider text-foreground/50 sm:text-xs">{label}</div>
                   </div>
-                  <div className="text-[0.65rem] sm:text-xs uppercase tracking-wider text-foreground/50 mt-1">{copy.power}</div>
-                </div>
-                <div className="text-center">
-                  <div className="inline-flex items-end gap-1 text-black justify-center">
-                    <span className="text-[0.7rem] lowercase tracking-[0.18em] text-foreground/60">{copy.fromText}</span>
-                    <span className="text-3xl sm:text-4xl font-black tracking-tight">25<span className="text-lg sm:text-2xl text-foreground/40">km/h</span></span>
-                  </div>
-                  <div className="text-[0.65rem] sm:text-xs uppercase tracking-wider text-foreground/50 mt-1">{copy.topSpeed}</div>
-                </div>
+                ))}
               </div>
             </motion.div>
 
@@ -1699,7 +1673,7 @@ export default function App() {
                 <div className="relative overflow-hidden rounded-t-3xl">
                   {model.isFeatured ? <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80"></div> : null}
                   <div
-                    className="desktop-product-image aspect-[4/5] overflow-hidden relative bg-black cursor-pointer group sm:aspect-[5/4] lg:aspect-[2/1]"
+                    className="desktop-product-image aspect-[4/5] overflow-hidden relative bg-black cursor-pointer group sm:aspect-[5/4] lg:aspect-[5/4]"
                     onClick={handleImagePanelClick}
                   >
                     <motion.div
@@ -1707,13 +1681,13 @@ export default function App() {
                       whileInView={{ scale: 1, opacity: 1 }}
                       viewport={{ once: true, amount: 0.35 }}
                       transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-                      className="relative z-10 h-full w-full"
+                      className="relative h-full w-full"
                     >
                       <ImageWithFallback
                         src={selectedImage.src}
                         alt={selectedImage.alt}
                         loading="lazy"
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                       />
                     </motion.div>
                     {gallery ? (
@@ -1859,23 +1833,15 @@ export default function App() {
                       {copy.heroPrimary}
                     </button>
                     <a
-                      href={`/elektricni-bicikli/${model.key}/`}
-                      className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${
+                      href={`/checkout?model=${model.key}`}
+                      onClick={() => trackEvent('checkout_started', { source: 'model-card', model: model.key })}
+                      className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors active:scale-[0.98] lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${
                         model.isFeatured ? 'border-white/35 text-primary-foreground/80 hover:bg-white/10' : 'border-border text-foreground/60 hover:border-primary/60 hover:text-foreground'
-                      }`}
-                    >
-                      {tr({ sr: 'Detalji modela', en: 'Model details', ru: 'Подробнее о модели' })}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => openCheckout(model.key)}
-                      className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider active:scale-[0.98] lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${
-                        model.isFeatured ? 'border-white/35 text-primary-foreground/80' : 'border-border text-foreground/60'
                       }`}
                     >
                       {copy.buyNow}
                       <ArrowRight className="size-3" />
-                    </button>
+                    </a>
                   </div>
                 </div>
               </motion.div>
