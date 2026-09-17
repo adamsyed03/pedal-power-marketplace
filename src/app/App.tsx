@@ -244,6 +244,23 @@ export default function App() {
       label: tr({ sr: 'Garancije', en: 'Warranty', ru: 'Гарантия' }),
     },
   ];
+  const mobileHeroCopy = tr({
+    sr: {
+      title: 'Pogon električni bicikli',
+      subtitle: 'Auto je za more, Pogon je za grad',
+      secondary: 'Zašto Pogon',
+    },
+    en: {
+      title: 'Pogon electric bikes',
+      subtitle: 'Electric bikes for city commutes and plans that don’t wait.',
+      secondary: 'Why Pogon',
+    },
+    ru: {
+      title: 'Pogon электровелосипеды',
+      subtitle: 'Электровелосипеды для города и ежедневных поездок.',
+      secondary: 'Почему Pogon',
+    },
+  });
   const gameLauncherCopy = tr({
     sr: { aria: 'Igraj iks-oks i osvoji nagradu', compact: 'Igraj i osvoji', highlight: 'Osvoji poklon', action: 'Igraj iks-oks' },
     en: { aria: 'Play tic-tac-toe and win a gift', compact: 'Play and win', highlight: 'Win a gift', action: 'Play tic-tac-toe' },
@@ -1493,14 +1510,34 @@ export default function App() {
 
               <div className="space-y-4">
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-foreground/55">Pogon Mobility</p>
-                <h1 className="mx-auto max-w-lg text-balance text-[clamp(2.15rem,10vw,3.4rem)] font-black leading-[0.96] tracking-[-0.04em]">
-                  {copy.heroTitle}
-                </h1>
-                <div className="h-1 w-20 bg-primary mx-auto lg:mx-0"></div>
+                {lang === 'sr' ? (
+                  <h1 className="text-[clamp(2.1rem,13vw,3.4rem)] font-black uppercase leading-[0.9] tracking-[-0.05em]">
+                    <span className="relative inline-block px-3 py-2">
+                      Pogon
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 240 78"
+                        preserveAspectRatio="none"
+                        className="pointer-events-none absolute -inset-x-5 -inset-y-3 h-[calc(100%+1.5rem)] w-[calc(100%+2.5rem)] overflow-visible"
+                      >
+                        <ellipse pathLength="1" cx="120" cy="39" rx="115" ry="32" fill="none" stroke="#7fff00" strokeWidth="3.2" strokeLinecap="round" className="mobile-pencil-circle" />
+                        <ellipse pathLength="1" cx="121" cy="38" rx="112" ry="35" fill="none" stroke="#7fff00" strokeWidth="1.2" strokeLinecap="round" className="mobile-pencil-circle mobile-pencil-circle-secondary" transform="rotate(-2 120 39)" />
+                      </svg>
+                    </span>
+                    <span className="mt-3 block text-[0.48em] tracking-[0.08em]">Električni bicikli</span>
+                  </h1>
+                ) : (
+                  <>
+                    <h1 className="text-3xl font-black leading-[0.95] tracking-tight sm:text-4xl md:text-5xl">
+                      {mobileHeroCopy.title}
+                    </h1>
+                    <div className="mx-auto h-1 w-20 bg-primary"></div>
+                  </>
+                )}
               </div>
 
               <p className="text-base sm:text-lg md:text-xl text-foreground/60 leading-relaxed max-w-lg mx-auto lg:mx-0 font-light">
-                {copy.heroSub}
+                {mobileHeroCopy.subtitle}
               </p>
 
               <div className="flex flex-wrap gap-3 pt-3 justify-center lg:justify-start">
@@ -1512,11 +1549,11 @@ export default function App() {
                   <CalendarCheck className="size-5" />
                   {copy.heroPrimary}
                 </button>
-                <a href="#modeli"
+                <a href="#zasto-pogon"
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-border px-6 sm:px-8 py-4 rounded-full hover:bg-accent transition-all active:scale-[0.98] text-sm uppercase tracking-wider font-bold"
                 >
                   <ArrowRight className="size-5" />
-                  {copy.heroSecondary}
+                  {mobileHeroCopy.secondary}
                 </a>
               </div>
 
@@ -1535,12 +1572,24 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-3 gap-3 pt-7 border-t border-border/50">
-                {heroBenefits.map(({ value, label }) => (
-                  <div key={`mobile-${label}`} className="min-w-0 text-center">
-                    <div className="text-[clamp(1rem,4.8vw,1.5rem)] font-black leading-tight tracking-tight">{value}</div>
-                    <div className="mt-1 text-[0.55rem] font-bold uppercase tracking-wider text-foreground/50 sm:text-xs">{label}</div>
+                <div className="text-center">
+                  <div className="text-3xl font-black tracking-tight sm:text-4xl">140<span className="text-lg text-foreground/40 sm:text-2xl">km</span></div>
+                  <div className="mt-1 text-[0.65rem] uppercase tracking-wider text-foreground/50 sm:text-xs">{copy.range}</div>
+                </div>
+                <div className="text-center">
+                  <div className="inline-flex items-end justify-center gap-1 text-black">
+                    <span className="text-[0.7rem] lowercase tracking-[0.18em] text-foreground/60">{copy.fromText}</span>
+                    <span className="text-3xl font-black tracking-tight sm:text-4xl">250<span className="text-lg text-foreground/40 sm:text-2xl">w</span></span>
                   </div>
-                ))}
+                  <div className="mt-1 text-[0.65rem] uppercase tracking-wider text-foreground/50 sm:text-xs">{copy.power}</div>
+                </div>
+                <div className="text-center">
+                  <div className="inline-flex items-end justify-center gap-1 text-black">
+                    <span className="text-[0.7rem] lowercase tracking-[0.18em] text-foreground/60">{copy.fromText}</span>
+                    <span className="text-3xl font-black tracking-tight sm:text-4xl">25<span className="text-lg text-foreground/40 sm:text-2xl">km/h</span></span>
+                  </div>
+                  <div className="mt-1 text-[0.65rem] uppercase tracking-wider text-foreground/50 sm:text-xs">{copy.topSpeed}</div>
+                </div>
               </div>
             </motion.div>
 

@@ -1206,6 +1206,9 @@ test('Serbian landing hero uses the benefit-led city campaign copy', () => {
   assert.match(app, /Uštedi vreme, novac i živce uz domet do 140 km\./);
   assert.match(app, /value: tr\(\{ sr: 'Do 12 rata'/);
   assert.match(app, /label: tr\(\{ sr: 'Garancije'/);
+  assert.match(app, /subtitle: 'Auto je za more, Pogon je za grad'/);
+  assert.match(app, /className="mobile-pencil-circle"/);
+  assert.match(app, />Električni bicikli<\/span>/);
 });
 
 test('landing rating and Core sale badge remain clearly visible', () => {
