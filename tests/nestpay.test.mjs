@@ -1127,12 +1127,16 @@ test('RSD-only policies disclose possible issuer conversion for foreign-currency
   }
 });
 
-test('floating model shortcut appears during long-page scrolling and targets the model cards', () => {
+test('mobile floating shortcuts expose models and accessories during long-page scrolling', () => {
   const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
   assert.match(app, /showModelsShortcut/);
   assert.match(app, /models_shortcut_click/);
   assert.match(app, /document\.getElementById\('modeli'\)/);
   assert.match(app, /sr: 'Vidi modele', en: 'View models'/);
+  assert.match(app, /sr: 'Vidi opremu', en: 'View accessories'/);
+  assert.match(app, /accessories_shortcut_click/);
+  assert.match(app, /flex -translate-y-1\/2 flex-col items-end gap-2/);
+  assert.match(app, /h-8 w-20[\s\S]*h-14 w-24/);
   assert.match(app, /window\.scrollTo\(\{ top: targetTop, behavior: 'smooth' \}\)/);
   assert.match(app, /isGameLauncherCompact/);
   assert.match(app, /window\.scrollY > 96/);
@@ -1358,6 +1362,11 @@ test('accessories navigation opens an indexable catalog containing every current
   assert.match(accessories, /en: \{[\s\S]*heroTitle: 'Gear for every day\.'/);
   assert.match(accessories, /ru: \{[\s\S]*heroTitle: 'Аксессуары на каждый день\.'/);
   assert.match(accessories, /applyLanguage\(currentLanguage, false\)/);
+  assert.match(accessories, /id="mobile-floating-models"[^>]+>.*Vidi modele/);
+  assert.match(accessories, /floatingModels: 'Vidi modele'/);
+  assert.match(accessories, /updateFloatingModelsShortcut/);
+  assert.match(productStyles, /\.accessories-logo \{ position: relative; width: 80px; height: 32px/);
+  assert.match(productStyles, /\.mobile-floating-models\.is-visible/);
   assert.equal((accessories.match(/class="accessory-photo-button"/g) || []).length, 7);
   assert.match(accessories, /id="accessory-lightbox"/);
   assert.match(accessories, /href="\/elektricni-bicikli\/">Vidi električne bicikle/);

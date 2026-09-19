@@ -1460,9 +1460,9 @@ export default function App() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         <div className="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-2.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-1.5">
           <div className="relative w-full flex h-8 items-center justify-between gap-2 rounded-full border border-black/10 bg-white/90 px-2 shadow-[0_15px_40px_rgba(0,0,0,0.12)] backdrop-blur-md sm:h-auto sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:h-9 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
-            <a href="#top" aria-label="Back to home" className="relative inline-flex h-8 w-28 items-center rounded-full bg-white shadow-sm transition-transform hover:-translate-y-0.5 sm:h-auto sm:w-auto sm:px-4 sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
+            <a href="#top" aria-label="Back to home" className="relative inline-flex h-8 w-20 items-center rounded-full bg-white shadow-sm transition-transform hover:-translate-y-0.5 sm:h-auto sm:w-auto sm:px-4 sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
               <div className="flex items-center justify-center">
-                <img src={publicAsset('Logo.png')} alt="POGON" className="pointer-events-none absolute left-1/2 top-1/2 h-20 w-36 -translate-x-1/2 -translate-y-1/2 object-cover object-center sm:hidden" />
+                <img src={publicAsset('Logo.png')} alt="POGON" className="pointer-events-none absolute left-1/2 top-1/2 h-14 w-24 -translate-x-1/2 -translate-y-1/2 object-cover object-center sm:hidden" />
                 <img src={publicAsset('Logo.png')} alt="POGON" className="hidden h-9 w-auto opacity-100 sm:block lg:h-10 [@media_(orientation:landscape)_and_(max-height:520px)]:h-6" />
               </div>
             </a>
@@ -3035,7 +3035,7 @@ export default function App() {
       <AnimatePresence>
         {showModelsShortcut && (
           <motion.div
-            className="fixed right-2 top-1/2 z-[55] -translate-y-1/2 sm:right-4"
+            className="fixed right-2 top-1/2 z-[55] flex -translate-y-1/2 flex-col items-end gap-2 sm:right-4"
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 24 }}
@@ -3052,6 +3052,17 @@ export default function App() {
                 <ArrowRight className="size-4" aria-hidden="true" />
               </span>
             </button>
+            <a
+              href={lang === 'sr' ? '/oprema/' : `/oprema/?lang=${lang}`}
+              onClick={() => trackEvent('accessories_shortcut_click', { source: 'floating-scroll-shortcut' })}
+              className="group inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/95 py-1.5 pl-3 pr-1.5 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black shadow-[0_12px_35px_rgba(0,0,0,0.18)] backdrop-blur-md transition-transform hover:scale-[1.04] active:scale-[0.98] sm:gap-2.5 sm:pl-4 sm:text-xs md:hidden"
+              aria-label={tr({ sr: 'Vidi opremu', en: 'View accessories', ru: 'Смотреть аксессуары' })}
+            >
+              <span className="whitespace-nowrap">{tr({ sr: 'Vidi opremu', en: 'View accessories', ru: 'Смотреть аксессуары' })}</span>
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-black text-[#7fff00] transition-transform group-hover:translate-x-0.5 sm:size-9">
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </span>
+            </a>
           </motion.div>
         )}
       </AnimatePresence>
