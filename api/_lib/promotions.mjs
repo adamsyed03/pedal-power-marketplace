@@ -40,6 +40,7 @@ export function applyPromotion(cart, value) {
   if (!promotion) throw new Error('INVALID_PROMO_CODE');
 
   if (promotion.kind === 'fixed_order_discount') {
+    if (!cart.items.some((item) => item.category === 'bike')) throw new Error('PROMO_NOT_APPLICABLE');
     const discountRsd = Math.min(promotion.discountRsd, cart.subtotalRsd);
     const items = cart.items.map((item, index) => index === 0 ? {
       ...item,

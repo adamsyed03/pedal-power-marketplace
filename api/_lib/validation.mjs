@@ -22,7 +22,7 @@ export function validateCheckout(input) {
     termsAccepted: input?.termsAccepted === true,
   };
   if (!result.captchaToken) throw new Error('INVALID_CAPTCHA');
-  if (!items.length || items.length > 3 || items.some((item) => !item.product || !Number.isSafeInteger(item.quantity) || item.quantity < 1) ||
+  if (!items.length || items.length > 9 || items.some((item) => !item.product || !Number.isSafeInteger(item.quantity) || item.quantity < 1 || item.quantity > 99) ||
       new Set(items.map((item) => item.product)).size !== items.length || !result.firstName || !result.lastName ||
       !result.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email) || !result.phone ||
       !result.street || !result.city || !result.postalCode || !['courier', 'pickup'].includes(result.deliveryMethod) ||

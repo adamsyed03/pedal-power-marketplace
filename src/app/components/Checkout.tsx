@@ -44,10 +44,29 @@ function SectionHeading({ number, title, description }: { number: string; title:
   );
 }
 
+const parseCartParameter = (value: string | null): { product: ProductKey; quantity: number }[] => {
+  if (!value) return [];
+  const parsed: { product: ProductKey; quantity: number }[] = [];
+  const seen = new Set<string>();
+  for (const segment of value.split(',')) {
+    const [key, rawQuantity, ...extra] = segment.split(':');
+    const quantity = Number(rawQuantity);
+    if (extra.length || seen.has(key) || !products.some((entry) => entry.key === key) || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) return [];
+    seen.add(key);
+    parsed.push({ product: key as ProductKey, quantity });
+  }
+  return parsed.length <= products.length ? parsed : [];
+};
+
 export function Checkout() {
-  const requestedModel = new URLSearchParams(window.location.search).get('model')?.toLowerCase();
-  const model = products.some((entry) => entry.key === requestedModel) ? requestedModel as ProductKey : null;
-  const [items, setItems] = useState<{ product: ProductKey; quantity: number }[]>(model ? [{ product: model, quantity: 1 }] : []);
+  const searchParams = new URLSearchParams(window.location.search);
+  const requestedKey = (searchParams.get('product') || searchParams.get('model'))?.toLowerCase();
+  const selectedProduct = products.find((entry) => entry.key === requestedKey) ?? null;
+  const cartItems = parseCartParameter(searchParams.get('cart'));
+  const initialItems = cartItems.length ? cartItems : selectedProduct ? [{ product: selectedProduct.key, quantity: 1 }] : [];
+  const accessoriesOnly = initialItems.length > 0 && initialItems.every((item) => products.find((entry) => entry.key === item.product)?.category === 'accessory');
+  const returnPath = accessoriesOnly ? '/oprema/' : '/#modeli';
+  const [items, setItems] = useState<{ product: ProductKey; quantity: number }[]>(initialItems);
   const [deliveryMethod, setDeliveryMethod] = useState<'courier' | 'pickup'>('courier');
   const [accepted, setAccepted] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
@@ -63,6 +82,7 @@ export function Checkout() {
     const entry = products.find((candidate) => candidate.key === item.product)!;
     return sum + entry.priceRsd * item.quantity;
   }, 0), [items]);
+  const hasBike = items.some((item) => products.find((entry) => entry.key === item.product)?.category === 'bike');
   const cargoQuantity = items.find((item) => item.product === 'cargo')?.quantity ?? 0;
   const displayedDiscount = promoCode === 'MILEBANJA'
     ? cargoQuantity * 10_000
@@ -77,12 +97,18 @@ export function Checkout() {
   }, [items, deliveryMethod, promoCode, gamePrize]);
 
   useEffect(() => {
+    if (promoCode && !hasBike) {
+      setPromoCode(null);
+      setPromoInput('');
+      setPromoError('Kodovi za popust važe za porudžbine koje sadrže Pogon bicikl.');
+      return;
+    }
     if (promoCode === 'MILEBANJA' && cargoQuantity === 0) {
       setPromoCode(null);
       setPromoInput('');
       setPromoError('Kod MILEBANJA važi samo za Pogon Cargo.');
     }
-  }, [cargoQuantity, promoCode]);
+  }, [cargoQuantity, hasBike, promoCode]);
 
   const applyPromoCode = () => {
     const normalized = promoInput.trim().toUpperCase();
@@ -95,6 +121,11 @@ export function Checkout() {
     if (!['MILEBANJA', 'NBGD', 'INSTAGRAM'].includes(normalized)) {
       setPromoCode(null);
       setPromoError('Kod za popust nije važeći.');
+      return;
+    }
+    if (!hasBike) {
+      setPromoCode(null);
+      setPromoError('Kodovi za popust važe za porudžbine koje sadrže Pogon bicikl.');
       return;
     }
     if (normalized === 'MILEBANJA' && cargoQuantity === 0) {
@@ -159,13 +190,13 @@ export function Checkout() {
   const addModel = (key: ProductKey) => setItems((current) => current.some((item) => item.product === key) ? current : [...current, { product: key, quantity: 1 }]);
   const removeModel = (key: ProductKey) => setItems((current) => current.filter((item) => item.product !== key));
 
-  if (!model) {
+  if (!initialItems.length) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f4f2ec] px-4 text-center text-[#171713]">
         <div className="max-w-md rounded-[2rem] border border-black/[0.06] bg-white p-8 shadow-sm">
-          <h1 className="text-3xl font-black tracking-tight">Prvo izaberi model</h1>
-          <p className="mt-3 leading-7 text-black/50">Checkout se otvara direktno za Pogon model koji izabereš.</p>
-          <a href="/#modeli" className="mt-7 inline-flex min-h-12 items-center rounded-full bg-[#171713] px-6 font-black text-white">Pogledaj modele</a>
+          <h1 className="text-3xl font-black tracking-tight">Prvo izaberi proizvod</h1>
+          <p className="mt-3 leading-7 text-black/50">Checkout se otvara direktno za Pogon bicikl ili opremu koju izabereš.</p>
+          <div className="mt-7 flex flex-wrap justify-center gap-2"><a href="/#modeli" className="inline-flex min-h-12 items-center rounded-full bg-[#171713] px-6 font-black text-white">Pogledaj modele</a><a href="/oprema/" className="inline-flex min-h-12 items-center rounded-full border border-black/15 px-6 font-black">Pogledaj opremu</a></div>
         </div>
       </main>
     );
@@ -175,9 +206,9 @@ export function Checkout() {
     <main className="min-h-screen bg-[#f4f2ec] text-[#171713] selection:bg-orange-200">
       <header className="sticky top-0 z-30 border-b border-black/[0.06] bg-[#f4f2ec]/90 px-4 py-3 backdrop-blur-xl sm:px-6">
         <div className="mx-auto grid max-w-7xl grid-cols-3 items-center">
-          <a href="/#modeli" className="group inline-flex w-fit items-center gap-2 rounded-full px-2 py-2 text-sm font-bold transition hover:bg-black/5">
+          <a href={returnPath} className="group inline-flex w-fit items-center gap-2 rounded-full px-2 py-2 text-sm font-bold transition hover:bg-black/5">
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
-            <span className="hidden sm:inline">Nazad na modele</span>
+            <span className="hidden sm:inline">{accessoriesOnly ? 'Nazad na opremu' : 'Nazad na modele'}</span>
             <span className="sm:hidden">Nazad</span>
           </a>
           <a href="/" aria-label="Pogon početna" className="justify-self-center"><img src="/Logo.png" alt="Pogon" className="h-8 w-auto sm:h-9" /></a>
@@ -197,7 +228,7 @@ export function Checkout() {
         <form onSubmit={submit} onInput={(event) => { const input = event.target as HTMLInputElement; if (input.name) setCustomerSummary((current) => ({ ...current, [input.name]: input.value })); }} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_410px] lg:gap-10">
           <div className="space-y-5">
             <section className="rounded-[2rem] border border-black/[0.06] bg-white p-5 shadow-[0_10px_40px_rgba(32,28,18,0.05)] sm:p-8">
-              <SectionHeading number="1" title="Kako želiš da preuzmeš bicikl?" description="Cena dostave je odmah uključena u ukupan iznos." />
+              <SectionHeading number="1" title="Kako želiš da preuzmeš porudžbinu?" description="Cena dostave je odmah uključena u ukupan iznos." />
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 <button type="button" onClick={() => setDeliveryMethod('courier')} aria-pressed={deliveryMethod === 'courier'} className={`flex min-h-32 gap-4 rounded-2xl border-2 p-4 text-left transition ${deliveryMethod === 'courier' ? 'border-orange-500 bg-orange-50/60' : 'border-black/[0.07] hover:border-black/20'}`}>
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm"><Truck className="size-5" /></span>
@@ -211,7 +242,7 @@ export function Checkout() {
             </section>
 
             <section className="rounded-[2rem] border border-black/[0.06] bg-white p-5 shadow-[0_10px_40px_rgba(32,28,18,0.05)] sm:p-8">
-              <SectionHeading number="2" title="Podaci za porudžbinu" description={deliveryMethod === 'courier' ? 'Na ovu adresu šaljemo bicikl i potvrdu porudžbine.' : 'Koristićemo ih da potvrdimo termin preuzimanja.'} />
+              <SectionHeading number="2" title="Podaci za porudžbinu" description={deliveryMethod === 'courier' ? 'Na ovu adresu šaljemo proizvode i potvrdu porudžbine.' : 'Koristićemo ih da potvrdimo termin preuzimanja.'} />
               <div className="mt-7 grid gap-x-4 gap-y-5 sm:grid-cols-2">
                 {fields.map((field) => (
                   <label key={field.name} className={field.wide ? 'sm:col-span-2' : ''}>
@@ -231,7 +262,7 @@ export function Checkout() {
                   const entry = products.find((candidate) => candidate.key === item.product)!;
                   return <div key={item.product} className="flex items-center gap-3 rounded-2xl border border-black/10 bg-[#f8f7f3] p-3">
                     <div className="size-16 shrink-0 overflow-hidden rounded-xl"><img src={entry.image} alt={entry.name} className="size-full object-cover" /></div>
-                    <div className="min-w-0 flex-1"><h2 className="font-black tracking-tight">{entry.name}</h2><p className="mt-1 text-xs leading-4 text-black/50">{entry.description}</p><p className="mt-1 text-xs font-bold text-black/70">{item.product === 'cargo' && promoCode === 'MILEBANJA' ? <><span className="mr-1.5 text-black/35 line-through">{formatRsd(entry.priceRsd)}</span>{formatRsd(120_000)}</> : <>{entry.listPriceRsd ? <span className="mr-1.5 text-black/35 line-through">{formatRsd(entry.listPriceRsd)}</span> : null}{formatRsd(entry.priceRsd)}</>} po komadu</p></div>
+                    <div className="min-w-0 flex-1"><h2 className="font-black tracking-tight">{entry.name}</h2><p className="mt-1 text-xs leading-4 text-black/50">{entry.description}</p><p className="mt-1 text-xs font-bold text-black/70">{item.product === 'cargo' && promoCode === 'MILEBANJA' ? <><span className="mr-1.5 text-black/35 line-through">{formatRsd(entry.priceRsd)}</span>{formatRsd(120_000)}</> : <>{entry.listPriceRsd ? <span className="mr-1.5 text-black/35 line-through">{formatRsd(entry.listPriceRsd)}</span> : null}{formatRsd(entry.priceRsd)}</>} {entry.unitLabel ?? 'po komadu'}</p></div>
                     <div className="flex items-center gap-0.5 rounded-full bg-black/[0.06] p-1">
                       <button type="button" aria-label="Smanji količinu" onClick={() => item.quantity === 1 && items.length > 1 ? removeModel(item.product) : changeQuantity(item.product, -1)} className="flex size-7 items-center justify-center rounded-full hover:bg-black/[0.06]"><Minus className="size-3" /></button>
                       <span className="min-w-6 text-center text-xs font-black">{item.quantity}</span>
@@ -242,7 +273,7 @@ export function Checkout() {
               </div>
 
               {items.length < products.length && <div className="mt-4">
-                <p className="mb-2 text-xs font-bold text-black/45">Dodaj drugi model</p>
+                <p className="mb-2 text-xs font-bold text-black/45">Dodaj još proizvoda</p>
                 <div className="flex flex-wrap gap-2">{products.filter((entry) => !items.some((item) => item.product === entry.key)).map((entry) => <button key={entry.key} type="button" onClick={() => addModel(entry.key)} className="rounded-full border border-black/15 px-3 py-2 text-xs font-bold text-black/65 transition hover:border-orange-500 hover:text-black"><Plus className="mr-1 inline size-3" /> {entry.name}</button>)}</div>
               </div>}
 
@@ -253,7 +284,7 @@ export function Checkout() {
                 </div>
               )}
 
-              <div className="mt-6 rounded-2xl border border-black/10 bg-[#f8f7f3] p-4">
+              {hasBike && <div className="mt-6 rounded-2xl border border-black/10 bg-[#f8f7f3] p-4">
                 <label htmlFor="promo-code" className="flex items-center gap-2 text-sm font-black"><Tag className="size-4 text-orange-600" /> Kod za popust</label>
                 <div className="mt-3 flex gap-2">
                   <input
@@ -284,7 +315,7 @@ export function Checkout() {
                 <p id="promo-code-status" className={`mt-2 min-h-5 text-xs font-bold ${promoError ? 'text-red-700' : promoCode ? 'text-emerald-700' : 'text-black/40'}`}>
                   {promoError || (promoCode ? `Kod ${promoCode} je primenjen: ${formatRsd(displayedDiscount)} popusta.` : 'Kod se proverava i na serveru pre plaćanja.')}
                 </p>
-              </div>
+              </div>}
 
               <div className="mt-6 rounded-2xl border border-black/10 bg-[#f8f7f3] p-4">
                 <div className="flex items-center gap-3"><CreditCard className="size-5 text-orange-600" /><div><p className="text-sm font-bold">Plaćanje karticom</p><p className="text-xs text-black/45">Plaćanje do 12 rata</p></div></div>

@@ -14,7 +14,7 @@ import {
   stripSensitiveFields,
 } from '../api/_lib/payment-flow.mjs';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { verifyCaptcha } from '../api/_lib/captcha.mjs';
 import { buildPaymentConfirmation, sendTransactionalEmail, smtpTransportOptions } from '../api/_lib/email.mjs';
 import { dispatchConfirmation } from '../api/_lib/confirmation.mjs';
@@ -41,7 +41,23 @@ const productionEnv = {
 test('server calculates authoritative product total and ignores browser price', () => {
   assert.deepEqual(calculateOrderTotal('core', 2).totalRsd, 260_000);
   assert.throws(() => calculateOrderTotal('core', 0), /INVALID_QUANTITY/);
+  assert.throws(() => calculateOrderTotal('core', 100), /INVALID_QUANTITY/);
   assert.throws(() => calculateOrderTotal('unknown', 1), /INVALID_PRODUCT/);
+});
+
+test('accessory prices are server-authoritative and the sold-out basket cannot be charged', () => {
+  const prices = {
+    chain: 1_999,
+    'helmet-with-visor': 3_999,
+    helmet: 2_999,
+    'rearview-mirror': 1_300,
+    gloves: 2_000,
+    'phone-holder': 2_000,
+  };
+  for (const [product, price] of Object.entries(prices)) {
+    assert.equal(calculateOrderTotal(product, 1).unitPriceRsd, price, product);
+  }
+  assert.throws(() => calculateOrderTotal('basket', 1), /INVALID_PRODUCT/);
 });
 
 test('mixed-model totals are authoritative and quantities are not capped at five', () => {
@@ -62,7 +78,7 @@ test('MILEBANJA sets each Cargo bike to 120,000 RSD without discounting other mo
   assert.equal(discounted.discountRsd, 20_000);
   assert.equal(discounted.subtotalRsd, 370_000);
   assert.deepEqual(discounted.items.find((item) => item.product === 'cargo'), {
-    product: 'cargo', name: 'Pogon Cargo', quantity: 2,
+    product: 'cargo', name: 'Pogon Cargo', category: 'bike', quantity: 2,
     originalUnitPriceRsd: 130_000, unitPriceRsd: 120_000,
     lineTotalRsd: 240_000, discountRsd: 20_000, promoCode: 'MILEBANJA',
   });
@@ -106,6 +122,7 @@ test('promo codes are server-normalized and fail closed when invalid or inapplic
   assert.equal(normalizePromoCode(''), null);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), 'NOTREAL'), /INVALID_PROMO_CODE/);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'core', quantity: 1 }]), 'MILEBANJA'), /PROMO_NOT_APPLICABLE/);
+  assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'helmet', quantity: 1 }]), 'NBGD'), /PROMO_NOT_APPLICABLE/);
   const regular = applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), null);
   assert.equal(regular.subtotalRsd, 130_000);
   assert.equal(regular.discountRsd, 0);
@@ -1189,10 +1206,13 @@ test('production routing serves known SPA pages and returns a real 404 for unkno
   const spaRoute = config.routes.find((route) => route.dest === '/index.html');
   const fallbackRoute = config.routes.at(-1);
   const knownRoutes = ['/checkout', '/kviz', '/kontakt', '/uslovi-kupovine', '/payment/success'];
+  const accessoriesRoute = config.routes.find((route) => route.dest === '/oprema/index.html');
 
   assert.ok(spaRoute);
   const spaPattern = new RegExp(spaRoute.src);
   for (const route of knownRoutes) assert.equal(spaPattern.test(route), true, route);
+  assert.ok(accessoriesRoute);
+  assert.equal(new RegExp(accessoriesRoute.src).test('/oprema/'), true);
   assert.equal(spaPattern.test('/definitely-not-a-real-page'), false);
   assert.equal(fallbackRoute.status, 404);
   assert.equal(fallbackRoute.dest, '/404.html');
@@ -1228,6 +1248,7 @@ test('admin CRM includes an authenticated PAID-orders panel with game prizes', (
   assert.match(client, /Authorization: `Bearer \$\{accessToken\}`/);
   assert.match(client, /ADMIN_ORDERS_API_NOT_RUNNING/);
   assert.match(admin, /fetchPaidOrders/);
+  assert.match(admin, /submitted\.toLocaleDateString\('sr-RS'\)[\s\S]*submitted\.toLocaleTimeString\('sr-RS', \{ hour: '2-digit', minute: '2-digit' \}\)/);
   assert.match(admin, /npm run dev:fullstack/);
   assert.match(admin, /<AdminOrdersPanel/);
   assert.match(admin, /aria-controls="completed-orders"/);
@@ -1258,11 +1279,16 @@ test('Core sale is displayed consistently and the server charges 130,000 RSD', (
   for (const html of [home, corePage]) assert.match(html, /"price"\s*:\s*"130000"/);
 });
 
-test('model cards link directly to preselected checkout while SEO product pages remain complete', () => {
+test('model cards add bikes to the shared cart above the direct purchase action', () => {
   const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  assert.match(app, /onClick=\{\(\) => addToCart\(model\.key as ProductKey\)\}/);
+  assert.match(app, /CART_STORAGE_KEY = 'pogon-cart-v1'/);
+  assert.match(app, /sr: 'Dodaj u Korpu', en: 'Add to cart'/);
+  assert.match(app, /continueToCartCheckout/);
   assert.match(app, /href=\{`\/checkout\?model=\$\{model\.key\}`\}/);
-  assert.doesNotMatch(app, /href=\{`\/elektricni-bicikli\/\$\{model\.key\}\/`\}/);
-  assert.doesNotMatch(app, /sr: 'Pogledaj model', en: 'See model'/);
+  assert.match(app, /addToCart\(model\.key as ProductKey\)[\s\S]*href=\{`\/checkout\?model=\$\{model\.key\}`\}/);
+  assert.doesNotMatch(app, /sr: 'Detalji modela'/);
+  assert.doesNotMatch(app, /openLeadModal\('purchase-general'\)/);
   assert.match(app, /sr: \[[\s\S]*'NFC kartice za otključavanje'[\s\S]*en: \[[\s\S]*'NFC unlock cards'/);
   assert.doesNotMatch(app, /openCheckout/);
 
@@ -1286,6 +1312,69 @@ test('model cards link directly to preselected checkout while SEO product pages 
     assert.match(html, /"hasMerchantReturnPolicy"/);
     assert.match(html, new RegExp(`href="/checkout\\?model=${model}"`));
   }
+
+  const glidePage = readFileSync(new URL('../public/elektricni-bicikli/glide/index.html', import.meta.url), 'utf8');
+  assert.match(glidePage, /NFC kartice za otključavanje/);
+  assert.doesNotMatch(glidePage, /hidrauličn/i);
+});
+
+test('accessories navigation opens an indexable catalog containing every current accessory', () => {
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  const accessories = readFileSync(new URL('../public/oprema/index.html', import.meta.url), 'utf8');
+  const productStyles = readFileSync(new URL('../public/seo-product.css', import.meta.url), 'utf8');
+  const sitemap = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8');
+
+  assert.match(app, /navAccessories: 'Oprema'/);
+  assert.match(app, /href=\{lang === 'sr' \? '\/oprema\/' : `\/oprema\/\?lang=\$\{lang\}`\}[^>]*>\{ui\.navAccessories\}/);
+  assert.match(app, /href="#modeli"[\s\S]*\/oprema\/\?lang=[\s\S]*href="#iskustva"/);
+  assert.match(accessories, /<link rel="canonical" href="https:\/\/ridepogon\.com\/oprema\/">/);
+  assert.match(accessories, /"@type":"CollectionPage"/);
+  assert.match(accessories, /"numberOfItems":7/);
+  assert.equal((accessories.match(/class="accessory-card(?: [^"]+)?"/g) || []).length, 7);
+  for (const item of ['Korpa', 'Lanac za zaključavanje', 'Kaciga sa vizirom', 'Kaciga', 'Retrovizor', 'Rukavice za upravljač', 'Držač telefona']) {
+    assert.match(accessories, new RegExp(item));
+  }
+  const accessoryImages = ['basket', 'chain', 'helmetwithvizor', 'helmet', 'rearviewmirror', 'gloves', 'phoneholder'];
+  for (const image of accessoryImages) {
+    assert.match(accessories, new RegExp(`src="/oprema/${image}\\.optimized\\.jpg"`));
+    assert.match(accessories, new RegExp(`data-lightbox-src="/oprema/${image}\\.png"`));
+    assert.equal(existsSync(new URL(`../public/oprema/${image}.optimized.jpg`, import.meta.url)), true);
+  }
+  const optimizedImageBytes = accessoryImages.reduce((total, image) => total + statSync(new URL(`../public/oprema/${image}.optimized.jpg`, import.meta.url)).size, 0);
+  assert.ok(optimizedImageBytes < 750_000);
+  for (const price of ['6.000 RSD', '1.999 RSD', '3.999 RSD', '2.999 RSD', '1.300 RSD', '2.000 RSD']) assert.match(accessories, new RegExp(price.replace('.', '\\.')));
+  assert.match(accessories, /Trenutno rasprodato/);
+  assert.doesNotMatch(accessories, /checkout\?product=basket/);
+  for (const key of ['chain', 'helmet-with-visor', 'helmet', 'rearview-mirror', 'gloves', 'phone-holder']) assert.match(accessories, new RegExp(`class="accessory-buy add-to-cart"[^>]+data-product="${key}"`));
+  assert.match(accessories, /Modeli<\/a><a href="\/oprema\/" aria-current="page">Oprema<\/a><a href="\/#iskustva">Iskustva/);
+  assert.match(accessories, /id="cart-overlay"[\s\S]*id="cart-items"[\s\S]*id="cart-checkout"/);
+  assert.doesNotMatch(accessories, /class="accessories-buy-now"/);
+  assert.match(accessories, /checkout: 'Nastavi'/);
+  assert.match(accessories, /window\.location\.assign\('\/checkout\?cart=' \+ encodeURIComponent\(cartParameter\)\)/);
+  assert.match(accessories, /var cartStorageKey = 'pogon-cart-v1'/);
+  assert.match(accessories, /cargo: \{ names:[\s\S]*core: \{ names:[\s\S]*glide: \{ names:/);
+  assert.match(accessories, /href="\/oprema\/\?lang=en" lang="en" data-language="en"/);
+  assert.match(accessories, /href="\/oprema\/\?lang=ru" lang="ru" data-language="ru"/);
+  assert.match(accessories, /en: \{[\s\S]*heroTitle: 'Gear for every day\.'/);
+  assert.match(accessories, /ru: \{[\s\S]*heroTitle: 'Аксессуары на каждый день\.'/);
+  assert.match(accessories, /applyLanguage\(currentLanguage, false\)/);
+  assert.equal((accessories.match(/class="accessory-photo-button"/g) || []).length, 7);
+  assert.match(accessories, /id="accessory-lightbox"/);
+  assert.match(accessories, /href="\/elektricni-bicikli\/">Vidi električne bicikle/);
+  assert.match(accessories, /rel="prefetch" href="\/elektricni-bicikli\/" as="document"/);
+  assert.match(productStyles, /\.accessories-page \.accessory-grid \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(productStyles, /\.accessories-page \.crumbs,[^\n]+\.accessories-page \.accessories-hero[^\n]+display: none/);
+  const checkout = readFileSync(new URL('../src/app/components/Checkout.tsx', import.meta.url), 'utf8');
+  const clientCatalog = readFileSync(new URL('../src/lib/products.ts', import.meta.url), 'utf8');
+  const serverCatalog = readFileSync(new URL('../api/_lib/catalog.mjs', import.meta.url), 'utf8');
+  assert.match(checkout, /searchParams\.get\('product'\)/);
+  assert.match(checkout, /parseCartParameter\(searchParams\.get\('cart'\)\)/);
+  for (const source of [clientCatalog, serverCatalog]) {
+    assert.match(source, /chain[\s\S]*1_999/);
+    assert.match(source, /helmet-with-visor[\s\S]*3_999/);
+    assert.match(source, /rearview-mirror[\s\S]*1_300/);
+  }
+  assert.match(sitemap, /https:\/\/ridepogon\.com\/oprema\//);
 });
 
 test('tic-tac-toe gives about half of first attempts a win and assists the second attempt', () => {

@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones, Gift } from 'lucide-react';
+import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones, Gift, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { LeadContactModal } from './components/LeadContactModal';
 import { PaymentBranding } from './components/PaymentBranding';
@@ -10,6 +10,7 @@ import { submitLead } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
 import { publicAsset } from '../lib/assets';
 import { setHomeMetadata, setPageMetadata } from '../lib/seo';
+import { formatRsd as formatProductRsd, products, type ProductKey } from '../lib/products';
 
 type Language = 'en' | 'sr' | 'ru';
 type Localized<T> = Record<Language, T>;
@@ -21,6 +22,24 @@ const modelDisplayPosition: Record<string, number> = {
 };
 const MODEL_BAR_SWIPE_THRESHOLD_PX = 40;
 const MODEL_BAR_HORIZONTAL_DOMINANCE = 1.25;
+const CART_STORAGE_KEY = 'pogon-cart-v1';
+const LEGACY_ACCESSORY_CART_STORAGE_KEY = 'pogon-accessory-cart-v1';
+type CartState = Partial<Record<ProductKey, number>>;
+
+function readStoredCart(): CartState {
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem(LEGACY_ACCESSORY_CART_STORAGE_KEY) || '{}';
+    const parsed = JSON.parse(stored) as Record<string, unknown>;
+    return Object.fromEntries(Object.entries(parsed).filter(([key, quantity]) =>
+      products.some((product) => product.key === key)
+      && Number.isSafeInteger(quantity)
+      && Number(quantity) > 0
+      && Number(quantity) <= 99,
+    )) as CartState;
+  } catch {
+    return {};
+  }
+}
 
 const homeCopyEn = {
   heroTitle: 'Forget traffic, parking, and fuel.',
@@ -188,6 +207,9 @@ export default function App() {
       ? requestedLanguage
       : 'sr';
   });
+  const [cart, setCart] = useState<CartState>(readStoredCart);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [recentlyAddedProduct, setRecentlyAddedProduct] = useState<ProductKey | null>(null);
   const [activeSpecs, setActiveSpecs] = useState<string | null>(null);
   const [activeProduct, setActiveProduct] = useState(0);
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
@@ -230,6 +252,42 @@ export default function App() {
   const pageScrollTimeout = useRef<number | null>(null);
   const copy = homeCopy[lang];
   const tr = <T,>(translations: Localized<T>) => translations[lang];
+  const cartEntries = products
+    .map((product) => ({ product, quantity: cart[product.key] || 0 }))
+    .filter((entry) => entry.quantity > 0);
+  const cartQuantity = cartEntries.reduce((sum, entry) => sum + entry.quantity, 0);
+  const cartTotal = cartEntries.reduce((sum, entry) => sum + entry.product.priceRsd * entry.quantity, 0);
+  const updateCartQuantity = (key: ProductKey, quantity: number) => {
+    setCart((current) => {
+      const next = { ...current };
+      if (quantity <= 0) delete next[key];
+      else next[key] = Math.min(quantity, 99);
+      return next;
+    });
+  };
+  const addToCart = (key: ProductKey) => {
+    setCart((current) => ({ ...current, [key]: Math.min((current[key] || 0) + 1, 99) }));
+    setRecentlyAddedProduct(key);
+    window.setTimeout(() => setRecentlyAddedProduct((current) => current === key ? null : current), 900);
+    trackEvent('cart_item_added', { source: 'model-card', product: key });
+  };
+  const continueToCartCheckout = () => {
+    const cartParameter = cartEntries.map(({ product, quantity }) => `${product.key}:${quantity}`).join(',');
+    if (!cartParameter) return;
+    trackEvent('checkout_started', { source: 'shared-cart', items: cartQuantity });
+    window.location.assign(`/checkout?cart=${encodeURIComponent(cartParameter)}`);
+  };
+
+  useEffect(() => {
+    try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch { /* Cart remains available for this visit. */ }
+  }, [cart]);
+
+  useEffect(() => {
+    if (!isCartOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [isCartOpen]);
   const heroBenefits = [
     {
       value: tr({ sr: 'Do 140 km', en: 'Up to 140 km', ru: 'До 140 км' }),
@@ -369,6 +427,7 @@ export default function App() {
         navModels: 'Modeli',
         navTechnology: 'Tehnologija',
         navReviews: 'Iskustva',
+        navAccessories: 'Oprema',
         specs: 'Specifikacije',
         innovation: 'Inovacija',
         technologyTitle: 'Tehnologija Koja Pokreće',
@@ -399,6 +458,7 @@ export default function App() {
         navModels: 'Models',
         navTechnology: 'Technology',
         navReviews: 'Reviews',
+        navAccessories: 'Accessories',
         specs: 'Specifications',
         innovation: 'Innovation',
         technologyTitle: 'Technology That Moves You',
@@ -429,6 +489,7 @@ export default function App() {
         navModels: 'Модели',
         navTechnology: 'Технологии',
         navReviews: 'Отзывы',
+        navAccessories: 'Аксессуары',
         specs: 'Характеристики',
         innovation: 'Инновации',
         technologyTitle: 'Технологии, которые двигают тебя вперёд',
@@ -1408,17 +1469,23 @@ export default function App() {
 
             <div className="absolute left-1/2 hidden -translate-x-1/2 items-center justify-center gap-4 text-xs uppercase tracking-wider text-black/65 md:flex">
               <a href="#modeli" className="transition-colors hover:text-black">{ui.navModels}</a>
+              <a href={lang === 'sr' ? '/oprema/' : `/oprema/?lang=${lang}`} className="transition-colors hover:text-black">{ui.navAccessories}</a>
               <a href="#iskustva" className="transition-colors hover:text-black">{ui.navReviews}</a>
             </div>
 
             <div className="hidden md:flex items-center gap-1.5">
-              <button type="button" onClick={() => openLeadModal('purchase-general')} className="inline-flex items-center justify-center rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs font-medium uppercase tracking-wider text-black/75 transition-all hover:bg-black/10">{copy.buyNow}</button>
+              <button type="button" onClick={() => setIsCartOpen(true)} aria-label={tr({ sr: 'Otvori korpu', en: 'Open cart', ru: 'Открыть корзину' })} className="inline-flex items-center justify-center gap-1 rounded-full border border-black bg-black px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white transition-colors hover:bg-black/80">
+                {tr({ sr: 'Korpa', en: 'Cart', ru: 'Корзина' })}<span className="inline-grid min-h-4 min-w-4 place-items-center rounded-full bg-[#7fff00] px-1 text-[0.58rem] leading-none text-black">{cartQuantity}</span>
+              </button>
               <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
               <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
               <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
             </div>
 
             <div className="flex items-center md:hidden gap-1">
+              <button type="button" onClick={() => setIsCartOpen(true)} aria-label={tr({ sr: 'Otvori korpu', en: 'Open cart', ru: 'Открыть корзину' })} className="inline-flex min-h-6 items-center gap-0.5 rounded-full bg-black px-1.5 text-[0.56rem] font-black uppercase text-white">
+                <ShoppingCart className="size-3" /><span className="inline-grid min-h-3.5 min-w-3.5 place-items-center rounded-full bg-[#7fff00] px-0.5 text-[0.5rem] text-black">{cartQuantity}</span>
+              </button>
               <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
               <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
               <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
@@ -1426,6 +1493,70 @@ export default function App() {
           </div>
         </div>
       </nav>
+
+      <AnimatePresence>
+        {isCartOpen ? (
+          <motion.div
+            className="fixed inset-0 z-[80] bg-black/55 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            role="presentation"
+          >
+            <button type="button" className="absolute inset-0 h-full w-full cursor-default" onClick={() => setIsCartOpen(false)} aria-label={tr({ sr: 'Zatvori korpu', en: 'Close cart', ru: 'Закрыть корзину' })} />
+            <motion.aside
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="homepage-cart-title"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="absolute right-0 top-0 flex h-full w-full max-w-[430px] flex-col bg-[#f5f4ef] text-black shadow-2xl"
+            >
+              <div className="flex items-start justify-between border-b border-black/10 px-5 py-5 sm:px-6">
+                <div>
+                  <p className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-[#397700]">Pogon</p>
+                  <h2 id="homepage-cart-title" className="mt-1 text-3xl font-black tracking-tight">{tr({ sr: 'Tvoja korpa', en: 'Your cart', ru: 'Ваша корзина' })}</h2>
+                </div>
+                <button type="button" onClick={() => setIsCartOpen(false)} className="inline-grid size-10 place-items-center rounded-full border border-black/15 bg-white" aria-label={tr({ sr: 'Zatvori korpu', en: 'Close cart', ru: 'Закрыть корзину' })}><X className="size-5" /></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-5 py-3">
+                {cartEntries.length ? cartEntries.map(({ product, quantity }) => (
+                  <article key={product.key} className="grid grid-cols-[76px_1fr] gap-3 border-b border-black/10 py-4">
+                    <img src={publicAsset(product.image.replace(/^\//, ''))} alt="" className="size-[76px] rounded-2xl bg-white object-contain" />
+                    <div className="min-w-0">
+                      <strong className="block text-sm font-black">{product.name}</strong>
+                      <span className="mt-0.5 block text-xs text-black/55">{formatProductRsd(product.priceRsd)}</span>
+                      <div className="mt-2 flex items-center gap-2">
+                        <button type="button" onClick={() => updateCartQuantity(product.key, quantity - 1)} className="inline-grid size-7 place-items-center rounded-full border border-black/20 bg-white" aria-label={tr({ sr: 'Smanji količinu', en: 'Decrease quantity', ru: 'Уменьшить количество' })}>−</button>
+                        <b className="min-w-4 text-center text-sm">{quantity}</b>
+                        <button type="button" onClick={() => updateCartQuantity(product.key, quantity + 1)} className="inline-grid size-7 place-items-center rounded-full border border-black/20 bg-white" aria-label={tr({ sr: 'Povećaj količinu', en: 'Increase quantity', ru: 'Увеличить количество' })}>+</button>
+                        <button type="button" onClick={() => updateCartQuantity(product.key, 0)} className="ml-1 text-[0.65rem] font-bold text-black/50 underline">{tr({ sr: 'Ukloni', en: 'Remove', ru: 'Удалить' })}</button>
+                      </div>
+                    </div>
+                  </article>
+                )) : (
+                  <div className="px-3 py-20 text-center">
+                    <ShoppingCart className="mx-auto size-8 text-black/25" />
+                    <strong className="mt-4 block text-lg">{tr({ sr: 'Korpa je prazna.', en: 'Your cart is empty.', ru: 'Корзина пуста.' })}</strong>
+                    <p className="mt-1 text-sm text-black/50">{tr({ sr: 'Dodaj model koji želiš da poručiš.', en: 'Add the model you would like to order.', ru: 'Добавьте модель, которую хотите заказать.' })}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-black/10 bg-white px-5 pb-6 pt-4 sm:px-6">
+                <div className="mb-4 flex items-center justify-between"><span className="text-sm text-black/60">{tr({ sr: 'Ukupno proizvodi', en: 'Products total', ru: 'Сумма товаров' })}</span><strong className="text-xl font-black">{formatProductRsd(cartTotal)}</strong></div>
+                <button type="button" disabled={!cartEntries.length} onClick={continueToCartCheckout} className="min-h-12 w-full rounded-full bg-black px-5 text-sm font-black uppercase tracking-wide text-white disabled:cursor-not-allowed disabled:opacity-35">
+                  {tr({ sr: 'Nastavi', en: 'Continue to checkout →', ru: 'Перейти к оформлению →' })}
+                </button>
+                <p className="mt-2 text-center text-[0.65rem] text-black/45">{tr({ sr: 'Bicikle i opremu možeš poručiti zajedno.', en: 'Bikes and accessories can be ordered together.', ru: 'Велосипеды и аксессуары можно заказать вместе.' })}</p>
+              </div>
+            </motion.aside>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       {isDesktop && (
       <div>
@@ -1880,6 +2011,18 @@ export default function App() {
                     >
                       <CalendarCheck className="size-3.5" />
                       {copy.heroPrimary}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addToCart(model.key as ProductKey)}
+                      className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors active:scale-[0.98] lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${
+                        model.isFeatured ? 'border-white/35 text-primary-foreground/80 hover:bg-white/10' : 'border-border text-foreground/60 hover:border-primary/60 hover:text-foreground'
+                      }`}
+                    >
+                      <ShoppingCart className="size-3" />
+                      {recentlyAddedProduct === model.key
+                        ? tr({ sr: 'Dodato ✓', en: 'Added ✓', ru: 'Добавлено ✓' })
+                        : tr({ sr: 'Dodaj u Korpu', en: 'Add to cart', ru: 'В корзину' })}
                     </button>
                     <a
                       href={`/checkout?model=${model.key}`}

@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
+import { readFile } from 'node:fs/promises'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -11,6 +12,27 @@ function figmaAssetResolver() {
         const filename = id.replace('figma:asset/', '')
         return path.resolve(__dirname, 'src/assets', filename)
       }
+    },
+  }
+}
+
+function staticCatalogPages(): Plugin {
+  return {
+    name: 'static-catalog-pages',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use(async (request, response, next) => {
+        const pathname = request.url?.split('?')[0]
+        if (pathname !== '/oprema' && pathname !== '/oprema/') return next()
+        try {
+          const html = await readFile(path.resolve(__dirname, 'public/oprema/index.html'), 'utf8')
+          response.statusCode = 200
+          response.setHeader('Content-Type', 'text/html; charset=utf-8')
+          response.end(html)
+        } catch (error) {
+          next(error)
+        }
+      })
     },
   }
 }
@@ -54,6 +76,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       figmaAssetResolver(),
+      staticCatalogPages(),
       adminOrdersDevApi(),
       // The React and Tailwind plugins are both required for Make, even if
       // Tailwind is not being actively used; do not remove them.

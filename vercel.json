@@ -9,6 +9,7 @@
     { "src": "/checkout/?", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
     { "src": "/payment/(.*)", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
     { "src": "/api/(.*)", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
+    { "src": "^/oprema/?$", "dest": "/oprema/index.html" },
     { "handle": "filesystem" },
     { "src": "^/(checkout|kviz|uslovi-kupovine|informacije-o-trgovcu|kontakt|dostava|reklamacije|povracaj-sredstava|privatnost|bezbednost-placanja|payment/card|payment/success|payment/failed)/?$", "dest": "/index.html" },
     { "src": "/(.*)", "status": 404, "dest": "/404.html" }
