@@ -4,9 +4,10 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "npm run homepage:prerender && vite build",
     "dev": "vite --port 5174",
     "dev:fullstack": "vercel dev --listen 4175",
+    "homepage:prerender": "node scripts/prerender-homepage.mjs",
     "seo:generate": "node scripts/generate-seo-pages.mjs",
     "seo:check": "node scripts/verify-seo.mjs",
     "test": "npm run test:checkout",

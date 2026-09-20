@@ -7,25 +7,27 @@ const visaSecureUrl = 'https://rs.visa.com/pay-with-visa/security-and-assistance
 const mastercardIdentityCheckUrl = 'https://www.mastercard.rs/sr-rs/korisnici/pronadite-karticu.html';
 
 const acceptedCards = [
-  ['/payment-brands/bib-mastercard.png', 'Mastercard'],
-  ['/payment-brands/bib-maestro.png', 'Maestro'],
-  ['/payment-brands/bib-visa.png', 'Visa'],
-  ['/payment-brands/bib-amex.png', 'American Express'],
-  ['/payment-brands/bib-dinacard.png', 'DinaCard'],
+  ['/payment-brands/bib-mastercard.png', 'Mastercard', 146, 120],
+  ['/payment-brands/bib-maestro.png', 'Maestro', 146, 122],
+  ['/payment-brands/bib-visa.png', 'Visa', 1106, 531],
+  ['/payment-brands/bib-amex.png', 'American Express', 546, 545],
+  ['/payment-brands/bib-dinacard.png', 'DinaCard', 150, 70],
 ] as const;
 
 const securityPrograms = [
-  ['/payment-brands/bib-visa-secure.png', 'Visa Secure', visaSecureUrl],
-  ['/payment-brands/bib-mastercard-id-check.png', 'Mastercard Identity Check', mastercardIdentityCheckUrl],
-  ['/payment-brands/bib-amex-safekey.png', 'American Express SafeKey', null],
-  ['/payment-brands/bib-dinacard-secure.png', 'DinaCard Secure', null],
+  ['/payment-brands/bib-visa-secure.png', 'Visa Secure', visaSecureUrl, 1651, 1650],
+  ['/payment-brands/bib-mastercard-id-check.png', 'Mastercard Identity Check', mastercardIdentityCheckUrl, 2102, 600],
+  ['/payment-brands/bib-amex-safekey.png', 'American Express SafeKey', null, 291, 72],
+  ['/payment-brands/bib-dinacard-secure.png', 'DinaCard Secure', null, 500, 338],
 ] as const;
 
-function BrandAsset({ src, alt, security = false, compact = false }: { src: string; alt: string; security?: boolean; compact?: boolean }) {
+function BrandAsset({ src, alt, width, height, security = false, compact = false }: { src: string; alt: string; width: number; height: number; security?: boolean; compact?: boolean }) {
   return (
     <img
       src={src}
       alt={alt}
+      width={width}
+      height={height}
       className={`${compact
         ? security ? 'h-[40px] w-[60px]' : 'h-[32px] w-[50px]'
         : security ? 'h-[52px] w-[110px]' : 'h-[42px] w-[66px]'} shrink-0 object-contain`}
@@ -44,18 +46,18 @@ export function PaymentBranding({ dark = false, compact = false }: PaymentBrandi
     >
       <div className="flex flex-col items-start gap-8">
         <div className={`flex flex-nowrap items-center ${compact ? 'gap-1.5' : 'gap-2'}`} role="list" aria-label="Prihvaćene kartice">
-          {acceptedCards.map(([src, alt]) => <span key={src} role="listitem"><BrandAsset src={src} alt={alt} compact={compact} /></span>)}
+          {acceptedCards.map(([src, alt, width, height]) => <span key={src} role="listitem"><BrandAsset src={src} alt={alt} width={width} height={height} compact={compact} /></span>)}
         </div>
 
         <a href="https://www.bancaintesa.rs/" target="_blank" rel="noreferrer" aria-label="Banca Intesa" className="shrink-0">
-          <img src="/payment-brands/bib-banca-intesa.png" alt="Banca Intesa — Intesa Sanpaolo Group" className={`${compact ? 'w-[200px]' : 'w-[220px]'} h-auto max-w-full object-contain`} />
+          <img src="/payment-brands/bib-banca-intesa.png" alt="Banca Intesa — Intesa Sanpaolo Group" width={334} height={67} className={`${compact ? 'w-[200px]' : 'w-[220px]'} h-auto max-w-full object-contain`} />
         </a>
 
         <div className={`flex flex-nowrap items-center ${compact ? 'gap-1.5' : 'gap-2'}`} role="list" aria-label="Programi sigurnosti kartica">
-          {securityPrograms.map(([src, alt, href]) => (
+          {securityPrograms.map(([src, alt, href, width, height]) => (
             href
-              ? <a key={src} role="listitem" href={href} target="_blank" rel="noreferrer"><BrandAsset src={src} alt={alt} security compact={compact} /></a>
-              : <span key={src} role="listitem"><BrandAsset src={src} alt={alt} security compact={compact} /></span>
+              ? <a key={src} role="listitem" href={href} target="_blank" rel="noreferrer"><BrandAsset src={src} alt={alt} width={width} height={height} security compact={compact} /></a>
+              : <span key={src} role="listitem"><BrandAsset src={src} alt={alt} width={width} height={height} security compact={compact} /></span>
           ))}
         </div>
       </div>

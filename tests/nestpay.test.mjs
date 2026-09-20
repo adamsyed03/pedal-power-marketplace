@@ -951,15 +951,37 @@ test('EPM payment branding uses the complete official Banca Intesa artwork set',
   }
 });
 
-test('initial HTML keeps SEO content without flashing unstyled fallback copy', () => {
+test('initial HTML contains the complete meaningful homepage and hydrates it', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const root = html.match(/<div id="root">([\s\S]*?)<\/div>\s*<noscript>/)?.[1] ?? '';
+  const main = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
+  const start = html.indexOf('<!-- POGON_HOME_SSR_START -->');
+  const end = html.indexOf('<!-- POGON_HOME_SSR_END -->');
+  const root = start >= 0 && end > start ? html.slice(start, end) : '';
   assert.match(html, /<html lang="sr-Latn">/);
   assert.match(html, /<link rel="canonical" href="https:\/\/ridepogon\.com\/"/);
   assert.match(html, /<script type="application\/ld\+json">/);
-  assert.match(root, /class="app-shell"/);
-  assert.doesNotMatch(root, /<h1>|Pogon električni bicikli/);
-  assert.match(html, /<noscript>[\s\S]*<h1>Pogon električni bicikli<\/h1>/);
+  assert.match(root, /<div id="root" data-prerendered-home="true">/);
+  assert.doesNotMatch(root, /class="app-shell"/);
+  for (const expected of [
+    /<h1[^>]*>[\s\S]*Pogon[\s\S]*Električni bicikli[\s\S]*<\/h1>/,
+    /Zaboravi gužvu, parking i gorivo\./,
+    /id="modeli"/,
+    /Pogon Cargo/,
+    /Pogon Core/,
+    /Pogon Glide/,
+    /Motor u zadnjem točku/,
+    /id="zasto-pogon"/,
+    /id="test-voznja"/,
+    /id="kviz"/,
+    /Godišnja ušteda/,
+    /id="iskustva"/,
+    />FAQ</,
+    /2 godine garancije/i,
+    /Servis i podrška/,
+    /Zakaži test vožnju/,
+  ]) assert.match(root, expected);
+  assert.match(main, /hydrateRoot\(root, page\)/);
+  assert.match(main, /createRoot\(root\)\.render\(page\)/);
 });
 
 test('customer-facing model order is Cargo, Core, Glide', () => {

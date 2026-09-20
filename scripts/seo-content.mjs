@@ -14,6 +14,21 @@ export const site = {
   published: '2026-09-20',
 };
 
+export const deliveryRegions = [
+  {
+    name: 'Beograd i centralna Srbija',
+    cities: ['Beograd', 'Kragujevac', 'Kraljevo', 'Čačak', 'Kruševac', 'Jagodina', 'Paraćin', 'Smederevo', 'Požarevac', 'Valjevo', 'Šabac', 'Loznica', 'Užice', 'Aranđelovac', 'Smederevska Palanka'],
+  },
+  {
+    name: 'Vojvodina',
+    cities: ['Novi Sad', 'Subotica', 'Sombor', 'Zrenjanin', 'Kikinda', 'Pančevo', 'Vršac', 'Sremska Mitrovica', 'Ruma', 'Inđija', 'Bačka Palanka', 'Stara Pazova'],
+  },
+  {
+    name: 'Južna, istočna i jugozapadna Srbija',
+    cities: ['Niš', 'Leskovac', 'Vranje', 'Pirot', 'Zaječar', 'Bor', 'Prokuplje', 'Novi Pazar'],
+  },
+];
+
 export const models = [
   {
     slug: 'cargo',

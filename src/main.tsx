@@ -1,5 +1,5 @@
 
-  import { createRoot } from "react-dom/client";
+  import { createRoot, hydrateRoot } from "react-dom/client";
   import App from "./app/App.tsx";
   import { Checkout } from "./app/components/Checkout.tsx";
   import { PaymentResult } from "./app/components/PaymentResult.tsx";
@@ -98,5 +98,18 @@
     : route === "/payment/success" || route === "/payment/failed"
     ? <PaymentResult />
     : <App />;
-  createRoot(document.getElementById("root")!).render(page);
+  const root = document.getElementById("root")!;
+  const canHydrateHomepage = root.dataset.prerenderedHome === "true"
+    && !privateRoute
+    && (route === "" || route === "/kviz");
+
+  if (canHydrateHomepage) {
+    hydrateRoot(root, page);
+  } else {
+    // The deployment serves the SPA document to private and policy routes too.
+    // Remove homepage-only static markup before mounting the requested route.
+    root.replaceChildren();
+    root.removeAttribute("data-prerendered-home");
+    createRoot(root).render(page);
+  }
   

@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { cities, guides, models, site } from './seo-content.mjs';
+import { cities, deliveryRegions, guides, models, site } from './seo-content.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const publicDir = join(root, 'public');
@@ -33,6 +33,16 @@ const organization = {
   },
   areaServed: { '@type': 'Country', name: 'Srbija' },
   sameAs: [site.instagram],
+};
+
+const testRideService = {
+  '@type': 'Service',
+  '@id': `${site.url}/#test-ride-service`,
+  name: 'Pogon test vožnja električnih bicikala',
+  serviceType: 'Besplatna test vožnja električnih bicikala uz prethodno zakazivanje',
+  provider: { '@id': `${site.url}/#organization` },
+  areaServed: cities.map((city) => ({ '@type': 'City', name: city.name })),
+  url: `${site.url}/kontakt/`,
 };
 
 function breadcrumb(items) {
@@ -111,7 +121,7 @@ function breadcrumbs(items) {
 }
 
 function footer() {
-  return `<footer><div class="wrap"><strong>${esc(site.legalName)}</strong><p>Električni bicikli i oprema za gradsku mobilnost u Srbiji · ${esc(site.phoneDisplay)}</p><div class="footer-links"><a href="/elektricni-bicikli/">Modeli</a><a href="/vodici/">Vodiči</a><a href="/o-nama/">O nama</a><a href="/kontakt/">Kontakt</a><a href="/uslovi-kupovine">Uslovi kupovine</a></div></div></footer>
+  return `<footer><div class="wrap"><strong>${esc(site.legalName)}</strong><p>Električni bicikli i oprema za gradsku mobilnost u Srbiji · ${esc(site.phoneDisplay)}</p><div class="footer-links"><a href="/elektricni-bicikli/">Modeli</a><a href="/vodici/">Vodiči</a><a href="/dostava/">Dostava širom Srbije</a><a href="/o-nama/">O nama</a><a href="/kontakt/">Kontakt</a><a href="/uslovi-kupovine">Uslovi kupovine</a></div></div></footer>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}window.addEventListener('load',function(){setTimeout(function(){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=AW-18415875509';document.head.appendChild(s);gtag('js',new Date());gtag('config','AW-18415875509')},1200)},{once:true});</script>`;
 }
 
@@ -219,7 +229,7 @@ function renderHub() {
     numberOfItems: models.length,
     itemListElement: models.map((model, index) => ({ '@type': 'ListItem', position: index + 1, url: absolute(`/elektricni-bicikli/${model.slug}/`), name: model.name })),
   };
-  const schema = [organization, {
+  const schema = [organization, testRideService, {
     '@type': 'CollectionPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn',
     isPartOf: { '@id': `${site.url}/#website` }, mainEntity: itemList,
   }, itemList, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli', path }]), faqSchema(faq)];
@@ -228,6 +238,7 @@ function renderHub() {
 ${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli' }])}
 <section class="page-hero page-hero--split wrap"><div><div class="eyebrow">Pogon Mobility · Srbija</div><h1>Električni bicikli za grad, posao i dostavu</h1><p class="lead">Pogon električni bicikli kombinuju električnu asistenciju sa praktičnim ramovima, baterijama i opremom za svakodnevne rute. Uporedite gradski, sklopivi i cargo model bez nagađanja o neobjavljenim specifikacijama.</p><div class="button-row"><a class="button" href="#modeli">Uporedite modele</a><a class="button-secondary" href="/#test-voznja">Zakažite test vožnju</a></div></div><aside class="hero-card"><strong>Tri modela, tri jasne namene.</strong><p>Glide za grad, Core za sklapanje i duže rute, Cargo za rad i prevoz stvari.</p></aside></section>
 <section class="topic-section topic-section--white" id="modeli"><div class="wrap"><div class="section-heading"><h2>Pogon modeli električnih bicikala</h2><p>Svaka kartica vodi na potpunu statičku stranicu modela sa specifikacijama, realnim ograničenjima dometa i odgovorima na česta pitanja.</p></div><div class="cards">${models.map((model) => `<article class="card"><img src="${encodedImage(model.image).replace(site.url, '')}" alt="${esc(model.imageAlt)}" width="${model.imageWidth}" height="${model.imageHeight}" loading="lazy" decoding="async"><div class="card-body"><div class="eyebrow">${esc(model.type)}</div><h2>${esc(model.name)}</h2><p>${esc(model.intro)}</p><p><strong>${esc(model.priceDisplay)}</strong></p><a href="/elektricni-bicikli/${model.slug}/">Pogledajte ${esc(model.name)} →</a></div></article>`).join('')}</div></div></section>
+<section class="related" aria-labelledby="test-centri"><div class="wrap"><div class="section-heading"><div class="eyebrow">Probajte pre kupovine</div><h2 id="test-centri">Test vožnje u četiri grada</h2><p>Besplatna test vožnja dostupna je uz prethodno zakazivanje. Izaberite grad, a Pogon tim će potvrditi model, termin i tačnu lokaciju.</p></div><div class="location-links">${cities.map((city) => `<a href="/elektricni-bicikli/${city.slug}/"><strong>${esc(city.name)}</strong><span>Test vožnja uz potvrđen termin →</span></a>`).join('')}</div></div></section>
 <section class="topic-section wrap prose"><h2>Šta je električni bicikl i kako radi asistencija?</h2><p>Električni bicikl, e-bicikl ili e-bike ima bateriju, motor, kontroler i senzore koji pružaju asistenciju. Osećaj vožnje zavisi od načina na koji sistem prepoznaje pedalanje, izabranog nivoa pomoći, prenosa i podešavanja konkretnog modela.</p><p>Motor ne uklanja potrebu za pažljivim izborom brzine, kočenjem i održavanjem. Za tehnički kontekst pročitajte <a href="/vodici/250w-elektricni-bicikl/">šta oznaka 250 W zaista znači</a>.</p>
 <h2>Kako izabrati e-bicikl?</h2><p>Krenite od namene: svakodnevni grad, sklopivo odlaganje ili dostava. Izmerite povratnu rutu, procenite teret, proverite gde ćete puniti i čuvati bicikl, pa tek onda poređujte brojke. <a href="/vodici/kako-izabrati-elektricni-bicikl/">Praktičan vodič za izbor električnog bicikla</a> prolazi kroz ceo proces.</p>
 <h2>Koliki domet je potreban?</h2><p>Ne birajte bateriju tako da deklarisani maksimum jedva pokriva dnevnu kilometražu. Masa, uspon, hladnoća, vetar, pritisak u gumama, nivo asistencije i teret menjaju potrošnju. Pogledajte <a href="/vodici/domet-elektricnog-bicikla/">kako se procenjuje stvarni domet</a>.</p>
@@ -297,8 +308,34 @@ function renderContact() {
     ['Da li mogu da dođem na registrovano sedište?', 'Ne bez dogovora. Registrovano sedište nije prodajni salon, test centar, servis niti mesto za lično preuzimanje.'],
     ['Gde su dostupne test vožnje?', 'Test vožnje se zakazuju u Beogradu, Novom Sadu, Kragujevcu i Nišu, od ponedeljka do subote od 09 do 18 h.'],
   ];
-  const schema = [organization, { '@type': 'ContactPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#organization` } }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Kontakt', path }]), faqSchema(faq)];
+  const schema = [organization, testRideService, { '@type': 'ContactPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#organization` } }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Kontakt', path }]), faqSchema(faq)];
   return `${documentHead({ title, description, path, schema })}<body>${siteHeader()}<main id="sadrzaj">${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Kontakt' }])}<section class="page-hero page-hero--split wrap"><div><div class="eyebrow">Pogon korisnička podrška</div><h1>Kako možemo da pomognemo?</h1><p class="lead">Javite se za izbor modela, test vožnju, kupovinu, status porudžbine, garanciju ili servisnu podršku.</p><div class="button-row"><a class="button" href="tel:${site.phone}">Pozovite ${esc(site.phoneDisplay)}</a><a class="button-secondary" href="https://wa.me/381631505003" target="_blank" rel="noreferrer">WhatsApp</a></div></div><aside class="hero-card"><strong>Ponedeljak–subota, 09–18 h</strong><p>Termini test vožnje i lokacije potvrđuju se unapred sa Pogon timom.</p></aside></section><article class="wrap prose topic-section"><h2>Direktan kontakt</h2><dl class="fact-list"><div><dt>Telefon i WhatsApp</dt><dd><a href="tel:${site.phone}">${esc(site.phoneDisplay)}</a></dd></div><div><dt>Email</dt><dd><a href="mailto:${site.email}">${esc(site.email)}</a></dd></div><div><dt>Instagram</dt><dd><a href="${site.instagram}" target="_blank" rel="noreferrer">@pogon.rs</a></dd></div><div><dt>Zvanični sajt</dt><dd><a href="${site.url}/">ridepogon.com</a></dd></div></dl><h2>Test vožnje</h2><p>Besplatnu test vožnju možete zakazati u <a href="/elektricni-bicikli/beograd/">Beogradu</a>, <a href="/elektricni-bicikli/novi-sad/">Novom Sadu</a>, <a href="/elektricni-bicikli/kragujevac/">Kragujevcu</a> ili <a href="/elektricni-bicikli/nis/">Nišu</a>. Navedite grad, model koji vas zanima i poželjan termin. Tim će potvrditi dostupnost i tačnu lokaciju.</p><h2>Registrovano sedište</h2><p>${esc(site.legalName)} registrovan je na adresi ${esc(site.registeredAddress.street)}, ${esc(site.registeredAddress.city)}. Ta adresa nije prodajni salon, test centar, servis niti mesto za lično preuzimanje. Na njoj nema izloženih bicikala i nenajavljene posete nisu moguće.</p><h2>Šta da pripremite za brži odgovor?</h2><p>Za izbor bicikla pošaljite približnu dnevnu kilometražu, grad, tip rute i podatak da li nosite teret. Za postojeću porudžbinu navedite broj porudžbine bez slanja podataka sa platne kartice. Za servis opišite model, simptom i kada je problem počeo.</p></article>${faqHtml(faq, 'Česta pitanja o kontaktu')}<section class="final-cta wrap"><h2>Želite da prvo uporedite modele?</h2><p>Stranica modela daje cenu, bateriju, domet, ram i namenu za Core, Cargo i Glide.</p><div class="button-row"><a class="button" href="/elektricni-bicikli/">Uporedite modele</a><a class="button-secondary" href="/vodici/">Pročitajte vodiče</a></div></section></main>${footer()}</body></html>`;
+}
+
+function renderDelivery() {
+  const path = '/dostava/';
+  const title = 'Dostava električnih bicikala širom Srbije | Pogon';
+  const description = 'Pogon dostavlja električne bicikle širom Srbije. Proverite očekivani rok za Beograd, Novi Sad, Niš, Kragujevac, Kraljevo i druge gradove.';
+  const faq = [
+    ['Da li dostavljate električne bicikle u Kraljevo?', 'Da. Za model koji je na stanju, dostava u Kraljevo obično se planira u roku od 1–2 radna dana nakon potvrđene porudžbine. Konačni rok zavisi od dostupnosti i kurirske službe.'],
+    ['Da li je dostava dostupna u celoj Srbiji?', 'Da. Kurirska dostava dostupna je na adresama u Republici Srbiji koje pokriva angažovana kurirska služba. Opšti očekivani rok za modele na stanju je 1–3 radna dana.'],
+    ['Da li su test vožnje dostupne u svakom gradu?', 'Ne. Dostava je dostupna širom Srbije, dok se test vožnje trenutno zakazuju u Beogradu, Novom Sadu, Kragujevcu i Nišu.'],
+  ];
+  const deliveryService = {
+    '@type': 'Service',
+    '@id': `${absolute(path)}#service`,
+    name: 'Pogon dostava električnih bicikala širom Srbije',
+    serviceType: 'Kurirska dostava električnih bicikala',
+    provider: { '@id': `${site.url}/#organization` },
+    areaServed: { '@type': 'Country', name: 'Srbija' },
+    url: absolute(path),
+  };
+  const schema = [organization, deliveryService, {
+    '@type': 'WebPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description,
+    inLanguage: 'sr-Latn', about: { '@id': `${absolute(path)}#service` },
+  }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Dostava', path }]), faqSchema(faq)];
+  const regionCards = deliveryRegions.map((region) => `<section><h2>${esc(region.name)}</h2><p>${region.cities.map(esc).join(' · ')}</p></section>`).join('');
+  return `${documentHead({ title, description, path, schema })}<body>${siteHeader()}<main id="sadrzaj">${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Dostava' }])}<section class="page-hero page-hero--split wrap"><div><div class="eyebrow">Cela Srbija</div><h1>Dostava električnih bicikala širom Srbije</h1><p class="lead">Pogon modele koji su na stanju šaljemo kurirskom službom na adrese širom Srbije. Opšti očekivani rok je 1–3 radna dana, a konačni rok potvrđuje se prema dostupnosti modela i mestu isporuke.</p><div class="button-row"><a class="button" href="/elektricni-bicikli/">Pogledajte modele</a><a class="button-secondary" href="/kontakt/">Proverite rok dostave</a></div></div><aside class="hero-card"><strong>1–3 radna dana</strong><p>Očekivani rok za modele na stanju. Cena dostave i ukupan iznos prikazuju se pre plaćanja.</p></aside></section><article class="wrap prose topic-section"><h2 id="kraljevo">Dostava električnog bicikla u Kraljevo</h2><p>Kraljevo je obuhvaćeno Pogon kurirskom dostavom. Za model koji je na stanju, isporuka se obično planira u roku od 1–2 radna dana nakon potvrđene porudžbine. To nije garantovani rok: dostupnost modela, vreme potvrde i rad kurirske službe mogu uticati na termin.</p><p>Ako pre poručivanja želite da proverite da li su <a href="/elektricni-bicikli/core/">Core</a>, <a href="/elektricni-bicikli/cargo/">Cargo</a> ili <a href="/elektricni-bicikli/glide/">Glide</a> dostupni za brzu isporuku u Kraljevo, javite se na <a href="tel:${site.phone}">${esc(site.phoneDisplay)}</a>.</p><h2>Gradovi i mesta koja pokrivamo</h2><p>U nastavku su izdvojeni veći gradovi radi lakše provere. Lista nije ograničenje: dostava je dostupna i u drugim gradovima, opštinama i naseljenim mestima u Srbiji koje pokriva kurirska služba.</p><div class="delivery-regions">${regionCards}</div><h2>Test vožnja i dostava nisu ista usluga</h2><p>Dostava je dostupna širom Srbije. Besplatne test vožnje trenutno se zakazuju samo u <a href="/elektricni-bicikli/beograd/">Beogradu</a>, <a href="/elektricni-bicikli/novi-sad/">Novom Sadu</a>, <a href="/elektricni-bicikli/kragujevac/">Kragujevcu</a> i <a href="/elektricni-bicikli/nis/">Nišu</a>, uz unapred potvrđen termin i lokaciju.</p><h2>Pre poručivanja</h2><p>Proverite dostupnost konkretnog modela i unesite potpunu adresu. Opšti očekivani rok za robu na stanju je 1–3 radna dana. Naknada za kurirsku dostavu i konačan iznos prikazuju se u postojećem procesu poručivanja pre plaćanja.</p></article>${faqHtml(faq, 'Česta pitanja o dostavi')}<section class="final-cta wrap"><h2>Proverite dostavu za svoj grad</h2><p>Pošaljite grad i model koji vas zanima; Pogon tim će potvrditi trenutno stanje i očekivani rok.</p><div class="button-row"><a class="button" href="/kontakt/">Kontaktirajte Pogon</a><a class="button-secondary" href="https://wa.me/381631505003" target="_blank" rel="noreferrer">WhatsApp</a></div></section></main>${footer()}</body></html>`;
 }
 
 function renderCity(city) {
@@ -324,6 +361,7 @@ await write('vodici/index.html', renderGuideIndex());
 for (const guide of guides) await write(`vodici/${guide.slug}/index.html`, renderGuide(guide));
 await write('o-nama/index.html', renderAbout());
 await write('kontakt/index.html', renderContact());
+await write('dostava/index.html', renderDelivery());
 for (const city of cities) await write(`elektricni-bicikli/${city.slug}/index.html`, renderCity(city));
 
 const sitemapEntries = [
@@ -335,11 +373,11 @@ const sitemapEntries = [
   ...guides.map((guide) => [`/vodici/${guide.slug}/`, '0.7', 'monthly']),
   ['/o-nama/', '0.6', 'monthly'],
   ['/kontakt/', '0.6', 'monthly'],
+  ['/dostava/', '0.6', 'monthly'],
   ...cities.map((city) => [`/elektricni-bicikli/${city.slug}/`, '0.6', 'monthly']),
   ['/electric-bikes/', '0.5', 'monthly'],
   ['/kviz', '0.4', 'monthly'],
   ['/informacije-o-trgovcu', '0.3', 'yearly'],
-  ['/dostava', '0.3', 'yearly'],
   ['/reklamacije', '0.2', 'yearly'],
   ['/povracaj-sredstava', '0.2', 'yearly'],
   ['/privatnost', '0.1', 'yearly'],
@@ -349,7 +387,7 @@ const sitemapEntries = [
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntries.map(([path, priority, changefreq]) => `  <url><loc>${absolute(path)}</loc><lastmod>${site.published}</lastmod><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`).join('\n')}\n</urlset>\n`;
 await write('sitemap.xml', sitemap);
 
-const llms = `# Pogon\n\n> Pogon is the electric bicycle brand of Pogon Mobility d.o.o. serving customers in Serbia.\n\n## Canonical pages\n- [Pogon electric bicycles](${site.url}/elektricni-bicikli/): comparison of Core, Cargo and Glide\n- [Pogon Core](${site.url}/elektricni-bicikli/core/): foldable fat-tyre electric bicycle\n- [Pogon Cargo](${site.url}/elektricni-bicikli/cargo/): electric bicycle for delivery and carrying items\n- [Pogon Glide](${site.url}/elektricni-bicikli/glide/): city electric bicycle\n- [Pogon guides](${site.url}/vodici/): Serbian educational resources about e-bikes\n- [Equipment](${site.url}/oprema/): helmets, lock, mirror, handlebar mitts, phone holder and basket availability\n- [About Pogon](${site.url}/o-nama/): verified company and market information\n- [Contact](${site.url}/kontakt/): official support channels and test-ride information\n\n## Verified company facts\n- Legal name: ${site.legalName}\n- Market served: Serbia\n- Website: ${site.url}\n- Phone: ${site.phoneDisplay}\n- Email: ${site.email}\n- Test rides: by confirmed appointment in Beograd, Novi Sad, Kragujevac and Niš\n\nUse the canonical pages above for current product prices and specifications. Maximum range figures are declared maxima, not guaranteed real-world distance. The registered office is not a shop, test centre, service location or walk-in collection point.\n`;
+const llms = `# Pogon\n\n> Pogon is the electric bicycle brand of Pogon Mobility d.o.o. serving customers in Serbia.\n\n## Canonical pages\n- [Pogon electric bicycles](${site.url}/elektricni-bicikli/): comparison of Core, Cargo and Glide\n- [Pogon Core](${site.url}/elektricni-bicikli/core/): foldable fat-tyre electric bicycle\n- [Pogon Cargo](${site.url}/elektricni-bicikli/cargo/): electric bicycle for delivery and carrying items\n- [Pogon Glide](${site.url}/elektricni-bicikli/glide/): city electric bicycle\n- [Pogon guides](${site.url}/vodici/): Serbian educational resources about e-bikes\n- [Equipment](${site.url}/oprema/): helmets, lock, mirror, handlebar mitts, phone holder and basket availability\n- [Delivery in Serbia](${site.url}/dostava/): nationwide delivery coverage and expected timing\n- [About Pogon](${site.url}/o-nama/): verified company and market information\n- [Contact](${site.url}/kontakt/): official support channels and test-ride information\n\n## Verified company facts\n- Legal name: ${site.legalName}\n- Market served: Serbia\n- Website: ${site.url}\n- Phone: ${site.phoneDisplay}\n- Email: ${site.email}\n- Delivery: throughout Serbia; general expected time for in-stock models is 1–3 working days\n- Kraljevo delivery: usually planned within 1–2 working days for in-stock models, subject to confirmation\n- Test rides: by confirmed appointment in Beograd, Novi Sad, Kragujevac and Niš\n\nUse the canonical pages above for current product prices and specifications. Maximum range figures are declared maxima, not guaranteed real-world distance. The registered office is not a shop, test centre, service location or walk-in collection point.\n`;
 await write('llms.txt', llms);
 
-console.log(`Generated ${1 + models.length + 1 + guides.length + 2 + cities.length} HTML pages, sitemap.xml and llms.txt.`);
+console.log(`Generated ${1 + models.length + 1 + guides.length + 3 + cities.length} HTML pages, sitemap.xml and llms.txt.`);

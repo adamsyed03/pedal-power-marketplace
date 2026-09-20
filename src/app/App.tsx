@@ -201,13 +201,11 @@ function ScrollColorSentence({ text }: { text: string }) {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Language>(() => {
-    const requestedLanguage = new URLSearchParams(window.location.search).get('lang');
-    return requestedLanguage === 'ru' || requestedLanguage === 'en' || requestedLanguage === 'sr'
-      ? requestedLanguage
-      : 'sr';
-  });
-  const [cart, setCart] = useState<CartState>(readStoredCart);
+  // Keep the first browser render identical to the build-time render. Browser-only
+  // preferences are restored immediately after hydration.
+  const [lang, setLang] = useState<Language>('sr');
+  const [cart, setCart] = useState<CartState>({});
+  const [hasRestoredCart, setHasRestoredCart] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [recentlyAddedProduct, setRecentlyAddedProduct] = useState<ProductKey | null>(null);
   const [activeSpecs, setActiveSpecs] = useState<string | null>(null);
@@ -215,13 +213,12 @@ export default function App() {
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
   const [activeLightboxProduct, setActiveLightboxProduct] = useState<string | null>(null);
   const [lightboxZoom, setLightboxZoom] = useState(1);
-  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
   const [leadModalSource, setLeadModalSource] = useState<string | null>(null);
   const [isContactWidgetOpen, setIsContactWidgetOpen] = useState(false);
   const [showModelsShortcut, setShowModelsShortcut] = useState(false);
   const [isGameLoaded, setIsGameLoaded] = useState(false);
   const [isGameOpen, setIsGameOpen] = useState(false);
-  const [isGameLauncherCompact, setIsGameLauncherCompact] = useState(() => window.scrollY > 96);
+  const [isGameLauncherCompact, setIsGameLauncherCompact] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [testRideForm, setTestRideForm] = useState({ name: '', phone: '', city: '', preferredTime: '' });
   const [testRideFormStatus, setTestRideFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
@@ -279,8 +276,18 @@ export default function App() {
   };
 
   useEffect(() => {
+    const requestedLanguage = new URLSearchParams(window.location.search).get('lang');
+    if (requestedLanguage === 'ru' || requestedLanguage === 'en' || requestedLanguage === 'sr') {
+      setLang(requestedLanguage);
+    }
+    setCart(readStoredCart());
+    setHasRestoredCart(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasRestoredCart) return;
     try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch { /* Cart remains available for this visit. */ }
-  }, [cart]);
+  }, [cart, hasRestoredCart]);
 
   useEffect(() => {
     if (!isCartOpen) return;
@@ -324,7 +331,7 @@ export default function App() {
     en: { aria: 'Play tic-tac-toe and win a gift', compact: 'Play and win', highlight: 'Win a gift', action: 'Play tic-tac-toe' },
     ru: { aria: 'Играй в крестики-нолики и выиграй подарок', compact: 'Играй и выиграй', highlight: 'Выиграй подарок', action: 'Играй в крестики-нолики' },
   });
-  const normalizedPath = window.location.pathname.replace(/\/+$/, '');
+  const normalizedPath = typeof window === 'undefined' ? '' : window.location.pathname.replace(/\/+$/, '');
   const isSavingsQuizRoute = normalizedPath === '/kviz';
 
   useEffect(() => {
@@ -562,14 +569,6 @@ export default function App() {
       });
     });
   };
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 1024px)');
-    const updateViewport = () => setIsDesktop(mediaQuery.matches);
-    updateViewport();
-    mediaQuery.addEventListener('change', updateViewport);
-    return () => mediaQuery.removeEventListener('change', updateViewport);
-  }, []);
 
   useEffect(() => {
     const modelsSection = document.getElementById('modeli');
@@ -1020,12 +1019,12 @@ export default function App() {
       name: 'Glide',
       badgeKey: 'bestSeller' as const,
       badgeClass: 'bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold uppercase',
-      image: { src: publicAsset('Glide main.jpg'), alt: 'Pogon Glide electric bike main product photo' },
+      image: { src: publicAsset('Glide main.jpg'), alt: 'Pogon Glide electric bike main product photo', width: 941, height: 1672 },
       gallery: [
-        { src: publicAsset('Glide main.jpg'), alt: 'Pogon Glide main product photo' },
-        { src: publicAsset('Glide 1.jpg'), alt: 'Pogon Glide product photo 1' },
-        { src: publicAsset('Glide 2.jpg'), alt: 'Pogon Glide product photo 2' },
-        { src: publicAsset('Glide 4.jpg'), alt: 'Pogon Glide product photo 4' },
+        { src: publicAsset('Glide main.jpg'), alt: 'Pogon Glide main product photo', width: 941, height: 1672 },
+        { src: publicAsset('Glide 1.jpg'), alt: 'Pogon Glide product photo 1', width: 1254, height: 1254 },
+        { src: publicAsset('Glide 2.jpg'), alt: 'Pogon Glide product photo 2', width: 1254, height: 1254 },
+        { src: publicAsset('Glide 4.jpg'), alt: 'Pogon Glide product photo 4', width: 1254, height: 1254 },
       ],
       description: copy.glideDescription,
       price: '165.000,00 RSD',
@@ -1062,12 +1061,12 @@ export default function App() {
       name: 'Core',
       badgeKey: 'sale' as const,
       badgeClass: 'bg-black text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-lg',
-      image: { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core electric bike main product photo' },
+      image: { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core electric bike main product photo', width: 1122, height: 1402 },
       gallery: [
-        { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core main product photo' },
-        { src: publicAsset('Cargo fold.jpg'), alt: 'Pogon Core folded product photo' },
-        { src: publicAsset('Cargo 1.jpg'), alt: 'Pogon Core product photo 1' },
-        { src: publicAsset('Cargo 2.jpg'), alt: 'Pogon Core product photo 2' },
+        { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core main product photo', width: 1122, height: 1402 },
+        { src: publicAsset('Cargo fold.jpg'), alt: 'Pogon Core folded product photo', width: 1122, height: 1402 },
+        { src: publicAsset('Cargo 1.jpg'), alt: 'Pogon Core product photo 1', width: 1122, height: 1402 },
+        { src: publicAsset('Cargo 2.jpg'), alt: 'Pogon Core product photo 2', width: 1122, height: 1402 },
       ],
       description: copy.coreDescription,
       originalPrice: '135.000,00 RSD',
@@ -1106,12 +1105,12 @@ export default function App() {
       name: 'Cargo',
       badgeKey: 'newBadge' as const,
       badgeClass: 'bg-card text-foreground px-3 py-1 rounded-full text-xs font-bold uppercase border border-border',
-      image: { src: publicAsset('Core main.jpg'), alt: 'Pogon Cargo electric bike main product photo' },
+      image: { src: publicAsset('Core main.jpg'), alt: 'Pogon Cargo electric bike main product photo', width: 1086, height: 1448 },
       gallery: [
-        { src: publicAsset('Core main.jpg'), alt: 'Pogon Cargo main product photo' },
-        { src: publicAsset('Core 1.jpg'), alt: 'Pogon Cargo product photo 1' },
-        { src: publicAsset('Core 2.jpg'), alt: 'Pogon Cargo product photo 2' },
-        { src: publicAsset('Core 3.jpg'), alt: 'Pogon Cargo product photo 3' },
+        { src: publicAsset('Core main.jpg'), alt: 'Pogon Cargo main product photo', width: 1086, height: 1448 },
+        { src: publicAsset('Core 1.jpg'), alt: 'Pogon Cargo product photo 1', width: 1122, height: 1402 },
+        { src: publicAsset('Core 2.jpg'), alt: 'Pogon Cargo product photo 2', width: 1122, height: 1402 },
+        { src: publicAsset('Core 3.jpg'), alt: 'Pogon Cargo product photo 3', width: 1122, height: 1402 },
       ],
       description: copy.cargoDescription,
       price: '130.000,00 RSD',
@@ -1163,7 +1162,8 @@ export default function App() {
     setLightboxZoom(1);
   };
 
-  const isAdminLeadsRoute = new URLSearchParams(window.location.search).get('admin') === '1';
+  const isAdminLeadsRoute = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('admin') === '1';
 
   if (isAdminLeadsRoute) {
     return <Suspense fallback={null}><AdminLeads /></Suspense>;
@@ -1171,7 +1171,7 @@ export default function App() {
 
   return (
     <div ref={pageRootRef} className="min-h-screen bg-background overflow-x-hidden sm:overflow-x-visible px-4 sm:px-0 pb-[4.75rem] md:pb-0">
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes scroll-marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
@@ -1305,7 +1305,7 @@ export default function App() {
             font-size: 0.55rem;
           }
         }
-      `}</style>
+      ` }} />
 
       <AnimatePresence>
         {showLeadPopup && (
@@ -1462,8 +1462,8 @@ export default function App() {
           <div className="relative w-full flex h-8 items-center justify-between gap-2 rounded-full border border-black/10 bg-white/90 px-2 shadow-[0_15px_40px_rgba(0,0,0,0.12)] backdrop-blur-md sm:h-auto sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:h-9 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
             <a href="#top" aria-label="Back to home" className="relative inline-flex h-8 w-20 items-center rounded-full bg-white shadow-sm transition-transform hover:-translate-y-0.5 sm:h-auto sm:w-auto sm:px-4 sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
               <div className="flex items-center justify-center">
-                <img src={publicAsset('Logo.png')} alt="POGON" className="pointer-events-none absolute left-1/2 top-1/2 h-14 w-24 -translate-x-1/2 -translate-y-1/2 object-cover object-center sm:hidden" />
-                <img src={publicAsset('Logo.png')} alt="POGON" className="hidden h-9 w-auto opacity-100 sm:block lg:h-10 [@media_(orientation:landscape)_and_(max-height:520px)]:h-6" />
+                <img src={publicAsset('Logo.png')} alt="POGON" width={1024} height={1024} className="pointer-events-none absolute left-1/2 top-1/2 h-14 w-24 -translate-x-1/2 -translate-y-1/2 object-cover object-center sm:hidden" />
+                <img src={publicAsset('Logo.png')} alt="POGON" width={1024} height={1024} className="hidden h-9 w-auto opacity-100 sm:block lg:h-10 [@media_(orientation:landscape)_and_(max-height:520px)]:h-6" />
               </div>
             </a>
 
@@ -1558,21 +1558,22 @@ export default function App() {
         ) : null}
       </AnimatePresence>
 
-      {isDesktop && (
-      <div>
+      <div className="hidden lg:block">
         <section id="top" className="relative flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden bg-black px-6 py-28 text-white">
           <img
             src={publicAsset('Excellent4.optimized.jpg')}
             alt="Pogon električni bicikl u gradskoj vožnji"
-            fetchPriority="high"
+            width={1448}
+            height={1086}
+            fetchpriority="high"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
           <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center text-center">
-            <h1 className="max-w-4xl text-balance text-[clamp(2.65rem,4.5vw,4.5rem)] font-black leading-[0.98] tracking-[-0.035em] text-white">
+            <div role="heading" aria-level={1} className="max-w-4xl text-balance text-[clamp(2.65rem,4.5vw,4.5rem)] font-black leading-[0.98] tracking-[-0.035em] text-white">
               {copy.heroTitle}
-            </h1>
+            </div>
             <p className="mt-6 max-w-2xl text-lg font-light leading-relaxed text-white/80">
               {copy.heroSub}
             </p>
@@ -1612,10 +1613,8 @@ export default function App() {
           </div>
         </div>
       </div>
-      )}
 
       {/* Hero Section */}
-      {!isDesktop && (
       <section className="relative flex touch-pan-y items-center justify-center pt-10 pb-10 sm:pt-14 sm:pb-12 lg:hidden">
         {/* Background: overflow clipped here only so absolute badges aren't clipped */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -1735,6 +1734,8 @@ export default function App() {
                 <ImageWithFallback
                   src={publicAsset('Excellent4.optimized.jpg')}
                   alt="POGON e-bicikl"
+                  width={1448}
+                  height={1086}
                   loading="eager"
                   className="w-full h-full object-cover"
                 />
@@ -1749,7 +1750,6 @@ export default function App() {
           </div>
         </div>
       </section>
-      )}
 
       {/* Product Intro */}
       <section className="relative overflow-hidden bg-background px-4 py-6 text-foreground sm:px-6 sm:py-8 lg:py-9">
@@ -1866,6 +1866,8 @@ export default function App() {
                       <ImageWithFallback
                         src={selectedImage.src}
                         alt={selectedImage.alt}
+                        width={selectedImage.width}
+                        height={selectedImage.height}
                         loading="lazy"
                         className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                       />
@@ -1961,6 +1963,8 @@ export default function App() {
                           <ImageWithFallback
                             src={image.src}
                             alt={image.alt}
+                            width={image.width}
+                            height={image.height}
                             loading="lazy"
                             className="h-full w-full rounded-lg object-cover object-center transition-transform duration-300 hover:scale-105"
                           />
@@ -2928,7 +2932,7 @@ export default function App() {
             <div className="col-span-3 md:col-span-2">
               <div className="flex items-center justify-between gap-4 mb-4 md:block md:mb-6">
                 <div className="relative">
-                  <img src={publicAsset('Logo.png')} alt="POGON" className="h-12 w-auto sm:h-20" />
+                  <img src={publicAsset('Logo.png')} alt="POGON" width={1024} height={1024} className="h-12 w-auto sm:h-20" />
                 </div>
                 <a href="https://instagram.com/pogon.rs" target="_blank" rel="noreferrer" aria-label="Pogon Instagram @pogon.rs" className="size-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors md:mt-6">
                   <Instagram className="size-5" />
