@@ -7,6 +7,8 @@
     "build": "vite build",
     "dev": "vite --port 5174",
     "dev:fullstack": "vercel dev --listen 4175",
+    "seo:generate": "node scripts/generate-seo-pages.mjs",
+    "seo:check": "node scripts/verify-seo.mjs",
     "test": "npm run test:checkout",
     "test:checkout": "node --test tests/*.test.mjs"
   },

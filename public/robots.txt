@@ -4,5 +4,6 @@ Disallow: /admin
 Disallow: /checkout
 Disallow: /payment/
 Disallow: /api/
+Disallow: /*?*admin=
 
 Sitemap: https://ridepogon.com/sitemap.xml

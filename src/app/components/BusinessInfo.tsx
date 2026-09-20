@@ -25,7 +25,7 @@ export function BusinessInfo() {
         <h2 className="mt-10 text-2xl font-black">Privatnost i sigurnost transakcije</h2>
         <p className="mt-3 leading-7 text-black/70">Podaci iz porudžbine koriste se za obradu kupovine, isporuku, korisničku podršku i ispunjavanje zakonskih obaveza. Pogon ne čuva broj kartice, sigurnosni kod ni datum isteka kartice u svojoj bazi, analitici ili emailovima.</p>
         <nav aria-label="Informacije za kupce" className="mt-10 flex flex-wrap gap-x-4 gap-y-2 border-t border-black/10 pt-6 text-sm">
-          <a href="/kontakt" className="font-bold underline">Kontakt</a>
+          <a href="/kontakt/" className="font-bold underline">Kontakt</a>
           <a href="/dostava" className="font-bold underline">Dostava</a>
           <a href="/reklamacije" className="font-bold underline">Reklamacije</a>
           <a href="/povracaj-sredstava" className="font-bold underline">Povraćaj sredstava</a>

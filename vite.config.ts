@@ -16,16 +16,24 @@ function figmaAssetResolver() {
   }
 }
 
-function staticCatalogPages(): Plugin {
+function staticSeoPages(): Plugin {
   return {
-    name: 'static-catalog-pages',
+    name: 'static-seo-pages',
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {
         const pathname = request.url?.split('?')[0]
-        if (pathname !== '/oprema' && pathname !== '/oprema/') return next()
+        if (!pathname) return next()
+        const staticPage = /^\/(?:oprema|o-nama|kontakt|electric-bikes|vodici(?:\/[a-z0-9-]+)?|elektricni-bicikli(?:\/(?:core|cargo|glide|beograd|novi-sad|nis|kragujevac))?)\/?$/.test(pathname)
+        if (!staticPage) return next()
+        if (!pathname.endsWith('/')) {
+          response.statusCode = 308
+          response.setHeader('Location', `${pathname}/`)
+          response.end()
+          return
+        }
         try {
-          const html = await readFile(path.resolve(__dirname, 'public/oprema/index.html'), 'utf8')
+          const html = await readFile(path.resolve(__dirname, `public${pathname}index.html`), 'utf8')
           response.statusCode = 200
           response.setHeader('Content-Type', 'text/html; charset=utf-8')
           response.end(html)
@@ -76,7 +84,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       figmaAssetResolver(),
-      staticCatalogPages(),
+      staticSeoPages(),
       adminOrdersDevApi(),
       // The React and Tailwind plugins are both required for Make, even if
       // Tailwind is not being actively used; do not remove them.

@@ -2968,7 +2968,9 @@ export default function App() {
               <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 sm:mb-4">{ui.footerCompany}</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-foreground/60">
                 <li><a href="/informacije-o-trgovcu" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[0]}</a></li>
-                <li><a href="/kontakt" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[1]}</a></li>
+                <li><a href="/kontakt/" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[1]}</a></li>
+                <li><a href="/o-nama/" className="hover:text-foreground transition-colors">O nama</a></li>
+                <li><a href="/vodici/" className="hover:text-foreground transition-colors">Vodiči</a></li>
                 <li><a href="/dostava" className="hover:text-foreground transition-colors">Dostava</a></li>
                 <li><a href="/reklamacije" className="hover:text-foreground transition-colors">Reklamacije</a></li>
                 <li><a href="/povracaj-sredstava" className="hover:text-foreground transition-colors">Povraćaj sredstava</a></li>

@@ -133,7 +133,7 @@ export function PurchaseTerms() {
         </section>
         <nav aria-label="Informacije za kupce" className="mt-10 flex flex-wrap gap-x-4 gap-y-2 border-t border-black/10 pt-6 text-sm">
           <a href="/informacije-o-trgovcu" className="font-bold underline">Podaci o trgovcu</a>
-          <a href="/kontakt" className="font-bold underline">Kontakt</a>
+          <a href="/kontakt/" className="font-bold underline">Kontakt</a>
           <a href="/dostava" className="font-bold underline">Dostava</a>
           <a href="/reklamacije" className="font-bold underline">Reklamacije</a>
           <a href="/povracaj-sredstava" className="font-bold underline">Povraćaj sredstava</a>
