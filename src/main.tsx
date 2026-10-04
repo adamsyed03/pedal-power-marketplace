@@ -7,11 +7,15 @@
   import { PurchaseTerms } from "./app/components/PurchaseTerms.tsx";
   import { BusinessInfo } from "./app/components/BusinessInfo.tsx";
   import { CustomerPolicy } from "./app/components/CustomerPolicy.tsx";
+  import { ProductPage } from "./app/components/product/ProductPage.tsx";
   import "./styles/index.css";
   import { initAnalytics } from "./lib/analytics.ts";
   import { breadcrumbStructuredData, setPageMetadata } from "./lib/seo.ts";
+  import { languageFromSearch, type BikeKey } from "./lib/productDetails.ts";
 
   const route = window.location.pathname.replace(/\/+$/, "");
+  const productMatch = route.match(/^\/products\/(cargo|core|glide)$/);
+  const productKey = productMatch?.[1] as BikeKey | undefined;
   const routeMetadata: Record<string, { title: string; description: string }> = {
     "/uslovi-kupovine": {
       title: "Uslovi kupovine i dostave | Pogon",
@@ -64,7 +68,7 @@
       path: route,
       structuredData: breadcrumbStructuredData(metadata.title, route),
     });
-  } else if (route !== "" && route !== "/kviz") {
+  } else if (!productKey && route !== "" && route !== "/kviz") {
     setPageMetadata({
       title: "Stranica nije pronađena | Pogon",
       description: "Tražena stranica nije pronađena.",
@@ -75,7 +79,9 @@
   }
 
   initAnalytics();
-  const page = route === "/checkout"
+  const page = productKey
+    ? <ProductPage productKey={productKey} initialLanguage={languageFromSearch(window.location.search)} />
+    : route === "/checkout"
     ? <Checkout />
     : route === "/uslovi-kupovine"
     ? <PurchaseTerms />
@@ -102,14 +108,16 @@
   const canHydrateHomepage = root.dataset.prerenderedHome === "true"
     && !privateRoute
     && (route === "" || route === "/kviz");
+  const canHydrateProduct = Boolean(productKey && root.dataset.prerenderedProduct === productKey);
 
-  if (canHydrateHomepage) {
+  if (canHydrateHomepage || canHydrateProduct) {
     hydrateRoot(root, page);
   } else {
     // The deployment serves the SPA document to private and policy routes too.
     // Remove homepage-only static markup before mounting the requested route.
     root.replaceChildren();
     root.removeAttribute("data-prerendered-home");
+    root.removeAttribute("data-prerendered-product");
     createRoot(root).render(page);
   }
   

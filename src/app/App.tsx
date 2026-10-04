@@ -207,8 +207,6 @@ export default function App() {
   const [cart, setCart] = useState<CartState>({});
   const [hasRestoredCart, setHasRestoredCart] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [recentlyAddedProduct, setRecentlyAddedProduct] = useState<ProductKey | null>(null);
-  const [activeSpecs, setActiveSpecs] = useState<string | null>(null);
   const [activeProduct, setActiveProduct] = useState(0);
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
   const [activeLightboxProduct, setActiveLightboxProduct] = useState<string | null>(null);
@@ -261,12 +259,6 @@ export default function App() {
       else next[key] = Math.min(quantity, 99);
       return next;
     });
-  };
-  const addToCart = (key: ProductKey) => {
-    setCart((current) => ({ ...current, [key]: Math.min((current[key] || 0) + 1, 99) }));
-    setRecentlyAddedProduct(key);
-    window.setTimeout(() => setRecentlyAddedProduct((current) => current === key ? null : current), 900);
-    trackEvent('cart_item_added', { source: 'model-card', product: key });
   };
   const continueToCartCheckout = () => {
     const cartParameter = cartEntries.map(({ product, quantity }) => `${product.key}:${quantity}`).join(',');
@@ -1059,8 +1051,8 @@ export default function App() {
     {
       key: 'core',
       name: 'Core',
-      badgeKey: 'sale' as const,
-      badgeClass: 'bg-black text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-lg',
+      badgeKey: null,
+      badgeClass: '',
       image: { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core electric bike main product photo', width: 1122, height: 1402 },
       gallery: [
         { src: publicAsset('Cargo Main.jpg'), alt: 'Pogon Core main product photo', width: 1122, height: 1402 },
@@ -1069,8 +1061,8 @@ export default function App() {
         { src: publicAsset('Cargo 2.jpg'), alt: 'Pogon Core product photo 2', width: 1122, height: 1402 },
       ],
       description: copy.coreDescription,
-      originalPrice: '135.000,00 RSD',
-      price: '130.000,00 RSD',
+      originalPrice: undefined,
+      price: '135.000,00 RSD',
       mobileSpecs: { range: '140 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
@@ -1831,15 +1823,7 @@ export default function App() {
                   setActiveGalleryImages((current) => ({ ...current, [model.key]: index }));
                 };
                 const selectedImage = gallery ? gallery[selectedGalleryIndex] : model.image;
-                const handleImagePanelClick = () => {
-                  if (gallery) {
-                    setActiveLightboxProduct(model.key);
-                    setLightboxZoom(1);
-                    return;
-                  }
-
-                  setActiveSpecs(activeSpecs === model.key ? null : model.key);
-                };
+                const openProductPage = () => window.location.assign(`/products/${model.key}/`);
 
                 return (
                 <motion.div
@@ -1848,13 +1832,24 @@ export default function App() {
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true, amount: 0.25 }}
                   transition={{ duration: 0.52, delay: bikeModels.findIndex((bike) => bike.key === model.key) * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                  className={`desktop-product-card group snap-center sm:snap-start min-w-0 overflow-hidden rounded-3xl transition-all duration-300 ${model.isFeatured ? 'bg-primary text-primary-foreground border-2 border-primary shadow-2xl hover:-translate-y-2 hover:shadow-2xl lg:product-soft-float' : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2'}`}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`${model.name} product page`}
+                  onClick={(event) => {
+                    if ((event.target as HTMLElement).closest('button, a')) return;
+                    openProductPage();
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+                    event.preventDefault();
+                    openProductPage();
+                  }}
+                  className={`desktop-product-card group snap-center sm:snap-start min-w-0 cursor-pointer overflow-hidden rounded-3xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 ${model.isFeatured ? 'bg-primary text-primary-foreground border-2 border-primary shadow-2xl hover:-translate-y-2 hover:shadow-2xl lg:product-soft-float' : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2'}`}
                 >
                 <div className="relative overflow-hidden rounded-t-3xl">
                   {model.isFeatured ? <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80"></div> : null}
                   <div
                     className="desktop-product-image aspect-[4/5] overflow-hidden relative bg-black cursor-pointer group sm:aspect-[5/4] lg:aspect-[5/4]"
-                    onClick={handleImagePanelClick}
                   >
                     <motion.div
                       initial={{ scale: 1.08, opacity: 0 }}
@@ -1912,37 +1907,19 @@ export default function App() {
                         <ZoomIn className="size-5 lg:size-4" />
                       </button>
                     ) : null}
-                    <div className={`absolute top-4 right-4 z-20 lg:right-2 lg:top-2 lg:origin-top-right lg:scale-90 ${model.badgeClass}`}>
-                      {copy[model.badgeKey]}
-                    </div>
+                    {model.badgeKey ? (
+                      <div className={`absolute top-4 right-4 z-20 lg:right-2 lg:top-2 lg:origin-top-right lg:scale-90 ${model.badgeClass}`}>
+                        {copy[model.badgeKey]}
+                      </div>
+                    ) : null}
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3.5 pb-3 pt-12 text-white lg:hidden">
                       <div className="max-w-[78%] text-left">
-                        <div className="text-xl font-black leading-none drop-shadow-md">{model.name}</div>
+                        <a href={`/products/${model.key}/`} onClick={(event) => event.stopPropagation()} className="text-xl font-black leading-none drop-shadow-md">{model.name}</a>
                         {model.originalPrice ? <div className="mt-1 text-xs font-bold text-white/55 line-through decoration-2">{model.originalPrice}</div> : null}
                         <div className="mt-2 flex items-center gap-1.5 text-white/65">
                           <span className="text-2xl font-black leading-none tracking-tight text-white drop-shadow-md">{model.price}</span>
                         </div>
                       </div>
-                    </div>
-                    <div className={`absolute inset-0 z-30 bg-black/95 p-5 flex flex-col gap-3 overflow-y-auto overscroll-contain transition-all duration-200 lg:hidden ${activeSpecs === model.key ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-xs uppercase tracking-[0.35em] text-white/80">{ui.specs}</span>
-                          <button
-                            type="button"
-                            onClick={(event) => { event.stopPropagation(); setActiveSpecs(null); }}
-                            className="text-white/90 hover:text-white text-sm font-semibold"
-                          >
-                            {copy.close}
-                          </button>
-                        </div>
-                        <ul className="space-y-2 text-sm leading-relaxed list-disc pl-5 text-white/90">
-                          {model.points.map((point, index) => (
-                            <li key={index}>{point}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="text-[0.75rem] text-white/70">{copy.clickHide}</div>
                     </div>
                   </div>
                   {gallery ? (
@@ -1974,7 +1951,7 @@ export default function App() {
                   ) : null}
                 </div>
                 <div className="desktop-product-body p-3 sm:p-4 lg:p-3.5">
-                  <h3 className={`desktop-product-name hidden lg:block text-lg font-bold mb-1 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{model.name}</h3>
+                  <h3 className={`desktop-product-name hidden lg:block text-lg font-bold mb-1 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}><a href={`/products/${model.key}/`} onClick={(event) => event.stopPropagation()}>{model.name}</a></h3>
                   <div className="desktop-product-points hidden lg:grid grid-cols-2 gap-x-5 gap-y-1.5 mb-2.5 text-[0.8rem] font-medium leading-snug">
                     {model.points.map((point, index) => (
                       <div
@@ -2015,18 +1992,6 @@ export default function App() {
                     >
                       <CalendarCheck className="size-3.5" />
                       {copy.heroPrimary}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => addToCart(model.key as ProductKey)}
-                      className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors active:scale-[0.98] lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${
-                        model.isFeatured ? 'border-white/35 text-primary-foreground/80 hover:bg-white/10' : 'border-border text-foreground/60 hover:border-primary/60 hover:text-foreground'
-                      }`}
-                    >
-                      <ShoppingCart className="size-3" />
-                      {recentlyAddedProduct === model.key
-                        ? tr({ sr: 'Dodato ✓', en: 'Added ✓', ru: 'Добавлено ✓' })
-                        : tr({ sr: 'Dodaj u Korpu', en: 'Add to cart', ru: 'В корзину' })}
                     </button>
                     <a
                       href={`/checkout?model=${model.key}`}
@@ -2944,9 +2909,9 @@ export default function App() {
             <div>
               <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 sm:mb-4">{ui.footerProducts}</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-foreground/60">
-                <li><a href="/elektricni-bicikli/glide/" className="hover:text-foreground transition-colors">Glide</a></li>
-                <li><a href="/elektricni-bicikli/core/" className="hover:text-foreground transition-colors">Core</a></li>
-                <li><a href="/elektricni-bicikli/cargo/" className="hover:text-foreground transition-colors">Cargo</a></li>
+                <li><a href="/products/glide/" className="hover:text-foreground transition-colors">Glide</a></li>
+                <li><a href="/products/core/" className="hover:text-foreground transition-colors">Core</a></li>
+                <li><a href="/products/cargo/" className="hover:text-foreground transition-colors">Cargo</a></li>
                 <li><a href="/elektricni-bicikli/" className="hover:text-foreground transition-colors">Električni bicikli</a></li>
                 <li><a href="/electric-bikes/" lang="en" className="hover:text-foreground transition-colors">Electric bikes</a></li>
                 <li><a href="/#modeli" className="hover:text-foreground transition-colors">{ui.footerCompare}</a></li>

@@ -7,7 +7,7 @@ type PageMetadata = {
   path: string;
   robots?: string;
   image?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'product';
   language?: string;
   structuredData?: Record<string, unknown> | null;
 };

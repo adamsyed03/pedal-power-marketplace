@@ -24,7 +24,8 @@ function staticSeoPages(): Plugin {
       server.middlewares.use(async (request, response, next) => {
         const pathname = request.url?.split('?')[0]
         if (!pathname) return next()
-        const staticPage = /^\/(?:oprema|o-nama|kontakt|electric-bikes|vodici(?:\/[a-z0-9-]+)?|elektricni-bicikli(?:\/(?:core|cargo|glide|beograd|novi-sad|nis|kragujevac))?)\/?$/.test(pathname)
+        const productPage = /^\/products\/(?:core|cargo|glide)\/?$/.test(pathname)
+        const staticPage = productPage || /^\/(?:oprema|o-nama|kontakt|electric-bikes|vodici(?:\/[a-z0-9-]+)?|elektricni-bicikli(?:\/(?:core|cargo|glide|beograd|novi-sad|nis|kragujevac))?)\/?$/.test(pathname)
         if (!staticPage) return next()
         if (!pathname.endsWith('/')) {
           response.statusCode = 308
@@ -33,10 +34,12 @@ function staticSeoPages(): Plugin {
           return
         }
         try {
-          const html = await readFile(path.resolve(__dirname, `public${pathname}index.html`), 'utf8')
+          const htmlPath = productPage ? `.${pathname}index.html` : `public${pathname}index.html`
+          const html = await readFile(path.resolve(__dirname, htmlPath), 'utf8')
+          const responseHtml = productPage ? await server.transformIndexHtml(pathname, html) : html
           response.statusCode = 200
           response.setHeader('Content-Type', 'text/html; charset=utf-8')
-          response.end(html)
+          response.end(responseHtml)
         } catch (error) {
           next(error)
         }
@@ -103,6 +106,12 @@ export default defineConfig(({ mode }) => {
 
     build: {
       rollupOptions: {
+        input: {
+          home: path.resolve(__dirname, 'index.html'),
+          'products/cargo': path.resolve(__dirname, 'products/cargo/index.html'),
+          'products/core': path.resolve(__dirname, 'products/core/index.html'),
+          'products/glide': path.resolve(__dirname, 'products/glide/index.html'),
+        },
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],

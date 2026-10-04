@@ -4,9 +4,9 @@
 
 ## Canonical pages
 - [Pogon electric bicycles](https://ridepogon.com/elektricni-bicikli/): comparison of Core, Cargo and Glide
-- [Pogon Core](https://ridepogon.com/elektricni-bicikli/core/): foldable fat-tyre electric bicycle
-- [Pogon Cargo](https://ridepogon.com/elektricni-bicikli/cargo/): electric bicycle for delivery and carrying items
-- [Pogon Glide](https://ridepogon.com/elektricni-bicikli/glide/): city electric bicycle
+- [Pogon Core](https://ridepogon.com/products/core/): foldable city electric bicycle
+- [Pogon Cargo](https://ridepogon.com/products/cargo/): electric bicycle for delivery and carrying items
+- [Pogon Glide](https://ridepogon.com/products/glide/): city electric bicycle
 - [Pogon guides](https://ridepogon.com/vodici/): Serbian educational resources about e-bikes
 - [Equipment](https://ridepogon.com/oprema/): helmets, lock, mirror, handlebar mitts, phone holder and basket availability
 - [Delivery in Serbia](https://ridepogon.com/dostava/): nationwide delivery coverage and expected timing

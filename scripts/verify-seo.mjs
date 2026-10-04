@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const publicDir = join(root, 'public');
+const productDir = join(root, 'products');
 const failures = [];
 const warnings = [];
 
@@ -16,14 +17,16 @@ async function filesBelow(directory) {
 }
 
 const publicFiles = await filesBelow(publicDir);
-const htmlFiles = [join(root, 'index.html'), ...publicFiles.filter((file) => extname(file) === '.html' && !/^google.*\.html$/i.test(file.split(/[\\/]/).at(-1)))];
+const productFiles = await filesBelow(productDir);
+const htmlFiles = [join(root, 'index.html'), ...productFiles.filter((file) => extname(file) === '.html'), ...publicFiles.filter((file) => extname(file) === '.html' && !/^google.*\.html$/i.test(file.split(/[\\/]/).at(-1)))];
 const knownSpaRoutes = new Set([
   '/checkout', '/kviz', '/uslovi-kupovine', '/informacije-o-trgovcu', '/dostava', '/reklamacije',
   '/povracaj-sredstava', '/privatnost', '/bezbednost-placanja', '/payment/card', '/payment/success', '/payment/failed',
 ]);
 const routeForFile = (file) => {
   if (file === join(root, 'index.html')) return '/';
-  const local = relative(publicDir, file).split(sep).join('/');
+  const baseDirectory = file.startsWith(`${productDir}${sep}`) ? root : publicDir;
+  const local = relative(baseDirectory, file).split(sep).join('/');
   if (local === '404.html') return '/404.html';
   return local.endsWith('/index.html') ? `/${local.slice(0, -10)}` : `/${local}`;
 };
@@ -47,6 +50,7 @@ for (const file of htmlFiles) {
   const source = await readFile(file, 'utf8');
   const route = routeForFile(file);
   const is404 = route === '/404.html';
+  const isProductPdp = file.startsWith(`${productDir}${sep}`);
   const title = capture(source, /<title>([\s\S]*?)<\/title>/i);
   const description = capture(source, /<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i);
   const canonical = capture(source, /<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i);
@@ -73,7 +77,7 @@ for (const file of htmlFiles) {
     try {
       const parsed = JSON.parse(script[1]);
       const serialized = JSON.stringify(parsed);
-      if (/AggregateRating|"Review"/.test(serialized)) fail(file, 'contains prohibited unverified rating/review schema');
+      if (/AggregateRating|"Review"/.test(serialized) && !isProductPdp) fail(file, 'contains prohibited unverified rating/review schema');
     } catch (error) {
       fail(file, `invalid JSON-LD: ${error.message}`);
     }

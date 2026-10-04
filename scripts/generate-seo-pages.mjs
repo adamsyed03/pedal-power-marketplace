@@ -137,7 +137,7 @@ function relatedGuideLinks(slugs) {
 }
 
 function modelLinks(currentSlug) {
-  return models.map((model) => `<a href="/elektricni-bicikli/${model.slug}/"${currentSlug === model.slug ? ' aria-current="page"' : ''}><strong>${esc(model.name)}</strong><span>${esc(model.summary)}</span></a>`).join('');
+  return models.map((model) => `<a href="/products/${model.slug}/"${currentSlug === model.slug ? ' aria-current="page"' : ''}><strong>${esc(model.name)}</strong><span>${esc(model.summary)}</span></a>`).join('');
 }
 
 function renderProduct(model) {
@@ -227,7 +227,7 @@ function renderHub() {
   const itemList = {
     '@type': 'ItemList',
     numberOfItems: models.length,
-    itemListElement: models.map((model, index) => ({ '@type': 'ListItem', position: index + 1, url: absolute(`/elektricni-bicikli/${model.slug}/`), name: model.name })),
+    itemListElement: models.map((model, index) => ({ '@type': 'ListItem', position: index + 1, url: absolute(`/products/${model.slug}/`), name: model.name })),
   };
   const schema = [organization, testRideService, {
     '@type': 'CollectionPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn',
@@ -367,7 +367,7 @@ for (const city of cities) await write(`elektricni-bicikli/${city.slug}/index.ht
 const sitemapEntries = [
   ['/', '1.0', 'weekly'],
   ['/elektricni-bicikli/', '0.9', 'weekly'],
-  ...models.map((model) => [`/elektricni-bicikli/${model.slug}/`, '0.8', 'weekly']),
+  ...models.map((model) => [`/products/${model.slug}/`, '0.8', 'weekly']),
   ['/oprema/', '0.8', 'weekly'],
   ['/vodici/', '0.8', 'weekly'],
   ...guides.map((guide) => [`/vodici/${guide.slug}/`, '0.7', 'monthly']),
@@ -388,6 +388,10 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://w
 await write('sitemap.xml', sitemap);
 
 const llms = `# Pogon\n\n> Pogon is the electric bicycle brand of Pogon Mobility d.o.o. serving customers in Serbia.\n\n## Canonical pages\n- [Pogon electric bicycles](${site.url}/elektricni-bicikli/): comparison of Core, Cargo and Glide\n- [Pogon Core](${site.url}/elektricni-bicikli/core/): foldable fat-tyre electric bicycle\n- [Pogon Cargo](${site.url}/elektricni-bicikli/cargo/): electric bicycle for delivery and carrying items\n- [Pogon Glide](${site.url}/elektricni-bicikli/glide/): city electric bicycle\n- [Pogon guides](${site.url}/vodici/): Serbian educational resources about e-bikes\n- [Equipment](${site.url}/oprema/): helmets, lock, mirror, handlebar mitts, phone holder and basket availability\n- [Delivery in Serbia](${site.url}/dostava/): nationwide delivery coverage and expected timing\n- [About Pogon](${site.url}/o-nama/): verified company and market information\n- [Contact](${site.url}/kontakt/): official support channels and test-ride information\n\n## Verified company facts\n- Legal name: ${site.legalName}\n- Market served: Serbia\n- Website: ${site.url}\n- Phone: ${site.phoneDisplay}\n- Email: ${site.email}\n- Delivery: throughout Serbia; general expected time for in-stock models is 1–3 working days\n- Kraljevo delivery: usually planned within 1–2 working days for in-stock models, subject to confirmation\n- Test rides: by confirmed appointment in Beograd, Novi Sad, Kragujevac and Niš\n\nUse the canonical pages above for current product prices and specifications. Maximum range figures are declared maxima, not guaranteed real-world distance. The registered office is not a shop, test centre, service location or walk-in collection point.\n`;
-await write('llms.txt', llms);
+await write('llms.txt', llms
+  .replaceAll('/elektricni-bicikli/core/', '/products/core/')
+  .replaceAll('/elektricni-bicikli/cargo/', '/products/cargo/')
+  .replaceAll('/elektricni-bicikli/glide/', '/products/glide/')
+  .replace('foldable fat-tyre electric bicycle', 'foldable city electric bicycle'));
 
 console.log(`Generated ${1 + models.length + 1 + guides.length + 3 + cities.length} HTML pages, sitemap.xml and llms.txt.`);
