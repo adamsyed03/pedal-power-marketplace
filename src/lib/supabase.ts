@@ -13,6 +13,7 @@ export type Lead = {
   source: string;
   language: 'en' | 'sr' | 'ru';
   created_at: string;
+  updated_at: string;
   city: string | null;
   country: string | null;
   todo: string | null;
@@ -48,7 +49,7 @@ const request = async (path: string, init: RequestInit = {}, accessToken = SUPAB
   return response;
 };
 
-export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at' | 'todo' | 'medium' | 'stage' | 'outcome'>) => {
+export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at' | 'updated_at' | 'todo' | 'medium' | 'stage' | 'outcome'>) => {
   const { name, phone, source, language, city, comment } = lead;
   await request('/rest/v1/leads', {
     method: 'POST',
@@ -58,6 +59,8 @@ export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at' | 'todo' |
   trackMetaLead(source);
   trackGoogleAdsLead();
 };
+
+export type ManualLeadInput = Pick<Lead, 'name' | 'phone'> & Partial<Pick<Lead, 'city' | 'todo' | 'medium' | 'stage' | 'date_contacted' | 'comment'>>;
 
 export type PaidOrderItem = {
   product: string;
@@ -111,20 +114,49 @@ export const refreshAdminSession = async (refreshToken: string): Promise<AdminSe
 export const fetchLeads = async (accessToken: string) => {
   try {
     const response = await request(
-      '/rest/v1/leads?select=id,name,phone,source,language,created_at,city,country,todo,medium,stage,outcome,date_contacted,comment&order=created_at.desc',
+      '/rest/v1/leads?select=id,name,phone,source,language,created_at,updated_at,city,country,todo,medium,stage,outcome,date_contacted,comment&order=created_at.desc',
       { method: 'GET' },
       accessToken,
     );
     return response.json() as Promise<Lead[]>;
   } catch {
-    const response = await request(
-      '/rest/v1/leads?select=id,name,phone,source,language,created_at,city,country,date_contacted,comment&order=created_at.desc',
-      { method: 'GET' },
-      accessToken,
-    );
-    const legacyLeads = await response.json() as Omit<Lead, 'todo' | 'medium' | 'stage' | 'outcome'>[];
-    return legacyLeads.map((lead) => ({ ...lead, todo: null, medium: null, stage: null, outcome: null }));
+    try {
+      const response = await request(
+        '/rest/v1/leads?select=id,name,phone,source,language,created_at,city,country,todo,medium,stage,outcome,date_contacted,comment&order=created_at.desc',
+        { method: 'GET' },
+        accessToken,
+      );
+      const leadsWithoutTimestamps = await response.json() as Omit<Lead, 'updated_at'>[];
+      return leadsWithoutTimestamps.map((lead) => ({ ...lead, updated_at: lead.created_at }));
+    } catch {
+      const response = await request(
+        '/rest/v1/leads?select=id,name,phone,source,language,created_at,city,country,date_contacted,comment&order=created_at.desc',
+        { method: 'GET' },
+        accessToken,
+      );
+      const legacyLeads = await response.json() as Omit<Lead, 'updated_at' | 'todo' | 'medium' | 'stage' | 'outcome'>[];
+      return legacyLeads.map((lead) => ({ ...lead, updated_at: lead.created_at, todo: null, medium: null, stage: null, outcome: null }));
+    }
   }
+};
+
+export const createLead = async (accessToken: string, lead: ManualLeadInput) => {
+  const response = await request(
+    '/rest/v1/leads?select=*',
+    {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({
+        ...lead,
+        source: 'admin-manual',
+        language: 'sr',
+      }),
+    },
+    accessToken,
+  );
+  const [created] = await response.json() as Lead[];
+  if (!created) throw new Error('The new lead was not returned by Supabase.');
+  return { ...created, updated_at: created.updated_at ?? created.created_at };
 };
 
 export const fetchPaidOrders = async (accessToken: string) => {
@@ -146,13 +178,16 @@ export const updateLead = async (
   id: string,
   changes: Partial<Pick<Lead, 'city' | 'country' | 'todo' | 'medium' | 'stage' | 'outcome' | 'date_contacted' | 'comment'>>,
 ) => {
-  await request(
-    `/rest/v1/leads?id=eq.${encodeURIComponent(id)}`,
+  const response = await request(
+    `/rest/v1/leads?id=eq.${encodeURIComponent(id)}&select=*`,
     {
       method: 'PATCH',
-      headers: { Prefer: 'return=minimal' },
+      headers: { Prefer: 'return=representation' },
       body: JSON.stringify(changes),
     },
     accessToken,
   );
+  const [updated] = await response.json() as Lead[];
+  if (!updated) throw new Error('The updated lead was not returned by Supabase.');
+  return { ...updated, updated_at: updated.updated_at ?? updated.created_at };
 };

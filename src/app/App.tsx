@@ -327,7 +327,7 @@ export default function App() {
   const isSavingsQuizRoute = normalizedPath === '/kviz';
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('admin') === '1') return;
+    if (normalizedPath === '/admin' || new URLSearchParams(window.location.search).get('admin') === '1') return;
     if (normalizedPath !== '' && !isSavingsQuizRoute) return;
 
     if (isSavingsQuizRoute) {
@@ -1154,10 +1154,15 @@ export default function App() {
     setLightboxZoom(1);
   };
 
+  const isAdminPath = typeof window !== 'undefined'
+    && (window.location.pathname === '/admin' || window.location.pathname === '/admin/');
   const isAdminLeadsRoute = typeof window !== 'undefined'
-    && new URLSearchParams(window.location.search).get('admin') === '1';
+    && (isAdminPath || new URLSearchParams(window.location.search).get('admin') === '1');
 
   if (isAdminLeadsRoute) {
+    if (isAdminPath && (window.location.pathname !== '/admin' || window.location.search || window.location.hash)) {
+      window.history.replaceState(window.history.state, '', '/admin');
+    }
     return <Suspense fallback={null}><AdminLeads /></Suspense>;
   }
 

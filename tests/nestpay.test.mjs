@@ -1231,7 +1231,7 @@ test('production routing serves known SPA pages and returns a real 404 for unkno
   const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
   const spaRoute = config.routes.find((route) => route.dest === '/index.html');
   const fallbackRoute = config.routes.at(-1);
-  const knownRoutes = ['/checkout', '/kviz', '/kontakt', '/uslovi-kupovine', '/payment/success'];
+  const knownRoutes = ['/admin', '/checkout', '/kviz', '/kontakt', '/uslovi-kupovine', '/payment/success'];
   const accessoriesRoute = config.routes.find((route) => route.dest === '/oprema/index.html');
 
   assert.ok(spaRoute);
@@ -1265,6 +1265,7 @@ test('landing rating remains clearly visible and Core has no sale badge', () => 
 
 test('admin CRM includes an authenticated PAID-orders panel with game prizes', () => {
   const route = readFileSync(new URL('../api/admin/orders.ts', import.meta.url), 'utf8');
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
   const admin = readFileSync(new URL('../src/app/components/AdminLeads.tsx', import.meta.url), 'utf8');
   const panel = readFileSync(new URL('../src/app/components/AdminOrdersPanel.tsx', import.meta.url), 'utf8');
   const client = readFileSync(new URL('../src/lib/supabase.ts', import.meta.url), 'utf8');
@@ -1279,6 +1280,9 @@ test('admin CRM includes an authenticated PAID-orders panel with game prizes', (
   assert.match(admin, /<AdminOrdersPanel/);
   assert.match(admin, /aria-controls="completed-orders"/);
   assert.match(admin, /ordersSection\.scrollIntoView\(\{ behavior, block: 'start' \}\)/);
+  assert.match(app, /window\.location\.pathname === '\/admin'/);
+  assert.match(app, /window\.history\.replaceState\(window\.history\.state, '', '\/admin'\)/);
+  assert.match(app, /new URLSearchParams\(window\.location\.search\)\.get\('admin'\) === '1'/);
   assert.match(panel, /Completed orders/);
   assert.match(panel, /id="completed-orders"/);
   assert.match(panel, /scroll-mt-6/);
@@ -1288,6 +1292,31 @@ test('admin CRM includes an authenticated PAID-orders panel with game prizes', (
   assert.match(viteConfig, /adminOrdersDevApi/);
   assert.match(viteConfig, /use\('\/api\/admin\/orders'/);
   assert.doesNotMatch(viteConfig, /api\/checkout|api\/nestpay/);
+});
+
+test('admin CRM supports manual leads and sortable last-saved timestamps', () => {
+  const admin = readFileSync(new URL('../src/app/components/AdminLeads.tsx', import.meta.url), 'utf8');
+  const client = readFileSync(new URL('../src/lib/supabase.ts', import.meta.url), 'utf8');
+  const schema = readFileSync(new URL('../supabase/schema.sql', import.meta.url), 'utf8');
+  const migration = readFileSync(new URL('../supabase/migrations/20261006120000_lead_manual_entries_and_updated_at.sql', import.meta.url), 'utf8');
+
+  assert.match(admin, /Add a lead manually/);
+  assert.match(admin, /All fields are optional/);
+  assert.doesNotMatch(admin, /<input[^>]+required/);
+  assert.doesNotMatch(admin, /!manualLead\.name\.trim\(\) \|\| !manualLead\.phone\.trim\(\)/);
+  assert.match(admin, /createLead\(activeSession\.access_token/);
+  assert.match(admin, /columnHeader\('updated_at', 'Saved'\)/);
+  assert.match(admin, /column === 'updated_at' \? 'desc' : 'asc'/);
+  assert.match(admin, /savedTimestamp\(lead\.updated_at\)/);
+  assert.match(client, /source: 'admin-manual'/);
+  assert.match(client, /Prefer: 'return=representation'/);
+  assert.match(schema, /create trigger leads_set_updated_at/);
+  assert.match(migration, /new\.updated_at = now\(\)/);
+  assert.match(migration, /grant insert \(name, phone, source, language/);
+  const optionalFieldsMigration = readFileSync(new URL('../supabase/migrations/20261006123000_optional_manual_lead_fields.sql', import.meta.url), 'utf8');
+  assert.match(optionalFieldsMigration, /source = 'admin-manual'/);
+  assert.match(optionalFieldsMigration, /to anon[\s\S]*source <> 'admin-manual'/);
+  assert.match(optionalFieldsMigration, /Pogon admin can create leads[\s\S]*pogonmobility@gmail\.com/);
 });
 
 test('Core is displayed without a discount and the server charges 135,000 RSD', () => {
