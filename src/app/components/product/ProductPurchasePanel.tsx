@@ -80,6 +80,7 @@ export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, 
 
       <div className="mt-6 border-y border-black/10 py-5">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          {details.product.listPriceRsd ? <p className="text-lg font-bold text-black/35 line-through decoration-2">{formatRsd(details.product.listPriceRsd)}</p> : null}
           <p className="text-3xl font-black tracking-[-0.035em] text-black sm:text-[2.45rem]">{formatRsd(details.product.priceRsd)}</p>
           <p className="text-[0.66rem] font-bold uppercase tracking-[0.12em] text-black/40">{t.vat}</p>
         </div>

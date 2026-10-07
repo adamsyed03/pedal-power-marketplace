@@ -16,7 +16,7 @@ export type Product = {
 export const products: readonly Product[] = [
   { key: 'cargo', name: 'Pogon Cargo', description: 'Električni teretni bicikl za praktičan prevoz stvari kroz grad.', priceRsd: 130_000, image: '/Core main.jpg', category: 'bike' },
   { key: 'core', name: 'Pogon Core', description: 'Svestrani električni bicikl za svakodnevne obaveze i duže gradske rute.', priceRsd: 135_000, image: '/Cargo Main.jpg', category: 'bike' },
-  { key: 'glide', name: 'Pogon Glide', description: 'Premium električni bicikl za udobnu svakodnevnu gradsku vožnju.', priceRsd: 165_000, image: '/Glide main.jpg', category: 'bike' },
+  { key: 'glide', name: 'Pogon Glide', description: 'Premium električni bicikl za udobnu svakodnevnu gradsku vožnju.', priceRsd: 160_000, listPriceRsd: 165_000, image: '/Glide main.jpg', category: 'bike' },
   { key: 'chain', name: 'Lanac za zaključavanje', description: 'Lanac za sigurno zaključavanje bicikla tokom gradskih zaustavljanja.', priceRsd: 1_999, image: '/oprema/chain.optimized.jpg', category: 'accessory' },
   { key: 'helmet-with-visor', name: 'Kaciga sa vizirom', description: 'Kaciga sa integrisanim vizirom za svakodnevnu gradsku vožnju.', priceRsd: 3_999, image: '/oprema/helmetwithvizor.optimized.jpg', category: 'accessory' },
   { key: 'helmet', name: 'Kaciga', description: 'Lagana kaciga za svakodnevnu vožnju električnog bicikla.', priceRsd: 2_999, image: '/oprema/helmet.optimized.jpg', category: 'accessory' },

@@ -63,7 +63,7 @@ test('accessory prices are server-authoritative and the sold-out basket cannot b
 test('mixed-model totals are authoritative and quantities are not capped at five', () => {
   const cart = calculateCartTotal([{ product: 'glide', quantity: 7 }, { product: 'core', quantity: 2 }]);
   assert.equal(cart.totalQuantity, 9);
-  assert.equal(cart.subtotalRsd, 1_425_000);
+  assert.equal(cart.subtotalRsd, 1_390_000);
   assert.throws(() => calculateCartTotal([{ product: 'glide', quantity: 1 }, { product: 'glide', quantity: 2 }]), /DUPLICATE_PRODUCT/);
 });
 
@@ -92,10 +92,10 @@ test('NBGD subtracts 5,000 RSD once from any order', () => {
   ]);
   const discounted = applyPromotion(cart, ' nbgd ');
   assert.equal(discounted.promoCode, 'NBGD');
-  assert.equal(discounted.originalSubtotalRsd, 465_000);
+  assert.equal(discounted.originalSubtotalRsd, 455_000);
   assert.equal(discounted.discountRsd, 5_000);
-  assert.equal(discounted.subtotalRsd, 460_000);
-  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 460_000);
+  assert.equal(discounted.subtotalRsd, 450_000);
+  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 450_000);
   assert.equal(discounted.items[0].discountRsd, 5_000);
   assert.equal(discounted.items[0].promoCode, 'NBGD');
 });
@@ -107,10 +107,10 @@ test('INSTAGRAM subtracts 5,000 RSD once from any order', () => {
   ]);
   const discounted = applyPromotion(cart, ' instagram ');
   assert.equal(discounted.promoCode, 'INSTAGRAM');
-  assert.equal(discounted.originalSubtotalRsd, 295_000);
+  assert.equal(discounted.originalSubtotalRsd, 290_000);
   assert.equal(discounted.discountRsd, 5_000);
-  assert.equal(discounted.subtotalRsd, 290_000);
-  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 290_000);
+  assert.equal(discounted.subtotalRsd, 285_000);
+  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 285_000);
   assert.equal(discounted.items[0].discountRsd, 5_000);
   assert.equal(discounted.items[0].promoCode, 'INSTAGRAM');
 });
@@ -1342,7 +1342,7 @@ test('premium product pages are prerendered, routed, localized and linked from t
   const reviews = readFileSync(new URL('../src/lib/productReviews.ts', import.meta.url), 'utf8');
   const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
   const sitemap = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8');
-  const prices = { cargo: '130000', core: '135000', glide: '165000' };
+  const prices = { cargo: '130000', core: '135000', glide: '160000' };
   const ratings = { cargo: '4.8', core: '5', glide: '4.9' };
 
   assert.match(main, /<ProductPage productKey=\{productKey\}/);
