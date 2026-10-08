@@ -84,10 +84,13 @@ export function Checkout() {
   }, 0), [items]);
   const hasBike = items.some((item) => products.find((entry) => entry.key === item.product)?.category === 'bike');
   const cargoQuantity = items.find((item) => item.product === 'cargo')?.quantity ?? 0;
+  const hasInstagramModel = items.some((item) => item.product === 'cargo' || item.product === 'glide');
   const displayedDiscount = promoCode === 'MILEBANJA'
-    ? cargoQuantity * 10_000
-    : promoCode === 'NBGD' || promoCode === 'INSTAGRAM'
+    ? cargoQuantity * 5_000
+    : promoCode === 'NBGD'
       ? Math.min(5_000, displayedTotal)
+      : promoCode === 'INSTAGRAM'
+        ? Math.min(4_000, displayedTotal)
       : 0;
   const displayedDeliveryFee = deliveryMethod === 'courier' ? 3_900 : 0;
   const displayedPayableTotal = displayedTotal - displayedDiscount + displayedDeliveryFee;
@@ -107,8 +110,14 @@ export function Checkout() {
       setPromoCode(null);
       setPromoInput('');
       setPromoError('Kod MILEBANJA važi samo za Pogon Cargo.');
+      return;
     }
-  }, [cargoQuantity, hasBike, promoCode]);
+    if (promoCode === 'INSTAGRAM' && !hasInstagramModel) {
+      setPromoCode(null);
+      setPromoInput('');
+      setPromoError('Kod INSTAGRAM važi samo za Pogon Cargo i Glide.');
+    }
+  }, [cargoQuantity, hasBike, hasInstagramModel, promoCode]);
 
   const applyPromoCode = () => {
     const normalized = promoInput.trim().toUpperCase();
@@ -131,6 +140,11 @@ export function Checkout() {
     if (normalized === 'MILEBANJA' && cargoQuantity === 0) {
       setPromoCode(null);
       setPromoError('Kod MILEBANJA važi samo za Pogon Cargo.');
+      return;
+    }
+    if (normalized === 'INSTAGRAM' && !hasInstagramModel) {
+      setPromoCode(null);
+      setPromoError('Kod INSTAGRAM važi samo za Pogon Cargo i Glide.');
       return;
     }
     setPromoInput(normalized);

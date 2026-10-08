@@ -1106,7 +1106,8 @@ export default function App() {
         { src: publicAsset('Core 3.jpg'), alt: 'Pogon Cargo product photo 3', width: 1122, height: 1402 },
       ],
       description: copy.cargoDescription,
-      price: '130.000,00 RSD',
+      originalPrice: '130.000,00 RSD',
+      price: '125.000,00 RSD',
       mobileSpecs: { range: '140 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [

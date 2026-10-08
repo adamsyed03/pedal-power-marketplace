@@ -91,7 +91,12 @@ export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, 
       <section className="mt-6" aria-labelledby="frequently-bought-heading">
         <div className="flex items-end justify-between gap-3">
           <h2 id="frequently-bought-heading" className="text-lg font-black tracking-[-0.02em]">{extras.together}</h2>
-          <a href={language === 'sr' ? '/oprema/' : `/oprema/?lang=${language}`} className="shrink-0 text-[0.62rem] font-black uppercase tracking-[0.1em] text-[#397700] hover:underline">{extras.equipment}</a>
+          <a
+            href={language === 'sr' ? '/oprema/' : `/oprema/?lang=${language}`}
+            className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-md border-2 border-black bg-white px-3 text-[0.62rem] font-black uppercase tracking-[0.1em] text-black transition-colors hover:bg-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7fff00] focus-visible:ring-offset-2"
+          >
+            {extras.equipment}
+          </a>
         </div>
         <div className="mt-3 space-y-2">
           {recommendations.map((product) => {

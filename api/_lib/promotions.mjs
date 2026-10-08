@@ -17,7 +17,8 @@ const PROMOTIONS = Object.freeze({
   INSTAGRAM: Object.freeze({
     code: 'INSTAGRAM',
     kind: 'fixed_order_discount',
-    discountRsd: 5_000,
+    discountRsd: 4_000,
+    products: Object.freeze(['cargo', 'glide']),
   }),
 });
 
@@ -40,9 +41,12 @@ export function applyPromotion(cart, value) {
   if (!promotion) throw new Error('INVALID_PROMO_CODE');
 
   if (promotion.kind === 'fixed_order_discount') {
-    if (!cart.items.some((item) => item.category === 'bike')) throw new Error('PROMO_NOT_APPLICABLE');
+    const discountedItemIndex = cart.items.findIndex((item) => promotion.products
+      ? promotion.products.includes(item.product)
+      : item.category === 'bike');
+    if (discountedItemIndex === -1) throw new Error('PROMO_NOT_APPLICABLE');
     const discountRsd = Math.min(promotion.discountRsd, cart.subtotalRsd);
-    const items = cart.items.map((item, index) => index === 0 ? {
+    const items = cart.items.map((item, index) => index === discountedItemIndex ? {
       ...item,
       lineTotalRsd: item.lineTotalRsd - discountRsd,
       discountRsd,

@@ -74,13 +74,13 @@ test('MILEBANJA sets each Cargo bike to 120,000 RSD without discounting other mo
   ]);
   const discounted = applyPromotion(cart, '  milebanja  ');
   assert.equal(discounted.promoCode, 'MILEBANJA');
-  assert.equal(discounted.originalSubtotalRsd, 395_000);
-  assert.equal(discounted.discountRsd, 20_000);
+  assert.equal(discounted.originalSubtotalRsd, 385_000);
+  assert.equal(discounted.discountRsd, 10_000);
   assert.equal(discounted.subtotalRsd, 375_000);
   assert.deepEqual(discounted.items.find((item) => item.product === 'cargo'), {
     product: 'cargo', name: 'Pogon Cargo', category: 'bike', quantity: 2,
-    originalUnitPriceRsd: 130_000, unitPriceRsd: 120_000,
-    lineTotalRsd: 240_000, discountRsd: 20_000, promoCode: 'MILEBANJA',
+    originalUnitPriceRsd: 125_000, unitPriceRsd: 120_000,
+    lineTotalRsd: 240_000, discountRsd: 10_000, promoCode: 'MILEBANJA',
   });
   assert.equal(discounted.items.find((item) => item.product === 'core').unitPriceRsd, 135_000);
 });
@@ -100,19 +100,34 @@ test('NBGD subtracts 5,000 RSD once from any order', () => {
   assert.equal(discounted.items[0].promoCode, 'NBGD');
 });
 
-test('INSTAGRAM subtracts 5,000 RSD once from any order', () => {
+test('INSTAGRAM subtracts 4,000 RSD once from Cargo and Glide orders', () => {
   const cart = calculateCartTotal([
     { product: 'glide', quantity: 1 },
     { product: 'cargo', quantity: 1 },
   ]);
   const discounted = applyPromotion(cart, ' instagram ');
   assert.equal(discounted.promoCode, 'INSTAGRAM');
-  assert.equal(discounted.originalSubtotalRsd, 290_000);
-  assert.equal(discounted.discountRsd, 5_000);
-  assert.equal(discounted.subtotalRsd, 285_000);
-  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 285_000);
-  assert.equal(discounted.items[0].discountRsd, 5_000);
+  assert.equal(discounted.originalSubtotalRsd, 285_000);
+  assert.equal(discounted.discountRsd, 4_000);
+  assert.equal(discounted.subtotalRsd, 281_000);
+  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 281_000);
+  assert.equal(discounted.items[0].discountRsd, 4_000);
   assert.equal(discounted.items[0].promoCode, 'INSTAGRAM');
+});
+
+test('INSTAGRAM rejects ineligible orders and discounts an eligible item in mixed carts', () => {
+  assert.throws(
+    () => applyPromotion(calculateCartTotal([{ product: 'core', quantity: 1 }]), 'INSTAGRAM'),
+    /PROMO_NOT_APPLICABLE/,
+  );
+  const discounted = applyPromotion(calculateCartTotal([
+    { product: 'core', quantity: 1 },
+    { product: 'glide', quantity: 1 },
+  ]), 'INSTAGRAM');
+  assert.equal(discounted.discountRsd, 4_000);
+  assert.equal(discounted.items[0].discountRsd, undefined);
+  assert.equal(discounted.items[1].discountRsd, 4_000);
+  assert.equal(discounted.items[1].lineTotalRsd, 156_000);
 });
 
 test('promo codes are server-normalized and fail closed when invalid or inapplicable', () => {
@@ -124,7 +139,7 @@ test('promo codes are server-normalized and fail closed when invalid or inapplic
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'core', quantity: 1 }]), 'MILEBANJA'), /PROMO_NOT_APPLICABLE/);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'helmet', quantity: 1 }]), 'NBGD'), /PROMO_NOT_APPLICABLE/);
   const regular = applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), null);
-  assert.equal(regular.subtotalRsd, 130_000);
+  assert.equal(regular.subtotalRsd, 125_000);
   assert.equal(regular.discountRsd, 0);
 });
 
@@ -1342,7 +1357,7 @@ test('premium product pages are prerendered, routed, localized and linked from t
   const reviews = readFileSync(new URL('../src/lib/productReviews.ts', import.meta.url), 'utf8');
   const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
   const sitemap = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8');
-  const prices = { cargo: '130000', core: '135000', glide: '160000' };
+  const prices = { cargo: '125000', core: '135000', glide: '160000' };
   const ratings = { cargo: '4.8', core: '5', glide: '4.9' };
 
   assert.match(main, /<ProductPage productKey=\{productKey\}/);

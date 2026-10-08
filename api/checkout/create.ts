@@ -101,7 +101,7 @@ export default async function handler(request: any, response: any) {
     const code = error instanceof Error ? error.message : '';
     if (code === 'INVALID_CAPTCHA') return response.status(400).json({ error: 'Bezbednosna provera je obavezna.' });
     if (code === 'INVALID_PROMO_CODE') return response.status(400).json({ error: 'Kod za popust nije važeći.' });
-    if (code === 'PROMO_NOT_APPLICABLE') return response.status(400).json({ error: 'Kod MILEBANJA važi samo za Pogon Cargo.' });
+    if (code === 'PROMO_NOT_APPLICABLE') return response.status(400).json({ error: 'Kod za popust ne važi za proizvode u korpi.' });
     if (code === 'ORDER_DATABASE_ERROR_409' && requestedPromoCode === 'MILEBANJA') {
       return response.status(409).json({ error: 'Kod MILEBANJA je već iskorišćen.' });
     }
