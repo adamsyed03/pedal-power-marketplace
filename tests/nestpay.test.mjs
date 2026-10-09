@@ -1314,6 +1314,7 @@ test('admin CRM supports manual leads and sortable last-saved timestamps', () =>
   const client = readFileSync(new URL('../src/lib/supabase.ts', import.meta.url), 'utf8');
   const schema = readFileSync(new URL('../supabase/schema.sql', import.meta.url), 'utf8');
   const migration = readFileSync(new URL('../supabase/migrations/20261006120000_lead_manual_entries_and_updated_at.sql', import.meta.url), 'utf8');
+  const repairMigration = readFileSync(new URL('../supabase/migrations/20261009090000_repair_optional_lead_crm_columns.sql', import.meta.url), 'utf8');
 
   assert.match(admin, /Add a lead manually/);
   assert.match(admin, /All fields are optional/);
@@ -1325,6 +1326,8 @@ test('admin CRM supports manual leads and sortable last-saved timestamps', () =>
   assert.match(admin, /savedTimestamp\(lead\.updated_at\)/);
   assert.match(client, /source: 'admin-manual'/);
   assert.match(client, /Prefer: 'return=representation'/);
+  assert.match(client, /missingLeadColumnFromSchemaCache/);
+  assert.match(client, /delete payload\[missingColumn\]/);
   assert.match(schema, /create trigger leads_set_updated_at/);
   assert.match(migration, /new\.updated_at = now\(\)/);
   assert.match(migration, /grant insert \(name, phone, source, language/);
@@ -1332,6 +1335,10 @@ test('admin CRM supports manual leads and sortable last-saved timestamps', () =>
   assert.match(optionalFieldsMigration, /source = 'admin-manual'/);
   assert.match(optionalFieldsMigration, /to anon[\s\S]*source <> 'admin-manual'/);
   assert.match(optionalFieldsMigration, /Pogon admin can create leads[\s\S]*pogonmobility@gmail\.com/);
+  assert.match(repairMigration, /add column if not exists medium text/);
+  assert.match(repairMigration, /create trigger leads_set_updated_at/);
+  assert.match(repairMigration, /Pogon admin can create leads[\s\S]*pogonmobility@gmail\.com/);
+  assert.match(repairMigration, /notify pgrst, 'reload schema'/);
 });
 
 test('Core is displayed without a discount and the server charges 135,000 RSD', () => {

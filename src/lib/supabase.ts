@@ -60,7 +60,33 @@ export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at' | 'updated
   trackGoogleAdsLead();
 };
 
-export type ManualLeadInput = Pick<Lead, 'name' | 'phone'> & Partial<Pick<Lead, 'city' | 'todo' | 'medium' | 'stage' | 'date_contacted' | 'comment'>>;
+export type ManualLeadInput = Partial<Pick<Lead, 'name' | 'phone' | 'city' | 'todo' | 'medium' | 'stage' | 'date_contacted' | 'comment'>>;
+
+const MANUAL_LEAD_OPTIONAL_COLUMNS = ['city', 'todo', 'medium', 'stage', 'date_contacted', 'comment'] as const;
+
+const missingLeadColumnFromSchemaCache = (cause: unknown) => {
+  if (!(cause instanceof Error)) return null;
+  return cause.message.match(/Could not find the '([^']+)' column of 'leads' in the schema cache/i)?.[1] ?? null;
+};
+
+const normalizeLead = (lead: Partial<Lead>): Lead => ({
+  city: null,
+  country: null,
+  todo: null,
+  medium: null,
+  stage: null,
+  outcome: null,
+  date_contacted: null,
+  comment: null,
+  ...lead,
+  id: lead.id ?? '',
+  name: lead.name ?? '',
+  phone: lead.phone ?? '',
+  source: lead.source ?? 'admin-manual',
+  language: lead.language ?? 'sr',
+  created_at: lead.created_at ?? new Date().toISOString(),
+  updated_at: lead.updated_at ?? lead.created_at ?? new Date().toISOString(),
+});
 
 export type PaidOrderItem = {
   product: string;
@@ -141,22 +167,44 @@ export const fetchLeads = async (accessToken: string) => {
 };
 
 export const createLead = async (accessToken: string, lead: ManualLeadInput) => {
-  const response = await request(
-    '/rest/v1/leads?select=*',
-    {
-      method: 'POST',
-      headers: { Prefer: 'return=representation' },
-      body: JSON.stringify({
-        ...lead,
-        source: 'admin-manual',
-        language: 'sr',
-      }),
-    },
-    accessToken,
-  );
-  const [created] = await response.json() as Lead[];
-  if (!created) throw new Error('The new lead was not returned by Supabase.');
-  return { ...created, updated_at: created.updated_at ?? created.created_at };
+  const payload: Record<string, string> = {
+    name: lead.name?.trim() ?? '',
+    phone: lead.phone?.trim() ?? '',
+    source: 'admin-manual',
+    language: 'sr',
+  };
+  for (const column of MANUAL_LEAD_OPTIONAL_COLUMNS) {
+    const value = lead[column]?.trim();
+    if (value) payload[column] = value;
+  }
+
+  // Some older production databases do not yet expose every optional CRM
+  // column. A missing optional column must never prevent the lead itself from
+  // being saved; retry with only the columns that the live schema supports.
+  for (let attempt = 0; attempt <= MANUAL_LEAD_OPTIONAL_COLUMNS.length; attempt += 1) {
+    try {
+      const response = await request(
+        '/rest/v1/leads?select=*',
+        {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify(payload),
+        },
+        accessToken,
+      );
+      const [created] = await response.json() as Partial<Lead>[];
+      if (!created) throw new Error('The new lead was not returned by Supabase.');
+      return normalizeLead(created);
+    } catch (cause) {
+      const missingColumn = missingLeadColumnFromSchemaCache(cause);
+      if (!missingColumn || !MANUAL_LEAD_OPTIONAL_COLUMNS.some((column) => column === missingColumn) || !(missingColumn in payload)) {
+        throw cause;
+      }
+      delete payload[missingColumn];
+    }
+  }
+
+  throw new Error('The lead could not be saved with the current database schema.');
 };
 
 export const fetchPaidOrders = async (accessToken: string) => {
