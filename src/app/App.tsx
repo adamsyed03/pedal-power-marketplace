@@ -4,6 +4,7 @@ import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { LeadContactModal } from './components/LeadContactModal';
 import { PaymentBranding } from './components/PaymentBranding';
+import { PromotionBanner } from './components/PromotionBanner';
 const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
 const TicTacToeGame = lazy(() => import('./components/TicTacToeGame').then((m) => ({ default: m.TicTacToeGame })));
 import { submitLead } from '../lib/supabase';
@@ -65,7 +66,6 @@ const homeCopyEn = {
   range: 'Range',
   motor: 'Motor',
   weight: 'Weight',
-  fromText: 'from',
   upTo: 'Up to',
   power: 'Power',
   topSpeed: 'Max speed',
@@ -77,7 +77,7 @@ const homeCopyEn = {
 
 const homeCopySr = {
   heroTitle: 'Zaboravi gužvu, parking i gorivo.',
-  heroSub: 'Električni bicikli za svakodnevnu vožnju kroz grad. Uštedi vreme, novac i živce uz domet do 140 km.',
+  heroSub: 'Električni bicikli za svakodnevnu vožnju kroz grad. Uštedi vreme, novac i živce.',
   heroPrimary: 'Zakaži test vožnju',
   heroSecondary: 'Pogledaj modele',
   finalTitle: 'Izaberi model i pokreni gradsku rutinu',
@@ -99,7 +99,6 @@ const homeCopySr = {
   range: 'Domet',
   motor: 'Motor',
   weight: 'Težina',
-  fromText: 'od',
   upTo: 'Do',
   power: 'Snaga',
   topSpeed: 'Maks. brzina',
@@ -133,7 +132,6 @@ const homeCopyRu = {
   range: 'Запас хода',
   motor: 'Мотор',
   weight: 'Вес',
-  fromText: 'от',
   upTo: 'До',
   power: 'Мощность',
   topSpeed: 'Макс. скорость',
@@ -538,7 +536,7 @@ export default function App() {
     const modelsSection = document.getElementById('modeli');
     if (!modelsSection) return;
 
-    const navHeight = document.querySelector('nav')?.clientHeight ?? 0;
+    const navHeight = document.querySelector('[data-site-header]')?.clientHeight ?? 0;
     const targetTop = Math.max(0, modelsSection.getBoundingClientRect().top + window.scrollY - navHeight - 8);
     trackEvent('models_shortcut_click', { source: 'floating-scroll-shortcut' });
     window.scrollTo({ top: targetTop, behavior: 'smooth' });
@@ -1455,8 +1453,10 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent">
+      {/* Promotion and navigation */}
+      <header data-site-header className="fixed left-0 right-0 top-0 z-50">
+        <PromotionBanner language={lang} modelsHref="#modeli" />
+        <nav className="bg-transparent" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-2.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-1.5">
           <div className="relative w-full flex h-8 items-center justify-between gap-2 rounded-full border border-black/10 bg-white/90 px-2 shadow-[0_15px_40px_rgba(0,0,0,0.12)] backdrop-blur-md sm:h-auto sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:h-9 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
             <a href="#top" aria-label="Back to home" className="relative inline-flex h-8 w-20 items-center rounded-full bg-white shadow-sm transition-transform hover:-translate-y-0.5 sm:h-auto sm:w-auto sm:px-4 sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
@@ -1491,7 +1491,8 @@ export default function App() {
             </div>
           </div>
         </div>
-      </nav>
+        </nav>
+      </header>
 
       <AnimatePresence>
         {isCartOpen ? (
@@ -1614,7 +1615,7 @@ export default function App() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative flex touch-pan-y items-center justify-center pt-10 pb-10 sm:pt-14 sm:pb-12 lg:hidden">
+      <section className="relative flex touch-pan-y items-center justify-center pb-10 pt-20 sm:pt-14 sm:pb-12 lg:hidden">
         {/* Background: overflow clipped here only so absolute badges aren't clipped */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/10"></div>
@@ -1629,7 +1630,7 @@ export default function App() {
               transition={{ duration: 0.4 }}
               className="space-y-5 text-center"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-full text-sm">
+              <div className="hidden items-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-full text-sm md:inline-flex">
                 <span className="relative flex size-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                   <span className="relative inline-flex rounded-full size-2 bg-primary"></span>
@@ -1707,14 +1708,12 @@ export default function App() {
                 </div>
                 <div className="text-center">
                   <div className="inline-flex items-end justify-center gap-1 text-black">
-                    <span className="text-[0.7rem] lowercase tracking-[0.18em] text-foreground/60">{copy.fromText}</span>
                     <span className="text-3xl font-black tracking-tight sm:text-4xl">250<span className="text-lg text-foreground/40 sm:text-2xl">w</span></span>
                   </div>
                   <div className="mt-1 text-[0.65rem] uppercase tracking-wider text-foreground/50 sm:text-xs">{copy.power}</div>
                 </div>
                 <div className="text-center">
                   <div className="inline-flex items-end justify-center gap-1 text-black">
-                    <span className="text-[0.7rem] lowercase tracking-[0.18em] text-foreground/60">{copy.fromText}</span>
                     <span className="text-3xl font-black tracking-tight sm:text-4xl">25<span className="text-lg text-foreground/40 sm:text-2xl">km/h</span></span>
                   </div>
                   <div className="mt-1 text-[0.65rem] uppercase tracking-wider text-foreground/50 sm:text-xs">{copy.topSpeed}</div>

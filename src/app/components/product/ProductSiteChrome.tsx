@@ -1,5 +1,6 @@
 import { Instagram, Minus, Plus, ShoppingCart, X } from 'lucide-react';
 import { PaymentBranding } from '../PaymentBranding';
+import { PromotionBanner } from '../PromotionBanner';
 import { formatRsd, products, type ProductKey } from '../../../lib/products';
 import type { SiteLanguage } from '../../../lib/productDetails';
 
@@ -25,8 +26,10 @@ export function ProductHeader({ language, path, cart, onLanguageChange, onOpenCa
   const languageHref = (next: SiteLanguage) => next === 'sr' ? path : `${path}?lang=${next}`;
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 border-b border-black/10 bg-white/95 backdrop-blur-md" aria-label="Main navigation">
-      <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
+    <header data-site-header className="fixed inset-x-0 top-0 z-50">
+      <PromotionBanner language={language} />
+      <nav className="border-b border-black/10 bg-white/95 backdrop-blur-md" aria-label="Main navigation">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
           <a href="/" aria-label="Pogon home" className="relative inline-flex h-14 w-24 shrink-0 items-center overflow-hidden">
             <img src="/Logo.png" alt="POGON" width={1024} height={1024} className="h-14 w-24 object-cover object-center" />
           </a>
@@ -45,8 +48,9 @@ export function ProductHeader({ language, path, cart, onLanguageChange, onOpenCa
               </a>
             ))}
           </div>
-      </div>
-    </nav>
+        </div>
+      </nav>
+    </header>
   );
 }
 

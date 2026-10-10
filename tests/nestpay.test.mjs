@@ -999,6 +999,40 @@ test('initial HTML contains the complete meaningful homepage and hydrates it', (
   assert.match(main, /createRoot\(root\)\.render\(page\)/);
 });
 
+test('site headers show the Cargo and Glide online promotion above navigation', () => {
+  const banner = readFileSync(new URL('../src/app/components/PromotionBanner.tsx', import.meta.url), 'utf8');
+  const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+  const productChrome = readFileSync(new URL('../src/app/components/product/ProductSiteChrome.tsx', import.meta.url), 'utf8');
+  const accessories = readFileSync(new URL('../public/oprema/index.html', import.meta.url), 'utf8');
+
+  assert.match(banner, /discount: '5\.000 RSD popusta'/);
+  assert.match(banner, /bg-black[^"]*text-\[#7fff00\]/);
+  assert.match(banner, /Kaciga, rukavice ili lanac na poklon/);
+  assert.match(banner, /min-h-\[52px\][^"]*flex-col/);
+  assert.match(banner, /copy\.online[\s\S]*copy\.gift/);
+  assert.doesNotMatch(banner, /font-black uppercase/);
+  assert.match(banner, /modelsHref/);
+  assert.ok(app.indexOf('<PromotionBanner') < app.indexOf('<nav className="bg-transparent"'));
+  assert.ok(productChrome.indexOf('<PromotionBanner') < productChrome.indexOf('<nav className="border-b'));
+  assert.ok(accessories.indexOf('class="accessories-promo"') < accessories.indexOf('class="accessories-nav"'));
+  assert.match(accessories, /class="accessories-promo-discount">5\.000 RSD popusta/);
+  assert.match(accessories, /class="accessories-promo-mobile-copy"/);
+  assert.match(app, /querySelector\('\[data-site-header\]'\)/);
+});
+
+test('prerendered app pages have a stable compiled CSS fallback', () => {
+  const home = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const productPrerenderer = readFileSync(new URL('../scripts/prerender-products.mjs', import.meta.url), 'utf8');
+  const cssPublisher = readFileSync(new URL('../scripts/publish-app-css.mjs', import.meta.url), 'utf8');
+  const fallbackCss = new URL('../public/app.css', import.meta.url);
+
+  assert.match(home, /<link rel="stylesheet" href="\/app\.css"/);
+  assert.match(productPrerenderer, /<link rel="stylesheet" href="\/app\.css"/);
+  assert.match(cssPublisher, /dist[\s\S]*assets[\s\S]*public[\s\S]*app\.css/);
+  assert.equal(existsSync(fallbackCss), true);
+  assert.ok(statSync(fallbackCss).size > 100_000);
+});
+
 test('customer-facing model order is Cargo, Core, Glide', () => {
   const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
   assert.match(app, /modelDisplayPosition[\s\S]*cargo:\s*0,[\s\S]*core:\s*1,[\s\S]*glide:\s*2/);
@@ -1264,10 +1298,14 @@ test('production routing serves known SPA pages and returns a real 404 for unkno
 test('Serbian landing hero uses the benefit-led city campaign copy', () => {
   const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
   assert.match(app, /Zaboravi gužvu, parking i gorivo\./);
-  assert.match(app, /Uštedi vreme, novac i živce uz domet do 140 km\./);
+  assert.match(app, /Električni bicikli za svakodnevnu vožnju kroz grad\. Uštedi vreme, novac i živce\./);
+  assert.doesNotMatch(app, /živce uz domet do 140 km/);
   assert.match(app, /value: tr\(\{ sr: 'Do 12 rata'/);
   assert.match(app, /label: tr\(\{ sr: 'Garancije'/);
   assert.match(app, /subtitle: 'Auto je za more, Pogon je za grad'/);
+  assert.match(app, /hidden items-center gap-2 px-4 py-2 bg-primary\/5[^"]*md:inline-flex/);
+  assert.match(app, /pb-10 pt-20 sm:pt-14 sm:pb-12 lg:hidden/);
+  assert.doesNotMatch(app, /copy\.fromText/);
   assert.match(app, /className="mobile-pencil-circle"/);
   assert.match(app, />Električni bicikli<\/span>/);
 });
@@ -1408,8 +1446,14 @@ test('product pages show live interest and buy selected equipment as a bundle', 
   assert.match(reviews, /cargo: 4\.8,[\s\S]*core: 5,[\s\S]*glide: 4\.9/);
   assert.match(panel, /Math\.floor\(Math\.random\(\) \* 21\) \+ 5/);
   assert.match(panel, /Često kupljeno zajedno/);
-  assert.equal((panel.match(/\['helmet', 'rearview-mirror', 'chain'\]/g) || []).length, 3);
-  assert.doesNotMatch(panel, /accessoryRecommendations[\s\S]*phone-holder/);
+  assert.match(panel, /warrantyBenefit: '2 godine garancije'/);
+  assert.match(panel, /rearRack: 'Zadnji nosač \(gepek\)'/);
+  assert.match(panel, /fenders: 'Blatobrani'/);
+  assert.match(panel, /complimentary: 'Besplatno'/);
+  assert.match(panel, /checked readOnly disabled/);
+  assert.match(panel, /\['chain', 'helmet', 'helmet-with-visor', 'rearview-mirror', 'gloves', 'phone-holder'\]/);
+  assert.match(panel, /slice\(0, showMoreAccessories \? paidAccessories\.length : 1\)/);
+  assert.match(panel, /showMore: 'Prikaži više'/);
   assert.doesNotMatch(panel, /href="#reviews"/);
   assert.match(panel, /onBuyNow\(selectedAccessoryKeys\)/);
   assert.match(panel, /buyNow: 'Kupi sada'/);
@@ -1425,7 +1469,7 @@ test('model cards open their product pages and omit the add-to-cart action', () 
   assert.match(app, /href=\{`\/products\/\$\{model\.key\}\/`\}/);
   assert.doesNotMatch(app, /addToCart\(model\.key as ProductKey\)/);
   assert.doesNotMatch(app, /sr: 'Dodaj u Korpu', en: 'Add to cart'/);
-  assert.match(prerenderScript, /<link rel="stylesheet" href="\/src\/styles\/index\.css" \/>/);
+  assert.match(prerenderScript, /<link rel="stylesheet" href="\/app\.css" \/>/);
   assert.match(app, /CART_STORAGE_KEY = 'pogon-cart-v1'/);
   assert.match(app, /continueToCartCheckout/);
   assert.match(app, /href=\{`\/checkout\?model=\$\{model\.key\}`\}/);

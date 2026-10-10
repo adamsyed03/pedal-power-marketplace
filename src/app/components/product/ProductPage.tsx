@@ -181,7 +181,7 @@ export function ProductPage({ productKey, initialLanguage = 'sr' }: { productKey
       <ProductCartDrawer open={cartOpen} language={language} cart={cart} onClose={() => setCartOpen(false)} onQuantityChange={updateQuantity} onCheckout={checkout} />
 
       <main>
-        <section className="mx-auto max-w-[1440px] px-5 pb-14 pt-20 sm:px-6 sm:pb-20 sm:pt-24 lg:px-10">
+        <section className="mx-auto max-w-[1440px] px-5 pb-14 pt-32 sm:px-6 sm:pb-20 sm:pt-32 lg:px-10">
           <nav aria-label={t.breadcrumb} className="mb-6 flex flex-wrap items-center gap-2 border-b border-black/10 pb-4 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-black/40"><a href="/" className="hover:text-black">{t.home}</a><span>/</span><a href="/#modeli" className="hover:text-black">{t.models}</a><span>/</span><span className="text-black">{details.product.name}</span></nav>
           <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-0">
             <ProductGallery media={details.gallery} language={language} productName={details.product.name} />

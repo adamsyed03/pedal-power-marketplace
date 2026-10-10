@@ -45,6 +45,12 @@
   </svg>
   <a class="skip-link" href="#sadrzaj">Pređi na sadržaj</a>
   <header class="accessories-header">
+    <a class="accessories-promo" href="/#modeli" aria-label="Online ponuda">
+      <strong class="accessories-promo-label">Online ponuda</strong>
+      <span class="accessories-promo-desktop-copy"><b class="accessories-promo-order">Poruči preko sajta:</b> <strong class="accessories-promo-discount">5.000 RSD popusta</strong> <b class="accessories-promo-models">na Cargo i Glide</b> <i aria-hidden="true">+</i> <b class="accessories-promo-gift">Kaciga, rukavice ili lanac na poklon</b></span>
+      <span class="accessories-promo-mobile-copy"><span><strong class="accessories-promo-mobile-discount">5.000 RSD popusta</strong> <b class="accessories-promo-mobile-models">na Cargo i Glide</b></span><small><span class="accessories-promo-online">Online porudžbina</span> · <span class="accessories-promo-mobile-gift">Kaciga, rukavice ili lanac na poklon</span></small></span>
+      <em class="accessories-promo-action">Pogledaj modele →</em>
+    </a>
     <nav class="accessories-nav" aria-label="Glavna navigacija">
       <a class="accessories-logo" href="/" aria-label="Pogon početna"><img src="/Logo.png" alt="Pogon" width="1024" height="1024"></a>
       <div class="accessories-nav-center"><a href="/#modeli">Modeli</a><a href="/oprema/" aria-current="page">Oprema</a><a href="/#iskustva">Iskustva</a></div>
@@ -87,7 +93,7 @@
     var pageTranslations = {
       sr: {
         title: 'Oprema za električne bicikle | Pogon', description: 'Praktična oprema za bezbedniju, udobniju i organizovaniju gradsku vožnju.',
-        models: 'Modeli', accessories: 'Oprema', reviews: 'Iskustva', buyNow: 'Kupi sada', cart: 'Korpa', openCart: 'Otvori korpu',
+        models: 'Modeli', accessories: 'Oprema', reviews: 'Iskustva', buyNow: 'Kupi sada', cart: 'Korpa', openCart: 'Otvori korpu', promoLabel: 'Online ponuda', promoOnline: 'Online porudžbina', promoOrder: 'Poruči preko sajta:', promoDiscount: '5.000 RSD popusta', promoModels: 'na Cargo i Glide', promoGift: 'Kaciga, rukavice ili lanac na poklon', promoAction: 'Pogledaj modele →',
         eyebrow: 'Pogon dodatna oprema', heroTitle: 'Oprema za svaki dan.', heroBody: 'Sedam praktičnih dodataka za sigurniju, udobniju i organizovaniju vožnju. Izaberite proizvod i završite kupovinu kroz Pogon sigurni checkout.',
         viewAccessories: 'Pogledaj opremu', viewBikes: 'Pogledaj bicikle', productCount: '7 proizvoda', summaryTitle: 'Sve što vožnju čini jednostavnijom.', summaryBody: 'Kacige, sigurnost, preglednost i praktični dodaci na jednom mestu.',
         sectionTitle: 'Izaberi svoju opremu', sectionBody: 'Odaberite dodatak koji vam treba, a mi ćemo potvrditi kompatibilnost sa vašim biciklom.', mobileBikes: 'Vidi električne bicikle', floatingModels: 'Vidi modele',
@@ -109,7 +115,7 @@
       },
       en: {
         title: 'Electric bike accessories | Pogon', description: 'Practical accessories for safer, more comfortable and organized city riding.',
-        models: 'Models', accessories: 'Accessories', reviews: 'Reviews', buyNow: 'Buy now', cart: 'Cart', openCart: 'Open cart',
+        models: 'Models', accessories: 'Accessories', reviews: 'Reviews', buyNow: 'Buy now', cart: 'Cart', openCart: 'Open cart', promoLabel: 'Online offer', promoOnline: 'Online order', promoOrder: 'Order through the site:', promoDiscount: 'RSD 5,000 off', promoModels: 'Cargo and Glide', promoGift: 'Free helmet, gloves, or chain', promoAction: 'View models →',
         eyebrow: 'Pogon accessories', heroTitle: 'Gear for every day.', heroBody: 'Seven practical accessories for safer, more comfortable and organized riding. Choose your products and complete your order through Pogon secure checkout.',
         viewAccessories: 'View accessories', viewBikes: 'View bikes', productCount: '7 products', summaryTitle: 'Everything that makes riding simpler.', summaryBody: 'Helmets, security, visibility and practical accessories in one place.',
         sectionTitle: 'Choose your accessories', sectionBody: 'Select what you need and we will confirm compatibility with your bike.', mobileBikes: 'View electric bikes', floatingModels: 'View models',
@@ -131,7 +137,7 @@
       },
       ru: {
         title: 'Аксессуары для электровелосипедов | Pogon', description: 'Практичные аксессуары для безопасных и комфортных поездок по городу.',
-        models: 'Модели', accessories: 'Аксессуары', reviews: 'Отзывы', buyNow: 'Купить', cart: 'Корзина', openCart: 'Открыть корзину',
+        models: 'Модели', accessories: 'Аксессуары', reviews: 'Отзывы', buyNow: 'Купить', cart: 'Корзина', openCart: 'Открыть корзину', promoLabel: 'Онлайн-предложение', promoOnline: 'Онлайн-заказ', promoOrder: 'Закажите на сайте:', promoDiscount: 'Скидка 5 000 RSD', promoModels: 'на Cargo и Glide', promoGift: 'Шлем, перчатки или цепь в подарок', promoAction: 'Смотреть модели →',
         eyebrow: 'Аксессуары Pogon', heroTitle: 'Аксессуары на каждый день.', heroBody: 'Семь практичных аксессуаров для безопасных, комфортных и организованных поездок. Выберите товары и оформите заказ через безопасный checkout Pogon.',
         viewAccessories: 'Смотреть аксессуары', viewBikes: 'Смотреть велосипеды', productCount: '7 товаров', summaryTitle: 'Всё для более простой поездки.', summaryBody: 'Шлемы, защита, обзор и практичные аксессуары в одном месте.',
         sectionTitle: 'Выберите аксессуары', sectionBody: 'Выберите нужные товары, а мы проверим их совместимость с вашим велосипедом.', mobileBikes: 'Смотреть электровелосипеды', floatingModels: 'Смотреть модели',
@@ -203,6 +209,19 @@
       if (descriptionMeta) descriptionMeta.setAttribute('content', copy.description);
 
       document.querySelector('.accessories-logo').href = homeHref;
+      var promo = document.querySelector('.accessories-promo');
+      promo.href = homeHref + '#modeli';
+      promo.setAttribute('aria-label', copy.promoLabel);
+      setText('.accessories-promo-label', copy.promoLabel);
+      setText('.accessories-promo-order', copy.promoOrder);
+      setText('.accessories-promo-discount', copy.promoDiscount);
+      setText('.accessories-promo-models', copy.promoModels);
+      setText('.accessories-promo-gift', copy.promoGift);
+      setText('.accessories-promo-mobile-discount', copy.promoDiscount);
+      setText('.accessories-promo-mobile-models', copy.promoModels);
+      setText('.accessories-promo-online', copy.promoOnline);
+      setText('.accessories-promo-mobile-gift', copy.promoGift);
+      setText('.accessories-promo-action', copy.promoAction);
       var navLinks = document.querySelectorAll('.accessories-nav-center a');
       navLinks[0].textContent = copy.models; navLinks[0].href = homeHref + '#modeli';
       navLinks[1].textContent = copy.accessories;

@@ -1,7 +1,7 @@
 import { useEffect, useState, type RefObject } from 'react';
-import { CalendarCheck, CheckCircle2, CreditCard, Eye, MessageCircle, Truck, Wrench } from 'lucide-react';
+import { Bike, CalendarCheck, CheckCircle2, ChevronDown, CloudRain, CreditCard, Eye, MessageCircle, ShieldCheck, Truck, Wrench } from 'lucide-react';
 import { formatRsd, products, type Product, type ProductKey } from '../../../lib/products';
-import { localize, type BikeKey, type ProductDetails, type SiteLanguage } from '../../../lib/productDetails';
+import { localize, type ProductDetails, type SiteLanguage } from '../../../lib/productDetails';
 import { formatProductRating, productRatings, productReviews } from '../../../lib/productReviews';
 import { ProductRatingStars } from './ProductRatingStars';
 
@@ -20,27 +20,29 @@ const copy = {
 };
 
 const extrasCopy = {
-  sr: { together: 'Često kupljeno zajedno', equipment: 'Sva oprema', selectedTotal: 'Bicikl + izabrana oprema', buyNow: 'Kupi sada', watching: (count: number) => `${count} ljudi trenutno gleda ovaj model` },
-  en: { together: 'Frequently bought together', equipment: 'All accessories', selectedTotal: 'Bike + selected accessories', buyNow: 'Buy now', watching: (count: number) => `${count} people are viewing this model now` },
-  ru: { together: 'Часто покупают вместе', equipment: 'Все аксессуары', selectedTotal: 'Велосипед + выбранные аксессуары', buyNow: 'Купить сейчас', watching: (count: number) => `${count} человек сейчас смотрят эту модель` },
+  sr: { together: 'Često kupljeno zajedno', equipment: 'Sva oprema', selectedTotal: 'Bicikl + izabrana oprema', buyNow: 'Kupi sada', complimentary: 'Besplatno', included: 'Automatski uključeno', warrantyBenefit: '2 godine garancije', rearRack: 'Zadnji nosač (gepek)', fenders: 'Blatobrani', showMore: 'Prikaži više', showLess: 'Prikaži manje', watching: (count: number) => `${count} ljudi trenutno gleda ovaj model` },
+  en: { together: 'Frequently bought together', equipment: 'All accessories', selectedTotal: 'Bike + selected accessories', buyNow: 'Buy now', complimentary: 'Complimentary', included: 'Automatically included', warrantyBenefit: '2-year warranty', rearRack: 'Rear rack', fenders: 'Fenders', showMore: 'Show more', showLess: 'Show less', watching: (count: number) => `${count} people are viewing this model now` },
+  ru: { together: 'Часто покупают вместе', equipment: 'Все аксессуары', selectedTotal: 'Велосипед + выбранные аксессуары', buyNow: 'Купить сейчас', complimentary: 'Бесплатно', included: 'Включено автоматически', warrantyBenefit: 'Гарантия 2 года', rearRack: 'Задний багажник', fenders: 'Крылья', showMore: 'Показать ещё', showLess: 'Показать меньше', watching: (count: number) => `${count} человек сейчас смотрят эту модель` },
 };
 
-const accessoryRecommendations: Record<BikeKey, readonly ProductKey[]> = {
-  cargo: ['helmet', 'rearview-mirror', 'chain'],
-  core: ['helmet', 'rearview-mirror', 'chain'],
-  glide: ['helmet', 'rearview-mirror', 'chain'],
-};
+const paidAccessoryKeys: readonly ProductKey[] = ['chain', 'helmet', 'helmet-with-visor', 'rearview-mirror', 'gloves', 'phone-holder'];
 
 export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, purchasePanelRef }: ProductPurchasePanelProps) {
   const t = copy[language];
   const extras = extrasCopy[language];
   const rating = productRatings[details.key];
-  const recommendations = accessoryRecommendations[details.key]
+  const paidAccessories = paidAccessoryKeys
     .map((key) => products.find((product) => product.key === key))
     .filter((product): product is Product => Boolean(product));
-  const [selectedAccessoryKeys, setSelectedAccessoryKeys] = useState<ProductKey[]>(() => [...accessoryRecommendations[details.key].slice(0, 2)]);
+  const includedBenefits = [
+    { key: 'warranty', name: extras.warrantyBenefit, icon: ShieldCheck },
+    { key: 'rear-rack', name: extras.rearRack, icon: Bike },
+    { key: 'fenders', name: extras.fenders, icon: CloudRain },
+  ] as const;
+  const [selectedAccessoryKeys, setSelectedAccessoryKeys] = useState<ProductKey[]>([]);
+  const [showMoreAccessories, setShowMoreAccessories] = useState(false);
   const [watchingNow, setWatchingNow] = useState(5);
-  const selectedTotal = details.product.priceRsd + recommendations
+  const selectedTotal = details.product.priceRsd + paidAccessories
     .filter((product) => selectedAccessoryKeys.includes(product.key))
     .reduce((sum, product) => sum + product.priceRsd, 0);
 
@@ -99,7 +101,15 @@ export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, 
           </a>
         </div>
         <div className="mt-3 space-y-2">
-          {recommendations.map((product) => {
+          {includedBenefits.map(({ key, name, icon: Icon }) => (
+            <div key={key} className="grid grid-cols-[auto_3.25rem_minmax(0,1fr)_auto] items-center gap-3 border border-[#397700]/30 bg-[#7fff00]/[0.08] px-3 py-2.5">
+              <input type="checkbox" checked readOnly disabled aria-label={`${name} — ${extras.included}`} className="size-4 accent-black disabled:opacity-100" />
+              <span className="grid size-[3.25rem] place-items-center bg-[#7fff00]/20 text-[#397700]"><Icon className="size-6" /></span>
+              <span className="min-w-0"><strong className="block text-sm leading-tight text-black/75">{name}</strong><small className="mt-0.5 block text-[0.65rem] font-medium text-black/45">{extras.included}</small></span>
+              <span className="whitespace-nowrap text-sm font-black text-[#397700]">{extras.complimentary}</span>
+            </div>
+          ))}
+          {paidAccessories.slice(0, showMoreAccessories ? paidAccessories.length : 1).map((product) => {
             const selected = selectedAccessoryKeys.includes(product.key);
             return (
               <label key={product.key} className={`grid cursor-pointer grid-cols-[auto_3.25rem_minmax(0,1fr)_auto] items-center gap-3 border px-3 py-2.5 transition-colors ${selected ? 'border-black bg-[#7fff00]/[0.07]' : 'border-black/12 bg-white hover:border-black/35'}`}>
@@ -111,6 +121,12 @@ export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, 
             );
           })}
         </div>
+        {paidAccessories.length > 1 ? (
+          <button type="button" aria-expanded={showMoreAccessories} onClick={() => setShowMoreAccessories((current) => !current)} className="ml-auto mt-3 flex min-h-9 items-center gap-2 px-1 text-sm font-bold text-[#397700] transition-colors hover:text-black">
+            {showMoreAccessories ? extras.showLess : extras.showMore}
+            <ChevronDown className={`size-4 transition-transform ${showMoreAccessories ? 'rotate-180' : ''}`} />
+          </button>
+        ) : null}
         <div className="mt-3 flex items-center justify-between gap-3 border-t border-black/10 pt-3 text-sm">
           <span className="text-black/50">{extras.selectedTotal}</span>
           <strong className="text-base">{formatRsd(selectedTotal)}</strong>

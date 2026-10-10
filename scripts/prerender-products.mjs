@@ -129,7 +129,7 @@ try {
     <meta name="twitter:image" content="${image}" />
     <link rel="icon" type="image/png" href="/Logo.png" />
     <link rel="apple-touch-icon" href="/Logo.png" />
-    <link rel="stylesheet" href="/src/styles/index.css" />
+    <link rel="stylesheet" href="/app.css" />
     <link rel="preload" as="image" href="${escapeHtml(details.gallery[0].src)}" fetchpriority="high" />
     <link rel="preload" as="image" href="/Logo.png" />
     <script type="application/ld+json">${safeJson(structuredData)}</script>
