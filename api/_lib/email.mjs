@@ -109,6 +109,7 @@ export async function sendTransactionalEmail(message, env = process.env, nodemai
       subject: message.subject,
       text: message.text,
       html: message.html,
+      ...(message.replyTo ? { replyTo: message.replyTo } : {}),
     });
   } catch {
     throw new Error('PAYMENT_CONFIRMATION_EMAIL_FAILED');

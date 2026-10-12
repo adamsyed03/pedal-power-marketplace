@@ -7,6 +7,7 @@
   import { PurchaseTerms } from "./app/components/PurchaseTerms.tsx";
   import { BusinessInfo } from "./app/components/BusinessInfo.tsx";
   import { CustomerPolicy } from "./app/components/CustomerPolicy.tsx";
+  import { PartnersPage } from "./app/components/PartnersPage.tsx";
   import { ProductPage } from "./app/components/product/ProductPage.tsx";
   import "./styles/index.css";
   import { initAnalytics } from "./lib/analytics.ts";
@@ -26,8 +27,12 @@
       description: "Zvanični podaci o trgovcu Pogon Mobility d.o.o, kontakt, sedište i informacije za kupce.",
     },
     "/kontakt": {
-      title: "Kontakt i korisnička podrška | Pogon",
-      description: "Kontaktirajte Pogon za pitanja o električnim biciklima, kupovini, test vožnji, porudžbini ili servisu.",
+      title: "Kontakt | Pogon Mobility",
+      description: "Kontaktirajte Pogon Mobility za informacije o električnim biciklima, test vožnji, kupovini na rate i poslovnoj saradnji. Telefon: 063 15 05 003.",
+    },
+    "/partneri": {
+      title: "Partneri i saradnja | Pogon Mobility",
+      description: "Pogon programi kupovine električnih bicikala za zaposlene, članove i penzionere u kompanijama i institucijama širom Srbije.",
     },
     "/dostava": {
       title: "Dostava i preuzimanje | Pogon",
@@ -87,6 +92,8 @@
     ? <PurchaseTerms />
     : route === "/informacije-o-trgovcu"
     ? <BusinessInfo />
+    : route === "/partneri"
+    ? <PartnersPage />
     : route === "/kontakt"
     ? <CustomerPolicy page="contact" />
     : route === "/dostava"

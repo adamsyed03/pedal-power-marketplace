@@ -11,7 +11,7 @@ export const site = {
     city: 'Beograd',
     country: 'RS',
   },
-  published: '2026-09-20',
+  published: '2026-10-12',
 };
 
 export const deliveryRegions = [

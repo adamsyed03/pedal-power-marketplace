@@ -425,6 +425,8 @@ export default function App() {
         navTechnology: 'Tehnologija',
         navReviews: 'Iskustva',
         navAccessories: 'Oprema',
+        navPartners: 'Partneri',
+        navContact: 'Kontakt',
         specs: 'Specifikacije',
         innovation: 'Inovacija',
         technologyTitle: 'Tehnologija Koja Pokreće',
@@ -456,6 +458,8 @@ export default function App() {
         navTechnology: 'Technology',
         navReviews: 'Reviews',
         navAccessories: 'Accessories',
+        navPartners: 'Partners',
+        navContact: 'Contact',
         specs: 'Specifications',
         innovation: 'Innovation',
         technologyTitle: 'Technology That Moves You',
@@ -487,6 +491,8 @@ export default function App() {
         navTechnology: 'Технологии',
         navReviews: 'Отзывы',
         navAccessories: 'Аксессуары',
+        navPartners: 'Партнёры',
+        navContact: 'Контакт',
         specs: 'Характеристики',
         innovation: 'Инновации',
         technologyTitle: 'Технологии, которые двигают тебя вперёд',
@@ -1466,10 +1472,12 @@ export default function App() {
               </div>
             </a>
 
-            <div className="absolute left-1/2 hidden -translate-x-1/2 items-center justify-center gap-4 text-xs uppercase tracking-wider text-black/65 md:flex">
+            <div className="absolute left-1/2 hidden -translate-x-1/2 items-center justify-center gap-4 text-xs uppercase tracking-wider text-black/65 lg:flex">
               <a href="#modeli" className="transition-colors hover:text-black">{ui.navModels}</a>
               <a href={lang === 'sr' ? '/oprema/' : `/oprema/?lang=${lang}`} className="transition-colors hover:text-black">{ui.navAccessories}</a>
               <a href="#iskustva" className="transition-colors hover:text-black">{ui.navReviews}</a>
+              <a href="/partneri/" className="transition-colors hover:text-black">{ui.navPartners}</a>
+              <a href="/kontakt/" className="transition-colors hover:text-black">{ui.navContact}</a>
             </div>
 
             <div className="hidden md:flex items-center gap-1.5">
@@ -2041,22 +2049,23 @@ export default function App() {
               </button>
             </div>
           </div>
-          <div className="mt-6 flex justify-center px-1 sm:mt-8">
-            <div className="flex max-w-3xl items-start gap-3 rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3 text-sm leading-6 text-foreground/75 sm:items-center sm:px-5">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <Phone className="size-4" />
-              </span>
-              <p>
-                {tr({
-                  sr: <>Ako želite kupiti na rate ili preko administrativnih zabrana, pozovite nas na <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
-                  en: <>For installment purchases or payroll deduction arrangements, call us at <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
-                  ru: <>Для покупки в рассрочку или через удержание из заработной платы позвоните нам по номеру <a href="tel:+381631505003" className="font-black text-foreground underline decoration-primary/60 underline-offset-4">063 15 05 003</a>.</>,
-                })}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
+      </section>
+
+      {/* Pensioner financing — intentionally separate from institutional partnerships */}
+      <section aria-labelledby="pio-finansiranje" className="bg-white py-12 sm:py-16">
+        <div className="mx-auto grid max-w-6xl gap-7 px-6 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#397700]">{tr({ sr: 'Fleksibilnija kupovina', en: 'More flexible purchasing', ru: 'Гибкая покупка' })}</p>
+            <h2 id="pio-finansiranje" className="mt-2 text-3xl font-black tracking-[-0.04em] text-black sm:text-4xl">{tr({ sr: 'Kupovina za penzionere na rate', en: 'Instalment purchase for pensioners', ru: 'Покупка в рассрочку для пенсионеров' })}</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-black/60 sm:text-base">{tr({ sr: 'Pogon električni bicikli dostupni su i uz mogućnost plaćanja putem administrativne zabrane, u skladu sa važećim uslovima.', en: 'Pogon electric bikes may also be purchased through administrative deduction, subject to current terms.', ru: 'Электровелосипеды Pogon также могут быть доступны с оплатой через административное удержание согласно действующим условиям.' })}</p>
+          </div>
+          <div className="flex flex-col items-start gap-4 rounded-2xl border border-black/10 bg-[#f5f4ef] px-6 py-5 md:min-w-64">
+            <strong className="text-2xl font-black tracking-[-0.03em] text-black">{tr({ sr: 'Do 12 mesečnih rata', en: 'Up to 12 monthly payments', ru: 'До 12 ежемесячных платежей' })}</strong>
+            <a href="/kontakt/" className="inline-flex items-center gap-2 text-sm font-black text-black underline decoration-primary underline-offset-4">{tr({ sr: 'Saznajte više →', en: 'Learn more →', ru: 'Подробнее →' })}</a>
+          </div>
+        </div>
       </section>
 
       {/* Why Pogon */}
@@ -2752,6 +2761,23 @@ export default function App() {
         </div>
       </section>
 
+      {/* Institutional programmes */}
+      <section aria-labelledby="partneri-heading" className="border-y border-black/10 bg-[#f5f4ef] py-14 sm:py-20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-black/45">{tr({ sr: 'Partneri i saradnja', en: 'Partners and cooperation', ru: 'Партнёры и сотрудничество' })}</p>
+            <h2 id="partneri-heading" className="mt-3 text-3xl font-black tracking-[-0.04em] text-black sm:text-5xl">{tr({ sr: 'Saradnja sa vodećim institucijama i kompanijama', en: 'Working with leading institutions and companies', ru: 'Сотрудничество с ведущими организациями и компаниями' })}</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-black/55 sm:text-base">{tr({ sr: 'Pogon razvija programe kupovine električnih bicikala za zaposlene i penzionere širom Srbije.', en: 'Pogon develops electric-bike purchase programmes for employees and pensioners throughout Serbia.', ru: 'Pogon развивает программы покупки электровелосипедов для сотрудников и пенсионеров по всей Сербии.' })}</p>
+          </div>
+          <div className="mt-9 grid gap-3 md:grid-cols-3">
+            <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="text-xl font-black tracking-[-0.03em]">Stellantis</h3><p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-black/40">Kragujevac</p></article>
+            <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="text-lg font-black leading-tight tracking-[-0.03em]">Univerzitet u Novom Sadu</h3><p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-black/40">Filozofski fakultet</p></article>
+            <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="text-lg font-black leading-tight tracking-[-0.03em]">Policijska sindikalna organizacija</h3><p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-black/40">Program za članove</p></article>
+          </div>
+          <div className="mt-7 text-center"><a href="/partneri/" className="inline-flex items-center gap-2 text-sm font-black text-black underline decoration-black/25 underline-offset-4 transition-colors hover:decoration-black">{tr({ sr: 'Saznajte više o našim saradnjama →', en: 'Learn more about our partnerships →', ru: 'Подробнее о сотрудничестве →' })}</a></div>
+        </div>
+      </section>
+
       {lightboxModel && lightboxGallery && lightboxImage ? (
         <div
           className="fixed inset-0 z-[100] flex flex-col bg-black/95 text-white"
@@ -2910,6 +2936,10 @@ export default function App() {
                 </a>
               </div>
               <p className="max-w-sm text-sm text-foreground/60 leading-relaxed">{ui.footerBody}</p>
+              <div className="mt-4 space-y-1 text-sm text-foreground/60">
+                <p><span className="font-bold text-foreground/80">Email:</span> <a href="mailto:pogonmobility@gmail.com" className="underline underline-offset-4 hover:text-foreground">pogonmobility@gmail.com</a></p>
+                <p><span className="font-bold text-foreground/80">Telefon:</span> <a href="tel:+381631505003" className="underline underline-offset-4 hover:text-foreground">063 15 05 003</a></p>
+              </div>
             </div>
 
             <div>
@@ -2944,6 +2974,7 @@ export default function App() {
               <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-foreground/60">
                 <li><a href="/informacije-o-trgovcu" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[0]}</a></li>
                 <li><a href="/kontakt/" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[1]}</a></li>
+                <li><a href="/partneri/" className="hover:text-foreground transition-colors">{tr({ sr: 'Partneri i saradnja', en: 'Partners', ru: 'Партнёры' })}</a></li>
                 <li><a href="/o-nama/" className="hover:text-foreground transition-colors">O nama</a></li>
                 <li><a href="/vodici/" className="hover:text-foreground transition-colors">Vodiči</a></li>
                 <li><a href="/dostava" className="hover:text-foreground transition-colors">Dostava</a></li>

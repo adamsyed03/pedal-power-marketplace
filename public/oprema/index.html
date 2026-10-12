@@ -53,7 +53,7 @@
     </a>
     <nav class="accessories-nav" aria-label="Glavna navigacija">
       <a class="accessories-logo" href="/" aria-label="Pogon početna"><img src="/Logo.png" alt="Pogon" width="1024" height="1024"></a>
-      <div class="accessories-nav-center"><a href="/#modeli">Modeli</a><a href="/oprema/" aria-current="page">Oprema</a><a href="/#iskustva">Iskustva</a></div>
+      <div class="accessories-nav-center"><a href="/#modeli">Modeli</a><a href="/oprema/" aria-current="page">Oprema</a><a href="/#iskustva">Iskustva</a><a href="/partneri/">Partneri</a><a href="/kontakt/">Kontakt</a></div>
       <div class="accessories-nav-actions"><button class="cart-toggle" id="cart-toggle" type="button" aria-controls="accessory-cart" aria-expanded="false" aria-label="Otvori korpu"><span class="cart-label">Korpa</span> <span id="cart-count">0</span></button><div class="accessories-languages" aria-label="Jezik"><a href="/oprema/" lang="sr" data-language="sr" aria-current="page">SRB</a><a href="/oprema/?lang=en" lang="en" data-language="en">ENG</a><a href="/oprema/?lang=ru" lang="ru" data-language="ru">RUS</a></div></div>
     </nav>
   </header>
@@ -88,12 +88,12 @@
   <a class="mobile-floating-models" id="mobile-floating-models" href="/elektricni-bicikli/" aria-label="Vidi modele"><span class="mobile-floating-models-label">Vidi modele</span><span class="mobile-floating-models-arrow" aria-hidden="true">→</span></a>
   <div class="cart-overlay" id="cart-overlay" hidden><button class="cart-backdrop" type="button" data-cart-close aria-label="Zatvori korpu"></button><aside class="cart-drawer" id="accessory-cart" role="dialog" aria-modal="true" aria-labelledby="cart-title" tabindex="-1"><div class="cart-heading"><div><p class="eyebrow">Pogon oprema</p><h2 id="cart-title">Tvoja korpa</h2></div><button class="cart-close" type="button" data-cart-close aria-label="Zatvori korpu">×</button></div><div class="cart-items" id="cart-items"></div><div class="cart-footer"><div class="cart-total"><span>Ukupno proizvodi</span><strong id="cart-total">0 RSD</strong></div><button class="cart-checkout" id="cart-checkout" type="button" disabled>Nastavi na checkout →</button><p>Dostava ili lično preuzimanje biraju se na sledećem koraku.</p></div></aside></div>
   <div class="accessory-lightbox" id="accessory-lightbox" hidden role="dialog" aria-modal="true" aria-labelledby="lightbox-title" tabindex="-1"><button class="lightbox-backdrop" type="button" data-lightbox-close aria-label="Zatvori pregled fotografije"></button><div class="lightbox-panel"><button class="lightbox-close" type="button" data-lightbox-close aria-label="Zatvori pregled fotografije">×</button><img id="lightbox-image" src="/oprema/helmet.png" alt="" width="720" height="720"><p id="lightbox-title"></p></div></div>
-  <footer><div class="wrap"><strong>Pogon Mobility d.o.o.</strong><p>Električni bicikli i oprema za gradsku mobilnost u Srbiji · Beograd · +381 63 15 05 003</p><div class="footer-links"><a href="/elektricni-bicikli/">Modeli</a><a href="/kontakt/">Kontakt</a><a href="/dostava">Dostava</a><a href="/uslovi-kupovine">Uslovi kupovine</a></div></div></footer>
+  <footer><div class="wrap"><strong>Pogon Mobility d.o.o.</strong><p>Električni bicikli i oprema za gradsku mobilnost u Srbiji · Beograd</p><p><a href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a> · <a href="tel:+381631505003">063 15 05 003</a></p><div class="footer-links"><a href="/elektricni-bicikli/">Modeli</a><a href="/kontakt/">Kontakt</a><a href="/dostava">Dostava</a><a href="/uslovi-kupovine">Uslovi kupovine</a><a href="/partneri/">Partneri i saradnja</a></div></div></footer>
   <script>
     var pageTranslations = {
       sr: {
         title: 'Oprema za električne bicikle | Pogon', description: 'Praktična oprema za bezbedniju, udobniju i organizovaniju gradsku vožnju.',
-        models: 'Modeli', accessories: 'Oprema', reviews: 'Iskustva', buyNow: 'Kupi sada', cart: 'Korpa', openCart: 'Otvori korpu', promoLabel: 'Online ponuda', promoOnline: 'Online porudžbina', promoOrder: 'Poruči preko sajta:', promoDiscount: '5.000 RSD popusta', promoModels: 'na Cargo i Glide', promoGift: 'Kaciga, rukavice ili lanac na poklon', promoAction: 'Pogledaj modele →',
+        models: 'Modeli', accessories: 'Oprema', reviews: 'Iskustva', partners: 'Partneri', contactNav: 'Kontakt', buyNow: 'Kupi sada', cart: 'Korpa', openCart: 'Otvori korpu', promoLabel: 'Online ponuda', promoOnline: 'Online porudžbina', promoOrder: 'Poruči preko sajta:', promoDiscount: '5.000 RSD popusta', promoModels: 'na Cargo i Glide', promoGift: 'Kaciga, rukavice ili lanac na poklon', promoAction: 'Pogledaj modele →',
         eyebrow: 'Pogon dodatna oprema', heroTitle: 'Oprema za svaki dan.', heroBody: 'Sedam praktičnih dodataka za sigurniju, udobniju i organizovaniju vožnju. Izaberite proizvod i završite kupovinu kroz Pogon sigurni checkout.',
         viewAccessories: 'Pogledaj opremu', viewBikes: 'Pogledaj bicikle', productCount: '7 proizvoda', summaryTitle: 'Sve što vožnju čini jednostavnijom.', summaryBody: 'Kacige, sigurnost, preglednost i praktični dodaci na jednom mestu.',
         sectionTitle: 'Izaberi svoju opremu', sectionBody: 'Odaberite dodatak koji vam treba, a mi ćemo potvrditi kompatibilnost sa vašim biciklom.', mobileBikes: 'Vidi električne bicikle', floatingModels: 'Vidi modele',
@@ -102,7 +102,7 @@
         togetherTitle: 'Kupujete bicikl i opremu zajedno?', togetherBody: 'Tim može da proveri dostupnost dodataka i dogovori isporuku uz izabrani Pogon model.', contact: 'Pošalji upit',
         cartEyebrow: 'Pogon proizvodi', cartTitle: 'Tvoja korpa', productsTotal: 'Ukupno proizvodi', checkout: 'Nastavi', deliveryNote: 'Dostava ili lično preuzimanje biraju se na sledećem koraku.',
         emptyTitle: 'Korpa je prazna.', emptyBody: 'Dodajte bicikl ili opremu koju želite da poručite.', decrease: 'Smanji količinu', increase: 'Povećaj količinu', remove: 'Ukloni', closeCart: 'Zatvori korpu',
-        footerBody: 'Električni bicikli i oprema za gradsku mobilnost u Srbiji · Beograd · +381 63 15 05 003', contactNav: 'Kontakt', delivery: 'Dostava', terms: 'Uslovi kupovine',
+        footerBody: 'Električni bicikli i oprema za gradsku mobilnost u Srbiji · Beograd', delivery: 'Dostava', terms: 'Uslovi kupovine',
         cards: {
           korpa: ['Prevoz', 'Korpa', 'Praktičan dodatni prostor za torbe, kupovinu, radnu opremu i svakodnevne stvari.'],
           lanac: ['Sigurnost', 'Lanac za zaključavanje', 'Pouzdana zaštita bicikla tokom svakodnevnih gradskih zaustavljanja.'],
@@ -115,7 +115,7 @@
       },
       en: {
         title: 'Electric bike accessories | Pogon', description: 'Practical accessories for safer, more comfortable and organized city riding.',
-        models: 'Models', accessories: 'Accessories', reviews: 'Reviews', buyNow: 'Buy now', cart: 'Cart', openCart: 'Open cart', promoLabel: 'Online offer', promoOnline: 'Online order', promoOrder: 'Order through the site:', promoDiscount: 'RSD 5,000 off', promoModels: 'Cargo and Glide', promoGift: 'Free helmet, gloves, or chain', promoAction: 'View models →',
+        models: 'Models', accessories: 'Accessories', reviews: 'Reviews', partners: 'Partners', contactNav: 'Contact', buyNow: 'Buy now', cart: 'Cart', openCart: 'Open cart', promoLabel: 'Online offer', promoOnline: 'Online order', promoOrder: 'Order through the site:', promoDiscount: 'RSD 5,000 off', promoModels: 'Cargo and Glide', promoGift: 'Free helmet, gloves, or chain', promoAction: 'View models →',
         eyebrow: 'Pogon accessories', heroTitle: 'Gear for every day.', heroBody: 'Seven practical accessories for safer, more comfortable and organized riding. Choose your products and complete your order through Pogon secure checkout.',
         viewAccessories: 'View accessories', viewBikes: 'View bikes', productCount: '7 products', summaryTitle: 'Everything that makes riding simpler.', summaryBody: 'Helmets, security, visibility and practical accessories in one place.',
         sectionTitle: 'Choose your accessories', sectionBody: 'Select what you need and we will confirm compatibility with your bike.', mobileBikes: 'View electric bikes', floatingModels: 'View models',
@@ -124,7 +124,7 @@
         togetherTitle: 'Buying a bike and accessories together?', togetherBody: 'Our team can check availability and arrange delivery with your chosen Pogon model.', contact: 'Send an enquiry',
         cartEyebrow: 'Pogon products', cartTitle: 'Your cart', productsTotal: 'Products total', checkout: 'Continue to checkout →', deliveryNote: 'Choose delivery or collection in the next step.',
         emptyTitle: 'Your cart is empty.', emptyBody: 'Add the bike or accessories you would like to order.', decrease: 'Decrease quantity', increase: 'Increase quantity', remove: 'Remove', closeCart: 'Close cart',
-        footerBody: 'Electric bikes and accessories for urban mobility in Serbia · Belgrade · +381 63 15 05 003', contactNav: 'Contact', delivery: 'Delivery', terms: 'Purchase terms',
+        footerBody: 'Electric bikes and accessories for urban mobility in Serbia · Belgrade', delivery: 'Delivery', terms: 'Purchase terms',
         cards: {
           korpa: ['Transport', 'Basket', 'Practical extra space for bags, shopping, work equipment and everyday items.'],
           lanac: ['Security', 'Bike lock chain', 'Reliable protection for your bike during everyday stops around the city.'],
@@ -137,7 +137,7 @@
       },
       ru: {
         title: 'Аксессуары для электровелосипедов | Pogon', description: 'Практичные аксессуары для безопасных и комфортных поездок по городу.',
-        models: 'Модели', accessories: 'Аксессуары', reviews: 'Отзывы', buyNow: 'Купить', cart: 'Корзина', openCart: 'Открыть корзину', promoLabel: 'Онлайн-предложение', promoOnline: 'Онлайн-заказ', promoOrder: 'Закажите на сайте:', promoDiscount: 'Скидка 5 000 RSD', promoModels: 'на Cargo и Glide', promoGift: 'Шлем, перчатки или цепь в подарок', promoAction: 'Смотреть модели →',
+        models: 'Модели', accessories: 'Аксессуары', reviews: 'Отзывы', partners: 'Партнёры', contactNav: 'Контакт', buyNow: 'Купить', cart: 'Корзина', openCart: 'Открыть корзину', promoLabel: 'Онлайн-предложение', promoOnline: 'Онлайн-заказ', promoOrder: 'Закажите на сайте:', promoDiscount: 'Скидка 5 000 RSD', promoModels: 'на Cargo и Glide', promoGift: 'Шлем, перчатки или цепь в подарок', promoAction: 'Смотреть модели →',
         eyebrow: 'Аксессуары Pogon', heroTitle: 'Аксессуары на каждый день.', heroBody: 'Семь практичных аксессуаров для безопасных, комфортных и организованных поездок. Выберите товары и оформите заказ через безопасный checkout Pogon.',
         viewAccessories: 'Смотреть аксессуары', viewBikes: 'Смотреть велосипеды', productCount: '7 товаров', summaryTitle: 'Всё для более простой поездки.', summaryBody: 'Шлемы, защита, обзор и практичные аксессуары в одном месте.',
         sectionTitle: 'Выберите аксессуары', sectionBody: 'Выберите нужные товары, а мы проверим их совместимость с вашим велосипедом.', mobileBikes: 'Смотреть электровелосипеды', floatingModels: 'Смотреть модели',
@@ -146,7 +146,7 @@
         togetherTitle: 'Покупаете велосипед и аксессуары вместе?', togetherBody: 'Наша команда проверит наличие и организует доставку вместе с выбранной моделью Pogon.', contact: 'Отправить запрос',
         cartEyebrow: 'Товары Pogon', cartTitle: 'Ваша корзина', productsTotal: 'Сумма товаров', checkout: 'Перейти к оформлению →', deliveryNote: 'Доставку или самовывоз можно выбрать на следующем шаге.',
         emptyTitle: 'Корзина пуста.', emptyBody: 'Добавьте велосипед или аксессуары, которые хотите заказать.', decrease: 'Уменьшить количество', increase: 'Увеличить количество', remove: 'Удалить', closeCart: 'Закрыть корзину',
-        footerBody: 'Электровелосипеды и аксессуары для городской мобильности в Сербии · Белград · +381 63 15 05 003', contactNav: 'Контакты', delivery: 'Доставка', terms: 'Условия покупки',
+        footerBody: 'Электровелосипеды и аксессуары для городской мобильности в Сербии · Белград', delivery: 'Доставка', terms: 'Условия покупки',
         cards: {
           korpa: ['Перевозка', 'Корзина', 'Дополнительное место для сумок, покупок, рабочего снаряжения и повседневных вещей.'],
           lanac: ['Безопасность', 'Цепной замок', 'Надёжная защита велосипеда во время повседневных остановок в городе.'],
@@ -226,6 +226,8 @@
       navLinks[0].textContent = copy.models; navLinks[0].href = homeHref + '#modeli';
       navLinks[1].textContent = copy.accessories;
       navLinks[2].textContent = copy.reviews; navLinks[2].href = homeHref + '#iskustva';
+      navLinks[3].textContent = copy.partners;
+      navLinks[4].textContent = copy.contactNav;
       setText('.accessories-buy-now', copy.buyNow);
       setText('.cart-label', copy.cart);
       cartToggle.setAttribute('aria-label', copy.openCart);
@@ -293,6 +295,7 @@
       footerLinks[1].textContent = copy.contactNav;
       footerLinks[2].textContent = copy.delivery;
       footerLinks[3].textContent = copy.terms;
+      footerLinks[4].textContent = copy.partners;
 
       document.querySelectorAll('[data-language]').forEach(function (link) {
         if (link.getAttribute('data-language') === currentLanguage) link.setAttribute('aria-current', 'page');

@@ -33,9 +33,13 @@ function ContactLinks() {
 
 export function CustomerPolicy({ page }: { page: 'contact' | 'delivery' | 'complaints' | 'refunds' | 'privacy' | 'security' }) {
   if (page === 'contact') return (
-    <PolicyLayout title="Kontakt i korisnička podrška">
-      <section><h2 className="text-2xl font-black text-black">Pogon Mobility d.o.o.</h2><p className="mt-3">Registrovano sedište: Temišvarska 25B, Beograd · PIB 115472260 · MB 22162721</p><p className="mt-3">Registrovano sedište nije prodajni salon, test centar, servis niti mesto za lično preuzimanje. Na toj adresi nema izloženih bicikala i posete kupaca nisu moguće.</p></section>
-      <section><h2 className="text-2xl font-black text-black">Kako da nas kontaktirate</h2><div className="mt-3"><ContactLinks /></div><p className="mt-3">Korisnička podrška i zakazivanje dostupni su od ponedeljka do subote, od 09 do 18 h. Za pitanje o porudžbini navedite broj porudžbine kako bismo je lakše pronašli.</p></section>
+    <PolicyLayout title="Kontaktirajte Pogon">
+      <p>Imate pitanje o našim električnim biciklima, kupovini na rate, test vožnji ili poslovnoj saradnji? Naš tim vam stoji na raspolaganju.</p>
+      <section className="grid gap-4 sm:grid-cols-2">
+        <a href="mailto:pogonmobility@gmail.com" className="rounded-2xl border border-black/10 p-5 no-underline transition-colors hover:border-black/30"><span className="text-2xl" aria-hidden="true">@</span><h2 className="mt-4 text-xl font-black text-black">Pošaljite nam email</h2><span className="mt-2 block break-all font-bold underline">pogonmobility@gmail.com</span></a>
+        <a href="tel:+381631505003" className="rounded-2xl border border-black/10 p-5 no-underline transition-colors hover:border-black/30"><span className="text-2xl" aria-hidden="true">☎</span><h2 className="mt-4 text-xl font-black text-black">Pozovite nas</h2><span className="mt-2 block font-bold underline">063 15 05 003</span></a>
+      </section>
+      <section className="rounded-2xl bg-black p-6 text-white"><h2 className="text-2xl font-black">Zainteresovani ste za poslovnu saradnju?</h2><p className="mt-3 text-white/70">Pišite nam na <a className="font-bold text-white underline" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a> i naš tim će vas kontaktirati.</p><a href="/partneri/" className="mt-4 inline-block font-bold underline">Partneri i saradnja →</a></section>
     </PolicyLayout>
   );
 

@@ -17,6 +17,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { verifyCaptcha } from '../api/_lib/captcha.mjs';
 import { buildPaymentConfirmation, sendTransactionalEmail, smtpTransportOptions } from '../api/_lib/email.mjs';
+import { buildContactEmail, normalizeContactInput } from '../api/_lib/contact.mjs';
 import { dispatchConfirmation } from '../api/_lib/confirmation.mjs';
 import { mapOrderStatus } from '../api/_lib/reconcile.mjs';
 import { createLookupToken, hashLookupToken, rateLimit } from '../api/_lib/security.mjs';
@@ -620,6 +621,32 @@ test('Gmail SMTP transport uses only server configuration and sends text plus HT
   const source = readFileSync(new URL('../api/_lib/email.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /RESEND|api\.resend\.com/i);
   assert.doesNotMatch(source, /console\.(?:log|error)/);
+});
+
+test('contact form validates enquiries and sends them through the server email endpoint', () => {
+  const input = normalizeContactInput({
+    name: '  Ana Anić  ', email: 'ANA@EXAMPLE.COM', phone: '063 123 456',
+    requestType: 'Test vožnja', city: 'Beograd', message: 'Želim da zakažem test <vožnju>.', website: '',
+  });
+  assert.equal(input.name, 'Ana Anić');
+  assert.equal(input.email, 'ana@example.com');
+  const message = buildContactEmail(input);
+  assert.equal(message.to, 'pogonmobility@gmail.com');
+  assert.equal(message.replyTo, 'ana@example.com');
+  assert.match(message.subject, /Pogon kontakt — Test vožnja/);
+  assert.match(message.text, /ana@example\.com/);
+  assert.match(message.html, /&lt;vožnju&gt;/);
+  assert.doesNotMatch(message.html, /<vožnju>/);
+  assert.throws(() => normalizeContactInput({ ...input, email: 'neispravan-email' }), /INVALID_CONTACT/);
+  assert.throws(() => normalizeContactInput({ ...input, requestType: 'Izmišljeni upit' }), /INVALID_CONTACT/);
+
+  const endpoint = readFileSync(new URL('../api/contact.ts', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../public/kontakt/index.html', import.meta.url), 'utf8');
+  assert.match(endpoint, /rateLimit\(`contact:/);
+  assert.match(endpoint, /sendTransactionalEmail\(buildContactEmail\(input\)\)/);
+  assert.match(page, /fetch\('\/api\/contact'/);
+  assert.match(page, /Poruka je poslata/);
+  assert.doesNotMatch(page, /window\.location\.href='mailto:/);
 });
 
 test('payment confirmation dispatch is atomically idempotent across concurrent replays', async () => {
@@ -1278,6 +1305,8 @@ test('initial page load defers analytics packages and avoids heavy hero frame pr
 
 test('production routing serves known SPA pages and returns a real 404 for unknown URLs', () => {
   const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+  const main = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
+  const partners = readFileSync(new URL('../src/app/components/PartnersPage.tsx', import.meta.url), 'utf8');
   const spaRoute = config.routes.find((route) => route.dest === '/index.html');
   const fallbackRoute = config.routes.at(-1);
   const knownRoutes = ['/admin', '/checkout', '/kviz', '/kontakt', '/uslovi-kupovine', '/payment/success'];
@@ -1293,6 +1322,9 @@ test('production routing serves known SPA pages and returns a real 404 for unkno
   assert.equal(fallbackRoute.dest, '/404.html');
   assert.equal(existsSync(new URL('../public/404.html', import.meta.url)), true);
   assert.match(readFileSync(new URL('../public/404.html', import.meta.url), 'utf8'), /name="robots" content="noindex,follow"/);
+  assert.match(main, /route === "\/partneri"[\s\S]*?<PartnersPage \/>/);
+  assert.match(partners, /Kompanija · Kragujevac/);
+  assert.match(partners, /PIO fond[\s\S]*Program za penzionere/);
 });
 
 test('Serbian landing hero uses the benefit-led city campaign copy', () => {

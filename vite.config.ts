@@ -79,16 +79,61 @@ function adminOrdersDevApi(): Plugin {
   }
 }
 
+// Keep the direct-send contact form functional in the normal Vite preview.
+// Production uses the same handler as a Vercel function.
+function contactDevApi(): Plugin {
+  return {
+    name: 'contact-dev-api',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use('/api/contact', async (request, response) => {
+        try {
+          if (request.method === 'POST') {
+            const chunks: Buffer[] = []
+            for await (const chunk of request) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+            ;(request as typeof request & { body?: string }).body = Buffer.concat(chunks).toString('utf8')
+          }
+          const { default: handler } = await server.ssrLoadModule('/api/contact.ts')
+          const apiResponse = {
+            setHeader(name: string, value: string) {
+              response.setHeader(name, value)
+              return apiResponse
+            },
+            status(code: number) {
+              response.statusCode = code
+              return apiResponse
+            },
+            json(payload: unknown) {
+              if (!response.hasHeader('Content-Type')) response.setHeader('Content-Type', 'application/json; charset=utf-8')
+              response.end(JSON.stringify(payload))
+              return apiResponse
+            },
+          }
+          await handler(request, apiResponse)
+        } catch {
+          response.statusCode = 500
+          response.setHeader('Content-Type', 'application/json; charset=utf-8')
+          response.end(JSON.stringify({ error: 'Poruku trenutno nije moguće poslati. Pokušajte ponovo.' }))
+        }
+      })
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   const serverEnv = loadEnv(mode, process.cwd(), '')
   process.env.SUPABASE_URL ||= serverEnv.SUPABASE_URL
   process.env.SUPABASE_SERVICE_ROLE_KEY ||= serverEnv.SUPABASE_SERVICE_ROLE_KEY
+  for (const name of ['SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASS', 'EMAIL_FROM']) {
+    process.env[name] ||= serverEnv[name]
+  }
 
   return {
     plugins: [
       figmaAssetResolver(),
       staticSeoPages(),
       adminOrdersDevApi(),
+      contactDevApi(),
       // The React and Tailwind plugins are both required for Make, even if
       // Tailwind is not being actively used; do not remove them.
       react(),

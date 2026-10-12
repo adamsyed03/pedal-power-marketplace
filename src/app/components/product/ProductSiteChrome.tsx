@@ -15,9 +15,9 @@ type ProductHeaderProps = {
 };
 
 const headerCopy = {
-  sr: { models: 'Modeli', equipment: 'Oprema', reviews: 'Iskustva', cart: 'Korpa', openCart: 'Otvori korpu' },
-  en: { models: 'Models', equipment: 'Accessories', reviews: 'Reviews', cart: 'Cart', openCart: 'Open cart' },
-  ru: { models: 'Модели', equipment: 'Аксессуары', reviews: 'Отзывы', cart: 'Корзина', openCart: 'Открыть корзину' },
+  sr: { models: 'Modeli', equipment: 'Oprema', reviews: 'Iskustva', partners: 'Partneri', contact: 'Kontakt', cart: 'Korpa', openCart: 'Otvori korpu' },
+  en: { models: 'Models', equipment: 'Accessories', reviews: 'Reviews', partners: 'Partners', contact: 'Contact', cart: 'Cart', openCart: 'Open cart' },
+  ru: { models: 'Модели', equipment: 'Аксессуары', reviews: 'Отзывы', partners: 'Партнёры', contact: 'Контакт', cart: 'Корзина', openCart: 'Открыть корзину' },
 };
 
 export function ProductHeader({ language, path, cart, onLanguageChange, onOpenCart }: ProductHeaderProps) {
@@ -33,10 +33,12 @@ export function ProductHeader({ language, path, cart, onLanguageChange, onOpenCa
           <a href="/" aria-label="Pogon home" className="relative inline-flex h-14 w-24 shrink-0 items-center overflow-hidden">
             <img src="/Logo.png" alt="POGON" width={1024} height={1024} className="h-14 w-24 object-cover object-center" />
           </a>
-          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 text-[0.72rem] font-black uppercase tracking-[0.13em] text-black/65 md:flex">
+          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 text-[0.72rem] font-black uppercase tracking-[0.1em] text-black/65 lg:flex">
             <a href="/#modeli" className="border-b border-transparent py-2 transition-colors hover:border-black hover:text-black">{t.models}</a>
             <a href={language === 'sr' ? '/oprema/' : `/oprema/?lang=${language}`} className="border-b border-transparent py-2 transition-colors hover:border-black hover:text-black">{t.equipment}</a>
             <a href="/#iskustva" className="border-b border-transparent py-2 transition-colors hover:border-black hover:text-black">{t.reviews}</a>
+            <a href="/partneri/" className="border-b border-transparent py-2 transition-colors hover:border-black hover:text-black">{t.partners}</a>
+            <a href="/kontakt/" className="border-b border-transparent py-2 transition-colors hover:border-black hover:text-black">{t.contact}</a>
           </div>
           <div className="flex items-center gap-1.5">
             <button type="button" onClick={onOpenCart} aria-label={t.openCart} className="inline-flex h-9 items-center gap-1.5 border border-black bg-black px-3 text-[0.68rem] font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-white hover:text-black">
@@ -127,10 +129,11 @@ export function ProductFooter({ language }: ProductFooterProps) {
           <div className="col-span-2">
             <div className="flex items-center justify-between md:block"><img src="/Logo.png" alt="POGON" width={1024} height={1024} className="h-14 w-auto sm:h-20" /><a href="https://instagram.com/pogon.rs" target="_blank" rel="noreferrer" aria-label="Pogon Instagram" className="inline-grid size-10 place-items-center rounded-full bg-black/5 md:mt-5"><Instagram className="size-5" /></a></div>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-black/55">{copy.body}</p>
+            <div className="mt-4 space-y-1 text-sm text-black/55"><p><a className="underline underline-offset-4" href="mailto:pogonmobility@gmail.com">pogonmobility@gmail.com</a></p><p><a className="underline underline-offset-4" href="tel:+381631505003">063 15 05 003</a></p></div>
           </div>
           <div><h3 className="text-xs font-black uppercase tracking-[0.15em]">{copy.products}</h3><ul className="mt-4 space-y-3 text-sm text-black/55"><li><a href="/products/cargo/">Cargo</a></li><li><a href="/products/core/">Core</a></li><li><a href="/products/glide/">Glide</a></li><li><a href="/#modeli">{copy.compare}</a></li></ul></div>
           <div><h3 className="text-xs font-black uppercase tracking-[0.15em]">{copy.support}</h3><ul className="mt-4 space-y-3 text-sm text-black/55"><li><a href="#test-ride">{copy.test}</a></li><li><a href="https://wa.me/381631505003">{copy.service}</a></li><li><a href="/uslovi-kupovine">{copy.warranty}</a></li></ul></div>
-          <div><h3 className="text-xs font-black uppercase tracking-[0.15em]">{copy.company}</h3><ul className="mt-4 space-y-3 text-sm text-black/55"><li><a href="/o-nama/">O nama</a></li><li><a href="/kontakt/">Kontakt</a></li><li><a href="/dostava/">Dostava</a></li><li><a href="/privatnost">Privatnost</a></li></ul></div>
+          <div><h3 className="text-xs font-black uppercase tracking-[0.15em]">{copy.company}</h3><ul className="mt-4 space-y-3 text-sm text-black/55"><li><a href="/o-nama/">O nama</a></li><li><a href="/partneri/">Partneri i saradnja</a></li><li><a href="/kontakt/">Kontakt</a></li><li><a href="/dostava/">Dostava</a></li><li><a href="/privatnost">Privatnost</a></li></ul></div>
         </div>
         <PaymentBranding compact />
         <div className="mt-7 border-t border-black/10 pt-6 text-center text-sm text-black/45 sm:text-left">© 2026 POGON. {copy.rights}</div>
