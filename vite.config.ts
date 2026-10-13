@@ -25,7 +25,7 @@ function staticSeoPages(): Plugin {
         const pathname = request.url?.split('?')[0]
         if (!pathname) return next()
         const productPage = /^\/products\/(?:core|cargo|glide)\/?$/.test(pathname)
-        const staticPage = productPage || /^\/(?:oprema|o-nama|kontakt|electric-bikes|vodici(?:\/[a-z0-9-]+)?|elektricni-bicikli(?:\/(?:core|cargo|glide|beograd|novi-sad|nis|kragujevac))?)\/?$/.test(pathname)
+        const staticPage = productPage || /^\/(?:oprema|o-nama|electric-bikes|vodici(?:\/[a-z0-9-]+)?|elektricni-bicikli(?:\/(?:core|cargo|glide|beograd|novi-sad|nis|kragujevac))?)\/?$/.test(pathname)
         if (!staticPage) return next()
         if (!pathname.endsWith('/')) {
           response.statusCode = 308

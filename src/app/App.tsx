@@ -12,6 +12,7 @@ import { trackEvent } from '../lib/analytics';
 import { publicAsset } from '../lib/assets';
 import { setHomeMetadata, setPageMetadata } from '../lib/seo';
 import { formatRsd as formatProductRsd, products, type ProductKey } from '../lib/products';
+import { languageFromSearch, persistSiteLanguage } from '../lib/productDetails';
 
 type Language = 'en' | 'sr' | 'ru';
 type Localized<T> = Record<Language, T>;
@@ -208,6 +209,10 @@ export default function App() {
   const [activeProduct, setActiveProduct] = useState(0);
   const [activeGalleryImages, setActiveGalleryImages] = useState<Record<string, number>>({});
   const [activeLightboxProduct, setActiveLightboxProduct] = useState<string | null>(null);
+  const changeLanguage = (next: Language) => {
+    persistSiteLanguage(next);
+    setLang(next);
+  };
   const [lightboxZoom, setLightboxZoom] = useState(1);
   const [leadModalSource, setLeadModalSource] = useState<string | null>(null);
   const [isContactWidgetOpen, setIsContactWidgetOpen] = useState(false);
@@ -266,10 +271,9 @@ export default function App() {
   };
 
   useEffect(() => {
-    const requestedLanguage = new URLSearchParams(window.location.search).get('lang');
-    if (requestedLanguage === 'ru' || requestedLanguage === 'en' || requestedLanguage === 'sr') {
-      setLang(requestedLanguage);
-    }
+    const requestedLanguage = languageFromSearch(window.location.search);
+    setLang(requestedLanguage);
+    if (new URLSearchParams(window.location.search).has('lang')) persistSiteLanguage(requestedLanguage);
     setCart(readStoredCart());
     setHasRestoredCart(true);
   }, []);
@@ -1484,18 +1488,18 @@ export default function App() {
               <button type="button" onClick={() => setIsCartOpen(true)} aria-label={tr({ sr: 'Otvori korpu', en: 'Open cart', ru: 'Открыть корзину' })} className="inline-flex items-center justify-center gap-1 rounded-full border border-black bg-black px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white transition-colors hover:bg-black/80">
                 {tr({ sr: 'Korpa', en: 'Cart', ru: 'Корзина' })}<span className="inline-grid min-h-4 min-w-4 place-items-center rounded-full bg-[#7fff00] px-1 text-[0.58rem] leading-none text-black">{cartQuantity}</span>
               </button>
-              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
-              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
-              <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
+              <button onClick={() => changeLanguage('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
+              <button onClick={() => changeLanguage('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
+              <button onClick={() => changeLanguage('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
             </div>
 
             <div className="flex items-center md:hidden gap-1">
               <button type="button" onClick={() => setIsCartOpen(true)} aria-label={tr({ sr: 'Otvori korpu', en: 'Open cart', ru: 'Открыть корзину' })} className="inline-flex min-h-6 items-center gap-0.5 rounded-full bg-black px-1.5 text-[0.56rem] font-black uppercase text-white">
                 <ShoppingCart className="size-3" /><span className="inline-grid min-h-3.5 min-w-3.5 place-items-center rounded-full bg-[#7fff00] px-0.5 text-[0.5rem] text-black">{cartQuantity}</span>
               </button>
-              <button onClick={() => setLang('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
-              <button onClick={() => setLang('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
-              <button onClick={() => setLang('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
+              <button onClick={() => changeLanguage('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
+              <button onClick={() => changeLanguage('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
+              <button onClick={() => changeLanguage('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
             </div>
           </div>
         </div>
@@ -1662,7 +1666,11 @@ export default function App() {
                         <ellipse pathLength="1" cx="121" cy="38" rx="112" ry="35" fill="none" stroke="#7fff00" strokeWidth="1.2" strokeLinecap="round" className="mobile-pencil-circle mobile-pencil-circle-secondary" transform="rotate(-2 120 39)" />
                       </svg>
                     </span>
-                    <span className="mt-3 block text-[0.48em] tracking-[0.08em]">Električni bicikli</span>
+                    {lang === 'sr' ? (
+                      <span className="mt-3 block text-[0.48em] tracking-[0.08em]">Električni bicikli</span>
+                    ) : (
+                      <span className="mt-3 block text-[0.48em] tracking-[0.08em]">{tr({ sr: 'Električni bicikli', en: 'Electric bikes', ru: 'Электровелосипеды' })}</span>
+                    )}
                   </h1>
                 ) : (
                   <>
@@ -1749,7 +1757,7 @@ export default function App() {
                 <div className="absolute bottom-3 left-3 flex items-center gap-2.5 rounded-xl bg-white/90 backdrop-blur-sm border border-border/30 px-3 py-2 shadow-lg">
                   <Star className="size-4 fill-primary stroke-primary shrink-0" />
                   <span className="text-sm font-black">5.0</span>
-                  <span className="text-xs text-foreground/50 font-medium">rating</span>
+                  <span className="text-xs text-foreground/50 font-medium">{tr({ sr: 'ocena', en: 'rating', ru: 'оценка' })}</span>
                 </div>
               </div>
             </motion.div>
@@ -2081,12 +2089,12 @@ export default function App() {
             <ol className="border-t border-white/15">
               {[
                 { icon: HeartPulse, stat: '5.700', title: tr({ sr: 'Zdravlje', en: 'Health', ru: 'Здоровье' }), body: tr({ sr: 'Oko 5.700 smrti u Srbiji pripisano je bolestima povezanim sa gojaznošću. Svakodnevno kretanje pravi razliku.', en: 'About 5,700 deaths in Serbia were attributed to obesity-related conditions. Daily movement makes a difference.', ru: 'Около 5 700 смертей в Сербии связали с заболеваниями, обусловленными ожирением. Ежедневная активность имеет значение.' }) },
-                { icon: Fuel, stat: '210.000 RSD godišnje', title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
-                { icon: Timer, stat: '150 sati godišnje', title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
+                { icon: Fuel, stat: tr({ sr: '210.000 RSD godišnje', en: 'RSD 210,000 yearly', ru: '210 000 RSD в год' }), title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
+                { icon: Timer, stat: tr({ sr: '150 sati godišnje', en: '150 hours yearly', ru: '150 часов в год' }), title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
                 { icon: Sparkles, stat: '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
                 { icon: Cpu, stat: 'GPS', title: tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
                 { icon: WalletCards, stat: tr({ sr: 'Jasna cena', en: 'Clear price', ru: 'Понятная цена' }), title: tr({ sr: 'Cena i vrednost', en: 'Price & value', ru: 'Цена и ценность' }), body: tr({ sr: 'Cena proizvoda, dostava i ukupan iznos jasno su prikazani pre plaćanja, bez skrivenih troškova.', en: 'The product price, delivery and total are shown clearly before payment, with no hidden costs.', ru: 'Цена товара, доставка и итоговая сумма ясно указаны до оплаты, без скрытых расходов.' }) },
-                { icon: Headphones, stat: '2× zaštita', title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
+                { icon: Headphones, stat: tr({ sr: '2× zaštita', en: '2× protection', ru: 'Двойная защита' }), title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
               ].map(({ icon: Icon, stat, title, body }, index) => (
                 <motion.li key={title} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} transition={{ duration: 0.4, delay: index * 0.04 }} className="group grid grid-cols-[2rem_1fr_auto] items-start gap-3 border-b border-white/15 py-4 sm:grid-cols-[2.5rem_0.6fr_1.4fr] sm:gap-4 sm:py-5">
                   <span className="pt-1 text-xs font-black tracking-[0.2em] text-white/30">{String(index + 1).padStart(2, '0')}</span>
@@ -2523,12 +2531,12 @@ export default function App() {
             <ol className="border-t border-white/15">
               {[
                 { icon: HeartPulse, stat: '5.700', title: tr({ sr: 'Zdravlje', en: 'Health', ru: 'Здоровье' }), body: tr({ sr: 'Oko 5.700 smrti u Srbiji pripisano je bolestima povezanim sa gojaznošću. Svakodnevno kretanje pravi razliku.', en: 'About 5,700 deaths in Serbia were attributed to obesity-related conditions. Daily movement makes a difference.', ru: 'Около 5 700 смертей в Сербии связали с заболеваниями, обусловленными ожирением. Ежедневная активность имеет значение.' }) },
-                { icon: Fuel, stat: '210.000 RSD godišnje', title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
-                { icon: Timer, stat: '150 sati godišnje', title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
+                { icon: Fuel, stat: tr({ sr: '210.000 RSD godišnje', en: 'RSD 210,000 yearly', ru: '210 000 RSD в год' }), title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
+                { icon: Timer, stat: tr({ sr: '150 sati godišnje', en: '150 hours yearly', ru: '150 часов в год' }), title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
                 { icon: Sparkles, stat: '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
                 { icon: Cpu, stat: 'GPS', title: tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
                 { icon: WalletCards, stat: tr({ sr: 'Jasna cena', en: 'Clear price', ru: 'Понятная цена' }), title: tr({ sr: 'Cena i vrednost', en: 'Price & value', ru: 'Цена и ценность' }), body: tr({ sr: 'Cena proizvoda, dostava i ukupan iznos jasno su prikazani pre plaćanja, bez skrivenih troškova.', en: 'The product price, delivery and total are shown clearly before payment, with no hidden costs.', ru: 'Цена товара, доставка и итоговая сумма ясно указаны до оплаты, без скрытых расходов.' }) },
-                { icon: Headphones, stat: '2× zaštita', title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
+                { icon: Headphones, stat: tr({ sr: '2× zaštita', en: '2× protection', ru: 'Двойная защита' }), title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
               ].map(({ icon: Icon, stat, title, body }, index) => (
                 <motion.li
                   key={title}
@@ -2770,9 +2778,9 @@ export default function App() {
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-black/55 sm:text-base">{tr({ sr: 'Pogon razvija programe kupovine električnih bicikala za zaposlene i penzionere širom Srbije.', en: 'Pogon develops electric-bike purchase programmes for employees and pensioners throughout Serbia.', ru: 'Pogon развивает программы покупки электровелосипедов для сотрудников и пенсионеров по всей Сербии.' })}</p>
           </div>
           <div className="mt-9 grid gap-3 md:grid-cols-3">
-            <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="text-xl font-black tracking-[-0.03em]">Stellantis</h3><p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-black/40">Kragujevac</p></article>
-            <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="text-lg font-black leading-tight tracking-[-0.03em]">Univerzitet u Novom Sadu</h3><p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-black/40">Filozofski fakultet</p></article>
-            <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="text-lg font-black leading-tight tracking-[-0.03em]">Policijska sindikalna organizacija</h3><p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-black/40">Program za članove</p></article>
+            <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="text-xl font-black tracking-[-0.03em]">Stellantis</h3><p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-black/40">{tr({ sr: 'Kompanija · Kragujevac', en: 'Company · Kragujevac', ru: 'Компания · Крагуевац' })}</p></article>
+            <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="select-none text-lg font-black leading-tight tracking-[-0.03em] blur-[5px]">{tr({ sr: 'Univerzitet u Novom Sadu', en: 'University of Novi Sad', ru: 'Университет Нови-Сада' })}</h3><p className="mt-2 select-none text-xs font-bold uppercase tracking-[0.12em] text-black/40 blur-[4px]">{tr({ sr: 'Filozofski fakultet', en: 'Faculty of Philosophy', ru: 'Философский факультет' })}</p></article>
+            <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="text-lg font-black leading-tight tracking-[-0.03em]">{tr({ sr: 'Policijska sindikalna organizacija (MUP)', en: 'Police Trade Union Organization (MUP)', ru: 'Полицейская профсоюзная организация (MUP)' })}</h3><p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-black/40">{tr({ sr: 'Program za članove', en: 'Members’ program', ru: 'Программа для участников' })}</p></article>
           </div>
           <div className="mt-7 text-center"><a href="/partneri/" className="inline-flex items-center gap-2 text-sm font-black text-black underline decoration-black/25 underline-offset-4 transition-colors hover:decoration-black">{tr({ sr: 'Saznajte više o našim saradnjama →', en: 'Learn more about our partnerships →', ru: 'Подробнее о сотрудничестве →' })}</a></div>
         </div>
@@ -2938,7 +2946,7 @@ export default function App() {
               <p className="max-w-sm text-sm text-foreground/60 leading-relaxed">{ui.footerBody}</p>
               <div className="mt-4 space-y-1 text-sm text-foreground/60">
                 <p><span className="font-bold text-foreground/80">Email:</span> <a href="mailto:pogonmobility@gmail.com" className="underline underline-offset-4 hover:text-foreground">pogonmobility@gmail.com</a></p>
-                <p><span className="font-bold text-foreground/80">Telefon:</span> <a href="tel:+381631505003" className="underline underline-offset-4 hover:text-foreground">063 15 05 003</a></p>
+                <p><span className="font-bold text-foreground/80">{tr({ sr: 'Telefon', en: 'Phone', ru: 'Телефон' })}:</span> <a href="tel:+381631505003" className="underline underline-offset-4 hover:text-foreground">063 15 05 003</a></p>
               </div>
             </div>
 
@@ -2948,8 +2956,7 @@ export default function App() {
                 <li><a href="/products/glide/" className="hover:text-foreground transition-colors">Glide</a></li>
                 <li><a href="/products/core/" className="hover:text-foreground transition-colors">Core</a></li>
                 <li><a href="/products/cargo/" className="hover:text-foreground transition-colors">Cargo</a></li>
-                <li><a href="/elektricni-bicikli/" className="hover:text-foreground transition-colors">Električni bicikli</a></li>
-                <li><a href="/electric-bikes/" lang="en" className="hover:text-foreground transition-colors">Electric bikes</a></li>
+                <li><a href={lang === 'en' ? '/electric-bikes/' : '/elektricni-bicikli/'} className="hover:text-foreground transition-colors">{tr({ sr: 'Električni bicikli', en: 'Electric bikes', ru: 'Электровелосипеды' })}</a></li>
                 <li><a href="/#modeli" className="hover:text-foreground transition-colors">{ui.footerCompare}</a></li>
               </ul>
             </div>
@@ -2975,12 +2982,12 @@ export default function App() {
                 <li><a href="/informacije-o-trgovcu" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[0]}</a></li>
                 <li><a href="/kontakt/" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[1]}</a></li>
                 <li><a href="/partneri/" className="hover:text-foreground transition-colors">{tr({ sr: 'Partneri i saradnja', en: 'Partners', ru: 'Партнёры' })}</a></li>
-                <li><a href="/o-nama/" className="hover:text-foreground transition-colors">O nama</a></li>
-                <li><a href="/vodici/" className="hover:text-foreground transition-colors">Vodiči</a></li>
-                <li><a href="/dostava" className="hover:text-foreground transition-colors">Dostava</a></li>
-                <li><a href="/reklamacije" className="hover:text-foreground transition-colors">Reklamacije</a></li>
-                <li><a href="/povracaj-sredstava" className="hover:text-foreground transition-colors">Povraćaj sredstava</a></li>
-                <li><a href="/bezbednost-placanja" className="hover:text-foreground transition-colors">Bezbednost plaćanja</a></li>
+                <li><a href="/o-nama/" className="hover:text-foreground transition-colors">{tr({ sr: 'O nama', en: 'About us', ru: 'О нас' })}</a></li>
+                <li><a href="/vodici/" className="hover:text-foreground transition-colors">{tr({ sr: 'Vodiči', en: 'Guides', ru: 'Руководства' })}</a></li>
+                <li><a href="/dostava" className="hover:text-foreground transition-colors">{tr({ sr: 'Dostava', en: 'Delivery', ru: 'Доставка' })}</a></li>
+                <li><a href="/reklamacije" className="hover:text-foreground transition-colors">{tr({ sr: 'Reklamacije', en: 'Complaints', ru: 'Претензии' })}</a></li>
+                <li><a href="/povracaj-sredstava" className="hover:text-foreground transition-colors">{tr({ sr: 'Povraćaj sredstava', en: 'Refunds', ru: 'Возврат средств' })}</a></li>
+                <li><a href="/bezbednost-placanja" className="hover:text-foreground transition-colors">{tr({ sr: 'Bezbednost plaćanja', en: 'Payment security', ru: 'Безопасность оплаты' })}</a></li>
               </ul>
             </div>
           </div>

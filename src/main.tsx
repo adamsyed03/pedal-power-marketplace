@@ -8,6 +8,7 @@
   import { BusinessInfo } from "./app/components/BusinessInfo.tsx";
   import { CustomerPolicy } from "./app/components/CustomerPolicy.tsx";
   import { PartnersPage } from "./app/components/PartnersPage.tsx";
+  import { ContactPage } from "./app/components/ContactPage.tsx";
   import { ProductPage } from "./app/components/product/ProductPage.tsx";
   import "./styles/index.css";
   import { initAnalytics } from "./lib/analytics.ts";
@@ -84,8 +85,9 @@
   }
 
   initAnalytics();
+  const initialLanguage = languageFromSearch(window.location.search);
   const page = productKey
-    ? <ProductPage productKey={productKey} initialLanguage={languageFromSearch(window.location.search)} />
+    ? <ProductPage productKey={productKey} initialLanguage={initialLanguage} />
     : route === "/checkout"
     ? <Checkout />
     : route === "/uslovi-kupovine"
@@ -95,7 +97,7 @@
     : route === "/partneri"
     ? <PartnersPage />
     : route === "/kontakt"
-    ? <CustomerPolicy page="contact" />
+    ? <ContactPage />
     : route === "/dostava"
     ? <CustomerPolicy page="delivery" />
     : route === "/reklamacije"
@@ -115,7 +117,7 @@
   const canHydrateHomepage = root.dataset.prerenderedHome === "true"
     && !privateRoute
     && (route === "" || route === "/kviz");
-  const canHydrateProduct = Boolean(productKey && root.dataset.prerenderedProduct === productKey);
+  const canHydrateProduct = Boolean(productKey && root.dataset.prerenderedProduct === productKey && initialLanguage === "sr");
 
   if (canHydrateHomepage || canHydrateProduct) {
     hydrateRoot(root, page);

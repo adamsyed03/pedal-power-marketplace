@@ -2,6 +2,7 @@ import { products, type Product, type ProductKey } from './products';
 
 export type SiteLanguage = 'sr' | 'en' | 'ru';
 export type Localized<T> = Record<SiteLanguage, T>;
+export const SITE_LANGUAGE_STORAGE_KEY = 'pogon-language';
 export type BikeKey = Extract<ProductKey, 'cargo' | 'core' | 'glide'>;
 
 export type ProductMedia = {
@@ -396,5 +397,30 @@ export function localize<T>(value: Localized<T>, language: SiteLanguage): T {
 
 export function languageFromSearch(search: string): SiteLanguage {
   const requested = new URLSearchParams(search).get('lang');
-  return requested === 'en' || requested === 'ru' ? requested : 'sr';
+  if (requested === 'en' || requested === 'ru' || requested === 'sr') return requested;
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = window.localStorage.getItem(SITE_LANGUAGE_STORAGE_KEY);
+      if (stored === 'en' || stored === 'ru' || stored === 'sr') return stored;
+    } catch {
+      // Storage can be unavailable in privacy-restricted browsers.
+    }
+  }
+  return 'sr';
+}
+
+export function persistSiteLanguage(language: SiteLanguage) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(SITE_LANGUAGE_STORAGE_KEY, language);
+  } catch {
+    // The selected language still applies to the current page.
+  }
+}
+
+export function localizedSiteHref(path: string, language: SiteLanguage) {
+  if (language === 'sr' || /^(?:https?:|mailto:|tel:|#)/.test(path)) return path;
+  const [withoutHash, hash = ''] = path.split('#', 2);
+  const separator = withoutHash.includes('?') ? '&' : '?';
+  return `${withoutHash}${separator}lang=${language}${hash ? `#${hash}` : ''}`;
 }

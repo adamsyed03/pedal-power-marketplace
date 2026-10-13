@@ -15,6 +15,11 @@ export function ProductGallery({ media, language, productName }: ProductGalleryP
   const [zoom, setZoom] = useState(1);
   const touchStartX = useRef<number | null>(null);
   const active = media[activeIndex];
+  const controls = {
+    sr: { previous: 'Prethodna fotografija', next: 'Sledeća fotografija', open: 'Otvori pregled fotografije', show: 'Prikaži fotografiju', gallery: 'Galerija fotografija', zoomOut: 'Umanji', zoomIn: 'Uvećaj', close: 'Zatvori pregled fotografije' },
+    en: { previous: 'Previous image', next: 'Next image', open: 'Open image viewer', show: 'Show image', gallery: 'Image gallery', zoomOut: 'Zoom out', zoomIn: 'Zoom in', close: 'Close image viewer' },
+    ru: { previous: 'Предыдущее фото', next: 'Следующее фото', open: 'Открыть просмотр фотографий', show: 'Показать фото', gallery: 'Галерея фотографий', zoomOut: 'Уменьшить', zoomIn: 'Увеличить', close: 'Закрыть просмотр фотографий' },
+  }[language];
 
   const show = (index: number) => {
     setActiveIndex((index + media.length) % media.length);
@@ -66,14 +71,14 @@ export function ProductGallery({ media, language, productName }: ProductGalleryP
             className="h-full w-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.012]"
           />
           <div className="absolute inset-x-3 top-1/2 flex -translate-y-1/2 items-center justify-between sm:inset-x-5">
-            <button type="button" onClick={() => show(activeIndex - 1)} aria-label={`Previous ${productName} image`} className="inline-grid size-11 place-items-center border border-black/15 bg-white/90 text-black shadow-sm transition-colors hover:border-black hover:bg-white">
+            <button type="button" onClick={() => show(activeIndex - 1)} aria-label={`${controls.previous}: ${productName}`} className="inline-grid size-11 place-items-center border border-black/15 bg-white/90 text-black shadow-sm transition-colors hover:border-black hover:bg-white">
               <ChevronLeft className="size-5" />
             </button>
-            <button type="button" onClick={() => show(activeIndex + 1)} aria-label={`Next ${productName} image`} className="inline-grid size-11 place-items-center border border-black/15 bg-white/90 text-black shadow-sm transition-colors hover:border-black hover:bg-white">
+            <button type="button" onClick={() => show(activeIndex + 1)} aria-label={`${controls.next}: ${productName}`} className="inline-grid size-11 place-items-center border border-black/15 bg-white/90 text-black shadow-sm transition-colors hover:border-black hover:bg-white">
               <ChevronRight className="size-5" />
             </button>
           </div>
-          <button type="button" onClick={() => setIsLightboxOpen(true)} aria-label={`Open ${productName} image viewer`} className="absolute bottom-4 right-4 inline-flex items-center gap-2 border border-black/15 bg-white/90 px-3 py-2 text-[0.66rem] font-black uppercase tracking-[0.12em] text-black shadow-sm transition-colors hover:border-black hover:bg-white">
+          <button type="button" onClick={() => setIsLightboxOpen(true)} aria-label={`${controls.open}: ${productName}`} className="absolute bottom-4 right-4 inline-flex items-center gap-2 border border-black/15 bg-white/90 px-3 py-2 text-[0.66rem] font-black uppercase tracking-[0.12em] text-black shadow-sm transition-colors hover:border-black hover:bg-white">
             <Expand className="size-4" />
             <span className="hidden sm:inline">{language === 'sr' ? 'Uvećaj' : language === 'en' ? 'Zoom' : 'Увеличить'}</span>
           </button>
@@ -88,7 +93,7 @@ export function ProductGallery({ media, language, productName }: ProductGalleryP
               key={image.src}
               type="button"
               onClick={() => show(index)}
-              aria-label={`Show ${productName} image ${index + 1}`}
+              aria-label={`${controls.show}: ${productName} ${index + 1}`}
               aria-current={index === activeIndex ? 'true' : undefined}
               className={`aspect-square w-[4.5rem] flex-none overflow-hidden border bg-[#f3f3f1] p-0.5 transition-all sm:w-[4.75rem] ${index === activeIndex ? 'border-black shadow-[inset_0_-3px_0_#7fff00]' : 'border-black/10 opacity-65 hover:border-black/40 hover:opacity-100'}`}
             >
@@ -99,22 +104,22 @@ export function ProductGallery({ media, language, productName }: ProductGalleryP
       </div>
 
       {isLightboxOpen ? (
-        <div className="fixed inset-0 z-[120] flex flex-col bg-black/95 text-white" role="dialog" aria-modal="true" aria-label={`${productName} image gallery`}>
+        <div className="fixed inset-0 z-[120] flex flex-col bg-black/95 text-white" role="dialog" aria-modal="true" aria-label={`${productName}: ${controls.gallery}`}>
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-6">
             <div>
               <p className="font-black">{productName}</p>
               <p className="text-xs uppercase tracking-[0.2em] text-white/50">{activeIndex + 1} / {media.length}</p>
             </div>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => setZoom((value) => Math.max(1, value - 0.25))} disabled={zoom <= 1} aria-label="Zoom out" className="inline-grid size-10 place-items-center rounded-full border border-white/20 bg-white/10 disabled:opacity-35"><ZoomOut className="size-4" /></button>
-              <button type="button" onClick={() => setZoom((value) => Math.min(2, value + 0.25))} disabled={zoom >= 2} aria-label="Zoom in" className="inline-grid size-10 place-items-center rounded-full border border-white/20 bg-white/10 disabled:opacity-35"><ZoomIn className="size-4" /></button>
-              <button type="button" onClick={() => setIsLightboxOpen(false)} aria-label="Close image viewer" className="inline-grid size-10 place-items-center rounded-full border border-white/20 bg-white/10"><X className="size-5" /></button>
+              <button type="button" onClick={() => setZoom((value) => Math.max(1, value - 0.25))} disabled={zoom <= 1} aria-label={controls.zoomOut} className="inline-grid size-10 place-items-center rounded-full border border-white/20 bg-white/10 disabled:opacity-35"><ZoomOut className="size-4" /></button>
+              <button type="button" onClick={() => setZoom((value) => Math.min(2, value + 0.25))} disabled={zoom >= 2} aria-label={controls.zoomIn} className="inline-grid size-10 place-items-center rounded-full border border-white/20 bg-white/10 disabled:opacity-35"><ZoomIn className="size-4" /></button>
+              <button type="button" onClick={() => setIsLightboxOpen(false)} aria-label={controls.close} className="inline-grid size-10 place-items-center rounded-full border border-white/20 bg-white/10"><X className="size-5" /></button>
             </div>
           </div>
           <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-auto p-4 sm:p-10">
-            <button type="button" onClick={() => show(activeIndex - 1)} aria-label="Previous image" className="absolute left-3 z-10 inline-grid size-11 place-items-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm sm:left-6"><ChevronLeft className="size-6" /></button>
+            <button type="button" onClick={() => show(activeIndex - 1)} aria-label={controls.previous} className="absolute left-3 z-10 inline-grid size-11 place-items-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm sm:left-6"><ChevronLeft className="size-6" /></button>
             <ImageWithFallback src={active.src} alt={localize(active.alt, language)} width={active.width} height={active.height} className="max-h-full max-w-full object-contain transition-transform duration-200" style={{ transform: `scale(${zoom})` }} />
-            <button type="button" onClick={() => show(activeIndex + 1)} aria-label="Next image" className="absolute right-3 z-10 inline-grid size-11 place-items-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm sm:right-6"><ChevronRight className="size-6" /></button>
+            <button type="button" onClick={() => show(activeIndex + 1)} aria-label={controls.next} className="absolute right-3 z-10 inline-grid size-11 place-items-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm sm:right-6"><ChevronRight className="size-6" /></button>
           </div>
         </div>
       ) : null}

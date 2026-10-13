@@ -92,6 +92,7 @@
   <script>
     var pageTranslations = {
       sr: {
+        skip: 'Pređi na sadržaj', navLabel: 'Glavna navigacija', homeLabel: 'Pogon početna', languageLabel: 'Jezik', photoSoon: 'Fotografija uskoro', closePhoto: 'Zatvori pregled fotografije',
         title: 'Oprema za električne bicikle | Pogon', description: 'Praktična oprema za bezbedniju, udobniju i organizovaniju gradsku vožnju.',
         models: 'Modeli', accessories: 'Oprema', reviews: 'Iskustva', partners: 'Partneri', contactNav: 'Kontakt', buyNow: 'Kupi sada', cart: 'Korpa', openCart: 'Otvori korpu', promoLabel: 'Online ponuda', promoOnline: 'Online porudžbina', promoOrder: 'Poruči preko sajta:', promoDiscount: '5.000 RSD popusta', promoModels: 'na Cargo i Glide', promoGift: 'Kaciga, rukavice ili lanac na poklon', promoAction: 'Pogledaj modele →',
         eyebrow: 'Pogon dodatna oprema', heroTitle: 'Oprema za svaki dan.', heroBody: 'Sedam praktičnih dodataka za sigurniju, udobniju i organizovaniju vožnju. Izaberite proizvod i završite kupovinu kroz Pogon sigurni checkout.',
@@ -114,6 +115,7 @@
         }
       },
       en: {
+        skip: 'Skip to content', navLabel: 'Main navigation', homeLabel: 'Pogon home', languageLabel: 'Language', photoSoon: 'Photo coming soon', closePhoto: 'Close photo viewer',
         title: 'Electric bike accessories | Pogon', description: 'Practical accessories for safer, more comfortable and organized city riding.',
         models: 'Models', accessories: 'Accessories', reviews: 'Reviews', partners: 'Partners', contactNav: 'Contact', buyNow: 'Buy now', cart: 'Cart', openCart: 'Open cart', promoLabel: 'Online offer', promoOnline: 'Online order', promoOrder: 'Order through the site:', promoDiscount: 'RSD 5,000 off', promoModels: 'Cargo and Glide', promoGift: 'Free helmet, gloves, or chain', promoAction: 'View models →',
         eyebrow: 'Pogon accessories', heroTitle: 'Gear for every day.', heroBody: 'Seven practical accessories for safer, more comfortable and organized riding. Choose your products and complete your order through Pogon secure checkout.',
@@ -136,6 +138,7 @@
         }
       },
       ru: {
+        skip: 'Перейти к содержанию', navLabel: 'Главная навигация', homeLabel: 'Главная страница Pogon', languageLabel: 'Язык', photoSoon: 'Фото скоро появится', closePhoto: 'Закрыть просмотр фотографии',
         title: 'Аксессуары для электровелосипедов | Pogon', description: 'Практичные аксессуары для безопасных и комфортных поездок по городу.',
         models: 'Модели', accessories: 'Аксессуары', reviews: 'Отзывы', partners: 'Партнёры', contactNav: 'Контакт', buyNow: 'Купить', cart: 'Корзина', openCart: 'Открыть корзину', promoLabel: 'Онлайн-предложение', promoOnline: 'Онлайн-заказ', promoOrder: 'Закажите на сайте:', promoDiscount: 'Скидка 5 000 RSD', promoModels: 'на Cargo и Glide', promoGift: 'Шлем, перчатки или цепь в подарок', promoAction: 'Смотреть модели →',
         eyebrow: 'Аксессуары Pogon', heroTitle: 'Аксессуары на каждый день.', heroBody: 'Семь практичных аксессуаров для безопасных, комфортных и организованных поездок. Выберите товары и оформите заказ через безопасный checkout Pogon.',
@@ -171,8 +174,13 @@
     };
     var cartStorageKey = 'pogon-cart-v1';
     var legacyCartStorageKey = 'pogon-accessory-cart-v1';
+    var languageStorageKey = 'pogon-language';
     var requestedLanguage = new URLSearchParams(window.location.search).get('lang');
-    var currentLanguage = requestedLanguage === 'en' || requestedLanguage === 'ru' ? requestedLanguage : 'sr';
+    var storedLanguage = null;
+    try { storedLanguage = localStorage.getItem(languageStorageKey); } catch (error) { /* Use the URL or Serbian. */ }
+    var currentLanguage = requestedLanguage === 'en' || requestedLanguage === 'ru' || requestedLanguage === 'sr'
+      ? requestedLanguage
+      : storedLanguage === 'en' || storedLanguage === 'ru' || storedLanguage === 'sr' ? storedLanguage : 'sr';
     var cart = {};
     try {
       var storedCart = JSON.parse(localStorage.getItem(cartStorageKey) || localStorage.getItem(legacyCartStorageKey) || '{}');
@@ -203,12 +211,18 @@
       var copy = pageTranslations[currentLanguage];
       var homeHref = currentLanguage === 'sr' ? '/' : '/?lang=' + currentLanguage;
       var modelsHref = currentLanguage === 'en' ? '/electric-bikes/' : '/elektricni-bicikli/';
+      var localizedHref = function (path) { return currentLanguage === 'sr' ? path : path + (path.indexOf('?') === -1 ? '?' : '&') + 'lang=' + currentLanguage; };
+      try { localStorage.setItem(languageStorageKey, currentLanguage); } catch (error) { /* The current page still remains translated. */ }
       document.documentElement.lang = currentLanguage === 'sr' ? 'sr-Latn' : currentLanguage;
       document.title = copy.title;
       var descriptionMeta = document.querySelector('meta[name="description"]');
       if (descriptionMeta) descriptionMeta.setAttribute('content', copy.description);
 
+      setText('.skip-link', copy.skip);
+      document.querySelector('.accessories-nav').setAttribute('aria-label', copy.navLabel);
       document.querySelector('.accessories-logo').href = homeHref;
+      document.querySelector('.accessories-logo').setAttribute('aria-label', copy.homeLabel);
+      document.querySelector('.accessories-languages').setAttribute('aria-label', copy.languageLabel);
       var promo = document.querySelector('.accessories-promo');
       promo.href = homeHref + '#modeli';
       promo.setAttribute('aria-label', copy.promoLabel);
@@ -226,8 +240,8 @@
       navLinks[0].textContent = copy.models; navLinks[0].href = homeHref + '#modeli';
       navLinks[1].textContent = copy.accessories;
       navLinks[2].textContent = copy.reviews; navLinks[2].href = homeHref + '#iskustva';
-      navLinks[3].textContent = copy.partners;
-      navLinks[4].textContent = copy.contactNav;
+      navLinks[3].textContent = copy.partners; navLinks[3].href = localizedHref('/partneri/');
+      navLinks[4].textContent = copy.contactNav; navLinks[4].href = localizedHref('/kontakt/');
       setText('.accessories-buy-now', copy.buyNow);
       setText('.cart-label', copy.cart);
       cartToggle.setAttribute('aria-label', copy.openCart);
@@ -267,6 +281,8 @@
           photoButton.setAttribute('data-lightbox-name', cardCopy[1]);
           photoButton.setAttribute('aria-label', (currentLanguage === 'sr' ? 'Uvećaj fotografiju: ' : currentLanguage === 'en' ? 'Enlarge photo: ' : 'Увеличить фото: ') + cardCopy[1]);
         }
+        var image = card.querySelector('.accessory-photo-button img');
+        if (image) image.alt = 'Pogon ' + cardCopy[1];
         var addButton = card.querySelector('.add-to-cart');
         if (addButton) addButton.textContent = copy.add;
       });
@@ -275,6 +291,7 @@
       document.querySelector('#korpa .accessory-unavailable').setAttribute('aria-label', copy.unavailable);
       setText('#retrovizor .accessory-price small', copy.perItem);
       setText('#rukavice .accessory-price small', copy.perPair);
+      document.querySelectorAll('.accessory-visual em').forEach(function (element) { element.textContent = copy.photoSoon; });
 
       var darkColumns = document.querySelectorAll('.dark .columns > div');
       setText('.dark .columns > div:first-child h2', copy.helpTitle);
@@ -292,10 +309,11 @@
       setText('footer > .wrap > p', copy.footerBody);
       var footerLinks = document.querySelectorAll('.footer-links a');
       footerLinks[0].textContent = copy.models; footerLinks[0].href = modelsHref;
-      footerLinks[1].textContent = copy.contactNav;
-      footerLinks[2].textContent = copy.delivery;
-      footerLinks[3].textContent = copy.terms;
-      footerLinks[4].textContent = copy.partners;
+      footerLinks[1].textContent = copy.contactNav; footerLinks[1].href = localizedHref('/kontakt/');
+      footerLinks[2].textContent = copy.delivery; footerLinks[2].href = localizedHref('/dostava/');
+      footerLinks[3].textContent = copy.terms; footerLinks[3].href = localizedHref('/uslovi-kupovine');
+      footerLinks[4].textContent = copy.partners; footerLinks[4].href = localizedHref('/partneri/');
+      document.querySelectorAll('[data-lightbox-close]').forEach(function (button) { button.setAttribute('aria-label', copy.closePhoto); });
 
       document.querySelectorAll('[data-language]').forEach(function (link) {
         if (link.getAttribute('data-language') === currentLanguage) link.setAttribute('aria-current', 'page');

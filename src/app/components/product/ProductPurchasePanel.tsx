@@ -2,6 +2,7 @@ import { useEffect, useState, type RefObject } from 'react';
 import { Bike, CalendarCheck, CheckCircle2, ChevronDown, CloudRain, CreditCard, Eye, MessageCircle, ShieldCheck, Truck, Wrench } from 'lucide-react';
 import { formatRsd, products, type Product, type ProductKey } from '../../../lib/products';
 import { localize, type ProductDetails, type SiteLanguage } from '../../../lib/productDetails';
+import { productNameFor } from '../../../lib/productNames';
 import { formatProductRating, productRatings, productReviews } from '../../../lib/productReviews';
 import { ProductRatingStars } from './ProductRatingStars';
 
@@ -115,7 +116,7 @@ export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, 
               <label key={product.key} className={`grid cursor-pointer grid-cols-[auto_3.25rem_minmax(0,1fr)_auto] items-center gap-3 border px-3 py-2.5 transition-colors ${selected ? 'border-black bg-[#7fff00]/[0.07]' : 'border-black/12 bg-white hover:border-black/35'}`}>
                 <input type="checkbox" checked={selected} onChange={() => toggleAccessory(product.key)} className="size-4 accent-black" />
                 <img src={product.image} alt="" width={52} height={52} loading="lazy" className="size-[3.25rem] bg-[#f2f2ef] object-cover" />
-                <span className="min-w-0 text-sm font-bold leading-tight text-black/75">{product.name}</span>
+                <span className="min-w-0 text-sm font-bold leading-tight text-black/75">{productNameFor(product, language)}</span>
                 <span className="whitespace-nowrap text-sm font-black">{formatRsd(product.priceRsd)}</span>
               </label>
             );
