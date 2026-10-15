@@ -1225,7 +1225,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
         points: ukCopy.points,
         originalPrice: undefined,
         price: ukPrice.current,
-        mobileSpecs: { range: 'Premium', power: 'European', battery: 'Single battery' },
+        mobileSpecs: { range: '140 km', power: '250 W', battery: model.key === 'glide' ? '1200 Wh' : '840 Wh' },
         isUnavailable: false,
       };
     }),
@@ -1241,7 +1241,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
       description: UK_PRODUCT_COPY.fold.description,
       originalPrice: undefined,
       price: UK_PRODUCT_PRICES.fold.current,
-      mobileSpecs: { range: 'Compact', power: 'European', battery: 'Single battery' },
+      mobileSpecs: { range: '140 km', power: '250 W', battery: '840 Wh' },
       points: UK_PRODUCT_COPY.fold.points,
       isFeatured: false,
       isUnavailable: true,
@@ -2233,7 +2233,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                 <article key={name} className="rounded-3xl border border-[#397700]/25 bg-[#7fff00]/[0.08] p-6 text-center">
                   <span className="mx-auto grid size-12 place-items-center rounded-full bg-[#7fff00] text-black"><Icon className="size-5" /></span>
                   <h3 className="mt-5 text-lg font-black text-black">{name}</h3>
-                  <p className="mt-2 text-sm font-bold text-[#397700]">free — included</p>
+                  <p className="mt-2 text-sm font-bold text-[#397700]">free and included</p>
                 </article>
               ))}
             </div>

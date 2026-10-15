@@ -56,7 +56,7 @@ export function UkInterestForm({ model, notifyOnly = false }: { model: UkProduct
     return (
       <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-7 text-emerald-950" role="status">
         <CheckCircle2 className="size-9" />
-        <h3 className="mt-4 text-2xl font-black">{notifyOnly ? 'You’re on the list.' : 'Thank you — the UK team will be in touch.'}</h3>
+        <h3 className="mt-4 text-2xl font-black">{notifyOnly ? 'You’re on the list.' : 'Thank you. The UK team will be in touch.'}</h3>
         <p className="mt-2 text-sm text-emerald-900/75">Your details have been saved as a UK enquiry, separately from Pogon Serbia orders.</p>
       </div>
     );
