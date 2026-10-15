@@ -1,3 +1,5 @@
+import { submitLead, type Lead } from '../lib/supabase';
+
 export type UkLeadInput = {
   name?: string;
   phone?: string;
@@ -14,27 +16,50 @@ export type UkLeadInput = {
   leadType?: 'interest' | 'fold-notify';
 };
 
-export async function submitUkLead(input: UkLeadInput) {
+type NewLead = Omit<Lead, 'id' | 'created_at' | 'updated_at' | 'todo' | 'medium' | 'stage' | 'outcome'>;
+
+const normalizeUkPhone = (value = '') => {
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('44')) return `+${digits}`;
+  if (digits.startsWith('0')) return `+44${digits.slice(1)}`;
+  return `+44${digits}`;
+};
+
+export function buildUkLead(input: UkLeadInput): NewLead {
   const params = new URLSearchParams(window.location.search);
-  const response = await fetch('/api/uk/leads', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      ...input,
-      model: input.model ?? 'any',
-      consent: true,
-      source: 'uk-landing',
-      page: input.page?.startsWith('/uk') ? input.page : '/uk',
-      displayed_price_gbp: input.displayedPriceGbp ?? null,
-      purchase_timeframe: input.purchaseTimeframe ?? null,
-      price_interest: input.priceInterest ?? false,
-      marketing_consent: input.marketingConsent ?? false,
-      lead_type: input.leadType ?? 'interest',
-      utm_source: params.get('utm_source') || '',
-      utm_medium: params.get('utm_medium') || '',
-      utm_campaign: params.get('utm_campaign') || '',
-    }),
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.error || 'We could not save your enquiry. Please try again.');
+  const page = input.page?.startsWith('/uk') ? input.page : window.location.pathname.startsWith('/uk') ? window.location.pathname : '/uk';
+  const model = input.model ?? 'any';
+  const email = input.email?.trim().toLowerCase() || '';
+  const postcode = input.postcode?.trim().toUpperCase() || '';
+  const phone = normalizeUkPhone(input.phone);
+  const details = [
+    'UK landing page enquiry',
+    `Model: ${model}`,
+    email ? `Email: ${email}` : '',
+    postcode ? `Postcode: ${postcode}` : '',
+    input.purchaseTimeframe ? `Buying timeframe: ${input.purchaseTimeframe}` : '',
+    input.displayedPriceGbp ? `Displayed price: £${input.displayedPriceGbp} VAT included` : '',
+    input.leadType ? `Lead type: ${input.leadType}` : '',
+    input.message?.trim() ? `Message: ${input.message.trim()}` : '',
+    `Page: ${page}`,
+    params.get('utm_source') ? `UTM source: ${params.get('utm_source')}` : '',
+    params.get('utm_medium') ? `UTM medium: ${params.get('utm_medium')}` : '',
+    params.get('utm_campaign') ? `UTM campaign: ${params.get('utm_campaign')}` : '',
+  ].filter(Boolean);
+
+  return {
+    name: input.name?.trim() || email || 'UK website enquiry',
+    phone,
+    source: `UK landing page | ${input.source || 'enquiry'}`,
+    language: 'en',
+    city: postcode || null,
+    country: 'UK',
+    date_contacted: null,
+    comment: details.join('\n'),
+  };
+}
+
+export async function submitUkLead(input: UkLeadInput) {
+  await submitLead(buildUkLead(input));
 }

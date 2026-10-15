@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ArrowLeft, ArrowRight, Bike, Check, CloudRain, Compass, MapPin, MessageCircle, Phone, ShieldCheck, Smartphone, Wrench } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bike, Check, CloudRain, Compass, MapPin, MessageCircle, ShieldCheck, Smartphone, Wrench } from 'lucide-react';
 import { ImageWithFallback } from '../app/components/ImageWithFallback';
 import { ProductGallery } from '../app/components/product/ProductGallery';
 import { PromotionBanner } from '../app/components/PromotionBanner';
@@ -8,7 +8,7 @@ import { productDetails, type ProductMedia } from '../lib/productDetails';
 import { setPageMetadata } from '../lib/seo';
 import { trackEvent } from '../lib/analytics';
 import { UkInterestForm } from './UkInterestForm';
-import { UK_PHONE_DISPLAY, UK_PHONE_HREF, UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_DISPLAY, UK_WHATSAPP_NUMBER, type UkProductKey } from './ukMarket';
+import { UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_DISPLAY, UK_WHATSAPP_HREF, type UkProductKey } from './ukMarket';
 
 const english = (value: string): { sr: string; en: string; ru: string } => ({ sr: value, en: value, ru: value });
 
@@ -66,7 +66,7 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 sm:px-8">
           <a href="/uk" aria-label="Pogon UK home" className="flex items-center gap-3"><ImageWithFallback src={publicAsset('Logo.png')} alt="Pogon" width={483} height={187} className="h-8 w-auto object-contain" /><span className="rounded-full bg-black px-2 py-1 text-[0.58rem] font-black uppercase tracking-[0.18em] text-[#7fff00]">UK</span></a>
           <nav className="hidden items-center gap-7 text-xs font-bold uppercase tracking-[0.12em] md:flex"><a href="/uk/#modeli" className="hover:opacity-55">Models</a><a href="#technology" className="hover:opacity-55">Technology</a><a href="#service" className="hover:opacity-55">Support</a></nav>
-          <a href={UK_PHONE_HREF} className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs font-black text-white"><Phone className="size-3.5 text-[#7fff00]" /><span className="hidden sm:inline">{UK_PHONE_DISPLAY}</span><span className="sm:hidden">Call</span></a>
+          <a href={UK_WHATSAPP_HREF} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs font-black text-white"><MessageCircle className="size-3.5 text-[#7fff00]" /><span className="hidden sm:inline">WhatsApp {UK_WHATSAPP_DISPLAY}</span><span className="sm:hidden">WhatsApp</span></a>
         </div>
       </header>
 
@@ -148,7 +148,7 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
         <section id="service" className="border-y border-black/10 bg-white px-5 py-16 sm:px-8 sm:py-20">
           <div className="mx-auto grid max-w-[1180px] gap-10 lg:grid-cols-2 lg:items-center">
             <div><Wrench className="size-8" /><h2 className="mt-5 text-4xl font-black tracking-tight">UK support, built with care.</h2><p className="mt-5 max-w-xl leading-7 text-black/55">Our UK service partner network is being developed. Register your interest and the UK team will explain the support and servicing options available for your location before any purchase decision.</p></div>
-            <div className="grid gap-3"><a href={UK_PHONE_HREF} className="flex items-center justify-between rounded-2xl bg-black p-5 text-white"><span className="inline-flex items-center gap-3 font-black"><Phone className="size-5 text-[#7fff00]" />Call {UK_PHONE_DISPLAY}</span><ArrowRight className="size-4" /></a><a href={`https://wa.me/${UK_WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-2xl border border-black/15 p-5"><span className="inline-flex items-center gap-3 font-black"><MessageCircle className="size-5" />WhatsApp {UK_WHATSAPP_DISPLAY}</span><ArrowRight className="size-4" /></a></div>
+            <div className="grid gap-3"><a href={UK_WHATSAPP_HREF} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-2xl bg-black p-5 text-white"><span className="inline-flex items-center gap-3 font-black"><MessageCircle className="size-5 text-[#7fff00]" />WhatsApp {UK_WHATSAPP_DISPLAY}</span><ArrowRight className="size-4" /></a></div>
           </div>
         </section>
 
@@ -175,13 +175,13 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
 
         <section id={formId} className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
           <div className="mx-auto grid max-w-[1180px] gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <div><p className="text-xs font-black uppercase tracking-[0.22em] text-black/40">Pogon UK</p><h2 className="mt-4 text-4xl font-black tracking-tight">{unavailable ? 'Be first to hear when Fold returns.' : `Take the next step with ${product.name}.`}</h2><ul className="mt-7 space-y-3 text-sm text-black/60">{['No payment is taken', 'Your enquiry stays separate from Serbian orders', 'The UK team will contact you about availability'].map((item) => <li key={item} className="flex items-center gap-3"><span className="grid size-6 place-items-center rounded-full bg-[#7fff00]"><Check className="size-3.5 text-black" /></span>{item}</li>)}</ul></div>
+            <div><p className="text-xs font-black uppercase tracking-[0.22em] text-black/40">Pogon UK</p><h2 className="mt-4 text-4xl font-black tracking-tight">{unavailable ? 'Be first to hear when Fold returns.' : `Take the next step with ${product.name}.`}</h2><ul className="mt-7 space-y-3 text-sm text-black/60">{['No payment is taken', 'Saved with a clear UK landing page label', 'The UK team will contact you on WhatsApp'].map((item) => <li key={item} className="flex items-center gap-3"><span className="grid size-6 place-items-center rounded-full bg-[#7fff00]"><Check className="size-3.5 text-black" /></span>{item}</li>)}</ul></div>
             <UkInterestForm model={productKey} notifyOnly={unavailable} />
           </div>
         </section>
       </main>
 
-      <footer className="bg-black px-5 py-10 text-white sm:px-8"><div className="mx-auto flex max-w-[1180px] flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"><a href="/uk"><ImageWithFallback src={publicAsset('Logo.png')} alt="Pogon" width={483} height={187} className="h-9 w-auto brightness-0 invert" /></a><div className="flex flex-wrap gap-5 text-sm font-bold text-white/65"><a href="/uk/#modeli">UK models</a><a href={UK_PHONE_HREF}>{UK_PHONE_DISPLAY}</a><a href={`https://wa.me/${UK_WHATSAPP_NUMBER}`}>WhatsApp</a></div></div></footer>
+      <footer className="bg-black px-5 py-10 text-white sm:px-8"><div className="mx-auto flex max-w-[1180px] flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"><a href="/uk"><ImageWithFallback src={publicAsset('Logo.png')} alt="Pogon" width={483} height={187} className="h-9 w-auto brightness-0 invert" /></a><div className="flex flex-wrap gap-5 text-sm font-bold text-white/65"><a href="/uk/#modeli">UK models</a><a href={UK_WHATSAPP_HREF} target="_blank" rel="noreferrer">WhatsApp {UK_WHATSAPP_DISPLAY}</a></div></div></footer>
     </div>
   );
 }

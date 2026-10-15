@@ -62,7 +62,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
     const cleanPhone = isUk ? phone.trim() : `+381 ${formatLocalPhone(phone)}`;
 
     if (!isFormValid) {
-      setError(tr({
+      setError(isUk ? 'Enter your name and a valid WhatsApp number.' : tr({
         sr: 'Unesite ime i ispravan broj telefona.',
         en: 'Enter your name and a valid phone number.',
         ru: 'Введи имя и корректный номер телефона.',
@@ -102,7 +102,9 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
           <div className="py-8 text-center">
             <CheckCircle2 className="mx-auto mb-5 size-12 text-[#7fff00]" />
             <h2 id="lead-modal-title" className="text-2xl font-black">{tr({ sr: 'Hvala!', en: 'Thank you!', ru: 'Спасибо!' })}</h2>
-            <p className="mt-3 text-white/65">{isConsultation
+            <p className="mt-3 text-white/65">{isUk
+              ? 'The UK team will message you on WhatsApp soon.'
+              : isConsultation
               ? tr({ sr: 'Naš stručnjak će vas uskoro kontaktirati.', en: 'One of our specialists will contact you soon.', ru: 'Наш специалист скоро с тобой свяжется.' })
               : isPurchase
               ? tr({ sr: 'Javićemo vam se uskoro sa svim informacijama o kupovini.', en: 'We will call you soon with the purchase details.', ru: 'Скоро свяжемся с тобой и расскажем все детали покупки.' })
@@ -114,12 +116,14 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
         ) : (
           <>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7fff00]">POGON</p>
-            <h2 id="lead-modal-title" className="mt-2 pr-10 text-2xl font-black">{isConsultation
+            <h2 id="lead-modal-title" className="mt-2 pr-10 text-2xl font-black">{isUk && isConsultation
+              ? 'Message a Pogon specialist'
+              : isConsultation
               ? tr({ sr: 'Zakažite razgovor sa stručnjakom', en: 'Book a call with a specialist', ru: 'Запишись на разговор со специалистом' })
               : isPurchase
               ? tr({ sr: 'Zainteresovani ste za kupovinu?', en: 'Interested in buying?', ru: 'Интересует покупка?' })
               : tr({ sr: 'Zakaži test vožnju', en: 'Book a test ride', ru: 'Запишись на тест-драйв' })}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-white/60">{tr({ sr: 'Izaberite kako želite da vas kontaktiramo.', en: 'Choose how you would like to get in touch.', ru: 'Выбери, как тебе удобнее связаться.' })}</p>
+            <p className="mt-2 text-sm leading-relaxed text-white/60">{isUk ? 'Continue in WhatsApp now, or leave your WhatsApp number for the UK team.' : tr({ sr: 'Izaberite kako želite da vas kontaktiramo.', en: 'Choose how you would like to get in touch.', ru: 'Выбери, как тебе удобнее связаться.' })}</p>
 
             <a href={whatsappHref} target="_blank" rel="noreferrer" className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3.5 text-sm font-bold text-black transition-transform hover:scale-[1.02]">
               <MessageCircle className="size-5" />
@@ -128,7 +132,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
 
             <div className="my-6 flex items-center gap-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-white/35">
               <span className="h-px flex-1 bg-white/10" />
-              {tr({ sr: 'ili ostavite broj', en: 'or leave your number', ru: 'или оставь номер' })}
+              {isUk ? 'or leave your WhatsApp number' : tr({ sr: 'ili ostavite broj', en: 'or leave your number', ru: 'или оставь номер' })}
               <span className="h-px flex-1 bg-white/10" />
             </div>
 
@@ -155,14 +159,14 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                 </div>
               </label>
               <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
-                {tr({ sr: 'Broj telefona', en: 'Phone number', ru: 'Номер телефона' })}
+                {isUk ? 'WhatsApp number' : tr({ sr: 'Broj telefona', en: 'Phone number', ru: 'Номер телефона' })}
                 <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-white/5 transition-all focus-within:border-[#7fff00]/60 focus-within:bg-white/[0.07]">
                   <div className="flex shrink-0 items-center gap-2 border-r border-white/10 px-3.5 py-3 text-base font-semibold text-white">
                     <span aria-hidden="true">{isUk ? '🇬🇧' : '🇷🇸'}</span>
                     <span>{isUk ? '+44' : '+381'}</span>
                   </div>
                   <div className="relative min-w-0 flex-1">
-                    <Phone className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/30" aria-hidden="true" />
+                    {isUk ? <MessageCircle className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/30" aria-hidden="true" /> : <Phone className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/30" aria-hidden="true" />}
                     <input
                       ref={phoneInputRef}
                       value={phone}
@@ -179,7 +183,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                   </div>
                 </div>
                 <span id="phone-help" className="mt-2 block text-[0.68rem] font-normal normal-case tracking-normal text-white/35">
-                  {isUk ? 'Enter a UK mobile or landline number.' : tr({
+                  {isUk ? 'Enter the UK number you use for WhatsApp.' : tr({
                     sr: 'Unesite broj bez početne nule — mi ćemo dodati pozivni broj.',
                     en: 'Enter the number without the leading zero — we add the country code.',
                     ru: 'Введи номер без нуля в начале — код страны добавим сами.',
@@ -193,7 +197,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                   : tr({ sr: 'Nastavi', en: 'Continue', ru: 'Продолжить' })}
               </button>
               <p className="text-center text-[0.68rem] leading-relaxed text-white/30">
-                {tr({
+                {isUk ? 'We only use your details to message you on WhatsApp about Pogon bikes.' : tr({
                   sr: 'Vaše podatke koristimo samo da vas kontaktiramo u vezi sa Pogon biciklima.',
                   en: 'We only use your details to contact you about Pogon bikes.',
                   ru: 'Твои данные нужны нам только для связи по поводу велосипедов Pogon.',

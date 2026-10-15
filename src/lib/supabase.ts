@@ -121,29 +121,6 @@ export type PaidOrder = {
   transactionDate: string | null;
 };
 
-export type UkLead = {
-  id: string;
-  name: string | null;
-  email: string | null;
-  phone: string | null;
-  postcode: string | null;
-  model_interest: 'any' | 'glide' | 'core' | 'cargo' | 'fold';
-  message: string | null;
-  source: 'uk-landing';
-  market: 'UK';
-  page_path: string;
-  displayed_price_gbp: number | null;
-  purchase_timeframe: string | null;
-  price_interest: boolean;
-  marketing_consent: boolean;
-  lead_type: 'interest' | 'fold-notify';
-  utm_source: string | null;
-  utm_medium: string | null;
-  utm_campaign: string | null;
-  consent: boolean;
-  created_at: string;
-};
-
 export const signInAdmin = async (password: string): Promise<AdminSession> => {
   const response = await request('/auth/v1/token?grant_type=password', {
     method: 'POST',
@@ -242,20 +219,6 @@ export const fetchPaidOrders = async (accessToken: string) => {
   }
   const body = await response.json() as { orders?: PaidOrder[] };
   return Array.isArray(body.orders) ? body.orders : [];
-};
-
-export const fetchUkLeads = async (accessToken: string) => {
-  const response = await fetch('/api/admin/uk-leads', {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${accessToken}` },
-    cache: 'no-store',
-  });
-  if (!response.ok) throw new Error(response.status === 401 ? 'ADMIN_SESSION_EXPIRED' : 'UK_LEADS_UNAVAILABLE');
-  if (!response.headers.get('content-type')?.toLowerCase().includes('application/json')) {
-    throw new Error('ADMIN_UK_LEADS_API_NOT_RUNNING');
-  }
-  const body = await response.json() as { leads?: UkLead[] };
-  return Array.isArray(body.leads) ? body.leads : [];
 };
 
 export const updateLead = async (

@@ -1,7 +1,7 @@
 export const UK_PHONE_DISPLAY = '+44 7403 113911';
-export const UK_PHONE_HREF = 'tel:+447403113911';
 export const UK_WHATSAPP_DISPLAY = '+44 7403 113911';
 export const UK_WHATSAPP_NUMBER = '447403113911';
+export const UK_WHATSAPP_HREF = `https://wa.me/${UK_WHATSAPP_NUMBER}`;
 
 export type UkProductKey = 'cargo' | 'core' | 'glide' | 'fold';
 

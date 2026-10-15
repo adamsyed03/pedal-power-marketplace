@@ -14,7 +14,7 @@ import { setHomeMetadata, setPageMetadata } from '../lib/seo';
 import { formatRsd as formatProductRsd, products, type ProductKey } from '../lib/products';
 import { languageFromSearch, persistSiteLanguage } from '../lib/productDetails';
 import { submitUkLead } from '../uk/ukLeads';
-import { UK_PHONE_DISPLAY, UK_PHONE_HREF, UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_NUMBER } from '../uk/ukMarket';
+import { UK_PHONE_DISPLAY, UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_NUMBER } from '../uk/ukMarket';
 
 type Language = 'en' | 'sr' | 'ru';
 type Localized<T> = Record<Language, T>;
@@ -264,7 +264,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
     heroPrimary: 'Contact the UK team',
     buyNow: 'Register interest',
     finalTitle: 'Choose your Pogon. Find a new way forward.',
-    finalBody: `Call ${UK_PHONE_DISPLAY} or leave your details and our UK team will get back to you.`,
+    finalBody: `Message our UK team on WhatsApp at ${UK_PHONE_DISPLAY}, or leave your details and we’ll reply on WhatsApp.`,
   } : defaultCopy;
   const tr = <T,>(translations: Localized<T>) => translations[lang];
   const cartEntries = products
@@ -567,15 +567,15 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
     ...defaultUi,
     navPartners: 'Why Pogon',
     services: defaultUi.services.map((service, index) => index === 2
-      ? { title: 'UK enquiries', body: 'Register your interest and our UK team will contact you with availability and next steps.' }
+      ? { title: 'UK enquiries', body: 'Register your interest and our UK team will message you on WhatsApp with availability and next steps.' }
       : service),
     footerBody: 'A premium European electric bike brand, created for everyday adventure and a different way of seeing the road ahead.',
     footerSupportLinks: ['UK enquiry', 'Service information', 'Product questions'],
     footerCompanyLinks: ['About Pogon', 'Contact', 'UK launch', 'Models'],
   } : defaultUi;
   const whatsappNumber = isUk ? UK_WHATSAPP_NUMBER : '381631505003';
-  const phoneHref = isUk ? UK_PHONE_HREF : 'tel:+381631505003';
-  const phoneDisplay = isUk ? UK_PHONE_DISPLAY : '063 15 05 003';
+  const phoneHref = 'tel:+381631505003';
+  const phoneDisplay = '063 15 05 003';
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
   const testRideWhatsappText = tr({
     sr: 'Zdravo, želim da zakažem test vožnju Pogon e-bike-a.',
@@ -593,7 +593,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
     trackEvent(event, { source, ...(isUk ? { market: 'uk' } : {}) });
     setLeadModalSource(source);
   };
-  const handlePhoneClick = (source: string) => trackEvent(isUk ? 'uk_phone_click' : 'phone_call_click', { source, ...(isUk ? { market: 'uk' } : {}) });
+  const handlePhoneClick = (source: string) => trackEvent('phone_call_click', { source });
   const handleWhatsappClick = (source: string) => trackEvent(isUk ? 'uk_phone_click' : 'whatsapp_click', { source, channel: 'whatsapp', ...(isUk ? { market: 'uk' } : {}) });
   const handleModelsShortcutClick = () => {
     const modelsSection = document.getElementById('modeli');
@@ -851,7 +851,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
         { question: 'Do I need a licence?', answer: 'No special licence is needed for standard e-bike riding.' },
         { question: 'How long does charging take?', answer: 'A full charge takes up to 6 hours, depending on the battery and starting charge level.' },
         { question: 'What if it breaks?', answer: 'Service and support are available. Contact us and we will arrange the quickest solution.' },
-        { question: 'Do you offer service?', answer: isUk ? `For UK product and service enquiries, call ${UK_PHONE_DISPLAY} or leave your details and our team will contact you.` : 'Yes. Service support is available in several cities. Message us on WhatsApp at +381 63 15 05 003 for the nearest location, current services and opening hours.' },
+        { question: 'Do you offer service?', answer: isUk ? `For UK product and service enquiries, message us on WhatsApp at ${UK_PHONE_DISPLAY} or leave your details and our team will reply on WhatsApp.` : 'Yes. Service support is available in several cities. Message us on WhatsApp at +381 63 15 05 003 for the nearest location, current services and opening hours.' },
         { question: 'Can it go uphill?', answer: 'Yes. The motor helps on climbs, and a test ride shows how it feels on your route.' },
         { question: 'How do I pay?', answer: 'Payment is arranged directly with clear information before purchase.' },
       ],
@@ -1053,7 +1053,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
     e.preventDefault();
     const digits = popupPhone.replace(/\D/g, '').replace(/^0+/, '');
     if (digits.length < 6) {
-      setPopupError(tr({
+      setPopupError(isUk ? 'Enter a valid WhatsApp number.' : tr({
         sr: 'Unesite ispravan broj telefona.',
         en: 'Enter a valid phone number.',
         ru: 'Введи корректный номер телефона.',
@@ -1073,7 +1073,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
     } catch {
       if (isUk) {
         setPopupSubmitting(false);
-        setPopupError('We could not save your enquiry. Please call the UK team or try again.');
+        setPopupError('We could not save your enquiry. Please message the UK team on WhatsApp or try again.');
         return;
       }
       /* Preserve the existing Serbian popup behaviour. */
@@ -1491,7 +1491,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                         )}
                       </h2>
                       <p className="mt-2.5 text-sm leading-relaxed text-white/40">
-                        {tr({
+                        {isUk ? 'Leave your WhatsApp number. We’ll message you to arrange a slot. No purchase required.' : tr({
                           sr: 'Ostavi broj. Pozvaćemo te da dogovorimo termin. Bez obaveze kupovine.',
                           en: "Leave your number. We'll call to arrange a slot. No purchase required.",
                           ru: 'Оставь номер. Мы позвоним и договоримся о времени. Никаких обязательств.',
@@ -1517,7 +1517,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                           autoComplete="tel-national"
                           value={popupPhone}
                           onChange={(e) => { setPopupPhone(e.target.value); setPopupError(''); }}
-                          placeholder={tr({ sr: 'Broj telefona', en: 'Phone number', ru: 'Номер телефона' })}
+                          placeholder={isUk ? 'WhatsApp number' : tr({ sr: 'Broj telefona', en: 'Phone number', ru: 'Номер телефона' })}
                           className="flex-1 bg-transparent py-4 pl-3 pr-4 text-base text-white outline-none placeholder:text-white/20"
                         />
                       </div>
@@ -1527,7 +1527,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                         disabled={popupSubmitting}
                         className="w-full rounded-2xl bg-[#7fff00] py-4 text-sm font-black uppercase tracking-wider text-black transition-all hover:bg-[#b2ff4d] active:scale-[0.98] disabled:opacity-60"
                       >
-                        {popupSubmitting ? '…' : tr({ sr: 'Pozovite me', en: 'Call me', ru: 'Позвоните мне' })}
+                        {popupSubmitting ? '…' : isUk ? 'Message me on WhatsApp' : tr({ sr: 'Pozovite me', en: 'Call me', ru: 'Позвоните мне' })}
                       </button>
                     </motion.form>
 
@@ -2352,14 +2352,14 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                   <MessageCircle className="size-5" />
                   {tr({ sr: 'Zakaži preko WhatsApp-a', en: 'Book on WhatsApp', ru: 'Записаться через WhatsApp' })}
                 </a>
-                <a
+                {!isUk ? <a
                   href={phoneHref}
                   onClick={() => handlePhoneClick('test-ride-section')}
                   className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border-2 border-border bg-card px-6 py-4 text-sm font-black uppercase tracking-wider transition-colors hover:bg-accent active:scale-[0.98]"
                 >
                   <Phone className="size-5" />
                   {tr({ sr: 'Pozovi odmah', en: 'Call now', ru: 'Позвонить сейчас' })}
-                </a>
+                </a> : null}
               </div>
             </div>
 
@@ -2367,7 +2367,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
               {[
                 ...tr({
                   sr: ['Pošalji poruku ili pozovi', 'Dogovorimo termin', 'Probaš bicikl i odlučiš bez pritiska'],
-                  en: ['Send a message or call', 'We arrange a time', 'Try the bike and decide without pressure'],
+                  en: isUk ? ['Send us a WhatsApp message', 'We arrange a time', 'Try the bike and decide without pressure'] : ['Send a message or call', 'We arrange a time', 'Try the bike and decide without pressure'],
                   ru: ['Напиши или позвони', 'Договоримся об удобном времени', 'Пробуешь велосипед и спокойно решаешь'],
                 }),
               ].map((step, index) => (
@@ -2793,7 +2793,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                   {copy.heroPrimary}
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-foreground/60">
-                  {tr({
+                  {isUk ? 'Leave your WhatsApp number and postcode. We will message you to arrange a time.' : tr({
                     sr: 'Ostavi broj i grad. Javićemo ti se uskoro da dogovorimo termin.',
                     en: 'Leave your number and city. We will contact you soon to arrange a time.',
                     ru: 'Оставь номер и город. Мы скоро свяжемся и договоримся о времени.',
@@ -2805,7 +2805,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                 <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
                   <CheckCircle2 className="mb-3 size-8 text-primary" />
                   <p className="font-bold">
-                    {tr({
+                    {isUk ? 'Thank you! The UK team will message you on WhatsApp to arrange your test ride.' : tr({
                       sr: 'Hvala! Javićemo ti se uskoro da dogovorimo test vožnju.',
                       en: 'Thank you! We will contact you soon to arrange your test ride.',
                       ru: 'Спасибо! Скоро свяжемся с тобой и договоримся о тест-драйве.',
@@ -2816,7 +2816,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                 <form onSubmit={handleTestRideFormSubmit} className="space-y-4">
                   {[
                     { key: 'name', label: tr({ sr: 'Ime', en: 'Name', ru: 'Имя' }), type: 'text', autoComplete: 'name' },
-                    { key: 'phone', label: tr({ sr: 'Telefon', en: 'Phone', ru: 'Телефон' }), type: 'tel', autoComplete: 'tel' },
+                    { key: 'phone', label: isUk ? 'WhatsApp number' : tr({ sr: 'Telefon', en: 'Phone', ru: 'Телефон' }), type: 'tel', autoComplete: 'tel' },
                     { key: 'city', label: tr({ sr: 'Grad', en: 'City', ru: 'Город' }), type: 'text', autoComplete: 'address-level2' },
                     { key: 'preferredTime', label: tr({ sr: 'Kada želiš test vožnju?', en: 'When would you like a test ride?', ru: 'Когда тебе удобен тест-драйв?' }), type: 'text', autoComplete: 'off' },
                   ].map((field) => (
@@ -2837,7 +2837,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                   ))}
                   {testRideFormStatus === 'error' ? (
                     <p className="text-sm font-medium text-red-600" role="alert">
-                      {tr({
+                      {isUk ? 'Enter your name and WhatsApp number so the UK team can message you.' : tr({
                         sr: 'Unesi ime i telefon da bismo mogli da te kontaktiramo.',
                         en: 'Enter your name and phone so we can contact you.',
                         ru: 'Оставь имя и телефон, чтобы мы могли с тобой связаться.',
@@ -2944,14 +2944,14 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                 <MessageCircle className="size-5" />
                 WhatsApp
               </a>
-              <a
+              {!isUk ? <a
                 href={phoneHref}
                 onClick={() => handlePhoneClick('final-cta')}
                 className="inline-flex items-center justify-center gap-3 border-2 border-border px-8 py-5 rounded-full hover:bg-accent transition-all active:scale-[0.98] text-sm sm:text-base uppercase tracking-wider font-bold"
               >
                 <Phone className="size-5" />
                 {tr({ sr: 'Pozovi odmah', en: 'Call now', ru: 'Позвонить сейчас' })}
-              </a>
+              </a> : null}
             </div>
 
             <div className="mx-auto mb-8 flex max-w-4xl flex-wrap items-center justify-center gap-2">
@@ -3155,7 +3155,9 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
               <p className="max-w-sm text-sm text-foreground/60 leading-relaxed">{ui.footerBody}</p>
               <div className="mt-4 space-y-1 text-sm text-foreground/60">
                 {!isUk ? <p><span className="font-bold text-foreground/80">Email:</span> <a href="mailto:pogonmobility@gmail.com" className="underline underline-offset-4 hover:text-foreground">pogonmobility@gmail.com</a></p> : null}
-                <p><span className="font-bold text-foreground/80">{tr({ sr: 'Telefon', en: 'Phone', ru: 'Телефон' })}:</span> <a href={phoneHref} className="underline underline-offset-4 hover:text-foreground">{phoneDisplay}</a></p>
+                {isUk
+                  ? <p><span className="font-bold text-foreground/80">WhatsApp:</span> <a href={whatsappHref} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-foreground">{UK_PHONE_DISPLAY}</a></p>
+                  : <p><span className="font-bold text-foreground/80">{tr({ sr: 'Telefon', en: 'Phone', ru: 'Телефон' })}:</span> <a href={phoneHref} className="underline underline-offset-4 hover:text-foreground">{phoneDisplay}</a></p>}
               </div>
             </div>
 
@@ -3302,14 +3304,14 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
               </div>
               <button type="button" onClick={closeContactWidget} aria-label={copy.close} className="rounded-full p-1.5 text-black/40 hover:bg-black/5 hover:text-black"><X className="size-4" /></button>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-black/55">{tr({
+            <p className="mt-3 text-sm leading-relaxed text-black/55">{isUk ? 'Message a Pogon specialist on WhatsApp and find the right bike for you.' : tr({
               sr: 'Razgovarajte sa Pogon stručnjakom i pronađite pravi bicikl za vas.',
               en: 'Talk with a Pogon specialist and find the right bike for you.',
               ru: 'Поговори со специалистом Pogon, и вместе подберём подходящий велосипед.',
             })}</p>
             <button type="button" onClick={() => { closeContactWidget(); openLeadModal('specialist-contact'); }} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]">
               <MessageCircle className="size-4 text-[#7fff00]" />
-              {tr({ sr: 'Zakaži razgovor', en: 'Book a call', ru: 'Записаться на звонок' })}
+              {isUk ? 'Message on WhatsApp' : tr({ sr: 'Zakaži razgovor', en: 'Book a call', ru: 'Записаться на звонок' })}
             </button>
           </div>
         )}
@@ -3330,14 +3332,14 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
             <CalendarCheck className="size-4" />
             {copy.heroPrimary}
           </button>
-          <a
+          {!isUk ? <a
             href={phoneHref}
             onClick={() => handlePhoneClick('mobile-sticky-cta')}
             aria-label={copy.heroSecondary}
             className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card text-foreground transition-transform active:scale-[0.98]"
           >
             <Phone className="size-5" />
-          </a>
+          </a> : null}
           <a
             href={whatsappHref}
             target="_blank"
