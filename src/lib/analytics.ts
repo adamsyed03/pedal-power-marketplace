@@ -7,7 +7,12 @@ export type AnalyticsEvent =
   | 'primary_cta_click'
   | 'savings_quiz_route_view'
   | 'checkout_started'
-  | 'models_shortcut_click';
+  | 'models_shortcut_click'
+  | 'uk_page_view'
+  | 'uk_primary_cta_click'
+  | 'uk_model_interest'
+  | 'uk_lead_submit'
+  | 'uk_phone_click';
 
 const fallbackPosthogKey = 'phc_AsUGwDMvHs5gKmH5ayPcu2kWPFHRijRJD4fq43CoE56e';
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY || fallbackPosthogKey;

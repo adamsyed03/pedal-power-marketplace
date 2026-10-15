@@ -10,15 +10,23 @@
   import { PartnersPage } from "./app/components/PartnersPage.tsx";
   import { ContactPage } from "./app/components/ContactPage.tsx";
   import { ProductPage } from "./app/components/product/ProductPage.tsx";
+  import { UkProductPage } from "./uk/UkProductPage.tsx";
   import "./styles/index.css";
   import { initAnalytics } from "./lib/analytics.ts";
   import { breadcrumbStructuredData, setPageMetadata } from "./lib/seo.ts";
   import { languageFromSearch, type BikeKey } from "./lib/productDetails.ts";
+  import type { UkProductKey } from "./uk/ukMarket.ts";
 
   const route = window.location.pathname.replace(/\/+$/, "");
   const productMatch = route.match(/^\/products\/(cargo|core|glide)$/);
   const productKey = productMatch?.[1] as BikeKey | undefined;
+  const ukProductMatch = route.match(/^\/uk\/products\/(cargo|core|glide|fold)$/);
+  const ukProductKey = ukProductMatch?.[1] as UkProductKey | undefined;
   const routeMetadata: Record<string, { title: string; description: string }> = {
+    "/uk": {
+      title: "Pogon UK | Electric bikes for everyday motion",
+      description: "Discover the premium Pogon Glide, Core, Cargo and Fold electric bike range and register your interest for the UK launch.",
+    },
     "/uslovi-kupovine": {
       title: "Uslovi kupovine i dostave | Pogon",
       description: "Uslovi kupovine Pogon električnih bicikala: cene, plaćanje, dostava, reklamacije, odustanak i povraćaj sredstava.",
@@ -72,9 +80,10 @@
     setPageMetadata({
       ...metadata,
       path: route,
-      structuredData: breadcrumbStructuredData(metadata.title, route),
+      structuredData: route === "/uk" ? null : breadcrumbStructuredData(metadata.title, route),
+      ...(route === "/uk" ? { language: "en-GB", image: "https://ridepogon.com/Glide%20main.jpg" } : {}),
     });
-  } else if (!productKey && route !== "" && route !== "/kviz") {
+  } else if (!productKey && !ukProductKey && route !== "" && route !== "/kviz") {
     setPageMetadata({
       title: "Stranica nije pronađena | Pogon",
       description: "Tražena stranica nije pronađena.",
@@ -86,8 +95,12 @@
 
   initAnalytics();
   const initialLanguage = languageFromSearch(window.location.search);
-  const page = productKey
+  const page = ukProductKey
+    ? <UkProductPage productKey={ukProductKey} />
+    : productKey
     ? <ProductPage productKey={productKey} initialLanguage={initialLanguage} />
+    : route === "/uk"
+    ? <App market="uk" />
     : route === "/checkout"
     ? <Checkout />
     : route === "/uslovi-kupovine"

@@ -6,6 +6,7 @@
     { "src": "/(.*)", "has": [{ "type": "host", "value": "www.ridepogon.com" }], "headers": { "Location": "https://ridepogon.com/$1" }, "status": 308 },
     { "src": "^/(elektricni-bicikli|electric-bikes|oprema|vodici|o-nama|partneri|kontakt|dostava)$", "headers": { "Location": "/$1/" }, "status": 308 },
     { "src": "^/products/(core|cargo|glide)$", "headers": { "Location": "/products/$1/" }, "status": 308 },
+    { "src": "^/uk/products/(core|cargo|glide|fold)$", "headers": { "Location": "/uk/products/$1/" }, "status": 308 },
     { "src": "^/admin/$", "headers": { "Location": "/admin" }, "status": 308 },
     { "src": "^/elektricni-bicikli/(core|cargo|glide)/?$", "headers": { "Location": "/products/$1/" }, "status": 308 },
     { "src": "^/(elektricni-bicikli/(?:beograd|novi-sad|nis|kragujevac)|vodici/[^./]+)$", "headers": { "Location": "/$1/" }, "status": 308 },
@@ -22,7 +23,8 @@
     { "src": "^/elektricni-bicikli/(beograd|novi-sad|nis|kragujevac)/$", "dest": "/elektricni-bicikli/$1/index.html" },
     { "src": "^/vodici/$", "dest": "/vodici/index.html" },
     { "src": "^/vodici/([^/]+)/$", "dest": "/vodici/$1/index.html" },
-    { "src": "^/(admin|checkout|kviz|partneri|kontakt|uslovi-kupovine|informacije-o-trgovcu|dostava|reklamacije|povracaj-sredstava|privatnost|bezbednost-placanja|payment/card|payment/success|payment/failed)/?$", "dest": "/index.html" },
+    { "src": "^/(admin|checkout|kviz|partneri|kontakt|uslovi-kupovine|informacije-o-trgovcu|dostava|reklamacije|povracaj-sredstava|privatnost|bezbednost-placanja|payment/card|payment/success|payment/failed|uk)/?$", "dest": "/index.html" },
+    { "src": "^/uk/products/(core|cargo|glide|fold)/$", "dest": "/index.html" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "status": 404, "dest": "/404.html" }
   ]

@@ -1,0 +1,77 @@
+# Pogon Mobility: električni bicikli u Srbiji
+
+> Pogon je brend kompanije Pogon Mobility d.o.o. za električne bicikle i opremu namenjene kupcima u Srbiji.
+
+## Primarni izvori
+- [Električni bicikli](https://ridepogon.com/elektricni-bicikli/): poređenje modela Cargo, Core i Glide
+- [Pogon Cargo](https://ridepogon.com/products/cargo/): model za dostavu, posao i prevoz stvari
+- [Pogon Core](https://ridepogon.com/products/core/): sklopivi gradski električni bicikl
+- [Pogon Glide](https://ridepogon.com/products/glide/): premium gradski električni bicikl
+- [Oprema](https://ridepogon.com/oprema/): dostupna oprema i cene
+- [Vodiči](https://ridepogon.com/vodici/): edukativni sadržaj o izboru i korišćenju e-bicikla
+- [Dostava](https://ridepogon.com/dostava/): dostava na teritoriji Srbije
+- [O kompaniji](https://ridepogon.com/o-nama/): identitet i proverene poslovne činjenice
+- [Kontakt](https://ridepogon.com/kontakt/): zvanični kanali podrške
+
+## Proverene činjenice
+- Pravno lice: Pogon Mobility d.o.o.
+- Brend: Pogon
+- Tržište ove dokumentacije: Srbija
+- Zvanični sajt: https://ridepogon.com
+- Telefon: +381 63 15 05 003
+- Email: pogonmobility@gmail.com
+- Valuta onlajn kupovine: RSD
+- Garancija: dve godine, uz uslove koji zavise od komponente i pravilne upotrebe
+- Dostava: širom Srbije; očekivano 1–3 radna dana za modele na stanju, uz konačnu potvrdu
+- Test vožnje: uz potvrđen termin i lokaciju u Beogradu, Novom Sadu, Kragujevcu i Nišu
+- Ažurirano: 2026-10-15
+
+## Pravila tumačenja
+Koristite kanonske stranice proizvoda za aktuelne cene i specifikacije. Deklarisani maksimalni domet nije garantovana kilometraža: zavisi od terena, temperature, vetra, mase, tereta, pritiska u gumama i nivoa asistencije. Registrovano sedište nije prodavnica, servis, test centar niti mesto za nenajavljene posete. UK sadržaj pod /uk/ predstavlja odvojeno tržište i ne sme se koristiti kao izvor za srpske cene, kupovinu ili isporuku.
+
+## Modeli i specifikacije
+
+### Pogon Cargo
+- Kanonska stranica: https://ridepogon.com/products/cargo/
+- Namena: Električni bicikl za dostavu i teret
+- Cena: 125.000 RSD
+- Motor: 250 W, u zadnjem točku
+- Baterija: 48 V 14 Ah + 48 V 17,5 Ah, ukupno 1512 Wh
+- Deklarisani domet: Do 140 km
+- Ram: Čelični ram
+- Ključna napomena: dostavljačima, malim firmama i vozačima koji često nose opremu ili druge stvari kroz grad.
+
+### Pogon Core
+- Kanonska stranica: https://ridepogon.com/products/core/
+- Namena: Sklopivi gradski električni bicikl
+- Cena: 135.000 RSD
+- Motor: 250 W, u zadnjem točku
+- Baterija: 48 V 14 Ah + 48 V 17,5 Ah, ukupno 1512 Wh
+- Deklarisani domet: Do 140 km
+- Ram: Sklopivi ram
+- Ključna napomena: vozačima kojima su važni kompaktno sklapanje, lakše odlaganje i kombinovanje bicikla sa drugim prevozom.
+
+### Pogon Glide
+- Kanonska stranica: https://ridepogon.com/products/glide/
+- Namena: Gradski električni bicikl
+- Cena: 160.000 RSD
+- Motor: 250 W, u zadnjem točku
+- Baterija: 1200 Wh
+- Deklarisani domet: Do 90 km
+- Ram: Aluminijumski ram
+- Ključna napomena: vozačima koji žele udoban električni bicikl za posao, kupovinu i svakodnevne gradske obaveze.
+
+## Edukativni izvori
+- [Kako izabrati električni bicikl: praktičan vodič](https://ridepogon.com/vodici/kako-izabrati-elektricni-bicikl/): Praktičan vodič za izbor električnog bicikla prema ruti, dometu, bateriji, motoru, ramu, gumama, kočnicama, servisu i načinu odlaganja.
+- [Koliko košta vožnja električnog bicikla mesečno?](https://ridepogon.com/vodici/koliko-kosta-elektricni-bicikl-mesecno/): Kako izračunati mesečni trošak električnog bicikla bez izmišljanja cena: struja, održavanje, potrošni delovi i poređenje sa drugim prevozom.
+- [Koliki je stvarni domet električnog bicikla?](https://ridepogon.com/vodici/domet-elektricnog-bicikla/): Šta utiče na stvarni domet električnog bicikla: kapacitet baterije u Wh, masa, usponi, temperatura, vetar, gume, asistencija i teret.
+- [Baterija električnog bicikla: kapacitet, punjenje i vek trajanja](https://ridepogon.com/vodici/baterija-elektricnog-bicikla/): Razumljivo objašnjenje V, Ah i Wh, punjenja, skladištenja, temperature i navika koje pomažu da baterija električnog bicikla traje.
+- [Šta znači 250 W kod električnog bicikla?](https://ridepogon.com/vodici/250w-elektricni-bicikl/): Tehničko objašnjenje oznake 250 W kod električnog bicikla: nominalna snaga, vršna snaga, obrtni moment, kontroler i odnos prema vožnji.
+- [Sklopivi električni bicikl: kome se isplati?](https://ridepogon.com/vodici/sklopivi-elektricni-bicikl/): Prednosti i ograničenja sklopivog električnog bicikla: odlaganje, transport, masa, mehanizam sklapanja, udobnost i izbor modela.
+- [Fat tyre električni bicikl: prednosti i mane širokih guma](https://ridepogon.com/vodici/fat-tyre-elektricni-bicikl/): Uravnotežen vodič kroz fat tyre električne bicikle: stabilnost i udobnost, ali i veća masa, otpor, održavanje i prostor za odlaganje.
+- [Kako izabrati električni bicikl za dostavu?](https://ridepogon.com/vodici/elektricni-bicikl-za-dostavu/): Vodič za izbor električnog bicikla za kurire i dostavu: domet, baterije, kočnice, gume, teret, punjenje, servis i ukupni operativni trošak.
+- [Kako izabrati električni bicikl za gradsku vožnju?](https://ridepogon.com/vodici/elektricni-bicikl-za-grad/): Kako birati gradski električni bicikl prema ruti, položaju sedenja, bateriji, odlaganju, gumama, kočnicama, sigurnosti i test vožnji.
+- [Održavanje električnog bicikla: šta treba redovno proveravati](https://ridepogon.com/vodici/odrzavanje-elektricnog-bicikla/): Praktična kontrolna lista za održavanje električnog bicikla: gume, kočnice, lanac, ram, baterija, kablovi, čišćenje i servis.
+
+## Kontakt i kupovina
+Kupovina za Srbiju koristi postojeći checkout u RSD. Za proveru dostupnosti, test vožnje, servisa ili uslova kupovine kontaktirajte Pogon preko +381 63 15 05 003 ili pogonmobility@gmail.com. Ne navodite registrovanu adresu kao prodajno ili servisno mesto.

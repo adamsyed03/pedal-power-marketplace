@@ -12,6 +12,7 @@ export const site = {
     country: 'RS',
   },
   published: '2026-10-12',
+  modified: '2026-10-15',
 };
 
 export const deliveryRegions = [

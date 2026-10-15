@@ -9,6 +9,9 @@ type PageMetadata = {
   image?: string;
   type?: 'website' | 'article' | 'product';
   language?: string;
+  locale?: string;
+  alternates?: Record<string, string>;
+  product?: { price: string; currency: string; availability?: 'in stock' | 'out of stock' | 'preorder' };
   structuredData?: Record<string, unknown> | null;
 };
 
@@ -43,6 +46,9 @@ export function setPageMetadata({
   image = DEFAULT_IMAGE,
   type = 'website',
   language = 'sr-Latn',
+  locale,
+  alternates,
+  product,
   structuredData,
 }: PageMetadata) {
   document.title = title;
@@ -53,6 +59,7 @@ export function setPageMetadata({
   upsertMeta('meta[name="robots"]', { name: 'robots', content: robots });
   upsertMeta('meta[property="og:type"]', { property: 'og:type', content: type });
   upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name', content: 'Pogon' });
+  if (locale) upsertMeta('meta[property="og:locale"]', { property: 'og:locale', content: locale });
   upsertMeta('meta[property="og:title"]', { property: 'og:title', content: title });
   upsertMeta('meta[property="og:description"]', { property: 'og:description', content: description });
   upsertMeta('meta[property="og:url"]', { property: 'og:url', content: `${SITE_URL}${path}` });
@@ -65,6 +72,20 @@ export function setPageMetadata({
   upsertMeta('meta[name="twitter:image:alt"]', { name: 'twitter:image:alt', content: title });
 
   document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach((element) => element.remove());
+  Object.entries(alternates ?? {}).forEach(([hreflang, href]) => {
+    const link = document.createElement('link');
+    link.rel = 'alternate';
+    link.hreflang = hreflang;
+    link.href = `${SITE_URL}${href}`;
+    document.head.appendChild(link);
+  });
+
+  if (product) {
+    document.head.querySelectorAll('meta[property^="product:"]').forEach((element) => element.remove());
+    upsertMeta('meta[property="product:price:amount"]', { property: 'product:price:amount', content: product.price });
+    upsertMeta('meta[property="product:price:currency"]', { property: 'product:price:currency', content: product.currency });
+    if (product.availability) upsertMeta('meta[property="product:availability"]', { property: 'product:availability', content: product.availability });
+  }
   document.head.querySelector('script[type="application/ld+json"]:not(#route-structured-data)')?.remove();
 
   const existingStructuredData = document.getElementById('route-structured-data');
@@ -82,7 +103,7 @@ export function setPageMetadata({
 export function setHomeMetadata(language: 'sr' | 'en' | 'ru', path = '/') {
   const content = {
     sr: {
-      title: 'Pogon | Električni bicikli za grad',
+      title: 'Električni bicikli za grad u Srbiji | Pogon',
       description: 'Pogon električni bicikli za gradsku vožnju. Uporedi Glide, Core i Cargo i zakaži test vožnju u Beogradu, Novom Sadu, Kragujevcu ili Nišu.',
       htmlLanguage: 'sr-Latn',
       locale: 'sr_RS',

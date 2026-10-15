@@ -17,12 +17,22 @@ const encodedImage = (path) => absolute(path.split('/').map((part) => encodeURIC
 const jsonLd = (value) => `<script type="application/ld+json">${JSON.stringify(value).replaceAll('<', '\\u003c')}</script>`;
 
 const organization = {
-  '@type': 'Organization',
+  '@type': 'OnlineStore',
   '@id': `${site.url}/#organization`,
   name: site.name,
+  alternateName: ['Pogon električni bicikli', 'Pogon Mobility'],
   legalName: site.legalName,
+  description: 'Pogon Mobility d.o.o. je brend i onlajn prodavac električnih bicikala i opreme za kupce u Srbiji.',
   url: `${site.url}/`,
-  logo: `${site.url}/Logo.png`,
+  logo: {
+    '@type': 'ImageObject',
+    '@id': `${site.url}/#logo`,
+    url: `${site.url}/Logo.png`,
+    contentUrl: `${site.url}/Logo.png`,
+    width: 1024,
+    height: 1024,
+    caption: 'Pogon',
+  },
   email: site.email,
   telephone: site.phone,
   address: {
@@ -32,7 +42,43 @@ const organization = {
     addressCountry: site.registeredAddress.country,
   },
   areaServed: { '@type': 'Country', name: 'Srbija' },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer service',
+    telephone: site.phone,
+    email: site.email,
+    areaServed: 'RS',
+    availableLanguage: ['sr', 'en'],
+  },
+  brand: { '@id': `${site.url}/#brand` },
+  knowsAbout: ['električni bicikli', 'gradski električni bicikli', 'sklopivi električni bicikli', 'cargo električni bicikli', 'baterije za električne bicikle'],
+  hasMerchantReturnPolicy: {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: 'RS',
+    returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+    merchantReturnDays: 14,
+    returnMethod: 'https://schema.org/ReturnByMail',
+    returnFees: 'https://schema.org/ReturnShippingFees',
+  },
   sameAs: [site.instagram],
+};
+
+const brand = {
+  '@type': 'Brand',
+  '@id': `${site.url}/#brand`,
+  name: site.name,
+  url: `${site.url}/`,
+  logo: { '@id': `${site.url}/#logo` },
+};
+
+const website = {
+  '@type': 'WebSite',
+  '@id': `${site.url}/#website`,
+  url: `${site.url}/`,
+  name: site.name,
+  alternateName: 'Pogon Mobility',
+  inLanguage: 'sr-Latn',
+  publisher: { '@id': `${site.url}/#organization` },
 };
 
 const testRideService = {
@@ -68,7 +114,7 @@ function faqSchema(faq) {
   };
 }
 
-function documentHead({ title, description, path, image = '/Excellent4.optimized.jpg', type = 'website', schema = [] }) {
+function documentHead({ title, description, path, image = '/Excellent4.optimized.jpg', imageWidth = 1448, imageHeight = 1086, type = 'website', schema = [] }) {
   const canonical = absolute(path);
   return `<!doctype html>
 <html lang="sr-Latn">
@@ -80,6 +126,8 @@ function documentHead({ title, description, path, image = '/Excellent4.optimized
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
   <meta name="author" content="${esc(site.legalName)}">
   <link rel="canonical" href="${canonical}">
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="Pogon — sažete proverene činjenice">
+  <link rel="alternate" type="text/plain" href="/llms-full.txt" title="Pogon — detaljne proverene činjenice">
   <link rel="icon" href="/Logo.png">
   <link rel="stylesheet" href="/seo-content.css">
   <meta property="og:type" content="${type}">
@@ -89,6 +137,8 @@ function documentHead({ title, description, path, image = '/Excellent4.optimized
   <meta property="og:description" content="${esc(description)}">
   <meta property="og:url" content="${canonical}">
   <meta property="og:image" content="${encodedImage(image)}">
+  <meta property="og:image:width" content="${imageWidth}">
+  <meta property="og:image:height" content="${imageHeight}">
   <meta property="og:image:alt" content="${esc(title)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${esc(title)}">
@@ -150,7 +200,11 @@ function renderProduct(model) {
     name: model.name,
     image: [model.image, ...model.gallery.map(([image]) => image)].map(encodedImage),
     description: model.description,
-    brand: { '@type': 'Brand', name: 'Pogon' },
+    sku: `POGON-${model.slug.toUpperCase()}`,
+    model: model.name,
+    brand: { '@id': `${site.url}/#brand` },
+    manufacturer: { '@id': `${site.url}/#organization` },
+    mainEntityOfPage: { '@id': `${absolute(path)}#webpage` },
     category: model.type,
     additionalProperty: [
       ['Tip', model.type], ['Motor', model.motor], ['Baterija', model.battery], ['Domet', model.range],
@@ -182,6 +236,20 @@ function renderProduct(model) {
   };
   const schema = [
     organization,
+    brand,
+    website,
+    {
+      '@type': 'WebPage',
+      '@id': `${absolute(path)}#webpage`,
+      url: absolute(path),
+      name: model.title,
+      description: model.description,
+      inLanguage: 'sr-Latn',
+      isPartOf: { '@id': `${site.url}/#website` },
+      about: { '@id': `${absolute(path)}#product` },
+      mainEntity: { '@id': `${absolute(path)}#product` },
+      dateModified: site.modified,
+    },
     productSchema,
     breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli', path: '/elektricni-bicikli/' }, { name: model.name, path }]),
     faqSchema(model.faq),
@@ -191,7 +259,7 @@ function renderProduct(model) {
     ['Model', model.name], ['Tip', model.type], ['Motor', model.motor], ['Baterija', model.battery], ['Deklarisani domet', model.range],
     ['Ram', model.frame], ['Kočnice', model.brakes], ['Gume', model.tyres], ['Sigurnost', model.security], [model.extraLabel, model.extraValue], ['Cena', model.priceDisplay],
   ];
-  return `${documentHead({ title: model.title, description: model.description, path, image: model.image, type: 'product', schema })}
+  return `${documentHead({ title: model.title, description: model.description, path, image: model.image, imageWidth: model.imageWidth, imageHeight: model.imageHeight, type: 'product', schema })}
 <body>
 ${siteHeader('models')}
 <main id="sadrzaj">
@@ -230,7 +298,7 @@ function renderHub() {
     numberOfItems: models.length,
     itemListElement: models.map((model, index) => ({ '@type': 'ListItem', position: index + 1, url: absolute(`/products/${model.slug}/`), name: model.name })),
   };
-  const schema = [organization, testRideService, {
+  const schema = [organization, brand, website, testRideService, {
     '@type': 'CollectionPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn',
     isPartOf: { '@id': `${site.url}/#website` }, mainEntity: itemList,
   }, itemList, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli', path }]), faqSchema(faq)];
@@ -256,9 +324,9 @@ ${faqHtml(faq, 'Česta pitanja o električnim biciklima')}
 
 function renderGuide(guide) {
   const path = `/vodici/${guide.slug}/`;
-  const schema = [organization, {
+  const schema = [organization, brand, website, {
     '@type': 'Article', '@id': `${absolute(path)}#article`, headline: guide.title, description: guide.description,
-    url: absolute(path), image: `${site.url}/Excellent4.optimized.jpg`, datePublished: site.published, dateModified: site.published,
+    url: absolute(path), image: `${site.url}/Excellent4.optimized.jpg`, datePublished: site.published, dateModified: site.modified,
     inLanguage: 'sr-Latn', author: { '@id': `${site.url}/#organization` }, publisher: { '@id': `${site.url}/#organization` },
     mainEntityOfPage: { '@id': `${absolute(path)}#webpage` }, ...(guide.sources ? { citation: guide.sources.map(([, url]) => url) } : {}),
   }, {
@@ -266,11 +334,11 @@ function renderGuide(guide) {
     inLanguage: 'sr-Latn', isPartOf: { '@id': `${site.url}/#website` }, about: { '@id': `${site.url}/#organization` },
   }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Vodiči', path: '/vodici/' }, { name: guide.title, path }]), faqSchema(guide.faq)];
   const toc = guide.sections.map(([heading], index) => `<li><a href="#deo-${index + 1}">${esc(heading)}</a></li>`).join('');
-  const sources = guide.sources ? `<section aria-labelledby="izvori"><h2 id="izvori">Izvori i napomena</h2><ul class="source-list">${guide.sources.map(([label, url]) => `<li><a href="${url}" target="_blank" rel="noreferrer">${esc(label)}</a></li>`).join('')}</ul><p class="source-list">Izvori su provereni ${site.published}. Propisi i postupci mogu se menjati; proverite najnovije zvanične informacije.</p></section>` : '';
+  const sources = guide.sources ? `<section aria-labelledby="izvori"><h2 id="izvori">Izvori i napomena</h2><ul class="source-list">${guide.sources.map(([label, url]) => `<li><a href="${url}" target="_blank" rel="noreferrer">${esc(label)}</a></li>`).join('')}</ul><p class="source-list">Izvori su provereni ${site.modified}. Propisi i postupci mogu se menjati; proverite najnovije zvanične informacije.</p></section>` : '';
   return `${documentHead({ title: `${guide.title} | Pogon`, description: guide.description, path, type: 'article', schema })}
 <body>${siteHeader('guides')}<main id="sadrzaj">
 ${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Vodiči', path: '/vodici/' }, { name: guide.title }])}
-<header class="page-hero wrap"><div class="eyebrow">${esc(guide.category)}</div><h1>${esc(guide.title)}</h1><p class="lead">${esc(guide.description)}</p><div class="meta-line"><span>Autor: ${esc(site.legalName)}</span><time datetime="${site.published}">Objavljeno ${site.published.split('-').reverse().join('.')}</time><time datetime="${site.published}">Ažurirano ${site.published.split('-').reverse().join('.')}</time></div></header>
+<header class="page-hero wrap"><div class="eyebrow">${esc(guide.category)}</div><h1>${esc(guide.title)}</h1><p class="lead">${esc(guide.description)}</p><div class="meta-line"><span>Autor: ${esc(site.legalName)}</span><time datetime="${site.published}">Objavljeno ${site.published.split('-').reverse().join('.')}</time><time datetime="${site.modified}">Ažurirano ${site.modified.split('-').reverse().join('.')}</time></div></header>
 <section class="quick-answer wrap" aria-labelledby="kratak-odgovor"><h2 id="kratak-odgovor">Kratak odgovor</h2><p>${esc(guide.direct)}</p></section>
 <nav class="toc wrap" aria-label="Sadržaj vodiča"><h2>Sadržaj</h2><ol>${toc}</ol></nav>
 <div class="article-layout wrap"><article class="prose">${guide.sections.map(([heading, html], index) => `<section aria-labelledby="deo-${index + 1}"><h2 id="deo-${index + 1}">${esc(heading)}</h2>${html}</section>`).join('')}${sources}</article><aside class="article-aside" aria-label="Korisne veze"><section><h2>Pogledajte modele</h2><ul>${models.map((model) => `<li><a href="/elektricni-bicikli/${model.slug}/">${esc(model.name)}</a></li>`).join('')}</ul></section><section><h2>Treba vam pomoć?</h2><p>Uporedite modele ili zakažite test vožnju sa Pogon timom.</p><p><a class="button" href="/#test-voznja">Test vožnja</a></p></section></aside></div>
@@ -285,7 +353,7 @@ function renderGuideIndex() {
   const title = 'Pogon vodiči za električne bicikle';
   const description = 'Praktični Pogon vodiči o izboru električnog bicikla, bateriji, dometu, troškovima, gradskoj vožnji, dostavi i održavanju.';
   const categories = [...new Set(guides.map((guide) => guide.category))];
-  const schema = [organization, {
+  const schema = [organization, brand, website, {
     '@type': 'CollectionPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn',
     mainEntity: { '@type': 'ItemList', numberOfItems: guides.length, itemListElement: guides.map((guide, index) => ({ '@type': 'ListItem', position: index + 1, url: absolute(`/vodici/${guide.slug}/`), name: guide.title })) },
   }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Vodiči', path }])];
@@ -296,7 +364,7 @@ function renderAbout() {
   const path = '/o-nama/';
   const title = 'O nama | Pogon Mobility';
   const description = 'Pogon Mobility d.o.o. prodaje električne bicikle i opremu za kupce u Srbiji. Upoznajte modele Core, Cargo i Glide i način podrške kupcima.';
-  const schema = [organization, { '@type': 'AboutPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, about: { '@id': `${site.url}/#organization` }, inLanguage: 'sr-Latn' }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'O nama', path }])];
+  const schema = [organization, brand, website, { '@type': 'AboutPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, about: { '@id': `${site.url}/#organization` }, isPartOf: { '@id': `${site.url}/#website` }, inLanguage: 'sr-Latn', dateModified: site.modified }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'O nama', path }])];
   return `${documentHead({ title, description, path, schema })}<body>${siteHeader('about')}<main id="sadrzaj">${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'O nama' }])}<section class="page-hero page-hero--split wrap"><div><div class="eyebrow">Pogon Mobility d.o.o.</div><h1>Električni bicikli za svakodnevnu mobilnost u Srbiji.</h1><p class="lead">Pogon je brend kompanije Pogon Mobility d.o.o. Ponuda obuhvata električne bicikle Core, Cargo i Glide, kao i opremu za gradsku vožnju.</p></div><aside class="hero-card"><strong>Jasni modeli. Proverljive specifikacije.</strong><p>Objavljujemo cenu, namenu, bateriju i domet uz napomenu da stvarni rezultat zavisi od uslova vožnje.</p></aside></section><article class="wrap prose topic-section"><h2>Šta Pogon prodaje?</h2><p><a href="/elektricni-bicikli/">Pogon električni bicikli</a> pokrivaju tri potrebe: Glide za klasičnu gradsku vožnju, Core za sklopivo odlaganje i duže rute, a Cargo za posao, dostavu i prevoz stvari. <a href="/oprema/">Pogon oprema</a> uključuje kacige, lanac, retrovizor, rukavice za upravljač, držač telefona i korpu kada je dostupna.</p><h2>Tržište i isporuka</h2><p>Pogon posluje sa kupcima u Srbiji. Kurirska dostava dostupna je na teritoriji Srbije, a objavljeni rok je 1–3 radna dana. Lično preuzimanje se dogovara unapred; registrovano sedište kompanije nije prodajni salon, test centar, servis niti mesto za nenajavljene posete.</p><h2>Test vožnja i podrška</h2><p>Besplatne test vožnje zakazuju se u Beogradu, Novom Sadu, Kragujevcu i Nišu, od ponedeljka do subote 09–18 h. Tačan termin i lokaciju potvrđuje Pogon tim. Pogon navodi dve godine garancije i servisnu podršku u više gradova; najbližu lokaciju, uslove i radno vreme treba potvrditi direktno.</p><h2>Kako objavljujemo informacije</h2><p>Ne pretpostavljamo tehničke podatke koji nisu u objavljenoj specifikaciji i ne predstavljamo deklarisani maksimalni domet kao garantovanu kilometražu. Vodiči objašnjavaju kompromise, a stranice modela imaju eksplicitne blokove činjenica kako bi ih ljudi i sistemi za pretragu lako razumeli.</p><h2>Zvanični podaci</h2><dl class="fact-list"><div><dt>Pravno lice</dt><dd>${esc(site.legalName)}</dd></div><div><dt>Tržište</dt><dd>Srbija</dd></div><div><dt>Telefon</dt><dd><a href="tel:${site.phone}">${esc(site.phoneDisplay)}</a></dd></div><div><dt>Email</dt><dd><a href="mailto:${site.email}">${esc(site.email)}</a></dd></div><div><dt>Registrovano sedište</dt><dd>${esc(site.registeredAddress.street)}, ${esc(site.registeredAddress.city)}</dd></div><div><dt>Važna napomena</dt><dd>Registrovano sedište nije mesto za posete kupaca.</dd></div></dl></article><section class="final-cta wrap"><h2>Upoznajte Pogon modele</h2><p>Uporedite namenu, domet, bateriju, ram i cenu na jednoj stranici.</p><div class="button-row"><a class="button" href="/elektricni-bicikli/">Pogledajte modele</a><a class="button-secondary" href="/kontakt/">Kontakt</a></div></section></main>${footer()}</body></html>`;
 }
 
@@ -304,7 +372,7 @@ function renderPartnersBase() {
   const path = '/partneri/';
   const title = 'Partneri i saradnja | Pogon Mobility';
   const description = 'Saznajte više o saradnji Pogon Mobility sa kompanijama, ustanovama i organizacijama u Srbiji i mogućnostima kupovine električnih bicikala za zaposlene.';
-  const schema = [organization, { '@type': 'WebPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#organization` } }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Partneri i saradnja', path }])];
+  const schema = [organization, brand, website, { '@type': 'WebPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#organization` }, isPartOf: { '@id': `${site.url}/#website` }, dateModified: site.modified }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Partneri i saradnja', path }])];
   return `${documentHead({ title, description, path, schema })}<body>${siteHeader('partners')}<main id="sadrzaj">${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Partneri i saradnja' }])}<section class="page-hero wrap"><div class="eyebrow">Programi za zaposlene i članove</div><h1>Partneri i saradnja</h1><p class="lead">Pogon sarađuje sa kompanijama, ustanovama i organizacijama kako bi električni bicikli bili dostupniji njihovim zaposlenima i članovima.</p></section><section class="topic-section topic-section--white" aria-labelledby="partner-programi"><div class="wrap"><div class="section-heading"><h2 id="partner-programi">Programi kupovine</h2><p>Aktuelna dostupnost, način plaćanja i administrativni postupak potvrđuju se pre porudžbine, u skladu sa uslovima odgovarajućeg sporazuma.</p></div><div class="cards partner-cards"><article class="card partner-card"><div class="card-body"><div class="partner-wordmark">Stellantis <span>Kragujevac</span></div><h3>Program za zaposlene</h3><p>Zaposleni u kompaniji Stellantis u Kragujevcu mogu da se informišu o kupovini Pogon električnih bicikala na rate kada je takav način kupovine obuhvaćen važećim sporazumom. Pogon tim potvrđuje aktuelne uslove i postupak pre porudžbine.</p></div></article><article class="card partner-card"><div class="card-body"><div class="partner-wordmark">Univerzitet u Novom Sadu <span>Filozofski fakultet</span></div><h3>Program za zaposlene fakulteta</h3><p>Zaposleni Filozofskog fakulteta mogu da provere pogodnosti i dostupne načine kupovine u okviru važećeg aranžmana. Konkretni uslovi primenjuju se samo nakon potvrde Pogon tima.</p></div></article><article class="card partner-card"><div class="card-body"><div class="partner-wordmark">Policijska sindikalna organizacija <span>Program za članove</span></div><h3>Administrativna zabrana</h3><p>Kupovina putem administrativne zabrane može biti dostupna članovima koje obuhvata važeći sporazum. Ovaj program ne predstavlja saradnju, preporuku niti podršku Ministarstva unutrašnjih poslova.</p></div></article></div></div></section><section class="final-cta wrap"><h2>Postanite Pogon partner</h2><p>Želite da svojim zaposlenima ili članovima omogućite jednostavniju kupovinu električnih bicikala? Kontaktirajte nas i saznajte kako možemo organizovati saradnju sa vašom kompanijom ili ustanovom.</p><div class="button-row"><a class="button" href="/kontakt/">Kontaktirajte nas →</a></div></section></main>${footer()}</body></html>`;
 }
 
@@ -321,7 +389,7 @@ function renderContactLegacy() {
   const path = '/kontakt/';
   const title = 'Kontakt | Pogon Mobility';
   const description = 'Kontaktirajte Pogon Mobility za informacije o električnim biciklima, test vožnji, kupovini na rate i poslovnoj saradnji. Telefon: 063 15 05 003.';
-  const schema = [organization, testRideService, { '@type': 'ContactPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#organization` } }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Kontakt', path }])];
+  const schema = [organization, brand, website, testRideService, { '@type': 'ContactPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#organization` }, isPartOf: { '@id': `${site.url}/#website` }, dateModified: site.modified }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Kontakt', path }])];
   return `${documentHead({ title, description, path, schema })}<body>${siteHeader()}<main id="sadrzaj">${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Kontakt' }])}<section class="page-hero wrap"><div class="eyebrow">Pogon Mobility</div><h1>Kontaktirajte Pogon</h1><p class="lead">Imate pitanje o našim električnim biciklima, kupovini na rate, test vožnji ili poslovnoj saradnji? Naš tim vam stoji na raspolaganju.</p></section><section class="contact-section wrap" aria-label="Kontakt podaci"><article class="contact-card"><span class="contact-icon" aria-hidden="true">@</span><div><h2>Pošaljite nam email</h2><a href="mailto:${site.email}">${esc(site.email)}</a></div></article><article class="contact-card"><span class="contact-icon" aria-hidden="true">☎</span><div><h2>Pozovite nas</h2><a href="tel:${site.phone}">063 15 05 003</a></div></article></section><section class="business-enquiry wrap"><div><div class="eyebrow">Za kompanije i ustanove</div><h2>Zainteresovani ste za poslovnu saradnju?</h2><p>Pišite nam na <a href="mailto:${site.email}">${esc(site.email)}</a> i naš tim će vas kontaktirati.</p></div><a class="button button--light" href="mailto:${site.email}">Pošaljite email</a></section><section class="final-cta wrap"><h2>Programi za zaposlene i članove</h2><p>Saznajte kako Pogon sarađuje sa kompanijama, ustanovama i organizacijama u Srbiji.</p><div class="button-row"><a class="button" href="/partneri/">Partneri i saradnja →</a></div></section></main>${footer()}</body></html>`;
 }
 
@@ -329,7 +397,7 @@ function renderContact() {
   const path = '/kontakt/';
   const title = 'Kontakt | Pogon Mobility';
   const description = 'Kontaktirajte Pogon Mobility za informacije o električnim biciklima, test vožnji, kupovini na rate i poslovnoj saradnji. Telefon: 063 15 05 003.';
-  const schema = [organization, testRideService, { '@type': 'ContactPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#organization` } }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Kontakt', path }])];
+  const schema = [organization, brand, website, testRideService, { '@type': 'ContactPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#organization` }, isPartOf: { '@id': `${site.url}/#website` }, dateModified: site.modified }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Kontakt', path }])];
   return `${documentHead({ title, description, path, schema })}<body>${siteHeader()}<main id="sadrzaj">${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Kontakt' }])}<section class="contact-hero wrap"><div class="eyebrow">Pogon podrška</div><h1>Kontaktirajte nas</h1><p class="lead">Pošaljite pitanje o modelima, kupovini, test vožnji ili saradnji. Odgovorićemo vam direktno.</p></section><section class="contact-form-section wrap" aria-labelledby="contact-form-title"><h2 id="contact-form-title">Pošaljite poruku</h2><form id="contact-form" class="contact-form"><label><span class="contact-label">Ime i prezime <b aria-hidden="true">*</b></span><input name="name" autocomplete="name" required></label><label><span class="contact-label">Email <b aria-hidden="true">*</b></span><input name="email" type="email" autocomplete="email" required></label><label><span class="contact-label">Telefon</span><input name="phone" type="tel" autocomplete="tel"></label><label><span class="contact-label">Tip upita</span><select name="requestType"><option>Pitanje o proizvodu</option><option>Test vožnja</option><option>Kupovina na rate</option><option>Poslovna saradnja</option><option>Servis i podrška</option></select></label><label class="contact-form-wide"><span class="contact-label">Grad</span><select name="city"><option>Izaberite grad</option><option>Beograd</option><option>Novi Sad</option><option>Kragujevac</option><option>Niš</option><option>Drugi grad</option></select></label><label class="contact-form-wide"><span class="contact-label">Poruka <b aria-hidden="true">*</b></span><textarea name="message" rows="3" minlength="3" required></textarea></label><div class="contact-form-wide"><button class="contact-submit" type="submit">Pošaljite</button></div></form><div class="contact-direct"><p>Email: <a href="mailto:${site.email}">${esc(site.email)}</a></p><p>Telefon: <a href="tel:${site.phone}">063 15 05 003</a></p></div></section><section class="contact-business wrap"><div><div class="eyebrow">Za kompanije i ustanove</div><h2>Poslovna saradnja</h2><p>Želite program kupovine za zaposlene ili članove? Pogledajte postojeće saradnje ili nam pošaljite upit.</p></div><a href="/partneri/">Partneri i saradnja →</a></section></main>${footer()}<script>(function(){var form=document.getElementById('contact-form');if(!form)return;form.addEventListener('submit',function(event){event.preventDefault();var data=new FormData(form);var subject='Pogon upit — '+data.get('requestType');var body=['Ime i prezime: '+data.get('name'),'Email: '+data.get('email'),'Telefon: '+(data.get('phone')||'Nije navedeno'),'Tip upita: '+data.get('requestType'),'Grad: '+data.get('city'),'','Poruka:',''+data.get('message')].join('\\n');window.location.href='mailto:${site.email}?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);});})();</script></body></html>`;
 }
 
@@ -364,9 +432,9 @@ function renderDelivery() {
     areaServed: { '@type': 'Country', name: 'Srbija' },
     url: absolute(path),
   };
-  const schema = [organization, deliveryService, {
+  const schema = [organization, brand, website, deliveryService, {
     '@type': 'WebPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description,
-    inLanguage: 'sr-Latn', about: { '@id': `${absolute(path)}#service` },
+    inLanguage: 'sr-Latn', about: { '@id': `${absolute(path)}#service` }, isPartOf: { '@id': `${site.url}/#website` }, dateModified: site.modified,
   }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Dostava', path }]), faqSchema(faq)];
   const regionCards = deliveryRegions.map((region) => `<section><h2>${esc(region.name)}</h2><p>${region.cities.map(esc).join(' · ')}</p></section>`).join('');
   return `${documentHead({ title, description, path, schema })}<body>${siteHeader()}<main id="sadrzaj">${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Dostava' }])}<section class="page-hero page-hero--split wrap"><div><div class="eyebrow">Cela Srbija</div><h1>Dostava električnih bicikala širom Srbije</h1><p class="lead">Pogon modele koji su na stanju šaljemo kurirskom službom na adrese širom Srbije. Opšti očekivani rok je 1–3 radna dana, a konačni rok potvrđuje se prema dostupnosti modela i mestu isporuke.</p><div class="button-row"><a class="button" href="/elektricni-bicikli/">Pogledajte modele</a><a class="button-secondary" href="/kontakt/">Proverite rok dostave</a></div></div><aside class="hero-card"><strong>1–3 radna dana</strong><p>Očekivani rok za modele na stanju. Cena dostave i ukupan iznos prikazuju se pre plaćanja.</p></aside></section><article class="wrap prose topic-section"><h2 id="kraljevo">Dostava električnog bicikla u Kraljevo</h2><p>Kraljevo je obuhvaćeno Pogon kurirskom dostavom. Za model koji je na stanju, isporuka se obično planira u roku od 1–2 radna dana nakon potvrđene porudžbine. To nije garantovani rok: dostupnost modela, vreme potvrde i rad kurirske službe mogu uticati na termin.</p><p>Ako pre poručivanja želite da proverite da li su <a href="/elektricni-bicikli/core/">Core</a>, <a href="/elektricni-bicikli/cargo/">Cargo</a> ili <a href="/elektricni-bicikli/glide/">Glide</a> dostupni za brzu isporuku u Kraljevo, javite se na <a href="tel:${site.phone}">${esc(site.phoneDisplay)}</a>.</p><h2>Gradovi i mesta koja pokrivamo</h2><p>U nastavku su izdvojeni veći gradovi radi lakše provere. Lista nije ograničenje: dostava je dostupna i u drugim gradovima, opštinama i naseljenim mestima u Srbiji koje pokriva kurirska služba.</p><div class="delivery-regions">${regionCards}</div><h2>Test vožnja i dostava nisu ista usluga</h2><p>Dostava je dostupna širom Srbije. Besplatne test vožnje trenutno se zakazuju samo u <a href="/elektricni-bicikli/beograd/">Beogradu</a>, <a href="/elektricni-bicikli/novi-sad/">Novom Sadu</a>, <a href="/elektricni-bicikli/kragujevac/">Kragujevcu</a> i <a href="/elektricni-bicikli/nis/">Nišu</a>, uz unapred potvrđen termin i lokaciju.</p><h2>Pre poručivanja</h2><p>Proverite dostupnost konkretnog modela i unesite potpunu adresu. Opšti očekivani rok za robu na stanju je 1–3 radna dana. Naknada za kurirsku dostavu i konačan iznos prikazuju se u postojećem procesu poručivanja pre plaćanja.</p></article>${faqHtml(faq, 'Česta pitanja o dostavi')}<section class="final-cta wrap"><h2>Proverite dostavu za svoj grad</h2><p>Pošaljite grad i model koji vas zanima; Pogon tim će potvrditi trenutno stanje i očekivani rok.</p><div class="button-row"><a class="button" href="/kontakt/">Kontaktirajte Pogon</a><a class="button-secondary" href="https://wa.me/381631505003" target="_blank" rel="noreferrer">WhatsApp</a></div></section></main>${footer()}</body></html>`;
@@ -379,7 +447,7 @@ function renderCity(city) {
     ['Koje modele mogu da probam?', 'Navedite da li vas zanimaju Core, Cargo ili Glide. Pogon tim potvrđuje dostupnost konkretnog modela za termin.'],
     ['Da li je test vožnja besplatna?', 'Da. Postojeće Pogon informacije navode besplatnu test vožnju uz prethodno zakazivanje.'],
   ];
-  const schema = [organization, { '@type': 'WebPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: city.title, description: city.description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#organization` }, areaServed: { '@type': 'City', name: city.name } }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli', path: '/elektricni-bicikli/' }, { name: city.name, path }]), faqSchema(faq)];
+  const schema = [organization, brand, website, testRideService, { '@type': 'WebPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: city.title, description: city.description, inLanguage: 'sr-Latn', about: { '@id': `${site.url}/#test-ride-service` }, isPartOf: { '@id': `${site.url}/#website` }, areaServed: { '@type': 'City', name: city.name }, dateModified: site.modified }, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli', path: '/elektricni-bicikli/' }, { name: city.name, path }]), faqSchema(faq)];
   return `${documentHead({ title: city.title, description: city.description, path, schema })}<body>${siteHeader('models')}<main id="sadrzaj">${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli', path: '/elektricni-bicikli/' }, { name: city.name }])}<section class="page-hero page-hero--split wrap"><div><div class="eyebrow">Test vožnja · ${esc(city.name)}</div><h1>Električni bicikli u ${esc(city.locative)}</h1><p class="lead">Uporedite Pogon Core, Cargo i Glide, pa zakažite test vožnju u ${esc(city.locative)}. Termin i tačna lokacija potvrđuju se unapred.</p><div class="button-row"><a class="button" href="/#test-voznja">Zakažite test vožnju</a><a class="button-secondary" href="tel:${site.phone}">${esc(site.phoneDisplay)}</a></div></div><aside class="hero-card"><strong>Ponedeljak–subota, 09–18 h</strong><p>Test vožnja je besplatna. Ne dolazite bez potvrđenog termina i lokacije.</p></aside></section><article class="wrap prose topic-section"><h2>Kako funkcioniše test vožnja?</h2><ol><li>Izaberite model ili navedite između kojih modela birate.</li><li>Pošaljite grad, kontakt i poželjan termin.</li><li>Pogon tim potvrđuje dostupnost, vreme i lokaciju.</li><li>Ponesite odgovarajuću odeću i opremu koju inače nosite.</li><li>Na probi proverite položaj, asistenciju, okretanje i kočenje.</li></ol><p>U ${esc(city.locative)} ne oglašavamo stalnu prodavnicu niti izmišljamo adresu. Test vožnja postoji kao usluga po zakazivanju.</p><h2>Šta proveriti na lokalnoj ruti?</h2><p>${esc(city.localNote)}</p><p>Na domet utiču masa, teren, temperatura, vetar, pritisak u gumama, nivo asistencije i teret. Deklarisani maksimum zato nije garantovana kilometraža na svakoj lokalnoj ruti.</p><h2>Kako pripremiti probu u ${esc(city.locative)}?</h2><p>${esc(city.planning)}</p><h2>Koji model izabrati?</h2><div class="related-links">${modelLinks()}</div><p><a href="/elektricni-bicikli/glide/">Pogon Glide</a> je gradski model. <a href="/elektricni-bicikli/core/">Pogon Core</a> dodaje sklopivi ram, široke gume i dve baterije. <a href="/elektricni-bicikli/cargo/">Pogon Cargo</a> namenjen je dostavi i prevozu stvari.</p><h2>Kupovina, dostava i podrška</h2><p>Posle probe model možete poručiti kroz postojeći onlajn proces. Dostava je dostupna širom Srbije, uz objavljeni rok 1–3 radna dana. Cena proizvoda i dostava prikazuju se u RSD pre plaćanja. Pogon navodi dve godine garancije.</p><p>Za servisnu podršku u ${esc(city.locative)} unapred proverite najbližu lokaciju, dostupne usluge i radno vreme na broj <a href="tel:${site.phone}">${esc(site.phoneDisplay)}</a>. Ova stranica ne predstavlja servisnu adresu.</p><h2>Priprema za test vožnju</h2><p>Izmerite tipičnu povratnu rutu i zabeležite najveći uspon. Ako birate Cargo, opišite tip tereta. Ako birate Core zbog odlaganja, pripremite dimenzije vrata, lifta ili prtljažnika. Tako će proba odgovoriti na stvarne potrebe, a ne samo na prvi utisak.</p></article>${faqHtml(faq, `Česta pitanja — ${city.name}`)}<section class="final-cta wrap"><h2>Zakažite Pogon test vožnju u ${esc(city.locative)}</h2><p>Pogon tim će potvrditi model, termin i lokaciju.</p><div class="button-row"><a class="button" href="/#test-voznja">Pošaljite zahtev</a><a class="button-secondary" href="https://wa.me/381631505003" target="_blank" rel="noreferrer">WhatsApp</a></div></section></main>${footer()}</body></html>`;
 }
 
@@ -420,14 +488,14 @@ const sitemapEntries = [
   ['/bezbednost-placanja', '0.1', 'yearly'],
   ['/uslovi-kupovine', '0.1', 'yearly'],
 ];
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntries.map(([path, priority, changefreq]) => `  <url><loc>${absolute(path)}</loc><lastmod>${site.published}</lastmod><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`).join('\n')}\n</urlset>\n`;
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntries.map(([path, priority, changefreq]) => `  <url><loc>${absolute(path)}</loc><lastmod>${site.modified}</lastmod><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`).join('\n')}\n</urlset>\n`;
 await write('sitemap.xml', sitemap);
 
-const llms = `# Pogon\n\n> Pogon is the electric bicycle brand of Pogon Mobility d.o.o. serving customers in Serbia.\n\n## Canonical pages\n- [Pogon electric bicycles](${site.url}/elektricni-bicikli/): comparison of Core, Cargo and Glide\n- [Pogon Core](${site.url}/elektricni-bicikli/core/): foldable fat-tyre electric bicycle\n- [Pogon Cargo](${site.url}/elektricni-bicikli/cargo/): electric bicycle for delivery and carrying items\n- [Pogon Glide](${site.url}/elektricni-bicikli/glide/): city electric bicycle\n- [Pogon guides](${site.url}/vodici/): Serbian educational resources about e-bikes\n- [Equipment](${site.url}/oprema/): helmets, lock, mirror, handlebar mitts, phone holder and basket availability\n- [Delivery in Serbia](${site.url}/dostava/): nationwide delivery coverage and expected timing\n- [About Pogon](${site.url}/o-nama/): verified company and market information\n- [Contact](${site.url}/kontakt/): official support channels and test-ride information\n\n## Verified company facts\n- Legal name: ${site.legalName}\n- Market served: Serbia\n- Website: ${site.url}\n- Phone: ${site.phoneDisplay}\n- Email: ${site.email}\n- Delivery: throughout Serbia; general expected time for in-stock models is 1–3 working days\n- Kraljevo delivery: usually planned within 1–2 working days for in-stock models, subject to confirmation\n- Test rides: by confirmed appointment in Beograd, Novi Sad, Kragujevac and Niš\n\nUse the canonical pages above for current product prices and specifications. Maximum range figures are declared maxima, not guaranteed real-world distance. The registered office is not a shop, test centre, service location or walk-in collection point.\n`;
-await write('llms.txt', llms
-  .replaceAll('/elektricni-bicikli/core/', '/products/core/')
-  .replaceAll('/elektricni-bicikli/cargo/', '/products/cargo/')
-  .replaceAll('/elektricni-bicikli/glide/', '/products/glide/')
-  .replace('foldable fat-tyre electric bicycle', 'foldable city electric bicycle'));
+const modelFacts = models.map((model) => `### ${model.name}\n- Kanonska stranica: ${site.url}/products/${model.slug}/\n- Namena: ${model.type}\n- Cena: ${model.priceDisplay}\n- Motor: ${model.motor}\n- Baterija: ${model.battery}\n- Deklarisani domet: ${model.range}\n- Ram: ${model.frame}\n- Ključna napomena: ${model.forWhom}.`).join('\n\n');
+const guideLinks = guides.map((guide) => `- [${guide.title}](${site.url}/vodici/${guide.slug}/): ${guide.description}`).join('\n');
+const llms = `# Pogon Mobility: električni bicikli u Srbiji\n\n> Pogon je brend kompanije ${site.legalName} za električne bicikle i opremu namenjene kupcima u Srbiji.\n\n## Primarni izvori\n- [Električni bicikli](${site.url}/elektricni-bicikli/): poređenje modela Cargo, Core i Glide\n- [Pogon Cargo](${site.url}/products/cargo/): model za dostavu, posao i prevoz stvari\n- [Pogon Core](${site.url}/products/core/): sklopivi gradski električni bicikl\n- [Pogon Glide](${site.url}/products/glide/): premium gradski električni bicikl\n- [Oprema](${site.url}/oprema/): dostupna oprema i cene\n- [Vodiči](${site.url}/vodici/): edukativni sadržaj o izboru i korišćenju e-bicikla\n- [Dostava](${site.url}/dostava/): dostava na teritoriji Srbije\n- [O kompaniji](${site.url}/o-nama/): identitet i proverene poslovne činjenice\n- [Kontakt](${site.url}/kontakt/): zvanični kanali podrške\n\n## Proverene činjenice\n- Pravno lice: ${site.legalName}\n- Brend: Pogon\n- Tržište ove dokumentacije: Srbija\n- Zvanični sajt: ${site.url}\n- Telefon: ${site.phoneDisplay}\n- Email: ${site.email}\n- Valuta onlajn kupovine: RSD\n- Garancija: dve godine, uz uslove koji zavise od komponente i pravilne upotrebe\n- Dostava: širom Srbije; očekivano 1–3 radna dana za modele na stanju, uz konačnu potvrdu\n- Test vožnje: uz potvrđen termin i lokaciju u Beogradu, Novom Sadu, Kragujevcu i Nišu\n- Ažurirano: ${site.modified}\n\n## Pravila tumačenja\nKoristite kanonske stranice proizvoda za aktuelne cene i specifikacije. Deklarisani maksimalni domet nije garantovana kilometraža: zavisi od terena, temperature, vetra, mase, tereta, pritiska u gumama i nivoa asistencije. Registrovano sedište nije prodavnica, servis, test centar niti mesto za nenajavljene posete. UK sadržaj pod /uk/ predstavlja odvojeno tržište i ne sme se koristiti kao izvor za srpske cene, kupovinu ili isporuku.\n`;
+const llmsFull = `${llms}\n## Modeli i specifikacije\n\n${modelFacts}\n\n## Edukativni izvori\n${guideLinks}\n\n## Kontakt i kupovina\nKupovina za Srbiju koristi postojeći checkout u RSD. Za proveru dostupnosti, test vožnje, servisa ili uslova kupovine kontaktirajte Pogon preko ${site.phoneDisplay} ili ${site.email}. Ne navodite registrovanu adresu kao prodajno ili servisno mesto.\n`;
+await write('llms.txt', llms);
+await write('llms-full.txt', llmsFull);
 
-console.log(`Generated ${1 + models.length + 1 + guides.length + 4 + cities.length} HTML pages, sitemap.xml and llms.txt.`);
+console.log(`Generated ${1 + models.length + 1 + guides.length + 4 + cities.length} HTML pages, sitemap.xml, llms.txt and llms-full.txt.`);

@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones, Gift, ShoppingCart } from 'lucide-react';
+import { Battery, Bike, CloudRain, Smartphone, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones, Gift, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { LeadContactModal } from './components/LeadContactModal';
 import { PaymentBranding } from './components/PaymentBranding';
@@ -13,6 +13,8 @@ import { publicAsset } from '../lib/assets';
 import { setHomeMetadata, setPageMetadata } from '../lib/seo';
 import { formatRsd as formatProductRsd, products, type ProductKey } from '../lib/products';
 import { languageFromSearch, persistSiteLanguage } from '../lib/productDetails';
+import { submitUkLead } from '../uk/ukLeads';
+import { UK_PHONE_DISPLAY, UK_PHONE_HREF, UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_NUMBER } from '../uk/ukMarket';
 
 type Language = 'en' | 'sr' | 'ru';
 type Localized<T> = Record<Language, T>;
@@ -21,6 +23,7 @@ const modelDisplayPosition: Record<string, number> = {
   cargo: 0,
   core: 1,
   glide: 2,
+  fold: 3,
 };
 const MODEL_BAR_SWIPE_THRESHOLD_PX = 40;
 const MODEL_BAR_HORIZONTAL_DOMINANCE = 1.25;
@@ -28,9 +31,9 @@ const CART_STORAGE_KEY = 'pogon-cart-v1';
 const LEGACY_ACCESSORY_CART_STORAGE_KEY = 'pogon-accessory-cart-v1';
 type CartState = Partial<Record<ProductKey, number>>;
 
-function readStoredCart(): CartState {
+function readStoredCart(storageKey = CART_STORAGE_KEY, includeLegacy = true): CartState {
   try {
-    const stored = localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem(LEGACY_ACCESSORY_CART_STORAGE_KEY) || '{}';
+    const stored = localStorage.getItem(storageKey) || (includeLegacy ? localStorage.getItem(LEGACY_ACCESSORY_CART_STORAGE_KEY) : null) || '{}';
     const parsed = JSON.parse(stored) as Record<string, unknown>;
     return Object.fromEntries(Object.entries(parsed).filter(([key, quantity]) =>
       products.some((product) => product.key === key)
@@ -199,10 +202,12 @@ function ScrollColorSentence({ text }: { text: string }) {
   );
 }
 
-export default function App() {
+export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' }) {
+  const isUk = market === 'uk';
+  const cartStorageKey = isUk ? 'pogon-cart-uk-v1' : CART_STORAGE_KEY;
   // Keep the first browser render identical to the build-time render. Browser-only
   // preferences are restored immediately after hydration.
-  const [lang, setLang] = useState<Language>('sr');
+  const [lang, setLang] = useState<Language>(isUk ? 'en' : 'sr');
   const [cart, setCart] = useState<CartState>({});
   const [hasRestoredCart, setHasRestoredCart] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -238,7 +243,7 @@ export default function App() {
   });
   const [savingsQuiz, setSavingsQuiz] = useState({
     dailyKm: 20,
-    fuelPrice: 200,
+    fuelPrice: isUk ? 1.45 : 200,
     fuelConsumption: 9,
   });
   const popupShownRef = useRef(false);
@@ -248,13 +253,28 @@ export default function App() {
   const pageRootRef = useRef<HTMLDivElement | null>(null);
   const scrollLockTimeout = useRef<number | null>(null);
   const pageScrollTimeout = useRef<number | null>(null);
-  const copy = homeCopy[lang];
+  const defaultCopy = homeCopy[lang];
+  const copy = isUk ? {
+    ...defaultCopy,
+    heroTitle: 'choose adventure.',
+    heroSub: 'a premium european feel at the frontier of the micromobility revolution',
+    badge: 'A premium European e-bike brand',
+    premiumSeries: 'European Premium Series',
+    modelsCopy: 'Four premium models. One European vision. A world of possibilities.',
+    heroPrimary: 'Contact the UK team',
+    buyNow: 'Register interest',
+    finalTitle: 'Choose your Pogon. Find a new way forward.',
+    finalBody: `Call ${UK_PHONE_DISPLAY} or leave your details and our UK team will get back to you.`,
+  } : defaultCopy;
   const tr = <T,>(translations: Localized<T>) => translations[lang];
   const cartEntries = products
     .map((product) => ({ product, quantity: cart[product.key] || 0 }))
     .filter((entry) => entry.quantity > 0);
   const cartQuantity = cartEntries.reduce((sum, entry) => sum + entry.quantity, 0);
   const cartTotal = cartEntries.reduce((sum, entry) => sum + entry.product.priceRsd * entry.quantity, 0);
+  const cartDisplayTotal = isUk
+    ? cartEntries.reduce((sum, entry) => sum + UK_PRODUCT_PRICES[entry.product.key].amount * entry.quantity, 0)
+    : cartTotal;
   const updateCartQuantity = (key: ProductKey, quantity: number) => {
     setCart((current) => {
       const next = { ...current };
@@ -266,22 +286,31 @@ export default function App() {
   const continueToCartCheckout = () => {
     const cartParameter = cartEntries.map(({ product, quantity }) => `${product.key}:${quantity}`).join(',');
     if (!cartParameter) return;
+    if (isUk) {
+      setIsCartOpen(false);
+      openLeadModal('uk-cart-enquiry');
+      return;
+    }
     trackEvent('checkout_started', { source: 'shared-cart', items: cartQuantity });
     window.location.assign(`/checkout?cart=${encodeURIComponent(cartParameter)}`);
   };
 
   useEffect(() => {
-    const requestedLanguage = languageFromSearch(window.location.search);
+    const requestedLanguage = isUk ? 'en' : languageFromSearch(window.location.search);
     setLang(requestedLanguage);
-    if (new URLSearchParams(window.location.search).has('lang')) persistSiteLanguage(requestedLanguage);
-    setCart(readStoredCart());
+    if (!isUk && new URLSearchParams(window.location.search).has('lang')) persistSiteLanguage(requestedLanguage);
+    setCart(readStoredCart(cartStorageKey, !isUk));
     setHasRestoredCart(true);
-  }, []);
+  }, [cartStorageKey, isUk]);
+
+  useEffect(() => {
+    if (isUk) trackEvent('uk_page_view', { market: 'UK', path: '/uk' });
+  }, [isUk]);
 
   useEffect(() => {
     if (!hasRestoredCart) return;
-    try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch { /* Cart remains available for this visit. */ }
-  }, [cart, hasRestoredCart]);
+    try { localStorage.setItem(cartStorageKey, JSON.stringify(cart)); } catch { /* Cart remains available for this visit. */ }
+  }, [cart, cartStorageKey, hasRestoredCart]);
 
   useEffect(() => {
     if (!isCartOpen) return;
@@ -289,7 +318,11 @@ export default function App() {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = previousOverflow; };
   }, [isCartOpen]);
-  const heroBenefits = [
+  const heroBenefits = isUk ? [
+    { value: 'Premium', label: 'European design' },
+    { value: 'UK launch', label: 'Enquiries open' },
+    { value: '4 models', label: 'One premium range' },
+  ] : [
     {
       value: tr({ sr: 'Do 140 km', en: 'Up to 140 km', ru: 'До 140 км' }),
       label: tr({ sr: 'Dometa', en: 'Range', ru: 'Запас хода' }),
@@ -303,7 +336,11 @@ export default function App() {
       label: tr({ sr: 'Garancije', en: 'Warranty', ru: 'Гарантия' }),
     },
   ];
-  const mobileHeroCopy = tr({
+  const mobileHeroCopy = isUk ? {
+    title: 'See life through a different lens.',
+    subtitle: 'Premium European electric bikes made for everyday adventure.',
+    secondary: 'Discover Pogon',
+  } : tr({
     sr: {
       title: 'Pogon električni bicikli',
       subtitle: 'Auto je za more, Pogon je za grad',
@@ -418,12 +455,14 @@ export default function App() {
     setSavingsQuiz((current) => ({ ...current, [key]: value }));
   };
   const dailyFuelCost = (savingsQuiz.dailyKm * savingsQuiz.fuelConsumption * savingsQuiz.fuelPrice) / 100;
-  const dailyElectricCost = savingsQuiz.dailyKm * 0.5;
+  const dailyElectricCost = savingsQuiz.dailyKm * (isUk ? 0.02 : 0.5);
   const monthlySavings = Math.max(0, Math.round((dailyFuelCost - dailyElectricCost) * 30));
   const yearlySavings = Math.max(0, Math.round((dailyFuelCost - dailyElectricCost) * 365));
   const yearlyCo2Kg = Math.max(0, Math.round((savingsQuiz.dailyKm * 365 * savingsQuiz.fuelConsumption * 2.31) / 100));
-  const formatRsd = (value: number) => `${new Intl.NumberFormat('sr-RS', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)} RSD`;
-  const ui = tr({
+  const formatMoney = (value: number) => isUk
+    ? new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(value)
+    : `${new Intl.NumberFormat('sr-RS', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)} RSD`;
+  const defaultUi = tr({
     sr: {
         navModels: 'Modeli',
         navTechnology: 'Tehnologija',
@@ -524,8 +563,19 @@ export default function App() {
         footerLegal: ['Конфиденциальность', 'Условия', 'Cookies'],
       },
   });
-  const whatsappNumber = '381631505003';
-  const phoneHref = 'tel:+381631505003';
+  const ui = isUk ? {
+    ...defaultUi,
+    navPartners: 'Why Pogon',
+    services: defaultUi.services.map((service, index) => index === 2
+      ? { title: 'UK enquiries', body: 'Register your interest and our UK team will contact you with availability and next steps.' }
+      : service),
+    footerBody: 'A premium European electric bike brand, created for everyday adventure and a different way of seeing the road ahead.',
+    footerSupportLinks: ['UK enquiry', 'Service information', 'Product questions'],
+    footerCompanyLinks: ['About Pogon', 'Contact', 'UK launch', 'Models'],
+  } : defaultUi;
+  const whatsappNumber = isUk ? UK_WHATSAPP_NUMBER : '381631505003';
+  const phoneHref = isUk ? UK_PHONE_HREF : 'tel:+381631505003';
+  const phoneDisplay = isUk ? UK_PHONE_DISPLAY : '063 15 05 003';
   const buildWhatsappLink = (text: string) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
   const testRideWhatsappText = tr({
     sr: 'Zdravo, želim da zakažem test vožnju Pogon e-bike-a.',
@@ -537,11 +587,14 @@ export default function App() {
   const openContactWidget = useCallback(() => setIsContactWidgetOpen(true), []);
   const closeContactWidget = useCallback(() => setIsContactWidgetOpen(false), []);
   const openLeadModal = (source: string) => {
-    trackEvent(source.includes('hero') ? 'primary_cta_click' : 'test_ride_click', { source });
+    const event = isUk
+      ? source.startsWith('model-') || source.startsWith('purchase-') ? 'uk_model_interest' : 'uk_primary_cta_click'
+      : source.includes('hero') ? 'primary_cta_click' : 'test_ride_click';
+    trackEvent(event, { source, ...(isUk ? { market: 'uk' } : {}) });
     setLeadModalSource(source);
   };
-  const handlePhoneClick = (source: string) => trackEvent('phone_call_click', { source });
-  const handleWhatsappClick = (source: string) => trackEvent('whatsapp_click', { source });
+  const handlePhoneClick = (source: string) => trackEvent(isUk ? 'uk_phone_click' : 'phone_call_click', { source, ...(isUk ? { market: 'uk' } : {}) });
+  const handleWhatsappClick = (source: string) => trackEvent(isUk ? 'uk_phone_click' : 'whatsapp_click', { source, channel: 'whatsapp', ...(isUk ? { market: 'uk' } : {}) });
   const handleModelsShortcutClick = () => {
     const modelsSection = document.getElementById('modeli');
     if (!modelsSection) return;
@@ -798,7 +851,7 @@ export default function App() {
         { question: 'Do I need a licence?', answer: 'No special licence is needed for standard e-bike riding.' },
         { question: 'How long does charging take?', answer: 'A full charge takes up to 6 hours, depending on the battery and starting charge level.' },
         { question: 'What if it breaks?', answer: 'Service and support are available. Contact us and we will arrange the quickest solution.' },
-        { question: 'Do you offer service?', answer: 'Yes. Service support is available in several cities. Message us on WhatsApp at +381 63 15 05 003 for the nearest location, current services and opening hours.' },
+        { question: 'Do you offer service?', answer: isUk ? `For UK product and service enquiries, call ${UK_PHONE_DISPLAY} or leave your details and our team will contact you.` : 'Yes. Service support is available in several cities. Message us on WhatsApp at +381 63 15 05 003 for the nearest location, current services and opening hours.' },
         { question: 'Can it go uphill?', answer: 'Yes. The motor helps on climbs, and a test ride shows how it feels on your route.' },
         { question: 'How do I pay?', answer: 'Payment is arranged directly with clear information before purchase.' },
       ],
@@ -834,20 +887,26 @@ export default function App() {
 
     try {
       setTestRideFormStatus('submitting');
-      await submitLead({
-        name: cleanName,
-        phone: cleanPhone,
-        source: `test-ride-form${testRideForm.city.trim() ? `-${testRideForm.city.trim()}` : ''}`,
-        language: lang,
-        city: testRideForm.city.trim() || null,
-        country: null,
-        date_contacted: null,
-        comment: testRideForm.preferredTime.trim() || null,
-      });
+      const source = `test-ride-form${testRideForm.city.trim() ? `-${testRideForm.city.trim()}` : ''}`;
+      if (isUk) {
+        await submitUkLead({ name: cleanName, phone: cleanPhone, source, postcode: testRideForm.city.trim(), message: testRideForm.preferredTime.trim() });
+        trackEvent('uk_lead_submit', { source, market: 'uk' });
+      } else {
+        await submitLead({
+          name: cleanName,
+          phone: cleanPhone,
+          source,
+          language: lang,
+          city: testRideForm.city.trim() || null,
+          country: null,
+          date_contacted: null,
+          comment: testRideForm.preferredTime.trim() || null,
+        });
+      }
       setTestRideFormStatus('success');
       setTestRideForm({ name: '', phone: '', city: '', preferredTime: '' });
     } catch {
-      setTestRideFormStatus('success');
+      setTestRideFormStatus(isUk ? 'error' : 'success');
     }
   };
 
@@ -1005,15 +1064,25 @@ export default function App() {
     setPopupSubmitting(true);
     try {
       await Promise.race([
-        submitLead({ name: 'Popup lead', phone: `+381${digits}`, source: 'lead-popup', language: lang, city: null, country: null, date_contacted: null, comment: null }),
+        isUk
+          ? submitUkLead({ name: 'UK website enquiry', phone: popupPhone.trim(), source: 'lead-popup' })
+          : submitLead({ name: 'Popup lead', phone: `+381${digits}`, source: 'lead-popup', language: lang, city: null, country: null, date_contacted: null, comment: null }),
         new Promise<void>((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000)),
       ]);
-    } catch { /* show success regardless */ }
+      if (isUk) trackEvent('uk_lead_submit', { source: 'lead-popup', market: 'uk' });
+    } catch {
+      if (isUk) {
+        setPopupSubmitting(false);
+        setPopupError('We could not save your enquiry. Please call the UK team or try again.');
+        return;
+      }
+      /* Preserve the existing Serbian popup behaviour. */
+    }
     setPopupSubmitting(false);
     setPopupSubmitted(true);
   };
 
-  const bikeModels = [
+  const baseBikeModels = [
     {
       key: 'glide',
       name: 'Glide',
@@ -1145,6 +1214,39 @@ export default function App() {
       }),
     },
   ].sort((left, right) => modelDisplayPosition[left.key] - modelDisplayPosition[right.key]);
+
+  const bikeModels = isUk ? [
+    ...baseBikeModels.map((model) => {
+      const ukPrice = UK_PRODUCT_PRICES[model.key];
+      const ukCopy = UK_PRODUCT_COPY[model.key];
+      return {
+        ...model,
+        description: ukCopy.description,
+        points: ukCopy.points,
+        originalPrice: undefined,
+        price: ukPrice.current,
+        mobileSpecs: { range: 'Premium', power: 'European', battery: 'Single battery' },
+        isUnavailable: false,
+      };
+    }),
+    {
+      key: 'fold',
+      name: UK_PRODUCT_COPY.fold.name,
+      badgeKey: null,
+      badgeClass: '',
+      image: { src: publicAsset('Cargo fold.jpg'), alt: 'Pogon Fold compact folding electric bike', width: 1122, height: 1402 },
+      gallery: [
+        { src: publicAsset('Cargo fold.jpg'), alt: 'Pogon Fold in its compact folded format', width: 1122, height: 1402 },
+      ],
+      description: UK_PRODUCT_COPY.fold.description,
+      originalPrice: undefined,
+      price: UK_PRODUCT_PRICES.fold.current,
+      mobileSpecs: { range: 'Compact', power: 'European', battery: 'Single battery' },
+      points: UK_PRODUCT_COPY.fold.points,
+      isFeatured: false,
+      isUnavailable: true,
+    },
+  ].sort((left, right) => modelDisplayPosition[left.key] - modelDisplayPosition[right.key]) : baseBikeModels;
 
   const lightboxModel = bikeModels.find((model) => model.key === activeLightboxProduct);
   const lightboxGallery = lightboxModel && 'gallery' in lightboxModel ? lightboxModel.gallery : undefined;
@@ -1407,7 +1509,7 @@ export default function App() {
                       className="space-y-2.5"
                     >
                       <div className={`flex items-center overflow-hidden rounded-2xl border bg-white/[0.06] transition-all ${popupError ? 'border-red-400/60' : 'border-white/10 focus-within:border-[#7fff00]/50'}`}>
-                        <span className="select-none pl-4 pr-1 text-sm font-bold text-white/25">+381</span>
+                        <span className="select-none pl-4 pr-1 text-sm font-bold text-white/25">{isUk ? '+44' : '+381'}</span>
                         <span className="select-none text-white/10">|</span>
                         <input
                           type="tel"
@@ -1465,7 +1567,7 @@ export default function App() {
 
       {/* Promotion and navigation */}
       <header data-site-header className="fixed left-0 right-0 top-0 z-50">
-        <PromotionBanner language={lang} modelsHref="#modeli" />
+        <PromotionBanner language={lang} modelsHref={isUk ? '/uk#modeli' : '#modeli'} market={market} />
         <nav className="bg-transparent" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-2.5 [@media_(orientation:landscape)_and_(max-height:520px)]:py-1.5">
           <div className="relative w-full flex h-8 items-center justify-between gap-2 rounded-full border border-black/10 bg-white/90 px-2 shadow-[0_15px_40px_rgba(0,0,0,0.12)] backdrop-blur-md sm:h-auto sm:py-1.5 [@media_(orientation:landscape)_and_(max-height:520px)]:h-9 [@media_(orientation:landscape)_and_(max-height:520px)]:py-0.5">
@@ -1478,28 +1580,37 @@ export default function App() {
 
             <div className="absolute left-1/2 hidden -translate-x-1/2 items-center justify-center gap-4 text-xs uppercase tracking-wider text-black/65 lg:flex">
               <a href="#modeli" className="transition-colors hover:text-black">{ui.navModels}</a>
-              <a href={lang === 'sr' ? '/oprema/' : `/oprema/?lang=${lang}`} className="transition-colors hover:text-black">{ui.navAccessories}</a>
+              {isUk ? (
+                <a href="/uk#accessories" className="transition-colors hover:text-black">{ui.navAccessories}</a>
+              ) : (
+                <a href={lang === 'sr' ? '/oprema/' : `/oprema/?lang=${lang}`} className="transition-colors hover:text-black">{ui.navAccessories}</a>
+              )}
+              {isUk ? <a href="/uk#app" className="transition-colors hover:text-black">App</a> : null}
               <a href="#iskustva" className="transition-colors hover:text-black">{ui.navReviews}</a>
-              <a href="/partneri/" className="transition-colors hover:text-black">{ui.navPartners}</a>
-              <a href="/kontakt/" className="transition-colors hover:text-black">{ui.navContact}</a>
+              <a href={isUk ? '/uk#zasto-pogon' : '/partneri/'} className="transition-colors hover:text-black">{ui.navPartners}</a>
+              <a href={isUk ? '/uk#kontakt' : '/kontakt/'} className="transition-colors hover:text-black">{ui.navContact}</a>
             </div>
 
             <div className="hidden md:flex items-center gap-1.5">
               <button type="button" onClick={() => setIsCartOpen(true)} aria-label={tr({ sr: 'Otvori korpu', en: 'Open cart', ru: 'Открыть корзину' })} className="inline-flex items-center justify-center gap-1 rounded-full border border-black bg-black px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white transition-colors hover:bg-black/80">
                 {tr({ sr: 'Korpa', en: 'Cart', ru: 'Корзина' })}<span className="inline-grid min-h-4 min-w-4 place-items-center rounded-full bg-[#7fff00] px-1 text-[0.58rem] leading-none text-black">{cartQuantity}</span>
               </button>
-              <button onClick={() => changeLanguage('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
-              <button onClick={() => changeLanguage('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
-              <button onClick={() => changeLanguage('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
+              {isUk ? <span className="rounded-full border border-black bg-black px-2 py-0.5 text-xs font-black text-white">UK</span> : <>
+                <button onClick={() => changeLanguage('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
+                <button onClick={() => changeLanguage('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
+                <button onClick={() => changeLanguage('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
+              </>}
             </div>
 
             <div className="flex items-center md:hidden gap-1">
               <button type="button" onClick={() => setIsCartOpen(true)} aria-label={tr({ sr: 'Otvori korpu', en: 'Open cart', ru: 'Открыть корзину' })} className="inline-flex min-h-6 items-center gap-0.5 rounded-full bg-black px-1.5 text-[0.56rem] font-black uppercase text-white">
                 <ShoppingCart className="size-3" /><span className="inline-grid min-h-3.5 min-w-3.5 place-items-center rounded-full bg-[#7fff00] px-0.5 text-[0.5rem] text-black">{cartQuantity}</span>
               </button>
-              <button onClick={() => changeLanguage('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
-              <button onClick={() => changeLanguage('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
-              <button onClick={() => changeLanguage('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
+              {isUk ? <span className="rounded-full border border-black bg-black px-2 py-0.5 text-[0.6rem] font-black text-white">UK</span> : <>
+                <button onClick={() => changeLanguage('sr')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'sr' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>SRB</button>
+                <button onClick={() => changeLanguage('en')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'en' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>ENG</button>
+                <button onClick={() => changeLanguage('ru')} className={`rounded-full border px-1.5 py-0.5 text-xs ${lang === 'ru' ? 'bg-black text-white border-black' : 'bg-transparent text-black/65 border-black/10 hover:text-black'}`}>RUS</button>
+              </>}
             </div>
           </div>
         </div>
@@ -1540,7 +1651,7 @@ export default function App() {
                     <img src={publicAsset(product.image.replace(/^\//, ''))} alt="" className="size-[76px] rounded-2xl bg-white object-contain" />
                     <div className="min-w-0">
                       <strong className="block text-sm font-black">{product.name}</strong>
-                      <span className="mt-0.5 block text-xs text-black/55">{formatProductRsd(product.priceRsd)}</span>
+                      <span className="mt-0.5 block text-xs text-black/55">{isUk ? UK_PRODUCT_PRICES[product.key].current : formatProductRsd(product.priceRsd)}</span>
                       <div className="mt-2 flex items-center gap-2">
                         <button type="button" onClick={() => updateCartQuantity(product.key, quantity - 1)} className="inline-grid size-7 place-items-center rounded-full border border-black/20 bg-white" aria-label={tr({ sr: 'Smanji količinu', en: 'Decrease quantity', ru: 'Уменьшить количество' })}>−</button>
                         <b className="min-w-4 text-center text-sm">{quantity}</b>
@@ -1559,9 +1670,9 @@ export default function App() {
               </div>
 
               <div className="border-t border-black/10 bg-white px-5 pb-6 pt-4 sm:px-6">
-                <div className="mb-4 flex items-center justify-between"><span className="text-sm text-black/60">{tr({ sr: 'Ukupno proizvodi', en: 'Products total', ru: 'Сумма товаров' })}</span><strong className="text-xl font-black">{formatProductRsd(cartTotal)}</strong></div>
+                <div className="mb-4 flex items-center justify-between"><span className="text-sm text-black/60">{tr({ sr: 'Ukupno proizvodi', en: 'Products total', ru: 'Сумма товаров' })}</span><strong className="text-xl font-black">{formatMoney(cartDisplayTotal)}</strong></div>
                 <button type="button" disabled={!cartEntries.length} onClick={continueToCartCheckout} className="min-h-12 w-full rounded-full bg-black px-5 text-sm font-black uppercase tracking-wide text-white disabled:cursor-not-allowed disabled:opacity-35">
-                  {tr({ sr: 'Nastavi', en: 'Continue to checkout →', ru: 'Перейти к оформлению →' })}
+                  {isUk ? 'Contact the UK team →' : tr({ sr: 'Nastavi', en: 'Continue to checkout →', ru: 'Перейти к оформлению →' })}
                 </button>
                 <p className="mt-2 text-center text-[0.65rem] text-black/45">{tr({ sr: 'Bicikle i opremu možeš poručiti zajedno.', en: 'Bikes and accessories can be ordered together.', ru: 'Велосипеды и аксессуары можно заказать вместе.' })}</p>
               </div>
@@ -1769,11 +1880,13 @@ export default function App() {
       <section className="relative overflow-hidden bg-background px-4 py-6 text-foreground sm:px-6 sm:py-8 lg:py-9">
         <div className="mx-auto max-w-7xl">
           <ScrollColorSentence
-            text={tr({
-              sr: 'Upoznaj Pogon električni bicikl koji podiže standard u Srbiji. Sa vrhunskim komponentama, snažnom asistencijom i savremenim tehničkim karakteristikama, Pogon je napravljen za kvalitetnu svakodnevnu gradsku vožnju.',
-              en: 'Meet the electric bike raising the standard in Serbia. With premium components, strong assistance, and modern technical features, Pogon is made for riders who want quality they can feel on every ride.',
-              ru: 'Познакомься с электровелосипедом, который задаёт новый стандарт в Сербии. Премиальные компоненты, мощная поддержка мотора и современные технологии: качество, которое чувствуется в каждой поездке.',
-            })}
+            text={isUk
+              ? 'meet the electric bike raising the standard. with premium components, strong assistance, and modern technical features, pogon is made for riders who want quality they can feel on every ride.'
+              : tr({
+                  sr: 'Upoznaj Pogon električni bicikl koji podiže standard u Srbiji. Sa vrhunskim komponentama, snažnom asistencijom i savremenim tehničkim karakteristikama, Pogon je napravljen za kvalitetnu svakodnevnu gradsku vožnju.',
+                  en: 'Meet the electric bike raising the standard in Serbia. With premium components, strong assistance, and modern technical features, Pogon is made for riders who want quality they can feel on every ride.',
+                  ru: 'Познакомься с электровелосипедом, который задаёт новый стандарт в Сербии. Премиальные компоненты, мощная поддержка мотора и современные технологии: качество, которое чувствуется в каждой поездке.',
+                })}
           />
         </div>
       </section>
@@ -1832,7 +1945,7 @@ export default function App() {
             <div
               ref={productScrollRef}
               onScroll={handleProductScroll}
-              className="grid grid-flow-col auto-cols-[minmax(17.5rem,calc(100vw-3rem))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 sm:auto-cols-[21rem] lg:mx-0 lg:px-0 lg:grid-cols-3 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-3 snap-x snap-mandatory"
+              className={`grid grid-flow-col auto-cols-[minmax(17.5rem,calc(100vw-3rem))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 sm:auto-cols-[21rem] lg:mx-0 lg:px-0 ${isUk ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-3 snap-x snap-mandatory`}
             >
               {bikeModels.map((model) => {
                 const gallery = 'gallery' in model ? model.gallery : undefined;
@@ -1845,7 +1958,13 @@ export default function App() {
                   setActiveGalleryImages((current) => ({ ...current, [model.key]: index }));
                 };
                 const selectedImage = gallery ? gallery[selectedGalleryIndex] : model.image;
-                const openProductPage = () => window.location.assign(`/products/${model.key}/`);
+                const openProductPage = () => {
+                  if (isUk) {
+                    window.location.assign(`/uk/products/${model.key}/`);
+                    return;
+                  }
+                  window.location.assign(`/products/${model.key}/`);
+                };
 
                 return (
                 <motion.div
@@ -1935,8 +2054,12 @@ export default function App() {
                       </div>
                     ) : null}
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3.5 pb-3 pt-12 text-white lg:hidden">
-                      <div className="max-w-[78%] text-left">
-                        <a href={`/products/${model.key}/`} onClick={(event) => event.stopPropagation()} className="text-xl font-black leading-none drop-shadow-md">{model.name}</a>
+                        <div className={`max-w-[78%] text-left ${isUk && model.isUnavailable ? 'select-none blur-[5px] opacity-45' : ''}`}>
+                        {isUk ? (
+                          <a href={`/uk/products/${model.key}/`} onClick={(event) => event.stopPropagation()} className="text-xl font-black leading-none drop-shadow-md">{model.name}</a>
+                        ) : (
+                          <a href={`/products/${model.key}/`} onClick={(event) => event.stopPropagation()} className="text-xl font-black leading-none drop-shadow-md">{model.name}</a>
+                        )}
                         {model.originalPrice ? <div className="mt-1 text-xs font-bold text-white/55 line-through decoration-2">{model.originalPrice}</div> : null}
                         <div className="mt-2 flex items-center gap-1.5 text-white/65">
                           <span className="text-2xl font-black leading-none tracking-tight text-white drop-shadow-md">{model.price}</span>
@@ -1973,20 +2096,35 @@ export default function App() {
                   ) : null}
                 </div>
                 <div className="desktop-product-body p-3 sm:p-4 lg:p-3.5">
-                  <h3 className={`desktop-product-name hidden lg:block text-lg font-bold mb-1 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}><a href={`/products/${model.key}/`} onClick={(event) => event.stopPropagation()}>{model.name}</a></h3>
-                  <div className="desktop-product-points hidden lg:grid grid-cols-2 gap-x-5 gap-y-1.5 mb-2.5 text-[0.8rem] font-medium leading-snug">
-                    {model.points.map((point, index) => (
-                      <div
-                        key={`${model.key}-desktop-point-${index}`}
-                        className={`desktop-product-point flex min-h-[1.65rem] items-start gap-2 ${model.isFeatured ? 'text-primary-foreground/88' : 'text-foreground/70'}`}
-                      >
-                        <span className={`mt-[0.48rem] size-1.5 shrink-0 rounded-full ${model.isFeatured ? 'bg-primary-foreground/75' : 'bg-primary/75'}`} />
-                        <span>{point}</span>
+                  <h3 className={`desktop-product-name hidden lg:block text-lg font-bold mb-1 ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>
+                    {isUk ? (
+                      <a href={`/uk/products/${model.key}/`} onClick={(event) => event.stopPropagation()}>{model.name}</a>
+                    ) : (
+                      <a href={`/products/${model.key}/`} onClick={(event) => event.stopPropagation()}>{model.name}</a>
+                    )}
+                  </h3>
+                  <div className="relative hidden lg:block">
+                    <div className={`desktop-product-points grid grid-cols-2 gap-x-5 gap-y-1.5 mb-2.5 text-[0.8rem] font-medium leading-snug ${isUk && model.isUnavailable ? 'select-none blur-[5px] opacity-45' : ''}`}>
+                      {model.points.map((point, index) => (
+                        <div
+                          key={`${model.key}-desktop-point-${index}`}
+                          className={`desktop-product-point flex min-h-[1.65rem] items-start gap-2 ${model.isFeatured ? 'text-primary-foreground/88' : 'text-foreground/70'}`}
+                        >
+                          <span className={`mt-[0.48rem] size-1.5 shrink-0 rounded-full ${model.isFeatured ? 'bg-primary-foreground/75' : 'bg-primary/75'}`} />
+                          <span>{point}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {isUk && model.isUnavailable ? (
+                      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                        <div className="w-[12rem] rounded-full bg-black px-3 py-2 text-center text-[0.62rem] font-black leading-tight tracking-[0.04em] text-white shadow-lg">
+                          <span className="block">sold out</span><span className="block">more coming soon</span>
+                        </div>
                       </div>
-                    ))}
+                    ) : null}
                   </div>
                   <div className={`desktop-product-purchase pt-2 lg:pt-2.5 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
-                    <div className={`desktop-product-price-block mb-2 hidden flex-col items-start gap-0.5 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'}`}>
+                    <div className={`desktop-product-price-block mb-2 hidden flex-col items-start gap-0.5 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'} ${isUk && model.isUnavailable ? 'select-none blur-[5px] opacity-45' : ''}`}>
                       {model.originalPrice ? <span className="desktop-product-original-price text-sm font-bold opacity-60 line-through decoration-2">{model.originalPrice}</span> : null}
                       <span className="desktop-product-price text-[1.9rem] font-black leading-none tracking-tight">{model.price}</span>
                     </div>
@@ -2007,24 +2145,41 @@ export default function App() {
                         </div>
                       ))}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => openLeadModal(`model-${model.name}`)}
-                      className={`desktop-product-action w-full inline-flex items-center justify-center gap-2 py-2.5 lg:py-2 rounded-full transition-all font-semibold uppercase text-[0.62rem] sm:text-xs lg:text-[0.62rem] tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
-                    >
-                      <CalendarCheck className="size-3.5" />
-                      {copy.heroPrimary}
-                    </button>
-                    <a
-                      href={`/checkout?model=${model.key}`}
-                      onClick={() => trackEvent('checkout_started', { source: 'model-card', model: model.key })}
-                      className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors active:scale-[0.98] lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${
-                        model.isFeatured ? 'border-white/35 text-primary-foreground/80 hover:bg-white/10' : 'border-border text-foreground/60 hover:border-primary/60 hover:text-foreground'
-                      }`}
-                    >
-                      {copy.buyNow}
-                      <ArrowRight className="size-3" />
-                    </a>
+                    {isUk ? (
+                      <a
+                        href={`/uk/products/${model.key}/`}
+                        className={`desktop-product-action w-full inline-flex items-center justify-center gap-2 py-2.5 lg:py-2 rounded-full transition-all font-semibold uppercase text-[0.62rem] sm:text-xs lg:text-[0.62rem] tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                      >
+                        Discover more <ArrowRight className="size-3.5" />
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => openLeadModal(`model-${model.name}`)}
+                        className={`desktop-product-action w-full inline-flex items-center justify-center gap-2 py-2.5 lg:py-2 rounded-full transition-all font-semibold uppercase text-[0.62rem] sm:text-xs lg:text-[0.62rem] tracking-wider active:scale-[0.98] ${model.isFeatured ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                      >
+                        <CalendarCheck className="size-3.5" />
+                        {copy.heroPrimary}
+                      </button>
+                    )}
+                    {isUk ? (
+                      <a
+                        href={`/uk/products/${model.key}/${model.key === 'fold' ? '#notify' : '#interest'}`}
+                        className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors active:scale-[0.98] lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${model.isFeatured ? 'border-white/35 text-primary-foreground/80 hover:bg-white/10' : 'border-border text-foreground/60 hover:border-primary/60 hover:text-foreground'}`}
+                      >
+                        {model.key === 'fold' ? 'Notify me' : copy.buyNow}
+                        <ArrowRight className="size-3" />
+                      </a>
+                    ) : (
+                      <a
+                        href={`/checkout?model=${model.key}`}
+                        onClick={() => trackEvent('checkout_started', { source: 'model-card', model: model.key })}
+                        className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors active:scale-[0.98] lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${model.isFeatured ? 'border-white/35 text-primary-foreground/80 hover:bg-white/10' : 'border-border text-foreground/60 hover:border-primary/60 hover:text-foreground'}`}
+                      >
+                        {copy.buyNow}
+                        <ArrowRight className="size-3" />
+                      </a>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -2061,17 +2216,71 @@ export default function App() {
       </div>
       </section>
 
+      {isUk ? (
+        <section id="accessories" className="scroll-mt-24 border-y border-black/10 bg-white py-16 sm:py-24">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="text-4xl font-black leading-none tracking-[-0.05em] text-black sm:text-6xl">choose adventure.</h2>
+              <p className="mt-4 text-lg text-black/50">a premium european feel at the frontier of the micromobility revolution</p>
+            </div>
+            <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { icon: Shield, name: 'two-year warranty' },
+                { icon: Bike, name: 'rear rack' },
+                { icon: CloudRain, name: 'mudguards' },
+                { icon: Smartphone, name: 'phone holder' },
+              ].map(({ icon: Icon, name }) => (
+                <article key={name} className="rounded-3xl border border-[#397700]/25 bg-[#7fff00]/[0.08] p-6 text-center">
+                  <span className="mx-auto grid size-12 place-items-center rounded-full bg-[#7fff00] text-black"><Icon className="size-5" /></span>
+                  <h3 className="mt-5 text-lg font-black text-black">{name}</h3>
+                  <p className="mt-2 text-sm font-bold text-[#397700]">free — included</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {isUk ? (
+        <section id="app" className="relative scroll-mt-24 overflow-hidden bg-[#090909] py-16 text-white sm:py-24">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(127,255,0,0.18),transparent_32%)]" />
+          <div className="relative mx-auto max-w-7xl px-6">
+            <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#7fff00]/35 bg-[#7fff00]/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#7fff00]"><Smartphone className="size-4" />Pogon connected app</div>
+                <h2 className="mt-6 max-w-3xl text-5xl font-black leading-[0.9] tracking-[-0.055em] sm:text-7xl">Control your bike from your phone.</h2>
+              </div>
+              <p className="max-w-2xl text-lg leading-8 text-white/60">Cutting-edge technology puts key bike controls, ride information and connected security in your pocket. Check your bike from your phone, manage supported features and stay connected to every journey.</p>
+            </div>
+            <div className="mt-12 grid gap-4 md:grid-cols-3">
+              {[
+                { icon: Smartphone, title: 'Phone-first control', body: 'Manage supported bike controls and connected functions directly through the Pogon app.' },
+                { icon: MapPin, title: 'Bike visibility', body: 'Check your bike location and connected status from your phone wherever supported services are available.' },
+                { icon: Shield, title: 'Smart security', body: 'GPS-backed visibility and connected security tools add confidence before, during and after every ride.' },
+              ].map(({ icon: Icon, title, body }) => (
+                <article key={title} className="rounded-3xl border border-white/15 bg-white/[0.06] p-7">
+                  <span className="grid size-12 place-items-center rounded-full bg-[#7fff00] text-black"><Icon className="size-5" /></span>
+                  <h3 className="mt-6 text-2xl font-black tracking-tight">{title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/55">{body}</p>
+                </article>
+              ))}
+            </div>
+            <p className="mt-6 text-xs leading-5 text-white/35">App and connected-feature availability varies by model and will be confirmed with the final UK specification.</p>
+          </div>
+        </section>
+      ) : null}
+
       {/* Pensioner financing — intentionally separate from institutional partnerships */}
       <section aria-labelledby="pio-finansiranje" className="bg-white py-12 sm:py-16">
         <div className="mx-auto grid max-w-6xl gap-7 px-6 md:grid-cols-[1fr_auto] md:items-center">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#397700]">{tr({ sr: 'Fleksibilnija kupovina', en: 'More flexible purchasing', ru: 'Гибкая покупка' })}</p>
-            <h2 id="pio-finansiranje" className="mt-2 text-3xl font-black tracking-[-0.04em] text-black sm:text-4xl">{tr({ sr: 'Kupovina za penzionere na rate', en: 'Instalment purchase for pensioners', ru: 'Покупка в рассрочку для пенсионеров' })}</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-black/60 sm:text-base">{tr({ sr: 'Pogon električni bicikli dostupni su i uz mogućnost plaćanja putem administrativne zabrane, u skladu sa važećim uslovima.', en: 'Pogon electric bikes may also be purchased through administrative deduction, subject to current terms.', ru: 'Электровелосипеды Pogon также могут быть доступны с оплатой через административное удержание согласно действующим условиям.' })}</p>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#397700]">{isUk ? 'Pogon UK launch' : tr({ sr: 'Fleksibilnija kupovina', en: 'More flexible purchasing', ru: 'Гибкая покупка' })}</p>
+            <h2 id="pio-finansiranje" className="mt-2 text-3xl font-black tracking-[-0.04em] text-black sm:text-4xl">{isUk ? 'Talk to our UK team' : tr({ sr: 'Kupovina za penzionere na rate', en: 'Instalment purchase for pensioners', ru: 'Покупка в рассрочку для пенсионеров' })}</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-black/60 sm:text-base">{isUk ? 'Ask about Glide, Core, Cargo or Fold and leave your details for a dedicated UK follow-up.' : tr({ sr: 'Pogon električni bicikli dostupni su i uz mogućnost plaćanja putem administrativne zabrane, u skladu sa važećim uslovima.', en: 'Pogon electric bikes may also be purchased through administrative deduction, subject to current terms.', ru: 'Электровелосипеды Pogon также могут быть доступны с оплатой через административное удержание согласно действующим условиям.' })}</p>
           </div>
           <div className="flex flex-col items-start gap-4 rounded-2xl border border-black/10 bg-[#f5f4ef] px-6 py-5 md:min-w-64">
-            <strong className="text-2xl font-black tracking-[-0.03em] text-black">{tr({ sr: 'Do 12 mesečnih rata', en: 'Up to 12 monthly payments', ru: 'До 12 ежемесячных платежей' })}</strong>
-            <a href="/kontakt/" className="inline-flex items-center gap-2 text-sm font-black text-black underline decoration-primary underline-offset-4">{tr({ sr: 'Saznajte više →', en: 'Learn more →', ru: 'Подробнее →' })}</a>
+            <strong className="text-2xl font-black tracking-[-0.03em] text-black">{isUk ? UK_PHONE_DISPLAY : tr({ sr: 'Do 12 mesečnih rata', en: 'Up to 12 monthly payments', ru: 'До 12 ежемесячных платежей' })}</strong>
+            <a href={isUk ? '/uk#kontakt' : '/kontakt/'} className="inline-flex items-center gap-2 text-sm font-black text-black underline decoration-primary underline-offset-4">{tr({ sr: 'Saznajte više →', en: 'Learn more →', ru: 'Подробнее →' })}</a>
           </div>
         </div>
       </section>
@@ -2088,13 +2297,13 @@ export default function App() {
             </div>
             <ol className="border-t border-white/15">
               {[
-                { icon: HeartPulse, stat: '5.700', title: tr({ sr: 'Zdravlje', en: 'Health', ru: 'Здоровье' }), body: tr({ sr: 'Oko 5.700 smrti u Srbiji pripisano je bolestima povezanim sa gojaznošću. Svakodnevno kretanje pravi razliku.', en: 'About 5,700 deaths in Serbia were attributed to obesity-related conditions. Daily movement makes a difference.', ru: 'Около 5 700 смертей в Сербии связали с заболеваниями, обусловленными ожирением. Ежедневная активность имеет значение.' }) },
-                { icon: Fuel, stat: tr({ sr: '210.000 RSD godišnje', en: 'RSD 210,000 yearly', ru: '210 000 RSD в год' }), title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
-                { icon: Timer, stat: tr({ sr: '150 sati godišnje', en: '150 hours yearly', ru: '150 часов в год' }), title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
-                { icon: Sparkles, stat: '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
-                { icon: Cpu, stat: 'GPS', title: tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
-                { icon: WalletCards, stat: tr({ sr: 'Jasna cena', en: 'Clear price', ru: 'Понятная цена' }), title: tr({ sr: 'Cena i vrednost', en: 'Price & value', ru: 'Цена и ценность' }), body: tr({ sr: 'Cena proizvoda, dostava i ukupan iznos jasno su prikazani pre plaćanja, bez skrivenih troškova.', en: 'The product price, delivery and total are shown clearly before payment, with no hidden costs.', ru: 'Цена товара, доставка и итоговая сумма ясно указаны до оплаты, без скрытых расходов.' }) },
-                { icon: Headphones, stat: tr({ sr: '2× zaštita', en: '2× protection', ru: 'Двойная защита' }), title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
+                { icon: HeartPulse, stat: isUk ? '150 min weekly' : '5.700', title: tr({ sr: 'Zdravlje', en: 'Health', ru: 'Здоровье' }), body: isUk ? 'NHS guidance recommends at least 150 minutes of moderate activity each week. Every ride can help make movement part of your routine.' : tr({ sr: 'Oko 5.700 smrti u Srbiji pripisano je bolestima povezanim sa gojaznošću. Svakodnevno kretanje pravi razliku.', en: 'About 5,700 deaths in Serbia were attributed to obesity-related conditions. Daily movement makes a difference.', ru: 'Около 5 700 смертей в Сербии связали с заболеваниями, обусловленными ожирением. Ежедневная активность имеет значение.' }) },
+                { icon: Fuel, stat: isUk ? '£1,353 yearly' : tr({ sr: '210.000 RSD godišnje', en: 'RSD 210,000 yearly', ru: '210 000 RSD в год' }), title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: isUk ? 'A typical UK petrol driver spends about £1,353 a year on fuel. Swap suitable car journeys for an e-bike and keep more for your next adventure.' : tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
+                { icon: Timer, stat: isUk ? '59 hours yearly' : tr({ sr: '150 sati godišnje', en: '150 hours yearly', ru: '150 часов в год' }), title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: isUk ? 'UK drivers lost an average of 59 hours to congestion in 2025. Make local journeys part of the adventure instead.' : tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
+                { icon: Sparkles, stat: isUk ? 'Cutting edge' : '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: isUk ? 'Premium European design, considered details and a finish made to turn heads from every angle.' : tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
+                { icon: Cpu, stat: isUk ? 'App connected' : 'GPS', title: isUk ? 'Bike control from your phone' : tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: isUk ? 'The Pogon app brings supported controls, bike information and connected security together on your phone.' : tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
+                { icon: WalletCards, stat: isUk ? 'UK pricing' : tr({ sr: 'Jasna cena', en: 'Clear price', ru: 'Понятная цена' }), title: tr({ sr: 'Cena i vrednost', en: 'Price & value', ru: 'Цена и ценность' }), body: isUk ? 'UK model prices are shown in pounds with VAT included, so you can register interest with the important details clear.' : tr({ sr: 'Cena proizvoda, dostava i ukupan iznos jasno su prikazani pre plaćanja, bez skrivenih troškova.', en: 'The product price, delivery and total are shown clearly before payment, with no hidden costs.', ru: 'Цена товара, доставка и итоговая сумма ясно указаны до оплаты, без скрытых расходов.' }) },
+                { icon: Headphones, stat: isUk ? 'UK team' : tr({ sr: '2× zaštita', en: '2× protection', ru: 'Двойная защита' }), title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: isUk ? 'Our UK team is here for product questions, availability and after-sales support.' : tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
               ].map(({ icon: Icon, stat, title, body }, index) => (
                 <motion.li key={title} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} transition={{ duration: 0.4, delay: index * 0.04 }} className="group grid grid-cols-[2rem_1fr_auto] items-start gap-3 border-b border-white/15 py-4 sm:grid-cols-[2.5rem_0.6fr_1.4fr] sm:gap-4 sm:py-5">
                   <span className="pt-1 text-xs font-black tracking-[0.2em] text-white/30">{String(index + 1).padStart(2, '0')}</span>
@@ -2251,11 +2460,11 @@ export default function App() {
               <div className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-white/50">
                 {tr({ sr: 'Godi\u0161nja u\u0161teda', en: 'Yearly savings', ru: 'Экономия в год' })}
               </div>
-              <div className="mt-2 text-2xl font-black leading-none sm:text-4xl">{formatRsd(yearlySavings)}</div>
+              <div className="mt-2 text-2xl font-black leading-none sm:text-4xl">{formatMoney(yearlySavings)}</div>
               <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3 text-[0.7rem] sm:gap-3 sm:text-sm">
                 <div>
                   <div className="text-white/45">{tr({ sr: 'Po mesecu', en: 'Monthly', ru: 'В месяц' })}</div>
-                  <div className="mt-1 font-black">{formatRsd(monthlySavings)}</div>
+                  <div className="mt-1 font-black">{formatMoney(monthlySavings)}</div>
                 </div>
                 <div>
                   <div className="text-white/45">CO2</div>
@@ -2279,10 +2488,10 @@ export default function App() {
                 {
                   key: 'fuelPrice' as const,
                   label: tr({ sr: 'Cena goriva', en: 'Fuel price', ru: 'Цена топлива' }),
-                  suffix: 'RSD',
-                  min: 100,
-                  max: 300,
-                  step: 5,
+                  suffix: isUk ? 'GBP' : 'RSD',
+                  min: isUk ? 1 : 100,
+                  max: isUk ? 3 : 300,
+                  step: isUk ? 0.05 : 5,
                 },
                 {
                   key: 'fuelConsumption' as const,
@@ -2317,7 +2526,7 @@ export default function App() {
                 {tr({ sr: 'Istra\u017ei modele', en: 'Explore models', ru: 'Смотреть модели' })}
               </a>
               <p className="text-center text-[0.7rem] leading-relaxed text-black/45 sm:text-left lg:text-center">
-                {tr({
+                {isUk ? '* Electricity is estimated at roughly £0.02/km.' : tr({
                   sr: '* Struja je ra\u010dunata okvirno kao 0.5 RSD/km.',
                   en: '* Electricity is estimated at roughly 0.5 RSD/km.',
                   ru: '* Электричество посчитано примерно по 0.5 RSD/км.',
@@ -2358,7 +2567,7 @@ export default function App() {
               <div className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-black/45">
                 {tr({ sr: 'Procena', en: 'Estimate', ru: 'Оценка' })}
               </div>
-              <div className="mt-1 text-2xl font-black leading-none">{formatRsd(yearlySavings)}</div>
+              <div className="mt-1 text-2xl font-black leading-none">{formatMoney(yearlySavings)}</div>
               <div className="mt-1 text-xs text-black/50">{tr({ sr: 'godi\u0161nje', en: 'per year', ru: 'в год' })}</div>
             </div>
           </div>
@@ -2391,10 +2600,10 @@ export default function App() {
               {
                 key: 'fuelPrice' as const,
                 label: tr({ sr: 'Cena goriva po litru', en: 'Fuel price per liter', ru: 'Цена топлива за литр' }),
-                suffix: 'RSD',
-                min: 100,
-                max: 300,
-                step: 5,
+                suffix: isUk ? 'GBP' : 'RSD',
+                min: isUk ? 1 : 100,
+                max: isUk ? 3 : 300,
+                step: isUk ? 0.05 : 5,
               },
               {
                 key: 'fuelConsumption' as const,
@@ -2428,11 +2637,11 @@ export default function App() {
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-black/10 bg-[#f7f7f4] p-4 text-center">
               <div className="text-sm text-black/55">{tr({ sr: 'Mesečna ušteda', en: 'Monthly savings', ru: 'Экономия в месяц' })}</div>
-              <div className="mt-4 text-xl font-black">{formatRsd(monthlySavings)}</div>
+              <div className="mt-4 text-xl font-black">{formatMoney(monthlySavings)}</div>
             </div>
             <div className="rounded-2xl bg-black p-4 text-center text-white">
               <div className="text-sm text-white/65">{tr({ sr: 'Godišnja ušteda', en: 'Yearly savings', ru: 'Экономия в год' })}</div>
-              <div className="mt-2 text-3xl font-black leading-tight sm:text-4xl">{formatRsd(yearlySavings)}</div>
+              <div className="mt-2 text-3xl font-black leading-tight sm:text-4xl">{formatMoney(yearlySavings)}</div>
             </div>
             <div className="rounded-2xl border border-black/10 bg-[#f7f7f4] p-4 text-center">
               <div className="text-sm text-black/55">{tr({ sr: 'CO2 manje godišnje', en: 'Less CO2 yearly', ru: 'Меньше CO2 в год' })}</div>
@@ -2441,7 +2650,7 @@ export default function App() {
           </div>
 
           <p className="mt-5 text-center text-xs text-black/50 sm:text-sm">
-            {tr({
+            {isUk ? '* Electricity cost for charging an electric bike is estimated at roughly £0.02/km.' : tr({
               sr: '* Cena struje za punjenje električnog vozila ~0.5 RSD/km',
               en: '* Electricity cost for charging an electric vehicle ~0.5 RSD/km',
               ru: '* Стоимость электричества для зарядки электровелосипеда: примерно 0.5 RSD/км',
@@ -2530,13 +2739,13 @@ export default function App() {
 
             <ol className="border-t border-white/15">
               {[
-                { icon: HeartPulse, stat: '5.700', title: tr({ sr: 'Zdravlje', en: 'Health', ru: 'Здоровье' }), body: tr({ sr: 'Oko 5.700 smrti u Srbiji pripisano je bolestima povezanim sa gojaznošću. Svakodnevno kretanje pravi razliku.', en: 'About 5,700 deaths in Serbia were attributed to obesity-related conditions. Daily movement makes a difference.', ru: 'Около 5 700 смертей в Сербии связали с заболеваниями, обусловленными ожирением. Ежедневная активность имеет значение.' }) },
-                { icon: Fuel, stat: tr({ sr: '210.000 RSD godišnje', en: 'RSD 210,000 yearly', ru: '210 000 RSD в год' }), title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
-                { icon: Timer, stat: tr({ sr: '150 sati godišnje', en: '150 hours yearly', ru: '150 часов в год' }), title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
-                { icon: Sparkles, stat: '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
-                { icon: Cpu, stat: 'GPS', title: tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
-                { icon: WalletCards, stat: tr({ sr: 'Jasna cena', en: 'Clear price', ru: 'Понятная цена' }), title: tr({ sr: 'Cena i vrednost', en: 'Price & value', ru: 'Цена и ценность' }), body: tr({ sr: 'Cena proizvoda, dostava i ukupan iznos jasno su prikazani pre plaćanja, bez skrivenih troškova.', en: 'The product price, delivery and total are shown clearly before payment, with no hidden costs.', ru: 'Цена товара, доставка и итоговая сумма ясно указаны до оплаты, без скрытых расходов.' }) },
-                { icon: Headphones, stat: tr({ sr: '2× zaštita', en: '2× protection', ru: 'Двойная защита' }), title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
+                { icon: HeartPulse, stat: isUk ? '150 min weekly' : '5.700', title: tr({ sr: 'Zdravlje', en: 'Health', ru: 'Здоровье' }), body: isUk ? 'NHS guidance recommends at least 150 minutes of moderate activity each week. Every ride can help make movement part of your routine.' : tr({ sr: 'Oko 5.700 smrti u Srbiji pripisano je bolestima povezanim sa gojaznošću. Svakodnevno kretanje pravi razliku.', en: 'About 5,700 deaths in Serbia were attributed to obesity-related conditions. Daily movement makes a difference.', ru: 'Около 5 700 смертей в Сербии связали с заболеваниями, обусловленными ожирением. Ежедневная активность имеет значение.' }) },
+                { icon: Fuel, stat: isUk ? '£1,353 yearly' : tr({ sr: '210.000 RSD godišnje', en: 'RSD 210,000 yearly', ru: '210 000 RSD в год' }), title: tr({ sr: 'Uštedi', en: 'Save', ru: 'Экономия' }), body: isUk ? 'A typical UK petrol driver spends about £1,353 a year on fuel. Swap suitable car journeys for an e-bike and keep more for your next adventure.' : tr({ sr: 'Prosečan vozač potroši oko 210.000 RSD godišnje na gorivo. Sa Pogonom taj novac ostaje kod tebe.', en: 'An average driver spends around 210,000 RSD on fuel every year. With Pogon, that money stays with you.', ru: 'Средний водитель тратит около 210 000 RSD на топливо ежегодно. С Pogon эти деньги остаются у тебя.' }) },
+                { icon: Timer, stat: isUk ? '59 hours yearly' : tr({ sr: '150 sati godišnje', en: '150 hours yearly', ru: '150 часов в год' }), title: tr({ sr: 'Vreme', en: 'Time', ru: 'Время' }), body: isUk ? 'UK drivers lost an average of 59 hours to congestion in 2025. Make local journeys part of the adventure instead.' : tr({ sr: 'Prosečan beogradski vozač provede najmanje 150 sati godišnje u saobraćajnim gužvama. Pogon prolazi dalje.', en: 'An average Belgrade driver spends at least 150 hours in traffic every year. Pogon keeps moving.', ru: 'Средний белградский водитель проводит в пробках не менее 150 часов ежегодно. Pogon продолжает движение.' }) },
+                { icon: Sparkles, stat: isUk ? 'Cutting edge' : '360°', title: tr({ sr: 'Estetika i elegancija', en: 'Aesthetics & elegance', ru: 'Эстетика и элегантность' }), body: isUk ? 'Premium European design, considered details and a finish made to turn heads from every angle.' : tr({ sr: 'Čiste linije, premium završna obrada i dizajn koji privlači pogled iz svakog ugla.', en: 'Clean lines, premium finishing and a design that turns heads from every angle.', ru: 'Чистые линии, премиальная отделка и дизайн, который притягивает взгляд с любого ракурса.' }) },
+                { icon: Cpu, stat: isUk ? 'App connected' : 'GPS', title: isUk ? 'Bike control from your phone' : tr({ sr: 'Tehnologija', en: 'Technology', ru: 'Технологии' }), body: isUk ? 'The Pogon app brings supported controls, bike information and connected security together on your phone.' : tr({ sr: 'Pametna GPS zaštita, električna asistencija i savremene komponente u jednom povezanom biciklu.', en: 'Smart GPS protection, electric assistance and modern components in one connected bike.', ru: 'Умная GPS-защита, электроподдержка и современные компоненты в одном подключённом велосипеде.' }) },
+                { icon: WalletCards, stat: isUk ? 'UK pricing' : tr({ sr: 'Jasna cena', en: 'Clear price', ru: 'Понятная цена' }), title: tr({ sr: 'Cena i vrednost', en: 'Price & value', ru: 'Цена и ценность' }), body: isUk ? 'UK model prices are shown in pounds with VAT included, so you can register interest with the important details clear.' : tr({ sr: 'Cena proizvoda, dostava i ukupan iznos jasno su prikazani pre plaćanja, bez skrivenih troškova.', en: 'The product price, delivery and total are shown clearly before payment, with no hidden costs.', ru: 'Цена товара, доставка и итоговая сумма ясно указаны до оплаты, без скрытых расходов.' }) },
+                { icon: Headphones, stat: isUk ? 'UK team' : tr({ sr: '2× zaštita', en: '2× protection', ru: 'Двойная защита' }), title: tr({ sr: 'Podrška i servis', en: 'Support & service', ru: 'Поддержка и сервис' }), body: isUk ? 'Our UK team is here for product questions, availability and after-sales support.' : tr({ sr: 'GPS sigurnosni tim čuva bicikl, a naš mehaničar brine da ostane u savršenom stanju.', en: 'Our GPS security team watches over your bike, while our mechanic keeps it in perfect condition.', ru: 'Команда GPS-безопасности защищает велосипед, а наш механик поддерживает его в идеальном состоянии.' }) },
               ].map(({ icon: Icon, stat, title, body }, index) => (
                 <motion.li
                   key={title}
@@ -2769,8 +2978,8 @@ export default function App() {
         </div>
       </section>
 
-      {/* Institutional programmes */}
-      <section aria-labelledby="partneri-heading" className="border-y border-black/10 bg-[#f5f4ef] py-14 sm:py-20">
+      {/* Institutional programmes are part of the Serbian site only. */}
+      {!isUk ? <section aria-labelledby="partneri-heading" className="border-y border-black/10 bg-[#f5f4ef] py-14 sm:py-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-black uppercase tracking-[0.24em] text-black/45">{tr({ sr: 'Partneri i saradnja', en: 'Partners and cooperation', ru: 'Партнёры и сотрудничество' })}</p>
@@ -2782,9 +2991,9 @@ export default function App() {
             <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="select-none text-lg font-black leading-tight tracking-[-0.03em] blur-[5px]">{tr({ sr: 'Univerzitet u Novom Sadu', en: 'University of Novi Sad', ru: 'Университет Нови-Сада' })}</h3><p className="mt-2 select-none text-xs font-bold uppercase tracking-[0.12em] text-black/40 blur-[4px]">{tr({ sr: 'Filozofski fakultet', en: 'Faculty of Philosophy', ru: 'Философский факультет' })}</p></article>
             <article className="flex min-h-32 flex-col justify-center rounded-2xl border border-black/10 bg-white px-6 py-7 text-center text-black/70 transition-colors hover:border-black/25"><h3 className="text-lg font-black leading-tight tracking-[-0.03em]">{tr({ sr: 'Policijska sindikalna organizacija (MUP)', en: 'Police Trade Union Organization (MUP)', ru: 'Полицейская профсоюзная организация (MUP)' })}</h3><p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-black/40">{tr({ sr: 'Program za članove', en: 'Members’ program', ru: 'Программа для участников' })}</p></article>
           </div>
-          <div className="mt-7 text-center"><a href="/partneri/" className="inline-flex items-center gap-2 text-sm font-black text-black underline decoration-black/25 underline-offset-4 transition-colors hover:decoration-black">{tr({ sr: 'Saznajte više o našim saradnjama →', en: 'Learn more about our partnerships →', ru: 'Подробнее о сотрудничестве →' })}</a></div>
+          <div className="mt-7 text-center"><a href={isUk ? '/uk#zasto-pogon' : '/partneri/'} className="inline-flex items-center gap-2 text-sm font-black text-black underline decoration-black/25 underline-offset-4 transition-colors hover:decoration-black">{tr({ sr: 'Saznajte više o našim saradnjama →', en: 'Learn more about our partnerships →', ru: 'Подробнее о сотрудничестве →' })}</a></div>
         </div>
-      </section>
+      </section> : null}
 
       {lightboxModel && lightboxGallery && lightboxImage ? (
         <div
@@ -2931,7 +3140,7 @@ export default function App() {
       ) : null}
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8 sm:py-16 bg-muted/20">
+      <footer id={isUk ? 'kontakt' : undefined} className="border-t border-border/50 py-8 sm:py-16 bg-muted/20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-3 gap-x-5 gap-y-8 mb-8 md:grid-cols-5 md:gap-12 md:mb-12">
             <div className="col-span-3 md:col-span-2">
@@ -2939,25 +3148,26 @@ export default function App() {
                 <div className="relative">
                   <img src={publicAsset('Logo.png')} alt="POGON" width={1024} height={1024} className="h-12 w-auto sm:h-20" />
                 </div>
-                <a href="https://instagram.com/pogon.rs" target="_blank" rel="noreferrer" aria-label="Pogon Instagram @pogon.rs" className="size-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors md:mt-6">
+                <a href={isUk ? '/uk#kontakt' : 'https://instagram.com/pogon.rs'} target={isUk ? undefined : '_blank'} rel={isUk ? undefined : 'noreferrer'} aria-label={isUk ? 'Contact Pogon UK' : 'Pogon Instagram @pogon.rs'} className="size-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors md:mt-6">
                   <Instagram className="size-5" />
                 </a>
               </div>
               <p className="max-w-sm text-sm text-foreground/60 leading-relaxed">{ui.footerBody}</p>
               <div className="mt-4 space-y-1 text-sm text-foreground/60">
-                <p><span className="font-bold text-foreground/80">Email:</span> <a href="mailto:pogonmobility@gmail.com" className="underline underline-offset-4 hover:text-foreground">pogonmobility@gmail.com</a></p>
-                <p><span className="font-bold text-foreground/80">{tr({ sr: 'Telefon', en: 'Phone', ru: 'Телефон' })}:</span> <a href="tel:+381631505003" className="underline underline-offset-4 hover:text-foreground">063 15 05 003</a></p>
+                {!isUk ? <p><span className="font-bold text-foreground/80">Email:</span> <a href="mailto:pogonmobility@gmail.com" className="underline underline-offset-4 hover:text-foreground">pogonmobility@gmail.com</a></p> : null}
+                <p><span className="font-bold text-foreground/80">{tr({ sr: 'Telefon', en: 'Phone', ru: 'Телефон' })}:</span> <a href={phoneHref} className="underline underline-offset-4 hover:text-foreground">{phoneDisplay}</a></p>
               </div>
             </div>
 
             <div>
               <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 sm:mb-4">{ui.footerProducts}</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-foreground/60">
-                <li><a href="/products/glide/" className="hover:text-foreground transition-colors">Glide</a></li>
-                <li><a href="/products/core/" className="hover:text-foreground transition-colors">Core</a></li>
-                <li><a href="/products/cargo/" className="hover:text-foreground transition-colors">Cargo</a></li>
-                <li><a href={lang === 'en' ? '/electric-bikes/' : '/elektricni-bicikli/'} className="hover:text-foreground transition-colors">{tr({ sr: 'Električni bicikli', en: 'Electric bikes', ru: 'Электровелосипеды' })}</a></li>
-                <li><a href="/#modeli" className="hover:text-foreground transition-colors">{ui.footerCompare}</a></li>
+                <li><a href={isUk ? '/uk/products/glide/' : '/products/glide/'} className="hover:text-foreground transition-colors">Glide</a></li>
+                <li><a href={isUk ? '/uk/products/core/' : '/products/core/'} className="hover:text-foreground transition-colors">Core</a></li>
+                <li><a href={isUk ? '/uk/products/cargo/' : '/products/cargo/'} className="hover:text-foreground transition-colors">Cargo</a></li>
+                {isUk ? <li><a href="/uk/products/fold/" className="hover:text-foreground transition-colors">Fold</a></li> : null}
+                <li><a href={isUk ? '/uk#modeli' : lang === 'en' ? '/electric-bikes/' : '/elektricni-bicikli/'} className="hover:text-foreground transition-colors">{tr({ sr: 'Električni bicikli', en: 'Electric bikes', ru: 'Электровелосипеды' })}</a></li>
+                <li><a href={isUk ? '/uk#modeli' : '/#modeli'} className="hover:text-foreground transition-colors">{ui.footerCompare}</a></li>
               </ul>
             </div>
 
@@ -2969,7 +3179,7 @@ export default function App() {
                     {index === 0 ? (
                       <button type="button" onClick={() => openLeadModal('footer-test-ride')} className="hover:text-foreground transition-colors">{item}</button>
                     ) : (
-                      <a href={buildWhatsappLink(footerSupportMessages[index])} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">{item}</a>
+                      <a href={isUk ? '/uk#kontakt' : buildWhatsappLink(footerSupportMessages[index])} target={isUk ? undefined : '_blank'} rel={isUk ? undefined : 'noreferrer'} className="hover:text-foreground transition-colors">{item}</a>
                     )}
                   </li>
                 ))}
@@ -2979,28 +3189,28 @@ export default function App() {
             <div>
               <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 sm:mb-4">{ui.footerCompany}</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-foreground/60">
-                <li><a href="/informacije-o-trgovcu" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[0]}</a></li>
-                <li><a href="/kontakt/" className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[1]}</a></li>
-                <li><a href="/partneri/" className="hover:text-foreground transition-colors">{tr({ sr: 'Partneri i saradnja', en: 'Partners', ru: 'Партнёры' })}</a></li>
-                <li><a href="/o-nama/" className="hover:text-foreground transition-colors">{tr({ sr: 'O nama', en: 'About us', ru: 'О нас' })}</a></li>
-                <li><a href="/vodici/" className="hover:text-foreground transition-colors">{tr({ sr: 'Vodiči', en: 'Guides', ru: 'Руководства' })}</a></li>
-                <li><a href="/dostava" className="hover:text-foreground transition-colors">{tr({ sr: 'Dostava', en: 'Delivery', ru: 'Доставка' })}</a></li>
-                <li><a href="/reklamacije" className="hover:text-foreground transition-colors">{tr({ sr: 'Reklamacije', en: 'Complaints', ru: 'Претензии' })}</a></li>
-                <li><a href="/povracaj-sredstava" className="hover:text-foreground transition-colors">{tr({ sr: 'Povraćaj sredstava', en: 'Refunds', ru: 'Возврат средств' })}</a></li>
-                <li><a href="/bezbednost-placanja" className="hover:text-foreground transition-colors">{tr({ sr: 'Bezbednost plaćanja', en: 'Payment security', ru: 'Безопасность оплаты' })}</a></li>
+                <li><a href={isUk ? '/uk#top' : '/informacije-o-trgovcu'} className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[0]}</a></li>
+                <li><a href={isUk ? '/uk#kontakt' : '/kontakt/'} className="hover:text-foreground transition-colors">{ui.footerCompanyLinks[1]}</a></li>
+                <li><a href={isUk ? '/uk#zasto-pogon' : '/partneri/'} className="hover:text-foreground transition-colors">{tr({ sr: 'Partneri i saradnja', en: 'Partners', ru: 'Партнёры' })}</a></li>
+                <li><a href={isUk ? '/uk#top' : '/o-nama/'} className="hover:text-foreground transition-colors">{tr({ sr: 'O nama', en: 'About us', ru: 'О нас' })}</a></li>
+                <li><a href={isUk ? '/uk#modeli' : '/vodici/'} className="hover:text-foreground transition-colors">{tr({ sr: 'Vodiči', en: 'Guides', ru: 'Руководства' })}</a></li>
+                <li><a href={isUk ? '/uk#kontakt' : '/dostava'} className="hover:text-foreground transition-colors">{tr({ sr: 'Dostava', en: 'Delivery', ru: 'Доставка' })}</a></li>
+                <li><a href={isUk ? '/uk#kontakt' : '/reklamacije'} className="hover:text-foreground transition-colors">{tr({ sr: 'Reklamacije', en: 'Complaints', ru: 'Претензии' })}</a></li>
+                <li><a href={isUk ? '/uk#kontakt' : '/povracaj-sredstava'} className="hover:text-foreground transition-colors">{tr({ sr: 'Povraćaj sredstava', en: 'Refunds', ru: 'Возврат средств' })}</a></li>
+                <li><a href={isUk ? '/uk#kontakt' : '/bezbednost-placanja'} className="hover:text-foreground transition-colors">{tr({ sr: 'Bezbednost plaćanja', en: 'Payment security', ru: 'Безопасность оплаты' })}</a></li>
               </ul>
             </div>
           </div>
 
-          <PaymentBranding compact />
+          {!isUk ? <PaymentBranding compact /> : null}
 
           <div className="pt-5 sm:pt-8 border-t border-border/50">
             <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
               <p className="text-sm text-foreground/50">© 2026 POGON. {ui.copyright}</p>
               <div className="flex gap-4 sm:gap-6 text-sm text-foreground/50">
-                <a href="/privatnost" className="hover:text-foreground transition-colors">{ui.footerLegal[0]}</a>
-                <a href="/uslovi-kupovine" className="hover:text-foreground transition-colors">{ui.footerLegal[1]}</a>
-                <a href="/privatnost#kolacici" className="hover:text-foreground transition-colors">{ui.footerLegal[2]}</a>
+                <a href={isUk ? '/uk#kontakt' : '/privatnost'} className="hover:text-foreground transition-colors">{ui.footerLegal[0]}</a>
+                <a href={isUk ? '/uk#kontakt' : '/uslovi-kupovine'} className="hover:text-foreground transition-colors">{ui.footerLegal[1]}</a>
+                <a href={isUk ? '/uk#kontakt' : '/privatnost#kolacici'} className="hover:text-foreground transition-colors">{ui.footerLegal[2]}</a>
               </div>
             </div>
           </div>
@@ -3068,7 +3278,7 @@ export default function App() {
               </span>
             </button>
             <a
-              href={lang === 'sr' ? '/oprema/' : `/oprema/?lang=${lang}`}
+              href={isUk ? '/uk#accessories' : lang === 'sr' ? '/oprema/' : `/oprema/?lang=${lang}`}
               onClick={() => trackEvent('accessories_shortcut_click', { source: 'floating-scroll-shortcut' })}
               className="group inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/95 py-1.5 pl-3 pr-1.5 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black shadow-[0_12px_35px_rgba(0,0,0,0.18)] backdrop-blur-md transition-transform hover:scale-[1.04] active:scale-[0.98] sm:gap-2.5 sm:pl-4 sm:text-xs md:hidden"
               aria-label={tr({ sr: 'Vidi opremu', en: 'View accessories', ru: 'Смотреть аксессуары' })}
@@ -3369,6 +3579,7 @@ export default function App() {
                 ru: 'Привет! Хочу записаться на тест-драйв.',
               })
         )}
+        market={market}
         onClose={closeLeadModal}
       />
     </div>

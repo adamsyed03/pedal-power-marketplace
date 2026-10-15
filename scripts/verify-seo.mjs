@@ -51,6 +51,9 @@ for (const file of htmlFiles) {
   const route = routeForFile(file);
   const is404 = route === '/404.html';
   const isProductPdp = file.startsWith(`${productDir}${sep}`);
+  const isSerbianSeoPage = file === join(root, 'index.html') || isProductPdp || (
+    file.startsWith(`${publicDir}${sep}`) && !route.startsWith('/electric-bikes/') && route !== '/404.html'
+  );
   const title = capture(source, /<title>([\s\S]*?)<\/title>/i);
   const description = capture(source, /<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i);
   const canonical = capture(source, /<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i);
@@ -62,6 +65,7 @@ for (const file of htmlFiles) {
   if (!is404 && !canonical.startsWith('https://ridepogon.com/')) fail(file, `canonical is not on canonical host: ${canonical}`);
   if (!robots) fail(file, 'missing robots directive');
   if (!is404 && /noindex/i.test(robots)) fail(file, 'indexable page is marked noindex');
+  if (isSerbianSeoPage && !/<link\s+rel=["']alternate["']\s+type=["']text\/plain["']\s+href=["']\/llms\.txt["']/i.test(source)) fail(file, 'missing llms.txt discovery link');
 
   const h1Count = count(source, /<h1(?:\s|>)/gi);
   if (!is404 && h1Count !== 1) fail(file, `expected one H1, found ${h1Count}`);
@@ -78,6 +82,11 @@ for (const file of htmlFiles) {
       const parsed = JSON.parse(script[1]);
       const serialized = JSON.stringify(parsed);
       if (/AggregateRating|"Review"/.test(serialized) && !isProductPdp) fail(file, 'contains prohibited unverified rating/review schema');
+      if (isProductPdp) {
+        for (const required of ['"@type":"OnlineStore"', '"@type":"WebPage"', '"sku":"POGON-', '"additionalProperty"']) {
+          if (!serialized.includes(required)) fail(file, `product graph missing ${required}`);
+        }
+      }
     } catch (error) {
       fail(file, `invalid JSON-LD: ${error.message}`);
     }
@@ -122,6 +131,16 @@ if (!robots.includes('Sitemap: https://ridepogon.com/sitemap.xml')) failures.pus
 for (const route of ['/checkout', '/payment/', '/api/']) {
   if (!robots.includes(`Disallow: ${route}`)) failures.push(`public/robots.txt: missing disallow for ${route}`);
 }
+
+const llms = await readFile(join(publicDir, 'llms.txt'), 'utf8');
+const llmsFull = await readFile(join(publicDir, 'llms-full.txt'), 'utf8');
+for (const required of ['Pogon Mobility', 'Tržište ove dokumentacije: Srbija', 'Valuta onlajn kupovine: RSD', '/products/cargo/', '/products/core/', '/products/glide/', 'UK sadržaj pod /uk/ predstavlja odvojeno tržište']) {
+  if (!llms.includes(required)) failures.push(`public/llms.txt: missing verified fact or market boundary: ${required}`);
+}
+for (const model of ['Pogon Cargo', 'Pogon Core', 'Pogon Glide']) {
+  if (!llmsFull.includes(`### ${model}`)) failures.push(`public/llms-full.txt: missing model facts for ${model}`);
+}
+if (!llmsFull.includes('## Edukativni izvori')) failures.push('public/llms-full.txt: missing guide source index');
 
 const guideFiles = htmlFiles.filter((file) => /public[\\/]vodici[\\/][^\\/]+[\\/]index\.html$/.test(file));
 for (const file of guideFiles) {

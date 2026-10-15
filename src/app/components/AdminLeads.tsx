@@ -1,7 +1,8 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowUpDown, CalendarCheck, Check, Download, FilterX, Lock, LogOut, PackageCheck, Plus, RefreshCw, Target, Users, X } from 'lucide-react';
-import { AdminSession, createLead, fetchLeads, fetchPaidOrders, Lead, PaidOrder, refreshAdminSession, signInAdmin, SUPABASE_ADMIN_EMAIL, updateLead } from '../../lib/supabase';
+import { AdminSession, createLead, fetchLeads, fetchPaidOrders, fetchUkLeads, Lead, PaidOrder, refreshAdminSession, signInAdmin, SUPABASE_ADMIN_EMAIL, UkLead, updateLead } from '../../lib/supabase';
 import { AdminOrdersPanel } from './AdminOrdersPanel';
+import { AdminUkLeadsPanel } from './AdminUkLeadsPanel';
 
 const ADMIN_SESSION_KEY = 'pogon_supabase_admin_session';
 const escapeXml = (value: string | null | undefined) => String(value ?? '')
@@ -76,6 +77,8 @@ export function AdminLeads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [paidOrders, setPaidOrders] = useState<PaidOrder[]>([]);
   const [paidOrdersError, setPaidOrdersError] = useState('');
+  const [ukLeads, setUkLeads] = useState<UkLead[]>([]);
+  const [ukLeadsError, setUkLeadsError] = useState('');
   const [saveState, setSaveState] = useState<Record<string, 'saving' | 'saved' | 'error'>>({});
   const [filters, setFilters] = useState<LeadFilters>(EMPTY_FILTERS);
   const [sort, setSort] = useState<{ column: SortableLeadColumn; direction: 'asc' | 'desc' } | null>(null);
@@ -156,6 +159,15 @@ export function AdminLeads() {
           ? 'The orders API is not running in this preview. Open the deployed admin or use npm run dev:fullstack.'
           : 'Completed orders could not be loaded. Try Refresh again.');
       }
+      try {
+        setUkLeads(await fetchUkLeads(activeSession.access_token));
+        setUkLeadsError('');
+      } catch (cause) {
+        if (cause instanceof Error && cause.message === 'ADMIN_SESSION_EXPIRED') throw cause;
+        setUkLeadsError(cause instanceof Error && cause.message === 'ADMIN_UK_LEADS_API_NOT_RUNNING'
+          ? 'The UK leads API is not running in this preview. Open the deployed admin or use npm run dev:fullstack.'
+          : 'UK landing page enquiries could not be loaded. Try Refresh again.');
+      }
       setLoginError('');
     } catch {
       localStorage.removeItem(ADMIN_SESSION_KEY);
@@ -190,6 +202,8 @@ export function AdminLeads() {
     setLeads([]);
     setPaidOrders([]);
     setPaidOrdersError('');
+    setUkLeads([]);
+    setUkLeadsError('');
   };
 
   const scrollToOrders = () => {
@@ -328,7 +342,7 @@ export function AdminLeads() {
           <div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-black px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white"><Users className="size-4 text-[#7fff00]" />Admin</div>
             <h1 className="text-4xl font-black tracking-tight sm:text-5xl">Sales CRM</h1>
-            <p className="mt-2 text-sm text-black/55">Shared Supabase database · {leads.length} {leads.length === 1 ? 'lead' : 'leads'} · {paidOrders.length} paid {paidOrders.length === 1 ? 'order' : 'orders'}</p>
+            <p className="mt-2 text-sm text-black/55">Shared Supabase database · {leads.length} Serbian {leads.length === 1 ? 'lead' : 'leads'} · {ukLeads.length} UK {ukLeads.length === 1 ? 'lead' : 'leads'} · {paidOrders.length} paid {paidOrders.length === 1 ? 'order' : 'orders'}</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <button type="button" onClick={scrollToOrders} aria-controls="completed-orders" className="inline-flex items-center gap-2 rounded-full bg-[#7fff00] px-5 py-3 text-sm font-black text-black shadow-sm transition hover:bg-[#70e600]"><PackageCheck className="size-4" />Completed orders<span className="rounded-full bg-black px-2 py-0.5 text-xs text-[#7fff00]">{paidOrdersError ? '!' : paidOrders.length}</span></button>
@@ -433,6 +447,7 @@ export function AdminLeads() {
             </div>
           )}
         </section>
+        <AdminUkLeadsPanel leads={ukLeads} loading={loading} error={ukLeadsError} />
         <AdminOrdersPanel orders={paidOrders} loading={loading} error={paidOrdersError} />
         <a href="/" className="mt-6 inline-flex text-sm font-bold text-black/50 hover:text-black">← Back to website</a>
       </div>

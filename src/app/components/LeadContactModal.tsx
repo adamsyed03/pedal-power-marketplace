@@ -1,6 +1,8 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, MessageCircle, Phone, X } from 'lucide-react';
 import { submitLead } from '../../lib/supabase';
+import { trackEvent } from '../../lib/analytics';
+import { submitUkLead } from '../../uk/ukLeads';
 
 type LeadContactModalProps = {
   isOpen: boolean;
@@ -8,6 +10,7 @@ type LeadContactModalProps = {
   source: string;
   intent?: 'test-ride' | 'purchase' | 'consultation';
   whatsappHref: string;
+  market?: 'serbia' | 'uk';
   onClose: () => void;
 };
 
@@ -23,7 +26,7 @@ const formatLocalPhone = (value: string) => {
   return [digits.slice(0, 2), digits.slice(2, 5), digits.slice(5, 9)].filter(Boolean).join(' ');
 };
 
-export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', whatsappHref, onClose }: LeadContactModalProps) {
+export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', whatsappHref, market = 'serbia', onClose }: LeadContactModalProps) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
@@ -34,8 +37,9 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
   const isPurchase = intent === 'purchase';
   const isConsultation = intent === 'consultation';
   const isNameValid = name.trim().length >= 2;
-  const localPhoneDigits = getLocalPhoneDigits(phone);
-  const isPhoneValid = localPhoneDigits.length >= 8;
+  const isUk = market === 'uk';
+  const localPhoneDigits = isUk ? phone.replace(/\D/g, '') : getLocalPhoneDigits(phone);
+  const isPhoneValid = isUk ? localPhoneDigits.length >= 7 : localPhoneDigits.length >= 8;
   const isFormValid = isNameValid && isPhoneValid;
 
   useEffect(() => {
@@ -55,7 +59,7 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const cleanName = name.trim();
-    const cleanPhone = `+381 ${formatLocalPhone(phone)}`;
+    const cleanPhone = isUk ? phone.trim() : `+381 ${formatLocalPhone(phone)}`;
 
     if (!isFormValid) {
       setError(tr({
@@ -68,7 +72,12 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
 
     try {
       setIsSubmitting(true);
-      await submitLead({ name: cleanName, phone: cleanPhone, source, language: lang, city: null, country: null, date_contacted: null, comment: null });
+      if (isUk) {
+        await submitUkLead({ name: cleanName, phone: cleanPhone, source, message: `UK ${intent} enquiry` });
+        trackEvent('uk_lead_submit', { source, intent, market: 'uk' });
+      } else {
+        await submitLead({ name: cleanName, phone: cleanPhone, source, language: lang, city: null, country: null, date_contacted: null, comment: null });
+      }
       setSubmitted(true);
       setError('');
     } catch {
@@ -149,28 +158,28 @@ export function LeadContactModal({ isOpen, lang, source, intent = 'test-ride', w
                 {tr({ sr: 'Broj telefona', en: 'Phone number', ru: 'Номер телефона' })}
                 <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-white/5 transition-all focus-within:border-[#7fff00]/60 focus-within:bg-white/[0.07]">
                   <div className="flex shrink-0 items-center gap-2 border-r border-white/10 px-3.5 py-3 text-base font-semibold text-white">
-                    <span aria-hidden="true">🇷🇸</span>
-                    <span>+381</span>
+                    <span aria-hidden="true">{isUk ? '🇬🇧' : '🇷🇸'}</span>
+                    <span>{isUk ? '+44' : '+381'}</span>
                   </div>
                   <div className="relative min-w-0 flex-1">
                     <Phone className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/30" aria-hidden="true" />
                     <input
                       ref={phoneInputRef}
                       value={phone}
-                      onChange={(event) => { setPhone(formatLocalPhone(event.target.value)); setError(''); }}
+                      onChange={(event) => { setPhone(isUk ? event.target.value.slice(0, 24) : formatLocalPhone(event.target.value)); setError(''); }}
                       type="tel"
-                      inputMode="numeric"
+                      inputMode={isUk ? 'tel' : 'numeric'}
                       enterKeyHint="done"
                       autoComplete="tel-national"
                       aria-describedby="phone-help"
                       className="w-full bg-transparent py-3 pl-10 pr-10 text-base font-normal normal-case tracking-[0.04em] text-white outline-none placeholder:text-white/25"
-                      placeholder="6x xxx xxxx"
+                      placeholder={isUk ? '07xxx xxxxxx' : '6x xxx xxxx'}
                     />
                     {isPhoneValid && <CheckCircle2 className="absolute right-3 top-1/2 size-5 -translate-y-1/2 text-[#7fff00]" aria-hidden="true" />}
                   </div>
                 </div>
                 <span id="phone-help" className="mt-2 block text-[0.68rem] font-normal normal-case tracking-normal text-white/35">
-                  {tr({
+                  {isUk ? 'Enter a UK mobile or landline number.' : tr({
                     sr: 'Unesite broj bez početne nule — mi ćemo dodati pozivni broj.',
                     en: 'Enter the number without the leading zero — we add the country code.',
                     ru: 'Введи номер без нуля в начале — код страны добавим сами.',

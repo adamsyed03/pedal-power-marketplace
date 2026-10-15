@@ -43,16 +43,63 @@ try {
     const description = localize(details.seoDescription, 'sr');
     const canonical = `${siteUrl}${details.route}`;
     const image = absoluteImage(details.gallery[0].src);
+    const additionalProperty = details.specifications.flatMap((group) => group.items.map((item) => ({
+      '@type': 'PropertyValue',
+      name: localize(item.label, 'sr'),
+      value: localize(item.value, 'sr'),
+    })));
     const structuredData = {
       '@context': 'https://schema.org',
       '@graph': [
         {
+          '@type': 'OnlineStore',
+          '@id': `${siteUrl}/#organization`,
+          name: 'Pogon',
+          legalName: 'Pogon Mobility d.o.o.',
+          url: `${siteUrl}/`,
+          telephone: '+381631505003',
+          email: 'pogonmobility@gmail.com',
+          areaServed: { '@type': 'Country', name: 'Srbija' },
+        },
+        {
+          '@type': 'Brand',
+          '@id': `${siteUrl}/#brand`,
+          name: 'Pogon',
+          url: `${siteUrl}/`,
+        },
+        {
+          '@type': 'WebSite',
+          '@id': `${siteUrl}/#website`,
+          url: `${siteUrl}/`,
+          name: 'Pogon',
+          inLanguage: 'sr-Latn',
+          publisher: { '@id': `${siteUrl}/#organization` },
+        },
+        {
+          '@type': 'WebPage',
+          '@id': `${canonical}#webpage`,
+          url: canonical,
+          name: title,
+          description,
+          inLanguage: 'sr-Latn',
+          isPartOf: { '@id': `${siteUrl}/#website` },
+          about: { '@id': `${canonical}#product` },
+          mainEntity: { '@id': `${canonical}#product` },
+          dateModified: '2026-10-15',
+        },
+        {
           '@type': 'Product',
           '@id': `${canonical}#product`,
           name: details.product.name,
+          sku: `POGON-${productKey.toUpperCase()}`,
+          model: details.product.name,
           image: details.gallery.map((item) => absoluteImage(item.src)),
           description,
-          brand: { '@type': 'Brand', name: 'Pogon' },
+          category: localize(details.eyebrow, 'sr'),
+          brand: { '@id': `${siteUrl}/#brand` },
+          manufacturer: { '@id': `${siteUrl}/#organization` },
+          mainEntityOfPage: { '@id': `${canonical}#webpage` },
+          additionalProperty,
           aggregateRating: {
             '@type': 'AggregateRating',
             ratingValue: formatProductRating(productRatings[productKey]),
@@ -65,7 +112,7 @@ try {
             price: String(details.product.priceRsd),
             availability: 'https://schema.org/InStock',
             itemCondition: 'https://schema.org/NewCondition',
-            seller: { '@type': 'Organization', name: 'Pogon Mobility d.o.o.' },
+            seller: { '@id': `${siteUrl}/#organization` },
             shippingDetails: {
               '@type': 'OfferShippingDetails',
               shippingRate: { '@type': 'MonetaryAmount', value: '3900', currency: 'RSD' },
@@ -116,13 +163,21 @@ try {
     <link rel="alternate" hreflang="en" href="${canonical}?lang=en" />
     <link rel="alternate" hreflang="ru" href="${canonical}?lang=ru" />
     <link rel="alternate" hreflang="x-default" href="${canonical}" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="Pogon — sažete proverene činjenice" />
+    <link rel="alternate" type="text/plain" href="/llms-full.txt" title="Pogon — detaljne proverene činjenice" />
     <meta property="og:type" content="product" />
     <meta property="og:site_name" content="Pogon" />
+    <meta property="og:locale" content="sr_RS" />
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:url" content="${canonical}" />
     <meta property="og:image" content="${image}" />
+    <meta property="og:image:width" content="${details.gallery[0].width}" />
+    <meta property="og:image:height" content="${details.gallery[0].height}" />
     <meta property="og:image:alt" content="${escapeHtml(details.product.name)}" />
+    <meta property="product:price:amount" content="${details.product.priceRsd}" />
+    <meta property="product:price:currency" content="RSD" />
+    <meta property="product:availability" content="in stock" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />

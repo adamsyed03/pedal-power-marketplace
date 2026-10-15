@@ -34,10 +34,19 @@ const promotionCopy = {
 type PromotionBannerProps = {
   language: SiteLanguage;
   modelsHref?: string;
+  market?: 'serbia' | 'uk';
 };
 
-export function PromotionBanner({ language, modelsHref = '/#modeli' }: PromotionBannerProps) {
-  const copy = promotionCopy[language];
+export function PromotionBanner({ language, modelsHref = '/#modeli', market = 'serbia' }: PromotionBannerProps) {
+  const copy = market === 'uk' ? {
+    label: 'Pogon UK',
+    online: 'Premium European e-bikes',
+    order: 'See the road differently:',
+    discount: 'European design',
+    models: 'across the four-model range',
+    gift: 'Made for everyday adventure',
+    action: 'Discover the range',
+  } : promotionCopy[language];
 
   return (
     <aside className="border-b border-black bg-[#7fff00] text-black" aria-label={copy.label}>
