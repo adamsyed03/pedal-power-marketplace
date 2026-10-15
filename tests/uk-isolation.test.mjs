@@ -98,6 +98,8 @@ test('UK product pages use isolated routes, GBP pricing and enquiry-only calls t
   assert.doesNotMatch(form, /type="checkbox"/);
   assert.match(form, /Your details will not be added to marketing updates/);
   assert.doesNotMatch(page, /\/checkout|RSD|NestPay|Banca Intesa/);
+  assert.match(page, /<main className="lg:\[zoom:0\.8\]">/);
+  assert.doesNotMatch(read('src/app/components/product/ProductPage.tsx'), /\[zoom:0\.8\]/);
 });
 
 test('Fold notifications and UK product leads capture WhatsApp numbers and product context', () => {
@@ -117,6 +119,53 @@ test('existing admin can identify UK rows through the shared lead source and pho
   assert.match(admin, /lead\.phone/);
   assert.match(adapter, /source: `UK landing page/);
   assert.match(adapter, /return `\+44/);
+});
+
+test('product videos are shared safely across UK and Serbian galleries and enabled only after R2 verification passes', () => {
+  const app = read('src/app/App.tsx');
+  const config = read('src/lib/productVideos.ts');
+  const player = read('src/app/components/product/ProductVideo.tsx');
+  const gallery = read('src/uk/UkProductGallery.tsx');
+  const page = read('src/uk/UkProductPage.tsx');
+  const serbianGallery = read('src/app/components/product/ProductGallery.tsx');
+  const serbianPage = read('src/app/components/product/ProductPage.tsx');
+  const ukConfig = read('src/uk/productVideos.ts');
+  const ukPlayer = read('src/uk/ProductVideo.tsx');
+
+  assert.match(config, /core:[\s\S]*pub-a596780795d544d0ae581ceaebbb8e46\.r2\.dev\/20260729_163748\.mp4[\s\S]*available: true/);
+  assert.match(config, /cargo:[\s\S]*pub-a596780795d544d0ae581ceaebbb8e46\.r2\.dev\/20260713_184119\.mp4[\s\S]*available: true/);
+  assert.match(config, /glide:[\s\S]*pub-a596780795d544d0ae581ceaebbb8e46\.r2\.dev\/glide%20\(2\)\.mp4[\s\S]*available: true/);
+  assert.equal((config.match(/available: true/g) ?? []).length, 3);
+  assert.equal((config.match(/available: false/g) ?? []).length, 0);
+  assert.match(config, /return video\.available \? video : undefined/);
+
+  assert.match(player, /<video/);
+  assert.match(player, /playsInline/);
+  assert.match(player, /loop/);
+  assert.match(player, /preload=\{active && isInView \? 'metadata' : 'none'\}/);
+  assert.match(player, /IntersectionObserver/);
+  assert.match(player, /prefers-reduced-motion: reduce/);
+  assert.match(player, /visibilitychange/);
+  assert.match(player, /PRODUCT_VIDEO_PLAY_EVENT/);
+  assert.match(player, /onError=\{\(\) => setHasError\(true\)\}/);
+  assert.match(player, /fit\?: 'cover' \| 'contain'/);
+  assert.match(player, /fit === 'contain' \? 'object-contain' : 'object-cover'/);
+
+  assert.match(gallery, /index === 0 && video[\s\S]*kind: 'image'[\s\S]*kind: 'video'/);
+  assert.match(gallery, /Play className=/);
+  assert.match(gallery, /onTouchStart=\{handleTouchStart\}/);
+  assert.match(page, /<UkProductGallery[\s\S]*video=\{productVideo\}/);
+  assert.match(page, /Pogon in motion[\s\S]*aspect-\[9\/16\][\s\S]*fit="contain"/);
+  assert.match(page, /lg:grid-cols-\[0\.85fr_1\.15fr\][\s\S]*calc\(82svh\*9\/16\)[\s\S]*max-w-lg/);
+  assert.match(page, /max-w-3xl text-center lg:self-center[\s\S]*text-4xl[\s\S]*sm:text-6xl lg:text-\[4rem\]/);
+  assert.match(app, /isUk \? ukLandingGalleryFor\(model\) : model\.gallery/);
+  assert.match(app, /isUk \? ukLandingGalleryFor\(lightboxModel\) : lightboxModel\.gallery/);
+  assert.match(serbianGallery, /index === 0 && video[\s\S]*kind: 'image'[\s\S]*kind: 'video'/);
+  assert.match(serbianGallery, /<ProductVideo[\s\S]*Play className=/);
+  assert.match(serbianPage, /availableProductVideo\(productKey\)/);
+  assert.match(serbianPage, /<ProductGallery[^>]*video=\{productVideo\}/);
+  assert.match(ukConfig, /PRODUCT_VIDEOS[\s\S]*availableProductVideo/);
+  assert.match(ukPlayer, /export \{ ProductVideo \}/);
 });
 
 test('latest UK-only merchandising changes do not rewrite Serbian content', () => {

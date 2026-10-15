@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Bike, Check, CloudRain, Compass, MapPin, MessageCircle, ShieldCheck, Smartphone, Wrench } from 'lucide-react';
 import { ImageWithFallback } from '../app/components/ImageWithFallback';
-import { ProductGallery } from '../app/components/product/ProductGallery';
 import { PromotionBanner } from '../app/components/PromotionBanner';
 import { publicAsset } from '../lib/assets';
 import { productDetails, type ProductMedia } from '../lib/productDetails';
@@ -9,6 +8,9 @@ import { setPageMetadata } from '../lib/seo';
 import { trackEvent } from '../lib/analytics';
 import { UkInterestForm } from './UkInterestForm';
 import { UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_DISPLAY, UK_WHATSAPP_HREF, type UkProductKey } from './ukMarket';
+import { ProductVideo } from './ProductVideo';
+import { availableUkProductVideo } from './productVideos';
+import { UkProductGallery } from './UkProductGallery';
 
 const english = (value: string): { sr: string; en: string; ru: string } => ({ sr: value, en: value, ru: value });
 
@@ -46,6 +48,9 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
   const price = UK_PRODUCT_PRICES[productKey];
   const unavailable = productKey === 'fold';
   const formId = unavailable ? 'notify' : 'interest';
+  const gallery = galleryFor(productKey);
+  const productVideo = availableUkProductVideo(productKey);
+  const videoPoster = gallery[0].src;
 
   useEffect(() => {
     setPageMetadata({
@@ -53,7 +58,7 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
       description: `${product.description} ${price.current}, VAT included. Register your interest for the Pogon UK launch.`,
       path: `/uk/products/${productKey}/`,
       language: 'en-GB',
-      image: `https://ridepogon.com${galleryFor(productKey)[0].src}`,
+      image: `https://ridepogon.com${gallery[0].src}`,
       structuredData: null,
     });
     trackEvent('uk_product_view', { market: 'UK', model: productKey, displayed_price_gbp: price.amount });
@@ -70,21 +75,21 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
         </div>
       </header>
 
-      <main>
-        <section className="mx-auto max-w-[1440px] px-5 py-7 sm:px-8 sm:py-12">
+      <main className="lg:[zoom:0.8]">
+        <section className="mx-auto max-w-[1440px] px-5 pb-14 pt-7 sm:px-6 sm:pb-20 sm:pt-10 lg:px-10">
           <a href="/uk/#modeli" className="mb-6 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-black/50 hover:text-black"><ArrowLeft className="size-4" />All UK models</a>
-          <div className="grid items-start gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
-            <ProductGallery media={galleryFor(productKey)} language="en" productName={`Pogon ${product.name}`} />
-            <div className="lg:sticky lg:top-24">
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-black/45">{product.category}</p>
-              <h1 className="mt-3 text-5xl font-black tracking-[-0.05em] sm:text-7xl">Pogon {product.name}</h1>
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-0">
+            <UkProductGallery media={gallery} productName={`Pogon ${product.name}`} video={productVideo} />
+            <div className="min-w-0 lg:border-l lg:border-black/10 lg:pl-10 xl:pl-14">
+              <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#397700]">{product.category}</p>
+              <h1 className="mt-3 text-[clamp(2.5rem,4vw,3.75rem)] font-black leading-[0.94] tracking-[-0.045em]">Pogon {product.name}</h1>
               <div className="relative">
                 <div className={unavailable ? 'select-none blur-[6px] opacity-35' : ''}>
-                  <p className="mt-5 max-w-xl text-xl font-semibold leading-8 text-black/65">{product.positioning}</p>
-                  <p className="mt-5 max-w-xl leading-7 text-black/55">{product.description}</p>
-                  <div className="mt-7 flex flex-wrap items-end gap-x-4 gap-y-2"><span className="text-4xl font-black tracking-tight">{price.current}</span><span className="pb-1 text-sm font-bold text-black/45">VAT included</span></div>
-                  <div className="mt-8 grid grid-cols-3 border-y border-black/10">
-                    {ukHighlights[productKey].map((item) => <div key={item.label} className="border-r border-black/10 px-2 py-5 text-center last:border-r-0"><div className="text-sm font-black sm:text-lg">{item.value}</div><div className="mt-1 text-[0.58rem] font-bold uppercase leading-4 tracking-[0.1em] text-black/40">{item.label}</div></div>)}
+                  <p className="mt-4 max-w-xl text-sm font-semibold leading-relaxed text-black/62 sm:text-base">{product.positioning}</p>
+                  <p className="mt-4 max-w-xl text-sm leading-relaxed text-black/55">{product.description}</p>
+                  <div className="mt-6 flex flex-wrap items-end gap-x-3 gap-y-1 border-y border-black/10 py-5"><span className="text-3xl font-black tracking-[-0.035em] sm:text-[2.45rem]">{price.current}</span><span className="pb-1 text-[0.66rem] font-bold uppercase tracking-[0.12em] text-black/40">VAT included</span></div>
+                  <div className="mt-6 grid grid-cols-3 border-y border-black/10">
+                    {ukHighlights[productKey].map((item) => <div key={item.label} className="border-r border-black/10 px-2 py-4 text-center last:border-r-0"><div className="text-sm font-black sm:text-base">{item.value}</div><div className="mt-1 text-[0.56rem] font-bold uppercase leading-4 tracking-[0.1em] text-black/40">{item.label}</div></div>)}
                   </div>
                 </div>
                 {unavailable ? <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"><div className="rounded-full bg-black px-8 py-4 text-center text-base font-black leading-tight text-white shadow-xl"><span className="block">sold out</span><span className="block">more coming soon</span></div></div> : null}
@@ -92,7 +97,7 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
               <a href={`#${formId}`} className="mt-6 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-[#7fff00] px-6 py-4 text-sm font-black uppercase tracking-[0.14em] text-black shadow-lg transition hover:bg-[#70e600]">{unavailable ? 'Notify me' : 'Register interest'}<ArrowRight className="size-4" /></a>
               <p className="mt-3 text-center text-xs leading-5 text-black/45">No payment or reservation is taken. UK availability will be confirmed by the Pogon team.</p>
 
-              <section className="mt-8" aria-labelledby="uk-included-heading">
+              <section className="mt-6" aria-labelledby="uk-included-heading">
                 <h2 id="uk-included-heading" className="text-lg font-black tracking-tight">included at no extra cost</h2>
                 <div className="mt-3 space-y-2">
                   {[
@@ -110,7 +115,7 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
         <section className="bg-black px-5 py-16 text-white sm:px-8 sm:py-24">
           <div className="mx-auto max-w-[1180px]">
             <p className="text-xs font-black uppercase tracking-[0.22em] text-[#7fff00]">European premium series</p>
-            <h2 className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">A different lens on every journey.</h2>
+            <h2 className="mt-4 max-w-4xl text-3xl font-black tracking-[-0.04em] sm:text-5xl">A different lens on every journey.</h2>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/60">Pogon brings together distinctive European design, considered technology and the freedom to turn an ordinary route into something worth remembering.</p>
             <div className={`mt-12 grid gap-5 ${productKey === 'fold' ? '' : 'md:grid-cols-2'}`}>
               <article className="overflow-hidden rounded-3xl bg-white/5"><ImageWithFallback src={storyImages[productKey][0]} alt={`${product.name} design detail`} width={1122} height={1402} loading="lazy" className="aspect-[4/3] w-full object-cover" /><div className="p-7"><Compass className="size-6 text-[#7fff00]" /><h3 className="mt-5 text-2xl font-black">Made for more than the commute</h3><p className="mt-3 leading-7 text-white/55">A premium ride for new routes, unplanned turns and the kind of everyday adventure that changes how you see your surroundings.</p></div></article>
@@ -119,9 +124,18 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
           </div>
         </section>
 
+        {productVideo ? <section className="bg-[#0b0b0b] px-5 py-16 text-white sm:px-8 sm:py-24" aria-labelledby="uk-product-film-heading">
+          <div className="mx-auto grid max-w-[1180px] items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+            <div className="mx-auto max-w-3xl text-center lg:self-center"><p className="text-xs font-black uppercase tracking-[0.22em] text-[#7fff00]">Pogon in motion</p><h2 id="uk-product-film-heading" className="mt-5 text-4xl font-black leading-[0.93] tracking-[-0.05em] sm:text-6xl lg:text-[4rem]">See {product.name} from a different perspective.</h2></div>
+            <div className="mx-auto aspect-[9/16] w-[min(100%,calc(82svh*9/16))] max-w-lg overflow-hidden border border-white/10 shadow-2xl lg:justify-self-center">
+              <ProductVideo src={productVideo.src} mimeType={productVideo.mimeType} poster={videoPoster} title={productVideo.title} fit="contain" className="h-full w-full" />
+            </div>
+          </div>
+        </section> : null}
+
         <section id="technology" className="mx-auto max-w-[1180px] scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-black uppercase tracking-[0.22em] text-black/40">Cutting-edge connected technology</p>
-          <h2 className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">Control your bike from your phone.</h2>
+          <h2 className="mt-4 max-w-4xl text-3xl font-black tracking-[-0.04em] sm:text-5xl">Control your bike from your phone.</h2>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-black/55">The Pogon app puts supported bike controls, useful ride information and connected security in your pocket, creating a smarter relationship between you and your bike. Feature availability varies by model and is confirmed with the final UK specification.</p>
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             {[{ icon: Smartphone, title: 'App control', body: 'Manage supported bike controls and connected functions directly from your phone.' }, { icon: MapPin, title: 'Bike visibility', body: 'Check your bike location and connected status wherever supported services are available.' }, { icon: ShieldCheck, title: 'Smart security', body: 'GPS-backed visibility, connected protection and NFC access on supported models bring cutting-edge confidence to every ride.' }].map(({ icon: Icon, title, body }) => <article key={title} className="rounded-3xl border border-black/10 bg-white p-7"><Icon className="size-7" /><h3 className="mt-5 text-xl font-black">{title}</h3><p className="mt-3 text-sm leading-6 text-black/55">{body}</p></article>)}
@@ -131,7 +145,7 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
         <section id="specifications" className="border-y border-black/10 bg-white px-5 py-16 sm:px-8 sm:py-24">
           <div className="mx-auto max-w-[1180px]">
             <p className="text-xs font-black uppercase tracking-[0.22em] text-black/40">UK product details</p>
-            <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">The essentials, clearly stated.</h2>
+            <h2 className="mt-4 text-3xl font-black tracking-[-0.04em] sm:text-5xl">The essentials, clearly stated.</h2>
             <div className="mt-10 grid gap-4 md:grid-cols-2">
               {[
                 ['Model', `Pogon ${product.name}`],
@@ -147,14 +161,14 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
 
         <section id="service" className="border-y border-black/10 bg-white px-5 py-16 sm:px-8 sm:py-20">
           <div className="mx-auto grid max-w-[1180px] gap-10 lg:grid-cols-2 lg:items-center">
-            <div><Wrench className="size-8" /><h2 className="mt-5 text-4xl font-black tracking-tight">UK support, built with care.</h2><p className="mt-5 max-w-xl leading-7 text-black/55">Our UK service partner network is being developed. Register your interest and the UK team will explain the support and servicing options available for your location before any purchase decision.</p></div>
+            <div><Wrench className="size-8" /><h2 className="mt-5 text-3xl font-black tracking-tight sm:text-4xl">UK support, built with care.</h2><p className="mt-5 max-w-xl leading-7 text-black/55">Our UK service partner network is being developed. Register your interest and the UK team will explain the support and servicing options available for your location before any purchase decision.</p></div>
             <div className="grid gap-3"><a href={UK_WHATSAPP_HREF} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-2xl bg-black p-5 text-white"><span className="inline-flex items-center gap-3 font-black"><MessageCircle className="size-5 text-[#7fff00]" />WhatsApp {UK_WHATSAPP_DISPLAY}</span><ArrowRight className="size-4" /></a></div>
           </div>
         </section>
 
         <section className="px-5 py-16 sm:px-8 sm:py-24">
           <div className="mx-auto max-w-[1180px]">
-            <div className="text-center"><p className="text-xs font-black uppercase tracking-[0.22em] text-black/40">Four models. Four perspectives.</p><h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Which Pogon is yours?</h2></div>
+            <div className="text-center"><p className="text-xs font-black uppercase tracking-[0.22em] text-black/40">Four models. Four perspectives.</p><h2 className="mt-4 text-3xl font-black tracking-[-0.04em] sm:text-5xl">Which Pogon is yours?</h2></div>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {productOrder.map((key) => {
                 const item = UK_PRODUCT_COPY[key];
@@ -168,14 +182,14 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
 
         <section className="bg-black px-5 py-16 text-white sm:px-8 sm:py-24">
           <div className="mx-auto grid max-w-[1180px] gap-10 lg:grid-cols-[0.75fr_1.25fr]">
-            <div><p className="text-xs font-black uppercase tracking-[0.22em] text-[#7fff00]">No fine print</p><h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Frequently asked questions</h2></div>
+            <div><p className="text-xs font-black uppercase tracking-[0.22em] text-[#7fff00]">No fine print</p><h2 className="mt-4 text-3xl font-black tracking-[-0.04em] sm:text-5xl">Frequently asked questions</h2></div>
             <div className="space-y-3">{ukFaq.map((item, index) => <details key={item.question} open={index === 0} className="group rounded-2xl border border-white/15 bg-white/[0.06]"><summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-bold"><span>{item.question}</span><span className="text-xl text-[#7fff00] transition-transform group-open:rotate-45">+</span></summary><p className="border-t border-white/10 px-5 pb-5 pt-4 text-sm leading-7 text-white/60">{item.answer}</p></details>)}</div>
           </div>
         </section>
 
         <section id={formId} className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
           <div className="mx-auto grid max-w-[1180px] gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <div><p className="text-xs font-black uppercase tracking-[0.22em] text-black/40">Pogon UK</p><h2 className="mt-4 text-4xl font-black tracking-tight">{unavailable ? 'Be first to hear when Fold returns.' : `Take the next step with ${product.name}.`}</h2><ul className="mt-7 space-y-3 text-sm text-black/60">{['No payment is taken', 'Saved with a clear UK landing page label', 'The UK team will contact you on WhatsApp'].map((item) => <li key={item} className="flex items-center gap-3"><span className="grid size-6 place-items-center rounded-full bg-[#7fff00]"><Check className="size-3.5 text-black" /></span>{item}</li>)}</ul></div>
+            <div><p className="text-xs font-black uppercase tracking-[0.22em] text-black/40">Pogon UK</p><h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{unavailable ? 'Be first to hear when Fold returns.' : `Take the next step with ${product.name}.`}</h2><ul className="mt-7 space-y-3 text-sm text-black/60">{['No payment is taken', 'Saved with a clear UK landing page label', 'The UK team will contact you on WhatsApp'].map((item) => <li key={item} className="flex items-center gap-3"><span className="grid size-6 place-items-center rounded-full bg-[#7fff00]"><Check className="size-3.5 text-black" /></span>{item}</li>)}</ul></div>
             <UkInterestForm model={productKey} notifyOnly={unavailable} />
           </div>
         </section>

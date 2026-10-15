@@ -15,6 +15,7 @@ import { formatProductRating, productRatings, productReviews } from '../../../li
 import { submitLead } from '../../../lib/supabase';
 import { trackEvent } from '../../../lib/analytics';
 import { setPageMetadata } from '../../../lib/seo';
+import { availableProductVideo } from '../../../lib/productVideos';
 
 const CART_STORAGE_KEY = 'pogon-cart-v1';
 const LEGACY_CART_STORAGE_KEY = 'pogon-accessory-cart-v1';
@@ -112,6 +113,7 @@ function ProductComparison({ activeKey, language }: { activeKey: BikeKey; langua
 export function ProductPage({ productKey, initialLanguage = 'sr' }: { productKey: BikeKey; initialLanguage?: SiteLanguage }) {
   const details = getProductDetails(productKey);
   if (!details) return null;
+  const productVideo = availableProductVideo(productKey);
   const [language, setLanguage] = useState<SiteLanguage>(initialLanguage);
   const [cart, setCart] = useState<ProductCartState>({});
   const [cartRestored, setCartRestored] = useState(false);
@@ -200,7 +202,7 @@ export function ProductPage({ productKey, initialLanguage = 'sr' }: { productKey
         <section className="mx-auto max-w-[1440px] px-5 pb-14 pt-32 sm:px-6 sm:pb-20 sm:pt-32 lg:px-10">
           <nav aria-label={t.breadcrumb} className="mb-6 flex flex-wrap items-center gap-2 border-b border-black/10 pb-4 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-black/40"><a href="/" className="hover:text-black">{t.home}</a><span>/</span><a href="/#modeli" className="hover:text-black">{t.models}</a><span>/</span><span className="text-black">{details.product.name}</span></nav>
           <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-0">
-            <ProductGallery media={details.gallery} language={language} productName={details.product.name} />
+            <ProductGallery media={details.gallery} language={language} productName={details.product.name} video={productVideo} />
             <ProductPurchasePanel details={details} language={language} onBuyNow={(accessoryKeys) => buyNow('pdp-purchase-panel', accessoryKeys)} onTestRide={scrollToTestRide} purchasePanelRef={purchasePanelRef} />
           </div>
         </section>

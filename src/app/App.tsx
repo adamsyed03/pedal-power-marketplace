@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ImageWithFallback } from './components/ImageWithFallback';
-import { Battery, Bike, CloudRain, Smartphone, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones, Gift, ShoppingCart } from 'lucide-react';
+import { Battery, Bike, CloudRain, Smartphone, Zap, Gauge, Shield, ArrowRight, Star, MapPin, Clock, Instagram, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw, X, MessageCircle, Phone, CalendarCheck, CheckCircle2, ChevronDown, Truck, Wrench, Calculator, Car, HeartPulse, Fuel, Timer, Sparkles, Cpu, WalletCards, Headphones, Gift, ShoppingCart, Play } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { LeadContactModal } from './components/LeadContactModal';
 import { PaymentBranding } from './components/PaymentBranding';
@@ -14,7 +14,9 @@ import { setHomeMetadata, setPageMetadata } from '../lib/seo';
 import { formatRsd as formatProductRsd, products, type ProductKey } from '../lib/products';
 import { languageFromSearch, persistSiteLanguage } from '../lib/productDetails';
 import { submitUkLead } from '../uk/ukLeads';
-import { UK_PHONE_DISPLAY, UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_NUMBER } from '../uk/ukMarket';
+import { UK_PHONE_DISPLAY, UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_NUMBER, type UkProductKey } from '../uk/ukMarket';
+import { ProductVideo } from '../uk/ProductVideo';
+import { availableUkProductVideo } from '../uk/productVideos';
 
 type Language = 'en' | 'sr' | 'ru';
 type Localized<T> = Record<Language, T>;
@@ -1248,12 +1250,32 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
     },
   ].sort((left, right) => modelDisplayPosition[left.key] - modelDisplayPosition[right.key]) : baseBikeModels;
 
+  type LandingGalleryItem = {
+    src: string;
+    alt: string;
+    width: number;
+    height: number;
+    poster?: string;
+    video?: NonNullable<ReturnType<typeof availableUkProductVideo>>;
+  };
+
+  const ukLandingGalleryFor = (model: { key: string; gallery: LandingGalleryItem[] }) => {
+    const images = model.gallery;
+    if (images.length === 0) return images;
+    const video = availableUkProductVideo(model.key as UkProductKey);
+    if (!video) return images;
+    const poster = images[0].src;
+    return [images[0], { src: video.src, alt: video.title, width: images[0].width, height: images[0].height, poster, video }, ...images.slice(1)];
+  };
+
   const lightboxModel = bikeModels.find((model) => model.key === activeLightboxProduct);
-  const lightboxGallery = lightboxModel && 'gallery' in lightboxModel ? lightboxModel.gallery : undefined;
+  const lightboxGallery = lightboxModel && 'gallery' in lightboxModel
+    ? (isUk ? ukLandingGalleryFor(lightboxModel) : lightboxModel.gallery)
+    : undefined;
   const lightboxIndex = lightboxModel ? activeGalleryImages[lightboxModel.key] ?? 0 : 0;
-  const lightboxImage = lightboxGallery?.[lightboxIndex];
-  const canZoomOut = lightboxZoom > 1;
-  const canZoomIn = lightboxZoom < 2;
+  const lightboxItem = lightboxGallery?.[lightboxIndex];
+  const canZoomOut = !lightboxItem?.video && lightboxZoom > 1;
+  const canZoomIn = !lightboxItem?.video && lightboxZoom < 2;
   const zoomLightboxIn = () => setLightboxZoom((current) => Math.min(2, Number((current + 0.25).toFixed(2))));
   const zoomLightboxOut = () => setLightboxZoom((current) => Math.max(1, Number((current - 0.25).toFixed(2))));
   const setLightboxImage = (index: number) => {
@@ -1948,7 +1970,9 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
               className={`grid grid-flow-col auto-cols-[minmax(17.5rem,calc(100vw-3rem))] gap-4 overflow-x-auto pb-4 -mx-6 px-6 sm:auto-cols-[21rem] lg:mx-0 lg:px-0 ${isUk ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible lg:gap-3 snap-x snap-mandatory`}
             >
               {bikeModels.map((model) => {
-                const gallery = 'gallery' in model ? model.gallery : undefined;
+                const gallery = 'gallery' in model
+                  ? (isUk ? ukLandingGalleryFor(model) : model.gallery)
+                  : undefined;
                 const defaultGalleryIndex = gallery?.findIndex((image) => image.src === model.image.src) ?? -1;
                 const selectedGalleryIndex = gallery
                   ? activeGalleryImages[model.key] ?? Math.max(defaultGalleryIndex, 0)
@@ -1957,7 +1981,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                   if (!gallery) return;
                   setActiveGalleryImages((current) => ({ ...current, [model.key]: index }));
                 };
-                const selectedImage = gallery ? gallery[selectedGalleryIndex] : model.image;
+                const selectedMedia = gallery ? gallery[selectedGalleryIndex] : model.image;
                 const openProductPage = () => {
                   if (isUk) {
                     window.location.assign(`/uk/products/${model.key}/`);
@@ -1999,14 +2023,21 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                       transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                       className="relative h-full w-full"
                     >
-                      <ImageWithFallback
-                        src={selectedImage.src}
-                        alt={selectedImage.alt}
-                        width={selectedImage.width}
-                        height={selectedImage.height}
+                      {'video' in selectedMedia && selectedMedia.video ? <ProductVideo
+                        src={selectedMedia.video.src}
+                        mimeType={selectedMedia.video.mimeType}
+                        poster={selectedMedia.poster ?? model.image.src}
+                        title={selectedMedia.video.title}
+                        active={activeLightboxProduct === null}
+                        className="h-full w-full"
+                      /> : <ImageWithFallback
+                        src={selectedMedia.src}
+                        alt={selectedMedia.alt}
+                        width={selectedMedia.width}
+                        height={selectedMedia.height}
                         loading="lazy"
                         className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                      />
+                      />}
                     </motion.div>
                     {gallery ? (
                       <div className="absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 items-center justify-between">
@@ -2034,7 +2065,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                         </button>
                       </div>
                     ) : null}
-                    {gallery ? (
+                    {gallery && !('video' in selectedMedia && selectedMedia.video) ? (
                       <button
                         type="button"
                         aria-label={`Zoom ${model.name} photo`}
@@ -2069,27 +2100,28 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                   </div>
                   {gallery ? (
                     <div className="desktop-product-thumbs relative z-40 flex gap-1.5 overflow-x-auto border-t border-border bg-white p-1.5 shadow-inner lg:p-1.5">
-                      {gallery.map((image, index) => (
+                      {gallery.map((item, index) => (
                         <button
-                          key={image.src}
+                          key={item.src}
                           type="button"
-                          aria-label={`Show ${model.name} photo ${index + 1}`}
+                          aria-label={'video' in item && item.video ? `Play ${item.video.title}` : `Show ${model.name} photo ${index + 1}`}
                           onClick={(event) => {
                             event.stopPropagation();
                             setGalleryImage(index);
                           }}
-                          className={`desktop-product-thumb aspect-square w-12 flex-none overflow-hidden rounded-xl border bg-white p-0.5 shadow-sm ring-offset-2 ring-offset-white transition-all sm:w-14 lg:w-11 ${
+                          className={`desktop-product-thumb relative aspect-square w-12 flex-none overflow-hidden rounded-xl border bg-white p-0.5 shadow-sm ring-offset-2 ring-offset-white transition-all sm:w-14 lg:w-11 ${
                             selectedGalleryIndex === index ? 'border-primary ring-2 ring-primary' : 'border-border hover:border-primary/60 hover:ring-2 hover:ring-primary/30'
                           }`}
                         >
                           <ImageWithFallback
-                            src={image.src}
-                            alt={image.alt}
-                            width={image.width}
-                            height={image.height}
+                            src={'video' in item && item.video ? item.poster ?? model.image.src : item.src}
+                            alt={item.alt}
+                            width={item.width}
+                            height={item.height}
                             loading="lazy"
                             className="h-full w-full rounded-lg object-cover object-center transition-transform duration-300 hover:scale-105"
                           />
+                          {'video' in item && item.video ? <span className="absolute inset-0 grid place-items-center bg-black/20 text-white"><span className="grid size-7 place-items-center rounded-full bg-black/70"><Play className="ml-0.5 size-3 fill-current" /></span></span> : null}
                         </button>
                       ))}
                     </div>
@@ -2995,7 +3027,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
         </div>
       </section> : null}
 
-      {lightboxModel && lightboxGallery && lightboxImage ? (
+      {lightboxModel && lightboxGallery && lightboxItem ? (
         <div
           className="fixed inset-0 z-[100] flex flex-col bg-black/95 text-white"
           role="dialog"
@@ -3011,7 +3043,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex items-center rounded-full border border-white/20 bg-white/10 p-1">
+              {!lightboxItem?.video ? <div className="flex items-center rounded-full border border-white/20 bg-white/10 p-1">
                 <button
                   type="button"
                   onClick={(event) => {
@@ -3039,8 +3071,8 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                 >
                   <ZoomIn className="size-4" />
                 </button>
-              </div>
-              <button
+              </div> : null}
+              {!lightboxItem?.video ? <button
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
@@ -3050,7 +3082,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
                 aria-label="Reset zoom"
               >
                 <RotateCcw className="size-5" />
-              </button>
+              </button> : null}
               <button
                 type="button"
                 onClick={(event) => {
@@ -3078,7 +3110,14 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
               <ChevronLeft className="size-6" />
             </button>
 
-            <button
+            {lightboxItem?.video ? <ProductVideo
+              src={lightboxItem.video.src}
+              mimeType={lightboxItem.video.mimeType}
+              poster={lightboxItem.poster ?? lightboxModel.image.src}
+              title={lightboxItem.video.title}
+              active
+              className="h-full w-full rounded-2xl"
+            /> : lightboxItem ? <button
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
@@ -3092,12 +3131,12 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
               aria-label={canZoomIn ? 'Zoom image' : 'Reset zoom'}
             >
               <ImageWithFallback
-                src={lightboxImage.src}
-                alt={lightboxImage.alt}
+                src={lightboxItem.src}
+                alt={lightboxItem.alt}
                 className="max-h-full max-w-full object-contain object-center transition-transform duration-300"
                 style={{ transform: `scale(${lightboxZoom})` }}
               />
-            </button>
+            </button> : null}
 
             <button
               type="button"
@@ -3114,24 +3153,25 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
 
           <div className="border-t border-white/10 px-4 py-3 sm:px-6">
             <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto">
-              {lightboxGallery.map((image, index) => (
+              {lightboxGallery.map((item, index) => (
                 <button
-                  key={`lightbox-${image.src}`}
+                  key={`lightbox-${item.src}`}
                   type="button"
-                  aria-label={`Show ${lightboxModel.name} photo ${index + 1}`}
+                  aria-label={item.video ? `Play ${item.video.title}` : `Show ${lightboxModel.name} photo ${index + 1}`}
                   onClick={(event) => {
                     event.stopPropagation();
                     setLightboxImage(index);
                   }}
-                  className={`aspect-square w-16 flex-none overflow-hidden rounded-xl bg-white transition-all sm:w-20 ${
+                  className={`relative aspect-square w-16 flex-none overflow-hidden rounded-xl bg-white transition-all sm:w-20 ${
                     lightboxIndex === index ? 'ring-2 ring-primary' : 'opacity-65 ring-1 ring-white/20 hover:opacity-100'
                   }`}
                 >
                   <ImageWithFallback
-                    src={image.src}
-                    alt={image.alt}
+                    src={item.video ? item.poster ?? lightboxModel.image.src : item.src}
+                    alt={item.alt}
                     className="h-full w-full object-cover object-center"
                   />
+                  {item.video ? <span className="absolute inset-0 grid place-items-center bg-black/20 text-white"><span className="grid size-8 place-items-center rounded-full bg-black/70"><Play className="ml-0.5 size-3.5 fill-current" /></span></span> : null}
                 </button>
               ))}
             </div>
