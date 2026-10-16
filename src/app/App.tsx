@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { LeadContactModal } from './components/LeadContactModal';
 import { PaymentBranding } from './components/PaymentBranding';
 import { PromotionBanner } from './components/PromotionBanner';
+import { HeroBackgroundVideo } from './components/HeroBackgroundVideo';
 const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
 const TicTacToeGame = lazy(() => import('./components/TicTacToeGame').then((m) => ({ default: m.TicTacToeGame })));
 import { submitLead } from '../lib/supabase';
@@ -204,7 +205,7 @@ function ScrollColorSentence({ text }: { text: string }) {
   );
 }
 
-export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' }) {
+export default function App({ market = 'serbia', heroVideoTest = false }: { market?: 'serbia' | 'uk'; heroVideoTest?: boolean }) {
   const isUk = market === 'uk';
   const cartStorageKey = isUk ? 'pogon-cart-uk-v1' : CART_STORAGE_KEY;
   // Keep the first browser render identical to the build-time render. Browser-only
@@ -306,8 +307,8 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
   }, [cartStorageKey, isUk]);
 
   useEffect(() => {
-    if (isUk) trackEvent('uk_page_view', { market: 'UK', path: '/uk' });
-  }, [isUk]);
+    if (isUk) trackEvent('uk_page_view', { market: 'UK', path: window.location.pathname, hero_video_test: heroVideoTest });
+  }, [heroVideoTest, isUk]);
 
   useEffect(() => {
     if (!hasRestoredCart) return;
@@ -1705,7 +1706,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
 
       <div className="hidden lg:block">
         <section id="top" className="relative flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden bg-black px-6 py-28 text-white">
-          <img
+          {heroVideoTest ? <HeroBackgroundVideo mediaQuery="(min-width: 1024px)" alt="Pogon električni bicikl u gradskoj vožnji" className="absolute inset-0 h-full w-full object-cover object-center" /> : <img
             src={publicAsset('Excellent4.optimized.jpg')}
             alt="Pogon električni bicikl u gradskoj vožnji"
             width={1448}
@@ -1713,7 +1714,7 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
             fetchpriority="high"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover object-center"
-          />
+          />}
           <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center text-center">
             <div role="heading" aria-level={1} className="max-w-4xl text-balance text-[clamp(2.65rem,4.5vw,4.5rem)] font-black leading-[0.98] tracking-[-0.035em] text-white">
@@ -1878,14 +1879,14 @@ export default function App({ market = 'serbia' }: { market?: 'serbia' | 'uk' })
             >
               <div className="absolute -inset-3 bg-gradient-to-br from-primary/25 via-primary/15 to-transparent rounded-3xl blur-2xl pointer-events-none"></div>
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-border/50 shadow-xl">
-                <ImageWithFallback
+                {heroVideoTest ? <HeroBackgroundVideo mediaQuery="(max-width: 1023px)" alt="POGON e-bicikl" className="absolute inset-0 h-full w-full object-cover" /> : <ImageWithFallback
                   src={publicAsset('Excellent4.optimized.jpg')}
                   alt="POGON e-bicikl"
                   width={1448}
                   height={1086}
                   loading="eager"
                   className="w-full h-full object-cover"
-                />
+                />}
                 {/* Rating badge inside the image corner, no negative positioning */}
                 <div className="absolute bottom-3 left-3 flex items-center gap-2.5 rounded-xl bg-white/90 backdrop-blur-sm border border-border/30 px-3 py-2 shadow-lg">
                   <Star className="size-4 fill-primary stroke-primary shrink-0" />

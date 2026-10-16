@@ -37,7 +37,7 @@ test('UK landing route, navigation and WhatsApp contact stay inside the UK surfa
 
 test('UK mode reuses the original homepage without entering Serbian checkout', () => {
   const app = read('src/app/App.tsx');
-  assert.match(app, /export default function App\(\{ market = 'serbia' \}/);
+  assert.match(app, /export default function App\(\{ market = 'serbia', heroVideoTest = false \}/);
   assert.match(app, /heroTitle: 'choose adventure\.'/);
   assert.match(app, /heroSub: 'a premium european feel at the frontier of the micromobility revolution'/);
   assert.match(app, /const homeCopyEn = \{[\s\S]*heroTitle: 'Forget traffic, parking, and fuel\.'/);
@@ -195,4 +195,29 @@ test('latest UK-only merchandising changes do not rewrite Serbian content', () =
   assert.match(app, /Prosečan beogradski vozač provede najmanje 150 sati godišnje/);
   assert.match(app, /Working with leading institutions and companies/);
   assert.match(read('src/uk/ukMarket.ts'), /cargo: \{ current: '£1,299', amount: 1299 \}/);
+});
+
+test('video hero is default on UK, isolated to /1 for Serbia, and defers its large R2 asset', () => {
+  const main = read('src/main.tsx');
+  const app = read('src/app/App.tsx');
+  const video = read('src/app/components/HeroBackgroundVideo.tsx');
+  const vercel = JSON.parse(read('vercel.json'));
+
+  assert.match(main, /route === "\/uk\/1" \? "uk" : route === "\/1" \? "serbia"/);
+  assert.match(main, /<App market="uk" heroVideoTest \/>/);
+  assert.match(main, /<App heroVideoTest \/>/);
+  assert.match(main, /route === "\/uk"[\s\S]*<App market="uk" heroVideoTest \/>/);
+  assert.match(main, /robots: "noindex, nofollow, noarchive"/);
+  assert.match(app, /heroVideoTest \? <HeroBackgroundVideo mediaQuery="\(min-width: 1024px\)"/);
+  assert.match(app, /heroVideoTest \? <HeroBackgroundVideo mediaQuery="\(max-width: 1023px\)"/);
+  assert.match(video, /website%20landing%20page\.mp4/);
+  assert.match(video, /preload="none"/);
+  assert.match(video, /fetchPriority="high"/);
+  assert.match(video, /prefers-reduced-motion: reduce/);
+  assert.match(video, /connection\?\.saveData/);
+  assert.match(video, /IntersectionObserver/);
+  assert.match(video, /visibilitychange/);
+  assert.ok(vercel.routes.some((entry) => entry.src === '^/(1|uk/1)/?$' && entry.headers?.['X-Robots-Tag'] === 'noindex, nofollow, noarchive'));
+  assert.ok(vercel.routes.some((entry) => entry.dest === '/index.html' && new RegExp(entry.src).test('/1')));
+  assert.ok(vercel.routes.some((entry) => entry.dest === '/index.html' && new RegExp(entry.src).test('/uk/1')));
 });

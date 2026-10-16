@@ -16,6 +16,7 @@
     { "src": "^/admin$", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
     { "src": "/payment/(.*)", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
     { "src": "/api/(.*)", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
+    { "src": "^/(1|uk/1)/?$", "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" }, "continue": true },
     { "src": "^/oprema/$", "dest": "/oprema/index.html" },
     { "src": "^/(o-nama|dostava|electric-bikes)/$", "dest": "/$1/index.html" },
     { "src": "^/elektricni-bicikli/$", "dest": "/elektricni-bicikli/index.html" },
@@ -23,7 +24,7 @@
     { "src": "^/elektricni-bicikli/(beograd|novi-sad|nis|kragujevac)/$", "dest": "/elektricni-bicikli/$1/index.html" },
     { "src": "^/vodici/$", "dest": "/vodici/index.html" },
     { "src": "^/vodici/([^/]+)/$", "dest": "/vodici/$1/index.html" },
-    { "src": "^/(admin|checkout|kviz|partneri|kontakt|uslovi-kupovine|informacije-o-trgovcu|dostava|reklamacije|povracaj-sredstava|privatnost|bezbednost-placanja|payment/card|payment/success|payment/failed|uk)/?$", "dest": "/index.html" },
+    { "src": "^/(admin|checkout|kviz|partneri|kontakt|uslovi-kupovine|informacije-o-trgovcu|dostava|reklamacije|povracaj-sredstava|privatnost|bezbednost-placanja|payment/card|payment/success|payment/failed|uk|1|uk/1)/?$", "dest": "/index.html" },
     { "src": "^/uk/products/(core|cargo|glide|fold)/$", "dest": "/index.html" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "status": 404, "dest": "/404.html" }

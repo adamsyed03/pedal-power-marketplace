@@ -22,6 +22,7 @@
   const productKey = productMatch?.[1] as BikeKey | undefined;
   const ukProductMatch = route.match(/^\/uk\/products\/(cargo|core|glide|fold)$/);
   const ukProductKey = ukProductMatch?.[1] as UkProductKey | undefined;
+  const heroVideoTestMarket = route === "/uk/1" ? "uk" : route === "/1" ? "serbia" : null;
   const routeMetadata: Record<string, { title: string; description: string }> = {
     "/uk": {
       title: "Pogon UK | Electric bikes for everyday motion",
@@ -75,6 +76,15 @@
       robots: "noindex, nofollow, noarchive",
       structuredData: null,
     });
+  } else if (heroVideoTestMarket) {
+    setPageMetadata({
+      title: heroVideoTestMarket === "uk" ? "Pogon UK video landing test" : "Pogon video landing test",
+      description: "Private video-hero landing-page test.",
+      path: route,
+      robots: "noindex, nofollow, noarchive",
+      structuredData: null,
+      language: heroVideoTestMarket === "uk" ? "en-GB" : "sr-Latn",
+    });
   } else if (routeMetadata[route]) {
     const metadata = routeMetadata[route];
     setPageMetadata({
@@ -99,8 +109,12 @@
     ? <UkProductPage productKey={ukProductKey} />
     : productKey
     ? <ProductPage productKey={productKey} initialLanguage={initialLanguage} />
+    : route === "/uk/1"
+    ? <App market="uk" heroVideoTest />
+    : route === "/1"
+    ? <App heroVideoTest />
     : route === "/uk"
-    ? <App market="uk" />
+    ? <App market="uk" heroVideoTest />
     : route === "/checkout"
     ? <Checkout />
     : route === "/uslovi-kupovine"
