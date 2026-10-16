@@ -8,7 +8,7 @@ export type UkProductKey = 'cargo' | 'core' | 'glide' | 'fold';
 // UK launch prices are isolated from the Serbian catalogue and checkout.
 // They are expressions-of-interest prices, shown VAT-inclusive.
 export const UK_PRODUCT_PRICES: Record<UkProductKey, { current: string; amount: number }> = {
-  cargo: { current: '£1,299', amount: 1299 },
+  cargo: { current: '£1,199', amount: 1199 },
   core: { current: '£1,700', amount: 1700 },
   glide: { current: '£1,699', amount: 1699 },
   fold: { current: '£1,099', amount: 1099 },

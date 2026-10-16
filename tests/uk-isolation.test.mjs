@@ -78,7 +78,7 @@ test('UK product pages use isolated routes, GBP pricing and enquiry-only calls t
   for (const route of ['/uk/products/cargo/', '/uk/products/core/', '/uk/products/glide/', '/uk/products/fold/']) {
     assert.ok(vercel.routes.some((entry) => entry.dest === '/index.html' && new RegExp(entry.src).test(route)), route);
   }
-  assert.match(market, /cargo: \{ current: '£1,299', amount: 1299 \}/);
+  assert.match(market, /cargo: \{ current: '£1,199', amount: 1199 \}/);
   assert.match(market, /core: \{ current: '£1,700', amount: 1700 \}/);
   assert.match(market, /glide: \{ current: '£1,699', amount: 1699 \}/);
   assert.match(market, /fold: \{ current: '£1,099', amount: 1099 \}/);
@@ -194,7 +194,7 @@ test('latest UK-only merchandising changes do not rewrite Serbian content', () =
   assert.match(app, /Oko 5\.700 smrti u Srbiji/);
   assert.match(app, /Prosečan beogradski vozač provede najmanje 150 sati godišnje/);
   assert.match(app, /Working with leading institutions and companies/);
-  assert.match(read('src/uk/ukMarket.ts'), /cargo: \{ current: '£1,299', amount: 1299 \}/);
+  assert.match(read('src/uk/ukMarket.ts'), /cargo: \{ current: '£1,199', amount: 1199 \}/);
 });
 
 test('product specification dropdowns use the corrected multilingual single-battery data', () => {
