@@ -22,7 +22,7 @@
   const productKey = productMatch?.[1] as BikeKey | undefined;
   const ukProductMatch = route.match(/^\/uk\/products\/(cargo|core|glide|fold)$/);
   const ukProductKey = ukProductMatch?.[1] as UkProductKey | undefined;
-  const heroVideoTestMarket = route === "/uk/1" ? "uk" : route === "/1" ? "serbia" : null;
+  const landingTestMarket = route === "/uk/1" ? "uk" : route === "/1" ? "serbia" : null;
   const routeMetadata: Record<string, { title: string; description: string }> = {
     "/uk": {
       title: "Pogon UK | Electric bikes for everyday motion",
@@ -76,14 +76,14 @@
       robots: "noindex, nofollow, noarchive",
       structuredData: null,
     });
-  } else if (heroVideoTestMarket) {
+  } else if (landingTestMarket) {
     setPageMetadata({
-      title: heroVideoTestMarket === "uk" ? "Pogon UK video landing test" : "Pogon video landing test",
-      description: "Private video-hero landing-page test.",
+      title: landingTestMarket === "uk" ? "Pogon UK video landing test" : "Pogon original landing test",
+      description: landingTestMarket === "uk" ? "Private video-hero landing-page test." : "Private image-hero landing-page test.",
       path: route,
       robots: "noindex, nofollow, noarchive",
       structuredData: null,
-      language: heroVideoTestMarket === "uk" ? "en-GB" : "sr-Latn",
+      language: landingTestMarket === "uk" ? "en-GB" : "sr-Latn",
     });
   } else if (routeMetadata[route]) {
     const metadata = routeMetadata[route];
@@ -112,7 +112,7 @@
     : route === "/uk/1"
     ? <App market="uk" heroVideoTest />
     : route === "/1"
-    ? <App heroVideoTest />
+    ? <App />
     : route === "/uk"
     ? <App market="uk" heroVideoTest />
     : route === "/checkout"
@@ -139,7 +139,7 @@
     ? <CardPayment />
     : route === "/payment/success" || route === "/payment/failed"
     ? <PaymentResult />
-    : <App />;
+    : <App heroVideoTest />;
   const root = document.getElementById("root")!;
   const canHydrateHomepage = root.dataset.prerenderedHome === "true"
     && !privateRoute

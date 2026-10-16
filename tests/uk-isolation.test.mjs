@@ -197,22 +197,25 @@ test('latest UK-only merchandising changes do not rewrite Serbian content', () =
   assert.match(read('src/uk/ukMarket.ts'), /cargo: \{ current: '£1,299', amount: 1299 \}/);
 });
 
-test('video hero is default on UK, isolated to /1 for Serbia, and defers its large R2 asset', () => {
+test('video hero is default on UK and Serbia while /1 preserves the original image hero', () => {
   const main = read('src/main.tsx');
   const app = read('src/app/App.tsx');
   const video = read('src/app/components/HeroBackgroundVideo.tsx');
+  const prerender = read('scripts/prerender-homepage.mjs');
   const vercel = JSON.parse(read('vercel.json'));
 
   assert.match(main, /route === "\/uk\/1" \? "uk" : route === "\/1" \? "serbia"/);
   assert.match(main, /<App market="uk" heroVideoTest \/>/);
-  assert.match(main, /<App heroVideoTest \/>/);
+  assert.match(main, /route === "\/1"[\s\S]*\? <App \/>/);
+  assert.match(main, /: <App heroVideoTest \/>;/);
+  assert.match(prerender, /React\.createElement\(App, \{ heroVideoTest: true \}\)/);
   assert.match(main, /route === "\/uk"[\s\S]*<App market="uk" heroVideoTest \/>/);
   assert.match(main, /robots: "noindex, nofollow, noarchive"/);
   assert.match(app, /heroVideoTest \? <HeroBackgroundVideo mediaQuery="\(min-width: 1024px\)"/);
   assert.match(app, /heroVideoTest \? <HeroBackgroundVideo mediaQuery="\(max-width: 1023px\)"/);
   assert.match(video, /website%20landing%20page\.mp4/);
   assert.match(video, /preload="none"/);
-  assert.match(video, /fetchPriority="high"/);
+  assert.match(video, /fetchpriority="high"/);
   assert.match(video, /prefers-reduced-motion: reduce/);
   assert.match(video, /connection\?\.saveData/);
   assert.match(video, /IntersectionObserver/);

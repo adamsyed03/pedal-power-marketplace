@@ -18,7 +18,7 @@ const vite = await createServer({
 
 try {
   const { default: App } = await vite.ssrLoadModule('/src/app/App.tsx');
-  const homepageMarkup = renderToString(React.createElement(App));
+  const homepageMarkup = renderToString(React.createElement(App, { heroVideoTest: true }));
 
   const requiredContent = [
     'id="modeli"',

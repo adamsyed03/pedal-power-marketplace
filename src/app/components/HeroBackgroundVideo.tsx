@@ -91,7 +91,7 @@ export function HeroBackgroundVideo({ mediaQuery, className, alt }: HeroBackgrou
         width={1448}
         height={1086}
         loading="eager"
-        fetchPriority="high"
+        fetchpriority="high"
         decoding="async"
         className={className}
       />
