@@ -51,7 +51,7 @@ function readStoredCart(storageKey = CART_STORAGE_KEY, includeLegacy = true): Ca
 
 const homeCopyEn = {
   heroTitle: 'Forget traffic, parking, and fuel.',
-  heroSub: 'Electric bikes for everyday city riding. Save time, money, and stress with up to 140 km of range.',
+  heroSub: 'Electric bikes for everyday city riding. Save time, money, and stress with up to 150 km of declared range.',
   heroPrimary: 'Book a test ride',
   heroSecondary: 'View models',
   finalTitle: 'Choose a model and kickstart your city routine',
@@ -117,7 +117,7 @@ const homeCopySr = {
 
 const homeCopyRu = {
   heroTitle: 'Забудьте о пробках, парковке и топливе.',
-  heroSub: 'Электровелосипеды для ежедневных поездок по городу. Экономьте время, деньги и нервы с запасом хода до 140 км.',
+  heroSub: 'Электровелосипеды для ежедневных поездок по городу. Экономьте время, деньги и нервы с заявленным запасом хода до 150 км.',
   heroPrimary: 'Записаться на тест-драйв',
   heroSecondary: 'Смотреть модели',
   finalTitle: 'Выбери модель и запусти свой городской ритм',
@@ -327,7 +327,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
     { value: '4 models', label: 'One premium range' },
   ] : [
     {
-      value: tr({ sr: 'Do 140 km', en: 'Up to 140 km', ru: 'До 140 км' }),
+      value: tr({ sr: 'Do 150 km', en: 'Up to 150 km', ru: 'До 150 км' }),
       label: tr({ sr: 'Dometa', en: 'Range', ru: 'Запас хода' }),
     },
     {
@@ -1101,30 +1101,33 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
       description: copy.glideDescription,
       originalPrice: '165.000,00 RSD',
       price: '160.000,00 RSD',
-      mobileSpecs: { range: '90 km', power: '250W motor', battery: '1200 Wh' },
+      mobileSpecs: { range: '90–110 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
         sr: [
             'Motor u zadnjem točku',
             'Aluminijumski ram',
             'NFC kartice za otključavanje',
-            'Nosivost 120 kg',
-            'Domet 90 km',
+            'Točkovi od 26 inča',
+            'Nosivost 150 kg',
+            'Domet 90–110 km',
             'GPS sigurnosne funkcije',
           ],
         en: [
             'Rear hub motor',
             'Aluminum frame',
             'NFC unlock cards',
-            '120 kg load capacity',
-            'Up to 90 km range',
+            '26-inch wheels',
+            '150 kg maximum load',
+            '90–110 km range',
             'GPS security features',
           ],
         ru: [
             'Заднее мотор-колесо',
             'Алюминиевая рама',
             'NFC-карты для разблокировки',
-            'Грузоподъёмность 120 кг',
-            'Запас хода до 90 км',
+            'Колёса 26 дюймов',
+            'Максимальная нагрузка 150 кг',
+            'Запас хода 90–110 км',
             'GPS-функции безопасности',
           ],
       }),
@@ -1144,13 +1147,13 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
       description: copy.coreDescription,
       originalPrice: undefined,
       price: '135.000,00 RSD',
-      mobileSpecs: { range: '140 km', power: '250W motor', battery: '1512 Wh' },
+      mobileSpecs: { range: '140–150 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
             'Motor u zadnjem točku',
             'Sklopivi čelični ram',
             'Hidraulične kočnice',
-            'Dve baterije, domet do 140 km',
+            'Jedna Samsung baterija, domet 140–150 km',
             'Fat tyre gume',
             'GPS sigurnosne funkcije',
           ],
@@ -1158,7 +1161,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
             'Rear hub motor',
             'Foldable steel frame',
             'Hydraulic brakes',
-            'Two batteries, up to 140 km range',
+            'One Samsung battery, 140–150 km range',
             'Fat tyre wheels',
             'GPS security features',
           ],
@@ -1166,7 +1169,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
             'Заднее мотор-колесо',
             'Складная стальная рама',
             'Гидравлические тормоза',
-            'Две батареи, запас хода до 140 км',
+            'Один аккумулятор Samsung, запас хода 140–150 км',
             'Широкие шины fat tyre',
             'GPS-функции безопасности',
           ],
@@ -1188,13 +1191,13 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
       description: copy.cargoDescription,
       originalPrice: '130.000,00 RSD',
       price: '125.000,00 RSD',
-      mobileSpecs: { range: '140 km', power: '250W motor', battery: '1512 Wh' },
+      mobileSpecs: { range: '140–150 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
             'Motor u zadnjem točku',
             'Čelični ram',
             'Hidraulične kočnice',
-            'Dve baterije, domet do 140 km',
+            'Jedna Samsung baterija, domet 140–150 km',
             'Fat tyre gume',
             'GPS sigurnosne funkcije',
           ],
@@ -1202,7 +1205,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
             'Rear hub motor',
             'Steel frame',
             'Hydraulic brakes',
-            'Two batteries, up to 140 km range',
+            'One Samsung battery, 140–150 km range',
             'Fat tyre wheels',
             'GPS security features',
           ],
@@ -1210,7 +1213,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
             'Заднее мотор-колесо',
             'Стальная рама',
             'Гидравлические тормоза',
-            'Две батареи, запас хода до 140 км',
+            'Один аккумулятор Samsung, запас хода 140–150 км',
             'Широкие шины fat tyre',
             'GPS-функции безопасности',
           ],
@@ -1405,17 +1408,6 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
             margin-bottom: 0.2rem;
             font-size: 1rem;
             line-height: 1.15;
-          }
-          #modeli .desktop-product-points {
-            column-gap: 1rem;
-            row-gap: 0.2rem;
-            margin-bottom: 0.5rem;
-            font-size: 0.74rem;
-            line-height: 1.22;
-          }
-          #modeli .desktop-product-point {
-            min-height: 1.4rem;
-            gap: 0.45rem;
           }
           #modeli .desktop-product-purchase {
             padding-top: 0.45rem;
@@ -1837,7 +1829,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
                 </a>
               </div>
 
-              <div className="overflow-hidden pt-1 pb-1 [mask-image:linear-gradient(to_right,transparent,black_9%,black_91%,transparent)]">
+              {!heroVideoTest ? <div className="overflow-hidden pt-1 pb-1 [mask-image:linear-gradient(to_right,transparent,black_9%,black_91%,transparent)]">
                 <div className="trust-conveyor flex gap-2">
                   {[...trustBadges, ...trustBadges, ...trustBadges].map((badge, index) => {
                     const Icon = trustBadgeIcons[index % trustBadgeIcons.length];
@@ -1849,7 +1841,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
                     );
                   })}
                 </div>
-              </div>
+              </div> : null}
 
               <div className="grid grid-cols-3 gap-3 pt-7 border-t border-border/50">
                 <div className="text-center">
@@ -2136,32 +2128,19 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
                       <a href={`/products/${model.key}/`} onClick={(event) => event.stopPropagation()}>{model.name}</a>
                     )}
                   </h3>
-                  <div className="relative hidden lg:block">
-                    <div className={`desktop-product-points grid grid-cols-2 gap-x-5 gap-y-1.5 mb-2.5 text-[0.8rem] font-medium leading-snug ${isUk && model.isUnavailable ? 'select-none blur-[5px] opacity-45' : ''}`}>
-                      {model.points.map((point, index) => (
-                        <div
-                          key={`${model.key}-desktop-point-${index}`}
-                          className={`desktop-product-point flex min-h-[1.65rem] items-start gap-2 ${model.isFeatured ? 'text-primary-foreground/88' : 'text-foreground/70'}`}
-                        >
-                          <span className={`mt-[0.48rem] size-1.5 shrink-0 rounded-full ${model.isFeatured ? 'bg-primary-foreground/75' : 'bg-primary/75'}`} />
-                          <span>{point}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {isUk && model.isUnavailable ? (
-                      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-                        <div className="w-[12rem] rounded-full bg-black px-3 py-2 text-center text-[0.62rem] font-black leading-tight tracking-[0.04em] text-white shadow-lg">
-                          <span className="block">sold out</span><span className="block">more coming soon</span>
-                        </div>
+                  {isUk && model.isUnavailable ? (
+                    <div className="hidden min-h-[4rem] items-center justify-center pb-2 lg:flex">
+                      <div className="w-[12rem] rounded-full bg-black px-3 py-2 text-center text-[0.62rem] font-black leading-tight tracking-[0.04em] text-white shadow-lg">
+                        <span className="block">sold out</span><span className="block">more coming soon</span>
                       </div>
-                    ) : null}
-                  </div>
+                    </div>
+                  ) : null}
                   <div className={`desktop-product-purchase pt-2 lg:pt-2.5 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
                     <div className={`desktop-product-price-block mb-2 hidden flex-col items-start gap-0.5 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'} ${isUk && model.isUnavailable ? 'select-none blur-[5px] opacity-45' : ''}`}>
                       {model.originalPrice ? <span className="desktop-product-original-price text-sm font-bold opacity-60 line-through decoration-2">{model.originalPrice}</span> : null}
                       <span className="desktop-product-price text-[1.9rem] font-black leading-none tracking-tight">{model.price}</span>
                     </div>
-                    <div className="mb-3 grid grid-cols-3 gap-1.5 lg:hidden">
+                    <div className="mb-2 grid grid-cols-3 gap-1">
                       {[
                         { value: model.mobileSpecs.range, label: copy.range },
                         { value: model.mobileSpecs.power, label: copy.power },
@@ -2169,12 +2148,12 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
                       ].map((spec) => (
                         <div
                           key={`${model.key}-${spec.label}`}
-                          className={`rounded-xl border px-1.5 py-2 text-center ${
+                          className={`min-w-0 rounded-md border px-1 py-1.5 text-center ${
                             model.isFeatured ? 'border-white/25 bg-white/10' : 'border-border bg-background/80'
                           }`}
                         >
-                          <div className={`text-sm font-black leading-none ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{spec.value}</div>
-                          <div className={`mt-1 text-[0.5rem] uppercase tracking-wider ${model.isFeatured ? 'text-white/70' : 'text-foreground/45'}`}>{spec.label}</div>
+                          <div className={`whitespace-nowrap text-[0.68rem] font-black leading-none tracking-[-0.025em] sm:text-xs lg:text-[0.68rem] xl:text-xs ${model.isFeatured ? 'text-primary-foreground' : 'text-foreground'}`}>{spec.value}</div>
+                          <div className={`mt-1 whitespace-nowrap text-[0.42rem] font-semibold uppercase leading-none tracking-[0.06em] sm:text-[0.46rem] ${model.isFeatured ? 'text-white/70' : 'text-foreground/45'}`}>{spec.label}</div>
                         </div>
                       ))}
                     </div>

@@ -1011,7 +1011,6 @@ test('initial HTML contains the complete meaningful homepage and hydrates it', (
     /Pogon Cargo/,
     /Pogon Core/,
     /Pogon Glide/,
-    /Motor u zadnjem točku/,
     /id="zasto-pogon"/,
     /id="test-voznja"/,
     /id="kviz"/,
@@ -1022,6 +1021,7 @@ test('initial HTML contains the complete meaningful homepage and hydrates it', (
     /Servis i podrška/,
     /Zakaži test vožnju/,
   ]) assert.match(root, expected);
+  assert.doesNotMatch(root, /Motor u zadnjem točku/);
   assert.match(main, /hydrateRoot\(root, page\)/);
   assert.match(main, /createRoot\(root\)\.render\(page\)/);
 });
@@ -1085,10 +1085,10 @@ test('contact widget reopens reliably and landing specifications stay current', 
   assert.match(app, /closeContactWidget = useCallback\(\(\) => setIsContactWidgetOpen\(false\)/);
   assert.match(app, /onClick=\{openContactWidget\}/);
   assert.doesNotMatch(app, /setIsContactWidgetOpen\(\(current\) => !current\)/);
-  for (const capacity of ['Nosivost 120 kg', '120 kg load capacity', 'Грузоподъёмность 120 кг']) {
+  for (const capacity of ['Nosivost 150 kg', '150 kg maximum load', 'Максимальная нагрузка 150 кг']) {
     assert.match(app, new RegExp(capacity));
   }
-  assert.match(app, /value: tr\(\{ sr: 'Do 140 km'/);
+  assert.match(app, /value: tr\(\{ sr: 'Do 150 km'/);
   assert.match(app, /value: tr\(\{ sr: 'Do 12 rata'/);
   assert.match(app, /value: tr\(\{ sr: '2 godine'/);
 });

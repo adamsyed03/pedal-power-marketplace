@@ -11,6 +11,7 @@ import { UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_DISPLAY, UK_WHATSAPP_HR
 import { ProductVideo } from './ProductVideo';
 import { availableUkProductVideo } from './productVideos';
 import { UkProductGallery } from './UkProductGallery';
+import { ProductSpecificationsDropdown } from '../app/components/product/ProductSpecificationsDropdown';
 
 const english = (value: string): { sr: string; en: string; ru: string } => ({ sr: value, en: value, ru: value });
 
@@ -108,6 +109,7 @@ export function UkProductPage({ productKey }: { productKey: UkProductKey }) {
                   ].map(({ icon: Icon, name }) => <div key={name} className="grid grid-cols-[auto_3rem_1fr_auto] items-center gap-3 border border-[#397700]/30 bg-[#7fff00]/[0.08] px-3 py-2.5"><Check className="size-4 text-[#397700]" /><span className="grid size-12 place-items-center bg-[#7fff00]/20 text-[#397700]"><Icon className="size-5" /></span><strong className="text-sm">{name}</strong><span className="text-sm font-black text-[#397700]">free</span></div>)}
                 </div>
               </section>
+              <ProductSpecificationsDropdown details={productKey === 'fold' ? undefined : productDetails[productKey]} language="en" className="mt-3" />
             </div>
           </div>
         </section>

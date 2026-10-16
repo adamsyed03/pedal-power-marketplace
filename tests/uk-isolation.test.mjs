@@ -197,6 +197,41 @@ test('latest UK-only merchandising changes do not rewrite Serbian content', () =
   assert.match(read('src/uk/ukMarket.ts'), /cargo: \{ current: '£1,299', amount: 1299 \}/);
 });
 
+test('product specification dropdowns use the corrected multilingual single-battery data', () => {
+  const details = read('src/lib/productDetails.ts');
+  const dropdown = read('src/app/components/product/ProductSpecificationsDropdown.tsx');
+  const panel = read('src/app/components/product/ProductPurchasePanel.tsx');
+  const ukPage = read('src/uk/UkProductPage.tsx');
+  const cargo = details.match(/cargo: \{([\s\S]*?)\n  core: \{/i)?.[1] ?? '';
+  const core = details.match(/core: \{([\s\S]*?)\n  glide: \{/i)?.[1] ?? '';
+  const glide = details.match(/glide: \{([\s\S]*?)\n  \},\n\};/i)?.[1] ?? '';
+
+  for (const model of [cargo, core]) {
+    assert.match(model, /Jedna baterija[\s\S]*One battery[\s\S]*Один аккумулятор/);
+    assert.match(model, /value: l\('48 V, 250 W', '48 V, 250 W', '48 В, 250 Вт'\)/);
+    assert.match(model, /1512 Wh/);
+    assert.match(model, /Samsung/);
+    assert.match(model, /Približno 7 sati[\s\S]*Approximately 7 hours[\s\S]*Примерно 7 часов/);
+    assert.match(model, /25 km\/h/);
+    assert.match(model, /130 kg/);
+    assert.doesNotMatch(model, /Dve baterije|Dual batter|Две батар|Throttle/i);
+  }
+
+  for (const value of ['26 inča', '26 inches', '26 дюймов', '48 V 25 Ah', '1200 Wh', '90–110 km', '150 kg']) assert.match(glide, new RegExp(value));
+  assert.match(glide, /value: l\('48 V, 250 W', '48 V, 250 W', '48 В, 250 Вт'\)/);
+  assert.match(glide, /Samsung/);
+  assert.match(glide, /Hydraulic disc brakes, 180 mm rotors front and rear/);
+  assert.doesNotMatch(details, /Throttle|Ручка газа|Ručica gasa/i);
+  assert.doesNotMatch(details, /Bafang/i);
+
+  assert.match(dropdown, /sr: \{[\s\S]*title: 'Specifikacije'/);
+  assert.match(dropdown, /en: \{[\s\S]*title: 'Specifications'/);
+  assert.match(dropdown, /ru: \{[\s\S]*title: 'Характеристики'/);
+  assert.match(panel, /DeliveryWarrantyService|ProductSpecificationsDropdown/);
+  assert.match(panel, /t\.service[\s\S]*<ProductSpecificationsDropdown details=\{details\}/);
+  assert.match(ukPage, /<ProductSpecificationsDropdown details=\{productKey === 'fold' \? undefined : productDetails\[productKey\]\} language="en"/);
+});
+
 test('video hero is default on UK and Serbia while /1 preserves the original image hero', () => {
   const main = read('src/main.tsx');
   const app = read('src/app/App.tsx');
@@ -213,6 +248,7 @@ test('video hero is default on UK and Serbia while /1 preserves the original ima
   assert.match(main, /robots: "noindex, nofollow, noarchive"/);
   assert.match(app, /heroVideoTest \? <HeroBackgroundVideo mediaQuery="\(min-width: 1024px\)"/);
   assert.match(app, /heroVideoTest \? <HeroBackgroundVideo mediaQuery="\(max-width: 1023px\)"/);
+  assert.match(app, /!heroVideoTest \? <div className="overflow-hidden pt-1 pb-1[\s\S]*trust-conveyor flex gap-2[\s\S]*: null\}/);
   assert.match(video, /website%20landing%20page\.mp4/);
   assert.match(video, /preload="none"/);
   assert.match(video, /fetchpriority="high"/);
@@ -223,4 +259,20 @@ test('video hero is default on UK and Serbia while /1 preserves the original ima
   assert.ok(vercel.routes.some((entry) => entry.src === '^/(1|uk/1)/?$' && entry.headers?.['X-Robots-Tag'] === 'noindex, nofollow, noarchive'));
   assert.ok(vercel.routes.some((entry) => entry.dest === '/index.html' && new RegExp(entry.src).test('/1')));
   assert.ok(vercel.routes.some((entry) => entry.dest === '/index.html' && new RegExp(entry.src).test('/uk/1')));
+});
+
+test('landing product cards omit bullet descriptions across every market and route variant', () => {
+  const app = read('src/app/App.tsx');
+
+  assert.doesNotMatch(app, /model\.points\.map/);
+  assert.doesNotMatch(app, /desktop-product-points|desktop-product-point/);
+  assert.match(app, /sold out[\s\S]*more coming soon/);
+});
+
+test('landing product-card specification tiles stay compact and single-line at every breakpoint', () => {
+  const app = read('src/app/App.tsx');
+
+  assert.match(app, /className="mb-2 grid grid-cols-3 gap-1"/);
+  assert.match(app, /whitespace-nowrap text-\[0\.68rem\][\s\S]*whitespace-nowrap text-\[0\.42rem\]/);
+  assert.doesNotMatch(app, /grid grid-cols-3[^"']*lg:hidden/);
 });

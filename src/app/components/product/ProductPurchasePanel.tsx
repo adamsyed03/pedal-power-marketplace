@@ -5,6 +5,7 @@ import { localize, type ProductDetails, type SiteLanguage } from '../../../lib/p
 import { productNameFor } from '../../../lib/productNames';
 import { formatProductRating, productRatings, productReviews } from '../../../lib/productReviews';
 import { ProductRatingStars } from './ProductRatingStars';
+import { ProductSpecificationsDropdown } from './ProductSpecificationsDropdown';
 
 type ProductPurchasePanelProps = {
   details: ProductDetails;
@@ -152,6 +153,7 @@ export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, 
         <div className="flex flex-col items-center gap-2 px-2 text-center"><Truck className="size-5 text-[#397700]" />{t.delivery}</div>
         <div className="flex flex-col items-center gap-2 px-2 text-center"><Wrench className="size-5 text-[#397700]" />{t.service}</div>
       </div>
+      <ProductSpecificationsDropdown details={details} language={language} className="mt-3" />
     </div>
   );
 }
