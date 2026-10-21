@@ -34,7 +34,7 @@ Koristite kanonske stranice proizvoda za aktuelne cene i specifikacije. Deklaris
 ### Pogon Cargo
 - Kanonska stranica: https://ridepogon.com/products/cargo/
 - Namena: Električni bicikl za dostavu i teret
-- Cena: 125.000 RSD
+- Cena: 130.000 RSD
 - Motor: 250 W, u zadnjem točku
 - Baterija: 48 V 14 Ah + 48 V 17,5 Ah, ukupno 1512 Wh
 - Deklarisani domet: Do 140 km
@@ -54,7 +54,7 @@ Koristite kanonske stranice proizvoda za aktuelne cene i specifikacije. Deklaris
 ### Pogon Glide
 - Kanonska stranica: https://ridepogon.com/products/glide/
 - Namena: Gradski električni bicikl
-- Cena: 160.000 RSD
+- Cena: 165.000 RSD
 - Motor: 250 W, u zadnjem točku
 - Baterija: 1200 Wh
 - Deklarisani domet: Do 90 km

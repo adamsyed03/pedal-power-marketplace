@@ -1099,8 +1099,8 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
         { src: publicAsset('Glide 4.jpg'), alt: 'Pogon Glide product photo 4', width: 1254, height: 1254 },
       ],
       description: copy.glideDescription,
-      originalPrice: '165.000,00 RSD',
-      price: '160.000,00 RSD',
+      originalPrice: undefined,
+      price: '165.000,00 RSD',
       mobileSpecs: { range: '90–110 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
         sr: [
@@ -1189,8 +1189,8 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
         { src: publicAsset('Core 3.jpg'), alt: 'Pogon Cargo product photo 3', width: 1122, height: 1402 },
       ],
       description: copy.cargoDescription,
-      originalPrice: '130.000,00 RSD',
-      price: '125.000,00 RSD',
+      originalPrice: undefined,
+      price: '130.000,00 RSD',
       mobileSpecs: { range: '140–150 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [

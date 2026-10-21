@@ -14,6 +14,16 @@ const PROMOTIONS = Object.freeze({
     kind: 'fixed_order_discount',
     discountRsd: 5_000,
   }),
+  POGONNS: Object.freeze({
+    code: 'POGONNS',
+    kind: 'fixed_order_discount',
+    discountRsd: 5_000,
+  }),
+  ZIMA: Object.freeze({
+    code: 'ZIMA',
+    kind: 'fixed_order_discount',
+    discountRsd: 5_000,
+  }),
   INSTAGRAM: Object.freeze({
     code: 'INSTAGRAM',
     kind: 'fixed_order_discount',

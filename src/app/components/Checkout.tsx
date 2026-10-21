@@ -86,8 +86,8 @@ export function Checkout() {
   const cargoQuantity = items.find((item) => item.product === 'cargo')?.quantity ?? 0;
   const hasInstagramModel = items.some((item) => item.product === 'cargo' || item.product === 'glide');
   const displayedDiscount = promoCode === 'MILEBANJA'
-    ? cargoQuantity * 5_000
-    : promoCode === 'NBGD'
+    ? cargoQuantity * 10_000
+    : promoCode === 'NBGD' || promoCode === 'POGONNS' || promoCode === 'ZIMA'
       ? Math.min(5_000, displayedTotal)
       : promoCode === 'INSTAGRAM'
         ? Math.min(4_000, displayedTotal)
@@ -127,7 +127,7 @@ export function Checkout() {
       setPromoError('');
       return;
     }
-    if (!['MILEBANJA', 'NBGD', 'INSTAGRAM'].includes(normalized)) {
+    if (!['MILEBANJA', 'NBGD', 'POGONNS', 'ZIMA', 'INSTAGRAM'].includes(normalized)) {
       setPromoCode(null);
       setPromoError('Kod za popust nije važeći.');
       return;
