@@ -8,6 +8,7 @@ export const PRODUCTS = Object.freeze({
   'rearview-mirror': Object.freeze({ key: 'rearview-mirror', name: 'Retrovizor', unitPriceRsd: 1_300, category: 'accessory' }),
   gloves: Object.freeze({ key: 'gloves', name: 'Rukavice za upravljač', unitPriceRsd: 2_000, category: 'accessory' }),
   'phone-holder': Object.freeze({ key: 'phone-holder', name: 'Držač telefona', unitPriceRsd: 2_000, category: 'accessory' }),
+  'gps-addon': Object.freeze({ key: 'gps-addon', name: 'GPS dodatak — 1 godina', unitPriceRsd: 3_000, category: 'accessory' }),
 });
 
 export function calculateOrderTotal(productKey, quantity) {

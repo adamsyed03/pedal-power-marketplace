@@ -8,6 +8,7 @@ const accessoryNames: Partial<Record<ProductKey, Localized<string>>> = {
   'rearview-mirror': { sr: 'Retrovizor', en: 'Rear-view mirror', ru: 'Зеркало заднего вида' },
   gloves: { sr: 'Rukavice za upravljač', en: 'Handlebar gloves', ru: 'Перчатки на руль' },
   'phone-holder': { sr: 'Držač telefona', en: 'Phone holder', ru: 'Держатель телефона' },
+  'gps-addon': { sr: 'GPS dodatak — 1 godina', en: 'GPS add-on — 1 year', ru: 'GPS-модуль — 1 год' },
 };
 
 export function productNameFor(product: Pick<Product, 'key' | 'name'>, language: SiteLanguage) {

@@ -27,7 +27,7 @@ const extrasCopy = {
   ru: { together: 'Часто покупают вместе', equipment: 'Все аксессуары', selectedTotal: 'Велосипед + выбранные аксессуары', buyNow: 'Купить сейчас', complimentary: 'Бесплатно', included: 'Включено автоматически', warrantyBenefit: 'Гарантия 2 года', rearRack: 'Задний багажник', fenders: 'Крылья', showMore: 'Показать ещё', showLess: 'Показать меньше', watching: (count: number) => `${count} человек сейчас смотрят эту модель` },
 };
 
-const paidAccessoryKeys: readonly ProductKey[] = ['chain', 'helmet', 'helmet-with-visor', 'rearview-mirror', 'gloves', 'phone-holder'];
+const paidAccessoryKeys: readonly ProductKey[] = ['gps-addon', 'chain', 'helmet', 'helmet-with-visor', 'rearview-mirror', 'gloves', 'phone-holder'];
 
 export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, purchasePanelRef }: ProductPurchasePanelProps) {
   const t = copy[language];

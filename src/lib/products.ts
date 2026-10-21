@@ -1,4 +1,4 @@
-export type ProductKey = 'glide' | 'core' | 'cargo' | 'chain' | 'helmet-with-visor' | 'helmet' | 'rearview-mirror' | 'gloves' | 'phone-holder';
+export type ProductKey = 'glide' | 'core' | 'cargo' | 'chain' | 'helmet-with-visor' | 'helmet' | 'rearview-mirror' | 'gloves' | 'phone-holder' | 'gps-addon';
 
 export type Product = {
   key: ProductKey;
@@ -23,6 +23,7 @@ export const products: readonly Product[] = [
   { key: 'rearview-mirror', name: 'Retrovizor', description: 'Bolja preglednost saobraćaja iza vozača tokom gradske vožnje.', priceRsd: 1_300, image: '/oprema/rearviewmirror.optimized.jpg', category: 'accessory', unitLabel: 'po komadu' },
   { key: 'gloves', name: 'Rukavice za upravljač', description: 'Par zaštitnih rukavica za hladne, vetrovite i kišne dane.', priceRsd: 2_000, image: '/oprema/gloves.optimized.jpg', category: 'accessory', unitLabel: 'po paru' },
   { key: 'phone-holder', name: 'Držač telefona', description: 'Držač za preglednu i sigurniju upotrebu navigacije.', priceRsd: 2_000, image: '/oprema/phoneholder.optimized.jpg', category: 'accessory' },
+  { key: 'gps-addon', name: 'GPS dodatak — 1 godina', description: 'GPS praćenje i sigurnosna usluga za bicikl u trajanju od jedne godine.', priceRsd: 3_000, image: '/oprema/gps-addon.svg', category: 'accessory', unitLabel: 'za 1 godinu' },
 ];
 
 export const formatRsd = (amount: number) =>

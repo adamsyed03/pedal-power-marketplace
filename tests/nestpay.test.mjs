@@ -54,6 +54,7 @@ test('accessory prices are server-authoritative and the sold-out basket cannot b
     'rearview-mirror': 1_300,
     gloves: 2_000,
     'phone-holder': 2_000,
+    'gps-addon': 3_000,
   };
   for (const [product, price] of Object.entries(prices)) {
     assert.equal(calculateOrderTotal(product, 1).unitPriceRsd, price, product);
@@ -115,6 +116,24 @@ test('POGONNS and ZIMA each subtract 5,000 RSD once from a bike order', () => {
   }
 });
 
+test('GLIDEGIVEAWAY subtracts 15,000 RSD once and only when Glide is in the cart', () => {
+  const discounted = applyPromotion(calculateCartTotal([
+    { product: 'core', quantity: 1 },
+    { product: 'glide', quantity: 1 },
+  ]), ' glidegiveaway ');
+  assert.equal(discounted.promoCode, 'GLIDEGIVEAWAY');
+  assert.equal(discounted.originalSubtotalRsd, 300_000);
+  assert.equal(discounted.discountRsd, 15_000);
+  assert.equal(discounted.subtotalRsd, 285_000);
+  assert.equal(discounted.items[0].discountRsd, undefined);
+  assert.equal(discounted.items[1].discountRsd, 15_000);
+  assert.equal(discounted.items[1].lineTotalRsd, 150_000);
+  assert.throws(
+    () => applyPromotion(calculateCartTotal([{ product: 'core', quantity: 1 }]), 'GLIDEGIVEAWAY'),
+    /PROMO_NOT_APPLICABLE/,
+  );
+});
+
 test('INSTAGRAM subtracts 4,000 RSD once from Cargo and Glide orders', () => {
   const cart = calculateCartTotal([
     { product: 'glide', quantity: 1 },
@@ -150,6 +169,7 @@ test('promo codes are server-normalized and fail closed when invalid or inapplic
   assert.equal(normalizePromoCode(' nbgd '), 'NBGD');
   assert.equal(normalizePromoCode(' pogonns '), 'POGONNS');
   assert.equal(normalizePromoCode(' zima '), 'ZIMA');
+  assert.equal(normalizePromoCode(' glidegiveaway '), 'GLIDEGIVEAWAY');
   assert.equal(normalizePromoCode(' instagram '), 'INSTAGRAM');
   assert.equal(normalizePromoCode(''), null);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), 'NOTREAL'), /INVALID_PROMO_CODE/);
@@ -171,6 +191,7 @@ test('single-use promo reservation IDs are stable per environment and isolated f
   assert.equal(isSingleUsePromotion('NBGD'), false);
   assert.equal(isSingleUsePromotion('POGONNS'), false);
   assert.equal(isSingleUsePromotion('ZIMA'), false);
+  assert.equal(isSingleUsePromotion('GLIDEGIVEAWAY'), false);
   assert.equal(isSingleUsePromotion('INSTAGRAM'), false);
   assert.throws(() => singleUsePromotionOrderId('NBGD', { NESTPAY_ENV: 'test' }), /INVALID_PROMO_CODE/);
   assert.throws(() => singleUsePromotionOrderId('NOTREAL', { NESTPAY_ENV: 'test' }), /INVALID_PROMO_CODE/);
@@ -1476,6 +1497,7 @@ test('premium product pages are prerendered, routed, localized and linked from t
     assert.match(html, /"shippingDetails"/);
     assert.match(html, /"hasMerchantReturnPolicy"/);
     assert.match(html, new RegExp(`"price":"${prices[model]}"`));
+    assert.match(html, /GPS dodatak — 1 godina/);
     assert.match(html, /id="specifications"/);
     assert.match(html, /id="test-ride"/);
     assert.match(html, /id="reviews"/);
@@ -1503,7 +1525,8 @@ test('product pages show live interest and buy selected equipment as a bundle', 
   assert.match(panel, /fenders: 'Blatobrani'/);
   assert.match(panel, /complimentary: 'Besplatno'/);
   assert.match(panel, /checked readOnly disabled/);
-  assert.match(panel, /\['chain', 'helmet', 'helmet-with-visor', 'rearview-mirror', 'gloves', 'phone-holder'\]/);
+  assert.match(panel, /\['gps-addon', 'chain', 'helmet', 'helmet-with-visor', 'rearview-mirror', 'gloves', 'phone-holder'\]/);
+  assert.match(panel, /gps-addon/);
   assert.match(panel, /slice\(0, showMoreAccessories \? paidAccessories\.length : 1\)/);
   assert.match(panel, /showMore: 'Prikaži više'/);
   assert.doesNotMatch(panel, /href="#reviews"/);
@@ -1567,9 +1590,10 @@ test('accessories navigation opens an indexable catalog containing every current
   assert.match(app, /href="#modeli"[\s\S]*\/oprema\/\?lang=[\s\S]*href="#iskustva"/);
   assert.match(accessories, /<link rel="canonical" href="https:\/\/ridepogon\.com\/oprema\/">/);
   assert.match(accessories, /"@type":"CollectionPage"/);
-  assert.match(accessories, /"numberOfItems":7/);
-  assert.equal((accessories.match(/class="accessory-card(?: [^"]+)?"/g) || []).length, 7);
-  for (const item of ['Korpa', 'Lanac za zaključavanje', 'Kaciga sa vizirom', 'Kaciga', 'Retrovizor', 'Rukavice za upravljač', 'Držač telefona']) {
+  assert.match(accessories, /"numberOfItems":8/);
+  assert.match(accessories, /GPS dodatak — 1 godina/);
+  assert.equal((accessories.match(/class="accessory-card(?: [^"]+)?"/g) || []).length, 8);
+  for (const item of ['Korpa', 'Lanac za zaključavanje', 'Kaciga sa vizirom', 'Kaciga', 'Retrovizor', 'Rukavice za upravljač', 'Držač telefona', 'GPS dodatak — 1 godina']) {
     assert.match(accessories, new RegExp(item));
   }
   const accessoryImages = ['basket', 'chain', 'helmetwithvizor', 'helmet', 'rearviewmirror', 'gloves', 'phoneholder'];
@@ -1580,10 +1604,10 @@ test('accessories navigation opens an indexable catalog containing every current
   }
   const optimizedImageBytes = accessoryImages.reduce((total, image) => total + statSync(new URL(`../public/oprema/${image}.optimized.jpg`, import.meta.url)).size, 0);
   assert.ok(optimizedImageBytes < 750_000);
-  for (const price of ['6.000 RSD', '1.999 RSD', '3.999 RSD', '2.999 RSD', '1.300 RSD', '2.000 RSD']) assert.match(accessories, new RegExp(price.replace('.', '\\.')));
+  for (const price of ['6.000 RSD', '1.999 RSD', '3.999 RSD', '2.999 RSD', '1.300 RSD', '2.000 RSD', '3.000 RSD']) assert.match(accessories, new RegExp(price.replace('.', '\\.')));
   assert.match(accessories, /Trenutno rasprodato/);
   assert.doesNotMatch(accessories, /checkout\?product=basket/);
-  for (const key of ['chain', 'helmet-with-visor', 'helmet', 'rearview-mirror', 'gloves', 'phone-holder']) assert.match(accessories, new RegExp(`class="accessory-buy add-to-cart"[^>]+data-product="${key}"`));
+  for (const key of ['chain', 'helmet-with-visor', 'helmet', 'rearview-mirror', 'gloves', 'phone-holder', 'gps-addon']) assert.match(accessories, new RegExp(`class="accessory-buy add-to-cart"[^>]+data-product="${key}"`));
   assert.match(accessories, /Modeli<\/a><a href="\/oprema\/" aria-current="page">Oprema<\/a><a href="\/#iskustva">Iskustva/);
   assert.match(accessories, /id="cart-overlay"[\s\S]*id="cart-items"[\s\S]*id="cart-checkout"/);
   assert.doesNotMatch(accessories, /class="accessories-buy-now"/);
@@ -1601,7 +1625,9 @@ test('accessories navigation opens an indexable catalog containing every current
   assert.match(accessories, /updateFloatingModelsShortcut/);
   assert.match(productStyles, /\.accessories-logo \{ position: relative; width: 80px; height: 32px/);
   assert.match(productStyles, /\.mobile-floating-models\.is-visible/);
-  assert.equal((accessories.match(/class="accessory-photo-button"/g) || []).length, 7);
+  assert.equal((accessories.match(/class="accessory-photo-button"/g) || []).length, 8);
+  assert.match(accessories, /src="\/oprema\/gps-addon\.svg"/);
+  assert.equal(existsSync(new URL('../public/oprema/gps-addon.svg', import.meta.url)), true);
   assert.match(accessories, /id="accessory-lightbox"/);
   assert.match(accessories, /href="\/elektricni-bicikli\/">Vidi električne bicikle/);
   assert.match(accessories, /rel="prefetch" href="\/elektricni-bicikli\/" as="document"/);
@@ -1616,6 +1642,7 @@ test('accessories navigation opens an indexable catalog containing every current
     assert.match(source, /chain[\s\S]*1_999/);
     assert.match(source, /helmet-with-visor[\s\S]*3_999/);
     assert.match(source, /rearview-mirror[\s\S]*1_300/);
+    assert.match(source, /gps-addon[\s\S]*3_000/);
   }
   assert.match(sitemap, /https:\/\/ridepogon\.com\/oprema\//);
 });

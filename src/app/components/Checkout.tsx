@@ -85,10 +85,13 @@ export function Checkout() {
   const hasBike = items.some((item) => products.find((entry) => entry.key === item.product)?.category === 'bike');
   const cargoQuantity = items.find((item) => item.product === 'cargo')?.quantity ?? 0;
   const hasInstagramModel = items.some((item) => item.product === 'cargo' || item.product === 'glide');
+  const hasGlide = items.some((item) => item.product === 'glide');
   const displayedDiscount = promoCode === 'MILEBANJA'
     ? cargoQuantity * 10_000
     : promoCode === 'NBGD' || promoCode === 'POGONNS' || promoCode === 'ZIMA'
       ? Math.min(5_000, displayedTotal)
+      : promoCode === 'GLIDEGIVEAWAY'
+        ? Math.min(15_000, displayedTotal)
       : promoCode === 'INSTAGRAM'
         ? Math.min(4_000, displayedTotal)
       : 0;
@@ -116,8 +119,14 @@ export function Checkout() {
       setPromoCode(null);
       setPromoInput('');
       setPromoError('Kod INSTAGRAM važi samo za Pogon Cargo i Glide.');
+      return;
     }
-  }, [cargoQuantity, hasBike, hasInstagramModel, promoCode]);
+    if (promoCode === 'GLIDEGIVEAWAY' && !hasGlide) {
+      setPromoCode(null);
+      setPromoInput('');
+      setPromoError('Kod GLIDEGIVEAWAY važi samo za Pogon Glide.');
+    }
+  }, [cargoQuantity, hasBike, hasGlide, hasInstagramModel, promoCode]);
 
   const applyPromoCode = () => {
     const normalized = promoInput.trim().toUpperCase();
@@ -127,7 +136,7 @@ export function Checkout() {
       setPromoError('');
       return;
     }
-    if (!['MILEBANJA', 'NBGD', 'POGONNS', 'ZIMA', 'INSTAGRAM'].includes(normalized)) {
+    if (!['MILEBANJA', 'NBGD', 'POGONNS', 'ZIMA', 'GLIDEGIVEAWAY', 'INSTAGRAM'].includes(normalized)) {
       setPromoCode(null);
       setPromoError('Kod za popust nije važeći.');
       return;
@@ -145,6 +154,11 @@ export function Checkout() {
     if (normalized === 'INSTAGRAM' && !hasInstagramModel) {
       setPromoCode(null);
       setPromoError('Kod INSTAGRAM važi samo za Pogon Cargo i Glide.');
+      return;
+    }
+    if (normalized === 'GLIDEGIVEAWAY' && !hasGlide) {
+      setPromoCode(null);
+      setPromoError('Kod GLIDEGIVEAWAY važi samo za Pogon Glide.');
       return;
     }
     setPromoInput(normalized);
