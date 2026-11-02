@@ -92,9 +92,11 @@ export function Checkout() {
       ? Math.min(5_000, displayedTotal)
       : promoCode === 'GLIDEGIVEAWAY'
         ? Math.min(15_000, displayedTotal)
-      : promoCode === 'INSTAGRAM'
-        ? Math.min(4_000, displayedTotal)
-      : 0;
+       : promoCode === 'INSTAGRAM'
+         ? Math.min(4_000, displayedTotal)
+       : promoCode === 'KOSMOS'
+         ? Math.min(2_000, displayedTotal)
+       : 0;
   const displayedDeliveryFee = deliveryMethod === 'courier' ? 3_900 : 0;
   const displayedPayableTotal = displayedTotal - displayedDiscount + displayedDeliveryFee;
 
@@ -136,7 +138,7 @@ export function Checkout() {
       setPromoError('');
       return;
     }
-    if (!['MILEBANJA', 'NBGD', 'POGONNS', 'ZIMA', 'GLIDEGIVEAWAY', 'INSTAGRAM'].includes(normalized)) {
+    if (!['MILEBANJA', 'NBGD', 'POGONNS', 'ZIMA', 'GLIDEGIVEAWAY', 'INSTAGRAM', 'KOSMOS'].includes(normalized)) {
       setPromoCode(null);
       setPromoError('Kod za popust nije važeći.');
       return;

@@ -36,6 +36,11 @@ const PROMOTIONS = Object.freeze({
     discountRsd: 4_000,
     products: Object.freeze(['cargo', 'glide']),
   }),
+  KOSMOS: Object.freeze({
+    code: 'KOSMOS',
+    kind: 'fixed_order_discount',
+    discountRsd: 2_000,
+  }),
 });
 
 export function normalizePromoCode(value) {
@@ -51,6 +56,10 @@ export function applyPromotion(cart, value) {
   const promoCode = normalizePromoCode(value);
   if (!promoCode) {
     return { ...cart, originalSubtotalRsd: cart.subtotalRsd, discountRsd: 0, promoCode: null };
+  }
+
+  if (cart.promoCode || (cart.discountRsd ?? 0) > 0) {
+    throw new Error('DISCOUNT_ALREADY_APPLIED');
   }
 
   const promotion = Object.hasOwn(PROMOTIONS, promoCode) ? PROMOTIONS[promoCode] : null;

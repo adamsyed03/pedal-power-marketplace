@@ -149,6 +149,25 @@ test('INSTAGRAM subtracts 4,000 RSD once from Cargo and Glide orders', () => {
   assert.equal(discounted.items[0].promoCode, 'INSTAGRAM');
 });
 
+test('KOSMOS subtracts 2,000 RSD once from every bike model', () => {
+  for (const product of ['cargo', 'core', 'glide']) {
+    const discounted = applyPromotion(calculateCartTotal([
+      { product, quantity: 1 },
+    ]), ' kosmos ');
+    assert.equal(discounted.promoCode, 'KOSMOS');
+    assert.equal(discounted.discountRsd, 2_000);
+    assert.equal(discounted.subtotalRsd, discounted.originalSubtotalRsd - 2_000);
+    assert.equal(discounted.items[0].discountRsd, 2_000);
+  }
+});
+
+test('promotion discounts cannot be stacked', () => {
+  const discounted = applyPromotion(calculateCartTotal([
+    { product: 'core', quantity: 1 },
+  ]), 'KOSMOS');
+  assert.throws(() => applyPromotion(discounted, 'NBGD'), /DISCOUNT_ALREADY_APPLIED/);
+});
+
 test('INSTAGRAM rejects ineligible orders and discounts an eligible item in mixed carts', () => {
   assert.throws(
     () => applyPromotion(calculateCartTotal([{ product: 'core', quantity: 1 }]), 'INSTAGRAM'),
@@ -171,6 +190,7 @@ test('promo codes are server-normalized and fail closed when invalid or inapplic
   assert.equal(normalizePromoCode(' zima '), 'ZIMA');
   assert.equal(normalizePromoCode(' glidegiveaway '), 'GLIDEGIVEAWAY');
   assert.equal(normalizePromoCode(' instagram '), 'INSTAGRAM');
+  assert.equal(normalizePromoCode(' kosmos '), 'KOSMOS');
   assert.equal(normalizePromoCode(''), null);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), 'NOTREAL'), /INVALID_PROMO_CODE/);
   assert.throws(() => applyPromotion(calculateCartTotal([{ product: 'core', quantity: 1 }]), 'MILEBANJA'), /PROMO_NOT_APPLICABLE/);
@@ -193,6 +213,7 @@ test('single-use promo reservation IDs are stable per environment and isolated f
   assert.equal(isSingleUsePromotion('ZIMA'), false);
   assert.equal(isSingleUsePromotion('GLIDEGIVEAWAY'), false);
   assert.equal(isSingleUsePromotion('INSTAGRAM'), false);
+  assert.equal(isSingleUsePromotion('KOSMOS'), false);
   assert.throws(() => singleUsePromotionOrderId('NBGD', { NESTPAY_ENV: 'test' }), /INVALID_PROMO_CODE/);
   assert.throws(() => singleUsePromotionOrderId('NOTREAL', { NESTPAY_ENV: 'test' }), /INVALID_PROMO_CODE/);
 });

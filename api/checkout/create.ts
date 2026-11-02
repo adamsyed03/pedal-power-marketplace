@@ -102,6 +102,7 @@ export default async function handler(request: any, response: any) {
     if (code === 'INVALID_CAPTCHA') return response.status(400).json({ error: 'Bezbednosna provera je obavezna.' });
     if (code === 'INVALID_PROMO_CODE') return response.status(400).json({ error: 'Kod za popust nije važeći.' });
     if (code === 'PROMO_NOT_APPLICABLE') return response.status(400).json({ error: 'Kod za popust ne važi za proizvode u korpi.' });
+    if (code === 'DISCOUNT_ALREADY_APPLIED') return response.status(400).json({ error: 'Popusti se ne mogu kombinovati.' });
     if (code === 'ORDER_DATABASE_ERROR_409' && requestedPromoCode === 'MILEBANJA') {
       return response.status(409).json({ error: 'Kod MILEBANJA je već iskorišćen.' });
     }
