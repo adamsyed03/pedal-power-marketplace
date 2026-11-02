@@ -12,7 +12,7 @@ import { submitLead } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
 import { publicAsset } from '../lib/assets';
 import { setHomeMetadata, setPageMetadata } from '../lib/seo';
-import { formatRsd as formatProductRsd, products, type ProductKey } from '../lib/products';
+import { formatRsd as formatProductRsd, isProductAvailable, products, type ProductKey } from '../lib/products';
 import { languageFromSearch, persistSiteLanguage } from '../lib/productDetails';
 import { submitUkLead } from '../uk/ukLeads';
 import { UK_PHONE_DISPLAY, UK_PRODUCT_COPY, UK_PRODUCT_PRICES, UK_WHATSAPP_NUMBER, type UkProductKey } from '../uk/ukMarket';
@@ -39,7 +39,7 @@ function readStoredCart(storageKey = CART_STORAGE_KEY, includeLegacy = true): Ca
     const stored = localStorage.getItem(storageKey) || (includeLegacy ? localStorage.getItem(LEGACY_ACCESSORY_CART_STORAGE_KEY) : null) || '{}';
     const parsed = JSON.parse(stored) as Record<string, unknown>;
     return Object.fromEntries(Object.entries(parsed).filter(([key, quantity]) =>
-      products.some((product) => product.key === key)
+      products.some((product) => product.key === key && isProductAvailable(product))
       && Number.isSafeInteger(quantity)
       && Number(quantity) > 0
       && Number(quantity) <= 99,
@@ -272,13 +272,15 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
   const tr = <T,>(translations: Localized<T>) => translations[lang];
   const cartEntries = products
     .map((product) => ({ product, quantity: cart[product.key] || 0 }))
-    .filter((entry) => entry.quantity > 0);
+    .filter((entry) => entry.quantity > 0 && isProductAvailable(entry.product));
   const cartQuantity = cartEntries.reduce((sum, entry) => sum + entry.quantity, 0);
   const cartTotal = cartEntries.reduce((sum, entry) => sum + entry.product.priceRsd * entry.quantity, 0);
   const cartDisplayTotal = isUk
     ? cartEntries.reduce((sum, entry) => sum + UK_PRODUCT_PRICES[entry.product.key].amount * entry.quantity, 0)
     : cartTotal;
   const updateCartQuantity = (key: ProductKey, quantity: number) => {
+    const product = products.find((entry) => entry.key === key);
+    if (!product || !isProductAvailable(product)) return;
     setCart((current) => {
       const next = { ...current };
       if (quantity <= 0) delete next[key];
@@ -1101,6 +1103,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
       description: copy.glideDescription,
       originalPrice: undefined,
       price: '165.000,00 RSD',
+      isUnavailable: false,
       mobileSpecs: { range: '90–110 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({
         sr: [
@@ -1147,6 +1150,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
       description: copy.coreDescription,
       originalPrice: undefined,
       price: '135.000,00 RSD',
+      isUnavailable: true,
       mobileSpecs: { range: '140–150 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
@@ -1191,6 +1195,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
       description: copy.cargoDescription,
       originalPrice: undefined,
       price: '130.000,00 RSD',
+      isUnavailable: false,
       mobileSpecs: { range: '140–150 km', power: '250W motor', battery: '1512 Wh' },
       points: tr({
         sr: [
@@ -1232,7 +1237,7 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
         originalPrice: undefined,
         price: ukPrice.current,
         mobileSpecs: { range: '140 km', power: '250 W', battery: model.key === 'glide' ? '1200 Wh' : '840 Wh' },
-        isUnavailable: false,
+        isUnavailable: model.isUnavailable,
       };
     }),
     {
@@ -2077,8 +2082,13 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
                         {copy[model.badgeKey]}
                       </div>
                     ) : null}
+                    {model.isUnavailable ? (
+                      <div className="absolute left-3 top-4 z-30 -rotate-6 border-2 border-white bg-red-600 px-4 py-2 text-sm font-black uppercase tracking-[0.12em] text-white shadow-[4px_4px_0_rgba(0,0,0,0.75)] lg:left-2 lg:top-3">
+                        {tr({ sr: 'Rasprodato', en: 'Sold out', ru: 'Распродано' })}
+                      </div>
+                    ) : null}
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3.5 pb-3 pt-12 text-white lg:hidden">
-                        <div className={`max-w-[78%] text-left ${isUk && model.isUnavailable ? 'select-none blur-[5px] opacity-45' : ''}`}>
+                        <div className={`max-w-[78%] text-left ${model.isUnavailable ? 'select-none blur-[5px] opacity-45' : ''}`}>
                         {isUk ? (
                           <a href={`/uk/products/${model.key}/`} onClick={(event) => event.stopPropagation()} className="text-xl font-black leading-none drop-shadow-md">{model.name}</a>
                         ) : (
@@ -2128,15 +2138,15 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
                       <a href={`/products/${model.key}/`} onClick={(event) => event.stopPropagation()}>{model.name}</a>
                     )}
                   </h3>
-                  {isUk && model.isUnavailable ? (
-                    <div className="hidden min-h-[4rem] items-center justify-center pb-2 lg:flex">
-                      <div className="w-[12rem] rounded-full bg-black px-3 py-2 text-center text-[0.62rem] font-black leading-tight tracking-[0.04em] text-white shadow-lg">
-                        <span className="block">sold out</span><span className="block">more coming soon</span>
+                    {model.isUnavailable ? (
+                      <div className="hidden min-h-[4rem] items-center justify-center pb-2 lg:flex">
+                        <div className="w-[12rem] rounded-full bg-black px-3 py-2 text-center text-[0.62rem] font-black leading-tight tracking-[0.04em] text-white shadow-lg">
+                        <span className="block">{tr({ sr: 'Rasprodato', en: 'Sold out', ru: 'Распродано' })}</span>
+                        </div>
                       </div>
-                    </div>
-                  ) : null}
+                    ) : null}
                   <div className={`desktop-product-purchase pt-2 lg:pt-2.5 lg:border-t ${model.isFeatured ? 'lg:border-white/20' : 'lg:border-border'}`}>
-                    <div className={`desktop-product-price-block mb-2 hidden flex-col items-start gap-0.5 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'} ${isUk && model.isUnavailable ? 'select-none blur-[5px] opacity-45' : ''}`}>
+                    <div className={`desktop-product-price-block mb-2 hidden flex-col items-start gap-0.5 lg:flex ${model.isFeatured ? 'text-primary-foreground/80' : 'text-foreground/60'} ${model.isUnavailable ? 'select-none blur-[5px] opacity-45' : ''}`}>
                       {model.originalPrice ? <span className="desktop-product-original-price text-sm font-bold opacity-60 line-through decoration-2">{model.originalPrice}</span> : null}
                       <span className="desktop-product-price text-[1.9rem] font-black leading-none tracking-tight">{model.price}</span>
                     </div>
@@ -2174,7 +2184,14 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
                         {copy.heroPrimary}
                       </button>
                     )}
-                    {isUk ? (
+                    {model.isUnavailable ? (
+                      <span
+                        aria-disabled="true"
+                        className="desktop-product-action mt-1.5 inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-full border border-white/25 bg-black/20 py-2 text-[0.56rem] font-black uppercase tracking-wider text-current opacity-65 lg:mt-1 lg:py-1.5 lg:text-[0.54rem]"
+                      >
+                        {tr({ sr: 'Rasprodato', en: 'Sold out', ru: 'Распродано' })}
+                      </span>
+                    ) : isUk ? (
                       <a
                         href={`/uk/products/${model.key}/${model.key === 'fold' ? '#notify' : '#interest'}`}
                         className={`desktop-product-action mt-1.5 w-full inline-flex items-center justify-center gap-1.5 rounded-full border py-2 text-[0.56rem] font-semibold uppercase tracking-wider transition-colors active:scale-[0.98] lg:mt-1 lg:py-1.5 lg:text-[0.54rem] ${model.isFeatured ? 'border-white/35 text-primary-foreground/80 hover:bg-white/10' : 'border-border text-foreground/60 hover:border-primary/60 hover:text-foreground'}`}

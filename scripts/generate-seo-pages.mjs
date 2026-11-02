@@ -215,7 +215,7 @@ function renderProduct(model) {
       url: absolute(path),
       priceCurrency: 'RSD',
       price: String(model.price),
-      availability: 'https://schema.org/InStock',
+      availability: model.available === false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/NewCondition',
       seller: { '@id': `${site.url}/#organization` },
       shippingDetails: {
@@ -255,6 +255,15 @@ function renderProduct(model) {
     faqSchema(model.faq),
   ];
   const price = model.listPrice ? `<p class="price"><del>${model.listPrice}</del> ${model.priceDisplay}</p>` : `<p class="price">${model.priceDisplay}</p>`;
+  const purchaseCta = model.available === false
+    ? '<span class="button" aria-disabled="true">Rasprodato</span>'
+    : `<a class="button" href="/checkout?model=${model.slug}">Naruči ${esc(model.name)}</a>`;
+  const finalPurchaseCta = model.available === false
+    ? '<span class="button" aria-disabled="true">Rasprodato</span>'
+    : `<a class="button" href="/checkout?model=${model.slug}">Naruči ${esc(model.name.replace('Pogon ', ''))}</a>`;
+  const finalCtaBody = model.available === false
+    ? 'Model je trenutno rasprodat. Uporedite specifikacije i zakažite test vožnju ili proveru buduće dostupnosti.'
+    : 'Uporedite specifikacije, zakažite test vožnju ili nastavite na postojeći siguran proces poručivanja.';
   const facts = [
     ['Model', model.name], ['Tip', model.type], ['Motor', model.motor], ['Baterija', model.battery], ['Deklarisani domet', model.range],
     ['Ram', model.frame], ['Kočnice', model.brakes], ['Gume', model.tyres], ['Sigurnost', model.security], [model.extraLabel, model.extraValue], ['Cena', model.priceDisplay],
@@ -265,7 +274,7 @@ ${siteHeader('models')}
 <main id="sadrzaj">
   ${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli', path: '/elektricni-bicikli/' }, { name: model.name }])}
   <section class="page-hero page-hero--split wrap">
-    <div><div class="eyebrow">${esc(model.type)}</div><h1>${esc(model.name)}</h1><p class="lead">${esc(model.intro)}</p>${price}<div class="button-row"><a class="button" href="/checkout?model=${model.slug}">Naruči ${esc(model.name)}</a><a class="button-secondary" href="/#test-voznja">Zakaži test vožnju</a></div><div class="meta-line"><span>Dve godine garancije</span><span>Dostava 1–3 radna dana</span><span>Plaćanje u RSD</span></div></div>
+    <div><div class="eyebrow">${esc(model.type)}</div><h1>${esc(model.name)}</h1><p class="lead">${esc(model.intro)}</p>${price}<div class="button-row">${purchaseCta}<a class="button-secondary" href="/#test-voznja">Zakaži test vožnju</a></div><div class="meta-line"><span>Dve godine garancije</span><span>Dostava 1–3 radna dana</span><span>Plaćanje u RSD</span></div></div>
     <figure><img src="${encodedImage(model.image).replace(site.url, '')}" alt="${esc(model.imageAlt)}" width="${model.imageWidth}" height="${model.imageHeight}" fetchpriority="high" decoding="async"><figcaption>Prikaz modela ${esc(model.name)}</figcaption></figure>
   </section>
   <section class="topic-section topic-section--white"><div class="wrap"><div class="section-heading"><div class="eyebrow">Činjenice o modelu</div><h2>${esc(model.name)} — brzi pregled</h2><p>Ključni podaci su navedeni eksplicitno kako bi poređenje bilo jednostavno. Neobjavljene specifikacije nisu pretpostavljene.</p></div><dl class="fact-list">${facts.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl></div></section>
@@ -277,7 +286,7 @@ ${siteHeader('models')}
   </article>
   <section class="related"><div class="wrap"><div class="section-heading"><h2>Povezani vodiči</h2><p>Praktična objašnjenja za bateriju, domet, tip bicikla i održavanje.</p></div><div class="related-links">${relatedGuideLinks(model.related)}</div></div></section>
   ${faqHtml(model.faq, `Pitanja o modelu ${model.name.replace('Pogon ', '')}`)}
-  <section class="final-cta wrap"><h2>Proverite da li vam ${esc(model.name)} odgovara</h2><p>Uporedite specifikacije, zakažite test vožnju ili nastavite na postojeći siguran proces poručivanja.</p><div class="button-row"><a class="button" href="/checkout?model=${model.slug}">Naruči ${esc(model.name.replace('Pogon ', ''))}</a><a class="button-secondary" href="/#test-voznja">Zakaži test vožnju</a></div></section>
+  <section class="final-cta wrap"><h2>Proverite da li vam ${esc(model.name)} odgovara</h2><p>${finalCtaBody}</p><div class="button-row">${finalPurchaseCta}<a class="button-secondary" href="/#test-voznja">Zakaži test vožnju</a></div></section>
 </main>
 ${footer()}
 </body></html>`;

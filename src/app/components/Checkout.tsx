@@ -15,7 +15,7 @@ import {
   Tag,
   Truck,
 } from 'lucide-react';
-import { formatRsd, products, ProductKey } from '../../lib/products';
+import { formatRsd, isProductAvailable, products, ProductKey } from '../../lib/products';
 import { GAME_PRIZE_LABELS, GamePrizeKey, readStoredGamePrize } from '../../lib/gamePrize';
 import { PaymentBranding } from './PaymentBranding';
 import { Turnstile } from './Turnstile';
@@ -51,7 +51,7 @@ const parseCartParameter = (value: string | null): { product: ProductKey; quanti
   for (const segment of value.split(',')) {
     const [key, rawQuantity, ...extra] = segment.split(':');
     const quantity = Number(rawQuantity);
-    if (extra.length || seen.has(key) || !products.some((entry) => entry.key === key) || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) return [];
+    if (extra.length || seen.has(key) || !products.some((entry) => entry.key === key && isProductAvailable(entry)) || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) return [];
     seen.add(key);
     parsed.push({ product: key as ProductKey, quantity });
   }
@@ -61,7 +61,7 @@ const parseCartParameter = (value: string | null): { product: ProductKey; quanti
 export function Checkout() {
   const searchParams = new URLSearchParams(window.location.search);
   const requestedKey = (searchParams.get('product') || searchParams.get('model'))?.toLowerCase();
-  const selectedProduct = products.find((entry) => entry.key === requestedKey) ?? null;
+  const selectedProduct = products.find((entry) => entry.key === requestedKey && isProductAvailable(entry)) ?? null;
   const cartItems = parseCartParameter(searchParams.get('cart'));
   const initialItems = cartItems.length ? cartItems : selectedProduct ? [{ product: selectedProduct.key, quantity: 1 }] : [];
   const accessoriesOnly = initialItems.length > 0 && initialItems.every((item) => products.find((entry) => entry.key === item.product)?.category === 'accessory');
@@ -302,9 +302,9 @@ export function Checkout() {
                 })}
               </div>
 
-              {items.length < products.length && <div className="mt-4">
+              {items.length < products.filter(isProductAvailable).length && <div className="mt-4">
                 <p className="mb-2 text-xs font-bold text-black/45">Dodaj još proizvoda</p>
-                <div className="flex flex-wrap gap-2">{products.filter((entry) => !items.some((item) => item.product === entry.key)).map((entry) => <button key={entry.key} type="button" onClick={() => addModel(entry.key)} className="rounded-full border border-black/15 px-3 py-2 text-xs font-bold text-black/65 transition hover:border-orange-500 hover:text-black"><Plus className="mr-1 inline size-3" /> {entry.name}</button>)}</div>
+                <div className="flex flex-wrap gap-2">{products.filter((entry) => isProductAvailable(entry) && !items.some((item) => item.product === entry.key)).map((entry) => <button key={entry.key} type="button" onClick={() => addModel(entry.key)} className="rounded-full border border-black/15 px-3 py-2 text-xs font-bold text-black/65 transition hover:border-orange-500 hover:text-black"><Plus className="mr-1 inline size-3" /> {entry.name}</button>)}</div>
               </div>}
 
               {gamePrize && (

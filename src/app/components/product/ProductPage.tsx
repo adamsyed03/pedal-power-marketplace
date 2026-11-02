@@ -9,7 +9,7 @@ import { ProductPurchasePanel } from './ProductPurchasePanel';
 import { ProductRatingStars } from './ProductRatingStars';
 import { ProductCartDrawer, ProductFooter, ProductHeader, type ProductCartState } from './ProductSiteChrome';
 import { ImageWithFallback } from '../ImageWithFallback';
-import { formatRsd, products, type ProductKey } from '../../../lib/products';
+import { formatRsd, isProductAvailable, products, type ProductKey } from '../../../lib/products';
 import { bikeProductDetails, getProductDetails, localize, persistSiteLanguage, type BikeKey, type ProductDetails, type SiteLanguage } from '../../../lib/productDetails';
 import { formatProductRating, productRatings, productReviews } from '../../../lib/productReviews';
 import { submitLead } from '../../../lib/supabase';
@@ -41,7 +41,7 @@ function readCart(): ProductCartState {
   if (typeof window === 'undefined') return {};
   try {
     const parsed = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem(LEGACY_CART_STORAGE_KEY) || '{}') as Record<string, unknown>;
-    return Object.fromEntries(Object.entries(parsed).filter(([key, quantity]) => products.some((product) => product.key === key) && Number.isSafeInteger(quantity) && Number(quantity) > 0 && Number(quantity) <= 99)) as ProductCartState;
+    return Object.fromEntries(Object.entries(parsed).filter(([key, quantity]) => products.some((product) => product.key === key && isProductAvailable(product)) && Number.isSafeInteger(quantity) && Number(quantity) > 0 && Number(quantity) <= 99)) as ProductCartState;
   } catch {
     return {};
   }
@@ -123,8 +123,9 @@ export function ProductPage({ productKey, initialLanguage = 'sr' }: { productKey
   const [testStatus, setTestStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const purchasePanelRef = useRef<HTMLDivElement | null>(null);
   const t = pageCopy[language];
+  const isSoldOut = !isProductAvailable(details.product);
 
-  const cartEntries = useMemo(() => products.map((product) => ({ product, quantity: cart[product.key] || 0 })).filter((entry) => entry.quantity > 0), [cart]);
+  const cartEntries = useMemo(() => products.map((product) => ({ product, quantity: cart[product.key] || 0 })).filter((entry) => entry.quantity > 0 && isProductAvailable(entry.product)), [cart]);
 
   useEffect(() => { setCart(readCart()); setCartRestored(true); }, []);
   useEffect(() => { if (cartRestored) { try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch { /* keep in memory */ } } }, [cart, cartRestored]);
@@ -150,28 +151,33 @@ export function ProductPage({ productKey, initialLanguage = 'sr' }: { productKey
       image: `https://ridepogon.com${details.gallery[0].src.replace(/ /g, '%20')}`, type: 'product', language: language === 'sr' ? 'sr-Latn' : language,
       locale: language === 'sr' ? 'sr_RS' : language === 'en' ? 'en_US' : 'ru_RU',
       alternates: { sr: details.route, en: `${details.route}?lang=en`, ru: `${details.route}?lang=ru`, 'x-default': details.route },
-      product: { price: String(details.product.priceRsd), currency: 'RSD', availability: 'in stock' },
+      product: { price: String(details.product.priceRsd), currency: 'RSD', availability: isSoldOut ? 'out of stock' : 'in stock' },
       structuredData: {
         '@context': 'https://schema.org', '@graph': [
           { '@type': 'OnlineStore', '@id': 'https://ridepogon.com/#organization', name: 'Pogon', legalName: 'Pogon Mobility d.o.o.', url: 'https://ridepogon.com/', telephone: '+381631505003', email: 'pogonmobility@gmail.com', areaServed: { '@type': 'Country', name: 'Srbija' } },
           { '@type': 'Brand', '@id': 'https://ridepogon.com/#brand', name: 'Pogon', url: 'https://ridepogon.com/' },
           { '@type': 'WebSite', '@id': 'https://ridepogon.com/#website', url: 'https://ridepogon.com/', name: 'Pogon', inLanguage: language === 'sr' ? 'sr-Latn' : language, publisher: { '@id': 'https://ridepogon.com/#organization' } },
           { '@type': 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: localize(details.seoTitle, language), description: localize(details.seoDescription, language), inLanguage: language === 'sr' ? 'sr-Latn' : language, isPartOf: { '@id': 'https://ridepogon.com/#website' }, about: { '@id': productId }, mainEntity: { '@id': productId }, dateModified: '2026-10-15' },
-          { '@type': 'Product', '@id': productId, name: details.product.name, sku: `POGON-${details.key.toUpperCase()}`, model: details.product.name, image: details.gallery.map((item) => `https://ridepogon.com${item.src.replace(/ /g, '%20')}`), description: localize(details.seoDescription, language), category: localize(details.eyebrow, language), brand: { '@id': 'https://ridepogon.com/#brand' }, manufacturer: { '@id': 'https://ridepogon.com/#organization' }, mainEntityOfPage: { '@id': `${canonical}#webpage` }, additionalProperty, aggregateRating: { '@type': 'AggregateRating', ratingValue: formatProductRating(productRatings[details.key]), reviewCount: productReviews.length }, offers: { '@type': 'Offer', url: canonical, priceCurrency: 'RSD', price: String(details.product.priceRsd), availability: 'https://schema.org/InStock', itemCondition: 'https://schema.org/NewCondition', seller: { '@id': 'https://ridepogon.com/#organization' }, shippingDetails: { '@type': 'OfferShippingDetails', shippingRate: { '@type': 'MonetaryAmount', value: '3900', currency: 'RSD' }, shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'RS' }, deliveryTime: { '@type': 'ShippingDeliveryTime', transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'DAY' } } }, hasMerchantReturnPolicy: { '@type': 'MerchantReturnPolicy', applicableCountry: 'RS', returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow', merchantReturnDays: 14, returnMethod: 'https://schema.org/ReturnByMail', returnFees: 'https://schema.org/ReturnShippingFees' } } },
+          { '@type': 'Product', '@id': productId, name: details.product.name, sku: `POGON-${details.key.toUpperCase()}`, model: details.product.name, image: details.gallery.map((item) => `https://ridepogon.com${item.src.replace(/ /g, '%20')}`), description: localize(details.seoDescription, language), category: localize(details.eyebrow, language), brand: { '@id': 'https://ridepogon.com/#brand' }, manufacturer: { '@id': 'https://ridepogon.com/#organization' }, mainEntityOfPage: { '@id': `${canonical}#webpage` }, additionalProperty, aggregateRating: { '@type': 'AggregateRating', ratingValue: formatProductRating(productRatings[details.key]), reviewCount: productReviews.length }, offers: { '@type': 'Offer', url: canonical, priceCurrency: 'RSD', price: String(details.product.priceRsd), availability: isSoldOut ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock', itemCondition: 'https://schema.org/NewCondition', seller: { '@id': 'https://ridepogon.com/#organization' }, shippingDetails: { '@type': 'OfferShippingDetails', shippingRate: { '@type': 'MonetaryAmount', value: '3900', currency: 'RSD' }, shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'RS' }, deliveryTime: { '@type': 'ShippingDeliveryTime', transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'DAY' } } }, hasMerchantReturnPolicy: { '@type': 'MerchantReturnPolicy', applicableCountry: 'RS', returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow', merchantReturnDays: 14, returnMethod: 'https://schema.org/ReturnByMail', returnFees: 'https://schema.org/ReturnShippingFees' } } },
           { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Pogon', item: 'https://ridepogon.com/' }, { '@type': 'ListItem', position: 2, name: t.models, item: 'https://ridepogon.com/#modeli' }, { '@type': 'ListItem', position: 3, name: details.product.name, item: `https://ridepogon.com${details.route}` }] },
           { '@type': 'FAQPage', mainEntity: details.faq.map((item) => ({ '@type': 'Question', name: localize(item.question, language), acceptedAnswer: { '@type': 'Answer', text: localize(item.answer, language) } })) },
         ],
       },
     });
-  }, [details, language, t.models]);
+  }, [details, isSoldOut, language, t.models]);
 
   const changeLanguage = (next: SiteLanguage) => {
     persistSiteLanguage(next);
     setLanguage(next);
     if (typeof window !== 'undefined') window.history.replaceState(window.history.state, '', next === 'sr' ? details.route : `${details.route}?lang=${next}`);
   };
-  const updateQuantity = (key: ProductKey, quantity: number) => setCart((current) => { const next = { ...current }; if (quantity <= 0) delete next[key]; else next[key] = Math.min(quantity, 99); return next; });
+  const updateQuantity = (key: ProductKey, quantity: number) => {
+    const product = products.find((entry) => entry.key === key);
+    if (!product || !isProductAvailable(product)) return;
+    setCart((current) => { const next = { ...current }; if (quantity <= 0) delete next[key]; else next[key] = Math.min(quantity, 99); return next; });
+  };
   const buyNow = (source = 'pdp', accessoryKeys: ProductKey[] = []) => {
+    if (isSoldOut) return;
     const parameter = [details.key, ...accessoryKeys].map((key) => `${key}:1`).join(',');
     trackEvent('checkout_started', { source, product: details.key, accessories: accessoryKeys.join(',') });
     window.location.assign(`/checkout?cart=${encodeURIComponent(parameter)}`);
@@ -220,11 +226,11 @@ export function ProductPage({ productKey, initialLanguage = 'sr' }: { productKey
         <ReviewsSection details={details} language={language} />
         <section className="bg-[#030213] py-16 text-white sm:py-24"><div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-6 lg:grid-cols-[0.75fr_1.25fr]"><SectionHeading eyebrow={t.faqEyebrow} title={t.faq} inverse /><div className="space-y-3">{details.faq.map((item, index) => <details key={localize(item.question, language)} open={index === 0} className="group rounded-2xl border border-white/15 bg-white/[0.06]"><summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-bold"><span>{localize(item.question, language)}</span><ChevronDown className="size-5 shrink-0 text-[#7fff00] transition-transform group-open:rotate-180" /></summary><p className="border-t border-white/10 px-5 pb-5 pt-4 text-sm leading-relaxed text-white/60">{localize(item.answer, language)}</p></details>)}</div></div></section>
         <ProductComparison activeKey={details.key} language={language} />
-        <section className="bg-white py-16 sm:py-24"><div className="mx-auto max-w-5xl px-5 text-center sm:px-6"><p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-[#397700]">{details.product.name}</p><h2 className="mt-4 text-5xl font-black uppercase leading-[0.9] tracking-[-0.055em] sm:text-7xl">{t.finalTitle}</h2><p className="mx-auto mt-5 max-w-xl text-black/55">{t.finalBody}</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><button type="button" onClick={() => buyNow('pdp-final-cta')} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-black px-8 text-sm font-black uppercase tracking-[0.12em] text-white"><CreditCard className="size-5" />{t.add}</button><button type="button" onClick={scrollToTestRide} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border-2 border-black px-8 text-sm font-black uppercase tracking-[0.12em]"><CalendarCheck className="size-5" />{t.test}</button></div></div></section>
+        <section className="bg-white py-16 sm:py-24"><div className="mx-auto max-w-5xl px-5 text-center sm:px-6"><p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-[#397700]">{details.product.name}</p><h2 className="mt-4 text-5xl font-black uppercase leading-[0.9] tracking-[-0.055em] sm:text-7xl">{t.finalTitle}</h2><p className="mx-auto mt-5 max-w-xl text-black/55">{t.finalBody}</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><button type="button" onClick={() => buyNow('pdp-final-cta')} disabled={isSoldOut} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-black px-8 text-sm font-black uppercase tracking-[0.12em] text-white disabled:cursor-not-allowed disabled:opacity-45"><CreditCard className="size-5" />{isSoldOut ? ({ sr: 'Rasprodato', en: 'Sold out', ru: 'Распродано' } as const)[language] : t.add}</button><button type="button" onClick={scrollToTestRide} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border-2 border-black px-8 text-sm font-black uppercase tracking-[0.12em]"><CalendarCheck className="size-5" />{t.test}</button></div></div></section>
       </main>
 
       <ProductFooter language={language} />
-      {showStickyPurchase ? <div className="fixed inset-x-0 bottom-0 z-[70] border-t border-black/10 bg-white/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_40px_rgba(0,0,0,0.12)] backdrop-blur-md"><div className="mx-auto flex max-w-7xl items-center gap-3"><img src={details.product.image} alt="" width={56} height={56} className="hidden size-12 rounded-xl bg-black object-cover sm:block" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-black sm:text-base">{details.product.name}</p><p className="text-xs font-bold text-black/55 sm:text-sm">{formatRsd(details.product.priceRsd)}</p></div><button type="button" onClick={() => buyNow('pdp-sticky-bar')} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-black px-5 text-xs font-black uppercase tracking-[0.1em] text-white sm:px-8"><CreditCard className="size-4" />{t.add}</button></div></div> : null}
+      {showStickyPurchase ? <div className="fixed inset-x-0 bottom-0 z-[70] border-t border-black/10 bg-white/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_40px_rgba(0,0,0,0.12)] backdrop-blur-md"><div className="mx-auto flex max-w-7xl items-center gap-3"><img src={details.product.image} alt="" width={56} height={56} className="hidden size-12 rounded-xl bg-black object-cover sm:block" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-black sm:text-base">{details.product.name}</p><p className="text-xs font-bold text-black/55 sm:text-sm">{formatRsd(details.product.priceRsd)}</p></div><button type="button" onClick={() => buyNow('pdp-sticky-bar')} disabled={isSoldOut} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-black px-5 text-xs font-black uppercase tracking-[0.1em] text-white disabled:cursor-not-allowed disabled:opacity-45 sm:px-8"><CreditCard className="size-4" />{isSoldOut ? ({ sr: 'Rasprodato', en: 'Sold out', ru: 'Распродано' } as const)[language] : t.add}</button></div></div> : null}
     </div>
   );
 }

@@ -8,6 +8,7 @@ export type Product = {
   listPriceRsd?: number;
   image: string;
   category: 'bike' | 'accessory';
+  available?: boolean;
   unitLabel?: string;
 };
 
@@ -15,7 +16,7 @@ export type Product = {
 // checkout totals must never be calculated from browser-supplied prices.
 export const products: readonly Product[] = [
   { key: 'cargo', name: 'Pogon Cargo', description: 'Električni teretni bicikl za praktičan prevoz stvari kroz grad.', priceRsd: 130_000, image: '/Core main.jpg', category: 'bike' },
-  { key: 'core', name: 'Pogon Core', description: 'Svestrani električni bicikl za svakodnevne obaveze i duže gradske rute.', priceRsd: 135_000, image: '/Cargo Main.jpg', category: 'bike' },
+  { key: 'core', name: 'Pogon Core', description: 'Svestrani električni bicikl za svakodnevne obaveze i duže gradske rute.', priceRsd: 135_000, image: '/Cargo Main.jpg', category: 'bike', available: false },
   { key: 'glide', name: 'Pogon Glide', description: 'Premium električni bicikl za udobnu svakodnevnu gradsku vožnju.', priceRsd: 165_000, image: '/Glide main.jpg', category: 'bike' },
   { key: 'chain', name: 'Lanac za zaključavanje', description: 'Lanac za sigurno zaključavanje bicikla tokom gradskih zaustavljanja.', priceRsd: 1_999, image: '/oprema/chain.optimized.jpg', category: 'accessory' },
   { key: 'helmet-with-visor', name: 'Kaciga sa vizirom', description: 'Kaciga sa integrisanim vizirom za svakodnevnu gradsku vožnju.', priceRsd: 3_999, image: '/oprema/helmetwithvizor.optimized.jpg', category: 'accessory' },
@@ -25,6 +26,8 @@ export const products: readonly Product[] = [
   { key: 'phone-holder', name: 'Držač telefona', description: 'Držač za preglednu i sigurniju upotrebu navigacije.', priceRsd: 2_000, image: '/oprema/phoneholder.optimized.jpg', category: 'accessory' },
   { key: 'gps-addon', name: 'GPS dodatak — 1 godina', description: 'GPS praćenje i sigurnosna usluga za bicikl u trajanju od jedne godine.', priceRsd: 3_000, image: '/oprema/gps-addon.svg', category: 'accessory', unitLabel: 'za 1 godinu' },
 ];
+
+export const isProductAvailable = (product: Pick<Product, 'available'>) => product.available !== false;
 
 export const formatRsd = (amount: number) =>
   `${new Intl.NumberFormat('sr-RS', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)} RSD`;

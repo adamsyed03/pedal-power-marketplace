@@ -1,6 +1,6 @@
 export const PRODUCTS = Object.freeze({
   glide: Object.freeze({ key: 'glide', name: 'Pogon Glide', unitPriceRsd: 165_000, category: 'bike' }),
-  core: Object.freeze({ key: 'core', name: 'Pogon Core', unitPriceRsd: 135_000, category: 'bike' }),
+  core: Object.freeze({ key: 'core', name: 'Pogon Core', unitPriceRsd: 135_000, category: 'bike', available: false }),
   cargo: Object.freeze({ key: 'cargo', name: 'Pogon Cargo', unitPriceRsd: 130_000, category: 'bike' }),
   chain: Object.freeze({ key: 'chain', name: 'Lanac za zaključavanje', unitPriceRsd: 1_999, category: 'accessory' }),
   'helmet-with-visor': Object.freeze({ key: 'helmet-with-visor', name: 'Kaciga sa vizirom', unitPriceRsd: 3_999, category: 'accessory' }),
@@ -14,6 +14,7 @@ export const PRODUCTS = Object.freeze({
 export function calculateOrderTotal(productKey, quantity) {
   const product = PRODUCTS[productKey];
   if (!product) throw new Error('INVALID_PRODUCT');
+  if (product.available === false) throw new Error('PRODUCT_UNAVAILABLE');
   if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) {
     throw new Error('INVALID_QUANTITY');
   }

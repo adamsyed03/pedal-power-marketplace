@@ -110,7 +110,7 @@ try {
             url: canonical,
             priceCurrency: 'RSD',
             price: String(details.product.priceRsd),
-            availability: 'https://schema.org/InStock',
+            availability: details.product.available === false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
             itemCondition: 'https://schema.org/NewCondition',
             seller: { '@id': `${siteUrl}/#organization` },
             shippingDetails: {
@@ -177,7 +177,7 @@ try {
     <meta property="og:image:alt" content="${escapeHtml(details.product.name)}" />
     <meta property="product:price:amount" content="${details.product.priceRsd}" />
     <meta property="product:price:currency" content="RSD" />
-    <meta property="product:availability" content="in stock" />
+    <meta property="product:availability" content="${details.product.available === false ? 'out of stock' : 'in stock'}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />

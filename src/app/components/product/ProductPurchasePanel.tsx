@@ -22,9 +22,9 @@ const copy = {
 };
 
 const extrasCopy = {
-  sr: { together: 'Često kupljeno zajedno', equipment: 'Sva oprema', selectedTotal: 'Bicikl + izabrana oprema', buyNow: 'Kupi sada', complimentary: 'Besplatno', included: 'Automatski uključeno', warrantyBenefit: '2 godine garancije', rearRack: 'Zadnji nosač (gepek)', fenders: 'Blatobrani', showMore: 'Prikaži više', showLess: 'Prikaži manje', watching: (count: number) => `${count} ljudi trenutno gleda ovaj model` },
-  en: { together: 'Frequently bought together', equipment: 'All accessories', selectedTotal: 'Bike + selected accessories', buyNow: 'Buy now', complimentary: 'Complimentary', included: 'Automatically included', warrantyBenefit: '2-year warranty', rearRack: 'Rear rack', fenders: 'Fenders', showMore: 'Show more', showLess: 'Show less', watching: (count: number) => `${count} people are viewing this model now` },
-  ru: { together: 'Часто покупают вместе', equipment: 'Все аксессуары', selectedTotal: 'Велосипед + выбранные аксессуары', buyNow: 'Купить сейчас', complimentary: 'Бесплатно', included: 'Включено автоматически', warrantyBenefit: 'Гарантия 2 года', rearRack: 'Задний багажник', fenders: 'Крылья', showMore: 'Показать ещё', showLess: 'Показать меньше', watching: (count: number) => `${count} человек сейчас смотрят эту модель` },
+  sr: { together: 'Često kupljeno zajedno', equipment: 'Sva oprema', selectedTotal: 'Bicikl + izabrana oprema', buyNow: 'Kupi sada', soldOut: 'Rasprodato', complimentary: 'Besplatno', included: 'Automatski uključeno', warrantyBenefit: '2 godine garancije', rearRack: 'Zadnji nosač (gepek)', fenders: 'Blatobrani', showMore: 'Prikaži više', showLess: 'Prikaži manje', watching: (count: number) => `${count} ljudi trenutno gleda ovaj model` },
+  en: { together: 'Frequently bought together', equipment: 'All accessories', selectedTotal: 'Bike + selected accessories', buyNow: 'Buy now', soldOut: 'Sold out', complimentary: 'Complimentary', included: 'Automatically included', warrantyBenefit: '2-year warranty', rearRack: 'Rear rack', fenders: 'Fenders', showMore: 'Show more', showLess: 'Show less', watching: (count: number) => `${count} people are viewing this model now` },
+  ru: { together: 'Часто покупают вместе', equipment: 'Все аксессуары', selectedTotal: 'Велосипед + выбранные аксессуары', buyNow: 'Купить сейчас', soldOut: 'Распродано', complimentary: 'Бесплатно', included: 'Включено автоматически', warrantyBenefit: 'Гарантия 2 года', rearRack: 'Задний багажник', fenders: 'Крылья', showMore: 'Показать ещё', showLess: 'Показать меньше', watching: (count: number) => `${count} человек сейчас смотрят эту модель` },
 };
 
 const paidAccessoryKeys: readonly ProductKey[] = ['gps-addon', 'chain', 'helmet', 'helmet-with-visor', 'rearview-mirror', 'gloves', 'phone-holder'];
@@ -32,6 +32,7 @@ const paidAccessoryKeys: readonly ProductKey[] = ['gps-addon', 'chain', 'helmet'
 export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, purchasePanelRef }: ProductPurchasePanelProps) {
   const t = copy[language];
   const extras = extrasCopy[language];
+  const isSoldOut = details.product.available === false;
   const rating = productRatings[details.key];
   const paidAccessories = paidAccessoryKeys
     .map((key) => products.find((product) => product.key === key))
@@ -68,6 +69,7 @@ export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, 
     <div ref={purchasePanelRef} className="min-w-0 lg:border-l lg:border-black/10 lg:pl-10 xl:pl-14">
       <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#397700]">{localize(details.eyebrow, language)}</p>
       <h1 className="mt-3 text-[clamp(2.5rem,4vw,3.75rem)] font-black leading-[0.94] tracking-[-0.045em] text-black">{details.product.name}</h1>
+      {isSoldOut ? <div className="mt-4 inline-flex -rotate-2 border-2 border-black bg-red-600 px-4 py-2 text-sm font-black uppercase tracking-[0.12em] text-white shadow-[4px_4px_0_#111]">{extras.soldOut}</div> : null}
       <p className="mt-4 max-w-xl text-sm font-medium leading-relaxed text-black/62 sm:text-base">{localize(details.valueProposition, language)}</p>
 
       <div className="mt-5 flex w-fit items-center gap-2 border border-dashed border-[#397700]/45 bg-[#7fff00]/10 px-3.5 py-2.5 text-sm font-bold text-black/75" aria-live="polite">
@@ -135,9 +137,9 @@ export function ProductPurchasePanel({ details, language, onBuyNow, onTestRide, 
         </div>
       </section>
 
-      <button type="button" onClick={() => onBuyNow(selectedAccessoryKeys)} className="mt-5 inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-md bg-[#030213] px-6 text-sm font-black uppercase tracking-[0.13em] text-white transition-colors hover:bg-[#22212f] active:bg-black">
+      <button type="button" onClick={() => onBuyNow(selectedAccessoryKeys)} disabled={isSoldOut} className="mt-5 inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-md bg-[#030213] px-6 text-sm font-black uppercase tracking-[0.13em] text-white transition-colors hover:bg-[#22212f] active:bg-black disabled:cursor-not-allowed disabled:opacity-45">
         <CreditCard className="size-5" />
-        {extras.buyNow}
+        {isSoldOut ? extras.soldOut : extras.buyNow}
       </button>
       <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
         <button type="button" onClick={onTestRide} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-black px-4 text-xs font-black uppercase tracking-[0.1em] text-black transition-colors hover:bg-black hover:text-white">
