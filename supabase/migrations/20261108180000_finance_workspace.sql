@@ -8,6 +8,7 @@ returns boolean language sql stable security definer set search_path = public
 as $$ select lower(coalesce(auth.jwt() ->> 'email', '')) = 'pogonmobility@gmail.com'
   or coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') = 'admin' $$;
 revoke all on function public.is_pogon_admin() from public;
+revoke all on function public.is_pogon_admin() from anon;
 grant execute on function public.is_pogon_admin() to authenticated, service_role;
 
 create table public.bank_accounts (
