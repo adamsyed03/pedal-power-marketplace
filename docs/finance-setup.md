@@ -4,7 +4,7 @@ The Finance workspace is additive. `/admin` remains the Sales CRM; the new route
 
 ## 1. Apply the database migration
 
-Review and apply `supabase/migrations/20261108180000_finance_workspace.sql` with the Supabase CLI or SQL editor. It creates finance tables, functions, indexes, RLS policies, and the private `finance-documents` bucket. It does not modify or delete existing `leads` or `orders` rows.
+Review and apply `supabase/migrations/20261108175550_finance_workspace.sql` with the Supabase CLI or SQL editor. It creates finance tables, functions, indexes, RLS policies, and the private `finance-documents` bucket. It does not modify or delete existing `leads` or `orders` rows.
 
 CLI example:
 
