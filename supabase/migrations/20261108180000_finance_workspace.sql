@@ -339,7 +339,7 @@ begin
   if not is_pogon_admin() then raise exception 'admin required'; end if;
   select amount-received_amount into v_remaining from payment_instalments where id=p_instalment_id for update;
   if v_remaining is null or p_amount <= 0 or p_amount > v_remaining then raise exception 'amount exceeds remaining instalment'; end if;
-  v_key := encode(digest(p_instalment_id::text || ':' || p_amount::text || ':' || p_paid_on::text || ':' || coalesce(p_reference,'') || ':' || clock_timestamp()::text,'sha256'),'hex');
+  v_key := encode(extensions.digest(p_instalment_id::text || ':' || p_amount::text || ':' || p_paid_on::text || ':' || coalesce(p_reference,'') || ':' || clock_timestamp()::text,'sha256'),'hex');
   insert into payment_allocations(instalment_id,amount,allocation_source,payment_reference,paid_on,idempotency_key,allocated_by)
   values(p_instalment_id,p_amount,'manual_other',p_reference,p_paid_on,v_key,auth.uid()) returning id into v_id;
   return v_id;
@@ -354,7 +354,7 @@ begin
     into v_tx_remaining,v_currency,v_paid_on,v_reference from bank_transactions t where t.id=p_transaction_id and t.direction='credit' for update;
   select amount-received_amount into v_inst_remaining from payment_instalments where id=p_instalment_id for update;
   if v_tx_remaining is null or v_inst_remaining is null or p_amount<=0 or p_amount>v_tx_remaining or p_amount>v_inst_remaining then raise exception 'allocation exceeds transaction or instalment balance'; end if;
-  v_key:=encode(digest(p_transaction_id::text||':'||p_instalment_id::text||':'||p_amount::text||':'||clock_timestamp()::text,'sha256'),'hex');
+  v_key:=encode(extensions.digest(p_transaction_id::text||':'||p_instalment_id::text||':'||p_amount::text||':'||clock_timestamp()::text,'sha256'),'hex');
   insert into payment_allocations(bank_transaction_id,instalment_id,amount,currency,allocation_source,confidence,payment_reference,paid_on,idempotency_key,allocated_by)
   values(p_transaction_id,p_instalment_id,p_amount,v_currency,'manual_bank',1,v_reference,v_paid_on,v_key,auth.uid()) returning id into v_id;
   update payment_match_suggestions set status='accepted' where bank_transaction_id=p_transaction_id and instalment_id=p_instalment_id;
