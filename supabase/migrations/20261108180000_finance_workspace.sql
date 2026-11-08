@@ -375,7 +375,7 @@ begin
 end $$;
 
 create or replace function public.finance_dashboard_summary(p_from date, p_to date)
-returns jsonb language sql stable security invoker set search_path = public as $
+returns jsonb language sql stable security invoker set search_path = public as $summary$
 with cash as (
   select coalesce(sum(amount) filter(where direction='credit'),0) received, coalesce(sum(amount) filter(where direction='debit'),0) paid from bank_transactions where booked_on between p_from and p_to
 ), sales as (
@@ -386,7 +386,7 @@ with cash as (
   select coalesce(sum(t.amount),0) expense from bank_transactions t join financial_categories c on c.id=t.category_id where t.booked_on between p_from and p_to and t.direction='debit' and c.kind='operating_expense'
 ), latest as (select closing_balance from bank_statements where status='reconciled' order by statement_date desc, imported_at desc limit 1), recv as (select coalesce(sum(outstanding_amount),0) outstanding from payment_schedules where status not in ('paid','cancelled')), expected as (select coalesce(sum(amount-received_amount),0) amount from payment_instalments where due_on between current_date and current_date+30 and status not in ('paid','cancelled')), stock as (select count(*) units,coalesce(sum(coalesce(landed_cost,allocated_landed_cost,purchase_cost,0)),0) value from inventory_units where status not in ('sold','returned'))
 select jsonb_build_object('bank_balance',(select closing_balance from latest),'cash_received',cash.received,'cash_paid',cash.paid,'net_cash_flow',cash.received-cash.paid,'recognised_revenue',sales.revenue,'operating_expenses',expenses.expense,'gross_profit',case when costs.cost is null then null else sales.revenue-costs.cost end,'gross_margin',case when costs.cost is null or sales.revenue=0 then null else round((sales.revenue-costs.cost)/sales.revenue*100,2) end,'net_profit',case when costs.cost is null then null else sales.revenue-costs.cost-expenses.expense end,'outstanding_receivables',recv.outstanding,'expected_30_days',expected.amount,'inventory_units',stock.units,'inventory_value',stock.value) from cash,sales,costs,expenses,recv,expected,stock where public.is_pogon_admin()
-$;
+$summary$;
 
 -- Atomic, idempotent statement commit used only by the service-role importer.
 create or replace function public.finance_commit_bank_statement(p_statement jsonb, p_transactions jsonb)
