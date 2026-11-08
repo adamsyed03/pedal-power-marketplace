@@ -391,15 +391,29 @@ $;
 -- Atomic, idempotent statement commit used only by the service-role importer.
 create or replace function public.finance_commit_bank_statement(p_statement jsonb, p_transactions jsonb)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare v_account uuid; v_statement uuid; v_tx jsonb; v_count int:=0; v_difference numeric;
+declare v_account uuid; v_statement uuid; v_tx jsonb; v_count int:=0; v_difference numeric; v_parsed_credit numeric:=0; v_parsed_debit numeric:=0; v_declared_credit numeric; v_declared_debit numeric; v_opening numeric; v_closing numeric;
 begin
   insert into bank_accounts(account_number,currency) values(p_statement->>'account_number',coalesce(p_statement->>'currency','RSD')) on conflict(account_number,currency) do update set active=true returning id into v_account;
   select id into v_statement from bank_statements where source_file_hash=p_statement->>'source_file_hash';
   if v_statement is not null then return jsonb_build_object('duplicate',true,'statement_id',v_statement,'transactions',0); end if;
-  v_difference := round((p_statement->>'closing_balance')::numeric - ((p_statement->>'opening_balance')::numeric + (p_statement->>'total_credit')::numeric - (p_statement->>'total_debit')::numeric),2);
+  v_opening := (p_statement->>'opening_balance')::numeric;
+  v_closing := (p_statement->>'closing_balance')::numeric;
+  v_declared_credit := (p_statement->>'total_credit')::numeric;
+  v_declared_debit := (p_statement->>'total_debit')::numeric;
+  if jsonb_typeof(p_transactions) <> 'array' or jsonb_array_length(p_transactions) = 0 then
+    raise exception 'Bank statement has no parsed transactions';
+  end if;
+  select coalesce(sum((t.value->>'amount')::numeric) filter(where t.value->>'direction'='credit'),0),
+         coalesce(sum((t.value->>'amount')::numeric) filter(where t.value->>'direction'='debit'),0)
+    into v_parsed_credit,v_parsed_debit from jsonb_array_elements(p_transactions) as t(value);
+  if v_parsed_credit <> v_declared_credit or v_parsed_debit <> v_declared_debit then
+    raise exception 'Parsed transaction totals do not agree with statement totals';
+  end if;
+  v_difference := round(v_closing - (v_opening + v_parsed_credit - v_parsed_debit),2);
   insert into bank_statements(bank_account_id,statement_year,statement_number,statement_date,opening_balance,closing_balance,total_debit,total_credit,currency,status,source_email_id,source_email_subject,source_file_hash,storage_path,parser_version,reconciliation_difference)
   values(v_account,(p_statement->>'statement_year')::int,p_statement->>'statement_number',(p_statement->>'statement_date')::date,(p_statement->>'opening_balance')::numeric,(p_statement->>'closing_balance')::numeric,(p_statement->>'total_debit')::numeric,(p_statement->>'total_credit')::numeric,coalesce(p_statement->>'currency','RSD'),case when v_difference=0 then 'reconciled' else 'review' end,p_statement->>'source_email_id',p_statement->>'source_email_subject',p_statement->>'source_file_hash',p_statement->>'storage_path',p_statement->>'parser_version',v_difference) returning id into v_statement;
   for v_tx in select * from jsonb_array_elements(p_transactions) loop
+    if v_tx->>'direction' not in ('credit','debit') or (v_tx->>'amount')::numeric <= 0 then raise exception 'Invalid parsed transaction'; end if;
     insert into bank_transactions(statement_id,bank_account_id,sequence_no,booked_on,value_date,direction,amount,currency,counterparty_name,counterparty_account,description,payment_reference,fingerprint,raw_data)
     values(v_statement,v_account,(v_tx->>'sequence_no')::int,(v_tx->>'booked_on')::date,nullif(v_tx->>'value_date','')::date,v_tx->>'direction',(v_tx->>'amount')::numeric,coalesce(v_tx->>'currency','RSD'),v_tx->>'counterparty_name',v_tx->>'counterparty_account',coalesce(v_tx->>'description',''),v_tx->>'payment_reference',v_tx->>'fingerprint',v_tx); v_count:=v_count+1;
   end loop;
