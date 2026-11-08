@@ -274,6 +274,40 @@ create index payment_schedules_crm_order_idx on public.payment_schedules (crm_or
 create index inventory_units_model_status_idx on public.inventory_units (model, status);
 create index allocation_transaction_idx on public.payment_allocations (bank_transaction_id);
 
+
+-- Keep cash allocations consistent even when server-side service_role importers write directly.
+-- Lock the bank transaction first, then the instalment, to serialize concurrent allocations.
+create or replace function public.finance_guard_allocation()
+returns trigger language plpgsql security definer set search_path = public as $
+declare v_tx_amount numeric; v_tx_currency char(3); v_tx_direction text; v_statement_status text;
+        v_tx_allocated numeric; v_inst_amount numeric; v_inst_currency char(3);
+        v_inst_status text; v_inst_allocated numeric;
+begin
+  if new.bank_transaction_id is not null then
+    select bt.amount, bt.currency, bt.direction, bs.status
+      into v_tx_amount, v_tx_currency, v_tx_direction, v_statement_status
+      from public.bank_transactions bt join public.bank_statements bs on bs.id = bt.statement_id
+      where bt.id = new.bank_transaction_id for update of bt;
+    if not found or v_tx_direction <> 'credit' or v_statement_status <> 'reconciled' then
+      raise exception 'Only credits from reconciled bank statements may be allocated';
+    end if;
+    if new.currency <> v_tx_currency then raise exception 'Bank allocation currency mismatch'; end if;
+    select coalesce(sum(amount),0) into v_tx_allocated from public.payment_allocations
+      where bank_transaction_id = new.bank_transaction_id;
+    if v_tx_allocated + new.amount > v_tx_amount then raise exception 'Bank transaction allocation exceeds amount'; end if;
+  end if;
+  select amount, currency, status into v_inst_amount, v_inst_currency, v_inst_status
+    from public.payment_instalments where id = new.instalment_id for update;
+  if not found or v_inst_status = 'cancelled' then raise exception 'Instalment unavailable for allocation'; end if;
+  if new.currency <> v_inst_currency then raise exception 'Instalment allocation currency mismatch'; end if;
+  select coalesce(sum(amount),0) into v_inst_allocated from public.payment_allocations
+    where instalment_id = new.instalment_id;
+  if v_inst_allocated + new.amount > v_inst_amount then raise exception 'Instalment allocation exceeds amount'; end if;
+  return new;
+end $;
+create trigger payment_allocation_guard before insert on public.payment_allocations
+for each row execute function public.finance_guard_allocation();
+
 create or replace function public.finance_refresh_schedule(p_schedule_id uuid)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_received numeric; v_total numeric; v_next date; v_status text;
@@ -282,8 +316,8 @@ begin
     into v_received, v_next from payment_instalments where schedule_id = p_schedule_id;
   select total_amount into v_total from payment_schedules where id = p_schedule_id for update;
   v_received := least(v_total, v_received);
-  v_status := case when v_received >= v_total then 'paid' when v_received > 0 then 'partially_paid'
-    when v_next < current_date then 'overdue' else 'upcoming' end;
+  v_status := case when v_received >= v_total then 'paid' when v_next < current_date then 'overdue'
+    when v_received > 0 then 'partially_paid' else 'upcoming' end;
   update payment_schedules set received_amount=v_received, next_due_on=v_next, status=v_status, updated_at=now() where id=p_schedule_id and status <> 'cancelled';
 end $$;
 
@@ -293,7 +327,7 @@ declare v_schedule uuid; v_sum numeric;
 begin
   select schedule_id into v_schedule from payment_instalments where id=coalesce(new.instalment_id,old.instalment_id) for update;
   select coalesce(sum(amount),0) into v_sum from payment_allocations where instalment_id=coalesce(new.instalment_id,old.instalment_id);
-  update payment_instalments set received_amount=least(amount,v_sum), status=case when v_sum >= amount then 'paid' when v_sum > 0 then 'partially_paid' when due_on < current_date then 'overdue' else 'upcoming' end where id=coalesce(new.instalment_id,old.instalment_id);
+  update payment_instalments set received_amount=least(amount,v_sum), status=case when v_sum >= amount then 'paid' when due_on < current_date then 'overdue' when v_sum > 0 then 'partially_paid' else 'upcoming' end where id=coalesce(new.instalment_id,old.instalment_id);
   perform finance_refresh_schedule(v_schedule); return new;
 end $$;
 create trigger payment_allocation_refresh after insert or update or delete on public.payment_allocations for each row execute function public.finance_after_allocation();
@@ -341,7 +375,7 @@ begin
 end $$;
 
 create or replace function public.finance_dashboard_summary(p_from date, p_to date)
-returns jsonb language sql stable security definer set search_path = public as $$
+returns jsonb language sql stable security invoker set search_path = public as $
 with cash as (
   select coalesce(sum(amount) filter(where direction='credit'),0) received, coalesce(sum(amount) filter(where direction='debit'),0) paid from bank_transactions where booked_on between p_from and p_to
 ), sales as (
@@ -351,8 +385,8 @@ with cash as (
 ), expenses as (
   select coalesce(sum(t.amount),0) expense from bank_transactions t join financial_categories c on c.id=t.category_id where t.booked_on between p_from and p_to and t.direction='debit' and c.kind='operating_expense'
 ), latest as (select closing_balance from bank_statements where status='reconciled' order by statement_date desc, imported_at desc limit 1), recv as (select coalesce(sum(outstanding_amount),0) outstanding from payment_schedules where status not in ('paid','cancelled')), expected as (select coalesce(sum(amount-received_amount),0) amount from payment_instalments where due_on between current_date and current_date+30 and status not in ('paid','cancelled')), stock as (select count(*) units,coalesce(sum(coalesce(landed_cost,allocated_landed_cost,purchase_cost,0)),0) value from inventory_units where status not in ('sold','returned'))
-select jsonb_build_object('bank_balance',(select closing_balance from latest),'cash_received',cash.received,'cash_paid',cash.paid,'net_cash_flow',cash.received-cash.paid,'recognised_revenue',sales.revenue,'operating_expenses',expenses.expense,'gross_profit',case when costs.cost is null then null else sales.revenue-costs.cost end,'gross_margin',case when costs.cost is null or sales.revenue=0 then null else round((sales.revenue-costs.cost)/sales.revenue*100,2) end,'net_profit',case when costs.cost is null then null else sales.revenue-costs.cost-expenses.expense end,'outstanding_receivables',recv.outstanding,'expected_30_days',expected.amount,'inventory_units',stock.units,'inventory_value',stock.value) from cash,sales,costs,expenses,recv,expected,stock
-$$;
+select jsonb_build_object('bank_balance',(select closing_balance from latest),'cash_received',cash.received,'cash_paid',cash.paid,'net_cash_flow',cash.received-cash.paid,'recognised_revenue',sales.revenue,'operating_expenses',expenses.expense,'gross_profit',case when costs.cost is null then null else sales.revenue-costs.cost end,'gross_margin',case when costs.cost is null or sales.revenue=0 then null else round((sales.revenue-costs.cost)/sales.revenue*100,2) end,'net_profit',case when costs.cost is null then null else sales.revenue-costs.cost-expenses.expense end,'outstanding_receivables',recv.outstanding,'expected_30_days',expected.amount,'inventory_units',stock.units,'inventory_value',stock.value) from cash,sales,costs,expenses,recv,expected,stock where public.is_pogon_admin()
+$;
 
 -- Atomic, idempotent statement commit used only by the service-role importer.
 create or replace function public.finance_commit_bank_statement(p_statement jsonb, p_transactions jsonb)
@@ -389,6 +423,11 @@ revoke delete on public.bank_accounts,public.financial_categories,public.bank_st
 grant execute on function public.finance_dashboard_summary(date,date),public.finance_record_manual_payment(uuid,numeric,date,text),public.finance_allocate_bank_payment(uuid,uuid,numeric),public.finance_move_inventory(uuid,text,text) to authenticated;
 revoke all on function public.finance_commit_bank_statement(jsonb,jsonb) from public,anon,authenticated;
 grant execute on function public.finance_commit_bank_statement(jsonb,jsonb) to service_role;
+-- These internal privileged functions must not be callable through the public Data API.
+revoke all on function public.finance_refresh_schedule(uuid), public.finance_after_allocation(), public.finance_guard_allocation() from public, anon, authenticated;
+revoke all on function public.finance_record_manual_payment(uuid,numeric,date,text), public.finance_allocate_bank_payment(uuid,uuid,numeric), public.finance_move_inventory(uuid,text,text), public.finance_dashboard_summary(date,date) from public, anon;
+-- Payments must be inserted through audited RPCs (or the guarded backend service role).
+revoke insert, update, delete on public.payment_allocations from authenticated;
 
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('finance-documents','finance-documents',false,20971520,array['application/pdf','text/csv','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']) on conflict(id) do update set public=false;
 create policy finance_admin_read_documents on storage.objects for select to authenticated using(bucket_id='finance-documents' and public.is_pogon_admin());
