@@ -278,7 +278,7 @@ create index allocation_transaction_idx on public.payment_allocations (bank_tran
 -- Keep cash allocations consistent even when server-side service_role importers write directly.
 -- Lock the bank transaction first, then the instalment, to serialize concurrent allocations.
 create or replace function public.finance_guard_allocation()
-returns trigger language plpgsql security definer set search_path = public as $
+returns trigger language plpgsql security definer set search_path = public as $guard$
 declare v_tx_amount numeric; v_tx_currency char(3); v_tx_direction text; v_statement_status text;
         v_tx_allocated numeric; v_inst_amount numeric; v_inst_currency char(3);
         v_inst_status text; v_inst_allocated numeric;
@@ -304,7 +304,7 @@ begin
     where instalment_id = new.instalment_id;
   if v_inst_allocated + new.amount > v_inst_amount then raise exception 'Instalment allocation exceeds amount'; end if;
   return new;
-end $;
+end $guard$;
 create trigger payment_allocation_guard before insert on public.payment_allocations
 for each row execute function public.finance_guard_allocation();
 
