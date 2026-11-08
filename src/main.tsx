@@ -66,7 +66,7 @@
     },
   };
 
-  const privateRoute = route === "/checkout" || route.startsWith("/payment/") || new URLSearchParams(window.location.search).get("admin") === "1";
+  const privateRoute = route === "/checkout" || route.startsWith("/payment/") || route === "/admin" || route.startsWith("/admin/") || new URLSearchParams(window.location.search).get("admin") === "1";
 
   if (privateRoute) {
     setPageMetadata({

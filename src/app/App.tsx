@@ -7,6 +7,7 @@ import { PaymentBranding } from './components/PaymentBranding';
 import { PromotionBanner } from './components/PromotionBanner';
 import { HeroBackgroundVideo } from './components/HeroBackgroundVideo';
 const AdminLeads = lazy(() => import('./components/AdminLeads').then((m) => ({ default: m.AdminLeads })));
+const FinanceApp = lazy(() => import('./components/finance/FinanceApp').then((m) => ({ default: m.FinanceApp })));
 const TicTacToeGame = lazy(() => import('./components/TicTacToeGame').then((m) => ({ default: m.TicTacToeGame })));
 import { submitLead } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
@@ -1299,8 +1300,14 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
 
   const isAdminPath = typeof window !== 'undefined'
     && (window.location.pathname === '/admin' || window.location.pathname === '/admin/');
+  const isFinancePath = typeof window !== 'undefined'
+    && /^\/admin\/finance(?:\/(?:analytics|payments|inventory))?\/?$/.test(window.location.pathname);
   const isAdminLeadsRoute = typeof window !== 'undefined'
     && (isAdminPath || new URLSearchParams(window.location.search).get('admin') === '1');
+
+  if (isFinancePath) {
+    return <Suspense fallback={<div className="min-h-screen bg-[#f4f4f2]" />}><FinanceApp /></Suspense>;
+  }
 
   if (isAdminLeadsRoute) {
     if (isAdminPath && (window.location.pathname !== '/admin' || window.location.search || window.location.hash)) {

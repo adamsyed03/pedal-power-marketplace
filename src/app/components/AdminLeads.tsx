@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowUpDown, CalendarCheck, Check, Download, FilterX, Lock, LogOut, PackageCheck, Plus, RefreshCw, Target, Users, X } from 'lucide-react';
+import { ArrowUpDown, CalendarCheck, Check, Download, FilterX, Landmark, Lock, LogOut, PackageCheck, Plus, RefreshCw, Target, Users, X } from 'lucide-react';
 import { AdminSession, createLead, fetchLeads, fetchPaidOrders, Lead, PaidOrder, refreshAdminSession, signInAdmin, SUPABASE_ADMIN_EMAIL, updateLead } from '../../lib/supabase';
 import { AdminOrdersPanel } from './AdminOrdersPanel';
 
@@ -331,6 +331,7 @@ export function AdminLeads() {
             <p className="mt-2 text-sm text-black/55">Shared Supabase database · {leads.length} {leads.length === 1 ? 'lead' : 'leads'} · {paidOrders.length} paid {paidOrders.length === 1 ? 'order' : 'orders'}</p>
           </div>
           <div className="flex flex-wrap gap-3">
+            <a href="/admin/finance" className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-black/80"><Landmark className="size-4 text-[#7fff00]" />Finance</a>
             <button type="button" onClick={scrollToOrders} aria-controls="completed-orders" className="inline-flex items-center gap-2 rounded-full bg-[#7fff00] px-5 py-3 text-sm font-black text-black shadow-sm transition hover:bg-[#70e600]"><PackageCheck className="size-4" />Completed orders<span className="rounded-full bg-black px-2 py-0.5 text-xs text-[#7fff00]">{paidOrdersError ? '!' : paidOrders.length}</span></button>
             <button type="button" onClick={() => { setIsAddingLead((current) => !current); setCreateError(''); }} aria-expanded={isAddingLead} aria-controls="manual-lead-form" className="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-blue-800">{isAddingLead ? <X className="size-4" /> : <Plus className="size-4" />}{isAddingLead ? 'Cancel' : 'Add lead'}</button>
             <button type="button" onClick={() => void refresh()} disabled={loading} className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold disabled:opacity-40"><RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} />Refresh</button>

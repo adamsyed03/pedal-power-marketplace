@@ -60,6 +60,10 @@ export const submitLead = async (lead: Omit<Lead, 'id' | 'created_at' | 'updated
   trackGoogleAdsLead();
 };
 
+// Finance uses the same authenticated PostgREST transport as the CRM so there
+// is one browser key, one session and one RLS boundary.
+export const supabaseRequest = request;
+
 export type ManualLeadInput = Partial<Pick<Lead, 'name' | 'phone' | 'city' | 'todo' | 'medium' | 'stage' | 'date_contacted' | 'comment'>>;
 
 const MANUAL_LEAD_OPTIONAL_COLUMNS = ['city', 'todo', 'medium', 'stage', 'date_contacted', 'comment'] as const;
