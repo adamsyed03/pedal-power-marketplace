@@ -35,6 +35,8 @@ Verify that RLS is enabled on every new table and that a non-admin authenticated
 - `GMAIL_TOKEN_ENCRYPTION_KEY` — 32 random bytes encoded as base64 or 64 hex characters. Example generation: `openssl rand -base64 32`.
 - `GMAIL_OAUTH_STATE_SECRET` — at least 32 random bytes, e.g. `openssl rand -base64 32`.
 - `CRON_SECRET` — a long random value used by Vercel Cron, e.g. `openssl rand -hex 32`.
+- `POGON_BANK_ACCOUNT_NUMBER` — the exact Banca Intesa RSD account number on the statements, configured only on the server.
+- `FINANCE_AUTOMATCH_ENABLED=false` — leave off until the matching rules have been validated.
 
 Never prefix these names with `VITE_`; doing so would expose them to the browser. Configure all values for Production and the intended Preview environment, then redeploy.
 
@@ -46,7 +48,7 @@ Never prefix these names with `VITE_`; doing so would expose them to the browser
 
 1. Run `npm test` and `npm run build`.
 2. Confirm `/admin` is unchanged and `/admin/finance` requires the same Supabase admin login.
-3. Connect Gmail and use **Import now** for a small current batch.
+3. Connect the Gmail account receiving the original Banca Intesa statements and use **Import now** for a small current batch.
 4. Compare the statement opening balance, credits, debits, closing balance, and PDF with Banca Intesa. Any difference must remain in `review` status.
 5. For historical backfill, call `POST /api/finance/import?backfill=1` with the admin bearer token. The importer processes Gmail pages idempotently and records import attempts in `finance_import_runs`. Full chronological, resumable backfill needs validation before production use.
 6. Import inventory from CSV after preview. Minimum headers: `model,chassis_number`; supported optional headers include `status,received_on,purchase_cost,landed_cost,retail_price,currency,storage_location,battery_status,notes`.
