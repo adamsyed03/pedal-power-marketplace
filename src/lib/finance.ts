@@ -69,7 +69,7 @@ export const financeApi = {
   schedules: (token: string) => json<PaymentSchedule[]>('/rest/v1/payment_schedules?select=id,customer_name,bicycle_model,total_amount,received_amount,outstanding_amount,currency,status,payment_method,expected_payer,next_due_on&order=created_at.desc&limit=200', token),
   instalments: (token: string) => json<Instalment[]>('/rest/v1/payment_instalments?select=id,schedule_id,sequence_no,due_on,amount,received_amount,status&order=due_on.asc&limit=500', token),
   matchSuggestions: (token: string) => json<any[]>('/rest/v1/payment_match_suggestions?select=id,suggested_amount,confidence,reasons,status,bank_transaction_id,instalment_id,bank_transactions(amount,currency,booked_on,counterparty_name,description,payment_reference,payment_allocations(amount)),payment_instalments(amount,received_amount,due_on,sequence_no,payment_schedules(customer_name,expected_payer))&status=eq.pending&order=confidence.desc&limit=100', token),
-  leads: (token: string) => json<any[]>('/rest/v1/leads?select=id,name,phone,stage&order=name.asc&limit=1000', token),
+  leads: (token: string) => json<any[]>('/rest/v1/leads?select=id,name,phone&order=name.asc&limit=1000', token),
   orders: async (token: string) => {
     const response = await fetch('/api/admin/orders', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
     if (!response.ok) throw new Error('Orders could not be loaded.');
