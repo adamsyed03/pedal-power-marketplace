@@ -40,7 +40,7 @@ Never prefix these names with `VITE_`; doing so would expose them to the browser
 
 ## 4. Scheduler
 
-`vercel.json` calls `/api/finance/import?scheduled=1` hourly. The server checks `Europe/London` and imports only when local time is 18:00. The unique `(scheduled, UK calendar date)` import-run constraint is the database lock, so retries and the repeated autumn DST hour cannot process the day twice. Vercel sends `Authorization: Bearer $CRON_SECRET` automatically when that project variable is configured.
+`vercel.json` calls `/api/finance/import?scheduled=1` hourly. The server checks `Europe/London` and imports only when local time is 18:00. The unique `(scheduled, UK calendar date)` import-run constraint prevents duplicate scheduled runs, including across the autumn DST change. A failed scheduled run requires manual recovery; it will not be retried automatically that day. Vercel sends `Authorization: Bearer $CRON_SECRET` automatically when that project variable is configured.
 
 ## 5. Validation and first backfill
 
@@ -48,12 +48,14 @@ Never prefix these names with `VITE_`; doing so would expose them to the browser
 2. Confirm `/admin` is unchanged and `/admin/finance` requires the same Supabase admin login.
 3. Connect Gmail and use **Import now** for a small current batch.
 4. Compare the statement opening balance, credits, debits, closing balance, and PDF with Banca Intesa. Any difference must remain in `review` status.
-5. For historical backfill, call `POST /api/finance/import?backfill=1` with the admin bearer token. The importer processes Gmail pages chronologically/idempotently, records progress in `finance_import_runs`, and can safely resume.
+5. For historical backfill, call `POST /api/finance/import?backfill=1` with the admin bearer token. The importer processes Gmail pages idempotently and records import attempts in `finance_import_runs`. Full chronological, resumable backfill needs validation before production use.
 6. Import inventory from CSV after preview. Minimum headers: `model,chassis_number`; supported optional headers include `status,received_on,purchase_cost,landed_cost,retail_price,currency,storage_location,battery_status,notes`.
 
 ## 6. Operational notes
 
 - Original statements are private Storage objects; OAuth tokens are AES-256-GCM encrypted and readable only by service-role backend code.
-- Exact, high-confidence payment matches can auto-allocate. Ambiguous matches remain in `payment_match_suggestions` for review.
+- Automatic payment allocation is OFF by default. To enable it after validating real statements, set `FINANCE_AUTOMATCH_ENABLED=true` server-side. Ambiguous matches remain in `payment_match_suggestions` for review.
+- OAuth requests bind the state to an HttpOnly same-site cookie; the callback requires this cookie.
+- Import only allocates payments for statements that reconcile successfully.
 - Bank cash flow is separate from P&L. Gross/net profit remains unavailable until landed costs and expense categories are sufficiently recorded.
 - Meta Ads and Google Ads cost metrics intentionally show as unavailable until reporting APIs and attribution are connected.
