@@ -40,7 +40,7 @@ Never prefix these names with `VITE_`; doing so would expose them to the browser
 
 ## 4. Scheduler
 
-`vercel.json` calls `/api/finance/import?scheduled=1` hourly. The server checks `Europe/London` and imports only when local time is 18:00. The unique `(scheduled, UK calendar date)` import-run constraint prevents duplicate scheduled runs, including across the autumn DST change. A failed scheduled run requires manual recovery; it will not be retried automatically that day. Vercel sends `Authorization: Bearer $CRON_SECRET` automatically when that project variable is configured.
+`vercel.json` calls `/api/finance/import?scheduled=1` at 17:00 UTC and 18:00 UTC using separate, Hobby-compatible daily cron jobs. The server checks `Europe/London` and imports only when local time is between 18:00 and 18:59. Vercel Hobby does not guarantee minute-level cron precision, so imports may start later within that hour. The unique `(scheduled, UK calendar date)` import-run constraint prevents duplicate scheduled runs, including across the autumn DST change. A failed scheduled run requires manual recovery; it will not be retried automatically that day. Vercel sends `Authorization: Bearer $CRON_SECRET` automatically when that project variable is configured.
 
 ## 5. Validation and first backfill
 
