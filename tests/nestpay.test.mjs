@@ -40,7 +40,7 @@ const productionEnv = {
 };
 
 test('server calculates authoritative product total and ignores browser price', () => {
-  assert.deepEqual(calculateOrderTotal('glide', 2).totalRsd, 330_000);
+  assert.deepEqual(calculateOrderTotal('glide', 2).totalRsd, 300_000);
   assert.throws(() => calculateOrderTotal('glide', 0), /INVALID_QUANTITY/);
   assert.throws(() => calculateOrderTotal('glide', 100), /INVALID_QUANTITY/);
   assert.throws(() => calculateOrderTotal('unknown', 1), /INVALID_PRODUCT/);
@@ -66,7 +66,7 @@ test('accessory prices are server-authoritative and unavailable products cannot 
 test('mixed-model totals are authoritative and quantities are not capped at five', () => {
   const cart = calculateCartTotal([{ product: 'glide', quantity: 7 }, { product: 'cargo', quantity: 2 }]);
   assert.equal(cart.totalQuantity, 9);
-  assert.equal(cart.subtotalRsd, 1_415_000);
+  assert.equal(cart.subtotalRsd, 1_310_000);
   assert.throws(() => calculateCartTotal([{ product: 'glide', quantity: 1 }, { product: 'glide', quantity: 2 }]), /DUPLICATE_PRODUCT/);
 });
 
@@ -77,15 +77,15 @@ test('MILEBANJA sets each Cargo bike to 120,000 RSD without discounting other mo
   ]);
   const discounted = applyPromotion(cart, '  milebanja  ');
   assert.equal(discounted.promoCode, 'MILEBANJA');
-  assert.equal(discounted.originalSubtotalRsd, 425_000);
+  assert.equal(discounted.originalSubtotalRsd, 410_000);
   assert.equal(discounted.discountRsd, 20_000);
-  assert.equal(discounted.subtotalRsd, 405_000);
+  assert.equal(discounted.subtotalRsd, 390_000);
   assert.deepEqual(discounted.items.find((item) => item.product === 'cargo'), {
     product: 'cargo', name: 'Pogon Cargo', category: 'bike', quantity: 2,
     originalUnitPriceRsd: 130_000, unitPriceRsd: 120_000,
     lineTotalRsd: 240_000, discountRsd: 20_000, promoCode: 'MILEBANJA',
   });
-  assert.equal(discounted.items.find((item) => item.product === 'glide').unitPriceRsd, 165_000);
+  assert.equal(discounted.items.find((item) => item.product === 'glide').unitPriceRsd, 150_000);
 });
 
 test('NBGD subtracts 5,000 RSD once from any order', () => {
@@ -95,10 +95,10 @@ test('NBGD subtracts 5,000 RSD once from any order', () => {
   ]);
   const discounted = applyPromotion(cart, ' nbgd ');
   assert.equal(discounted.promoCode, 'NBGD');
-  assert.equal(discounted.originalSubtotalRsd, 460_000);
+  assert.equal(discounted.originalSubtotalRsd, 430_000);
   assert.equal(discounted.discountRsd, 5_000);
-  assert.equal(discounted.subtotalRsd, 455_000);
-  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 455_000);
+  assert.equal(discounted.subtotalRsd, 425_000);
+  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 425_000);
   assert.equal(discounted.items[0].discountRsd, 5_000);
   assert.equal(discounted.items[0].promoCode, 'NBGD');
 });
@@ -110,10 +110,10 @@ test('POGONNS and ZIMA each subtract 5,000 RSD once from a bike order', () => {
       { product: 'glide', quantity: 1 },
     ]), promoCode.toLowerCase());
     assert.equal(discounted.promoCode, promoCode);
-    assert.equal(discounted.originalSubtotalRsd, 295_000);
+    assert.equal(discounted.originalSubtotalRsd, 280_000);
     assert.equal(discounted.discountRsd, 5_000);
-    assert.equal(discounted.subtotalRsd, 290_000);
-    assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 290_000);
+    assert.equal(discounted.subtotalRsd, 275_000);
+    assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 275_000);
   }
 });
 
@@ -123,12 +123,12 @@ test('GLIDEGIVEAWAY subtracts 15,000 RSD once and only when Glide is in the cart
     { product: 'glide', quantity: 1 },
   ]), ' glidegiveaway ');
   assert.equal(discounted.promoCode, 'GLIDEGIVEAWAY');
-  assert.equal(discounted.originalSubtotalRsd, 295_000);
+  assert.equal(discounted.originalSubtotalRsd, 280_000);
   assert.equal(discounted.discountRsd, 15_000);
-  assert.equal(discounted.subtotalRsd, 280_000);
+  assert.equal(discounted.subtotalRsd, 265_000);
   assert.equal(discounted.items[0].discountRsd, undefined);
   assert.equal(discounted.items[1].discountRsd, 15_000);
-  assert.equal(discounted.items[1].lineTotalRsd, 150_000);
+  assert.equal(discounted.items[1].lineTotalRsd, 135_000);
   assert.throws(
     () => applyPromotion(calculateCartTotal([{ product: 'cargo', quantity: 1 }]), 'GLIDEGIVEAWAY'),
     /PROMO_NOT_APPLICABLE/,
@@ -142,10 +142,10 @@ test('INSTAGRAM subtracts 4,000 RSD once from Cargo and Glide orders', () => {
   ]);
   const discounted = applyPromotion(cart, ' instagram ');
   assert.equal(discounted.promoCode, 'INSTAGRAM');
-  assert.equal(discounted.originalSubtotalRsd, 295_000);
+  assert.equal(discounted.originalSubtotalRsd, 280_000);
   assert.equal(discounted.discountRsd, 4_000);
-  assert.equal(discounted.subtotalRsd, 291_000);
-  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 291_000);
+  assert.equal(discounted.subtotalRsd, 276_000);
+  assert.equal(discounted.items.reduce((sum, item) => sum + item.lineTotalRsd, 0), 276_000);
   assert.equal(discounted.items[0].discountRsd, 4_000);
   assert.equal(discounted.items[0].promoCode, 'INSTAGRAM');
 });
@@ -181,7 +181,7 @@ test('INSTAGRAM rejects ineligible orders and discounts an eligible item in mixe
   assert.equal(discounted.discountRsd, 4_000);
   assert.equal(discounted.items[0].discountRsd, undefined);
   assert.equal(discounted.items[1].discountRsd, 4_000);
-  assert.equal(discounted.items[1].lineTotalRsd, 161_000);
+  assert.equal(discounted.items[1].lineTotalRsd, 146_000);
 });
 
 test('promo codes are server-normalized and fail closed when invalid or inapplicable', () => {
@@ -1501,7 +1501,7 @@ test('premium product pages are prerendered, routed, localized and linked from t
   const reviews = readFileSync(new URL('../src/lib/productReviews.ts', import.meta.url), 'utf8');
   const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
   const sitemap = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8');
-  const prices = { cargo: '130000', core: '135000', glide: '165000' };
+  const prices = { cargo: '130000', core: '135000', glide: '150000' };
   const ratings = { cargo: '4.8', core: '5', glide: '4.9' };
 
   assert.match(main, /<ProductPage productKey=\{productKey\}/);

@@ -1102,8 +1102,8 @@ export default function App({ market = 'serbia', heroVideoTest = false }: { mark
         { src: publicAsset('Glide 4.jpg'), alt: 'Pogon Glide product photo 4', width: 1254, height: 1254 },
       ],
       description: copy.glideDescription,
-      originalPrice: undefined,
-      price: '165.000,00 RSD',
+      originalPrice: '165.000,00 RSD',
+      price: '150.000,00 RSD',
       isUnavailable: false,
       mobileSpecs: { range: '90–110 km', power: '250W motor', battery: '1200 Wh' },
       points: tr({

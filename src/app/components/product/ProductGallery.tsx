@@ -14,16 +14,15 @@ type ProductGalleryProps = {
 
 type GalleryItem =
   | { kind: 'image'; image: ProductMedia }
-  | { kind: 'video'; video: ProductVideoSource; poster: string };
+  | { kind: 'video'; video: ProductVideoSource; poster: ProductMedia };
 
 export function ProductGallery({ media, language, productName, video }: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const touchStartX = useRef<number | null>(null);
-  const poster = media[0]?.src ?? '';
   const items: GalleryItem[] = media.flatMap((image, index) => index === 0 && video
-    ? [{ kind: 'image' as const, image }, { kind: 'video' as const, video, poster }]
+    ? [{ kind: 'image' as const, image }, { kind: 'video' as const, video, poster: image }]
     : [{ kind: 'image' as const, image }]);
   const active = items[activeIndex] ?? items[0];
   const controls = {
@@ -75,7 +74,7 @@ export function ProductGallery({ media, language, productName, video }: ProductG
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {active.kind === 'video' ? <ProductVideo src={active.video.src} mimeType={active.video.mimeType} poster={active.poster} title={active.video.title} className="h-full w-full" /> : <ImageWithFallback
+          {active.kind === 'video' ? <ProductVideo src={active.video.src} mimeType={active.video.mimeType} poster={active.poster.src} title={active.video.title} className="h-full w-full" /> : <ImageWithFallback
             src={active.image.src}
             alt={localize(active.image.alt, language)}
             width={active.image.width}
@@ -111,7 +110,7 @@ export function ProductGallery({ media, language, productName, video }: ProductG
               className={`relative aspect-square w-[4.5rem] flex-none overflow-hidden border bg-[#f3f3f1] p-0.5 transition-all sm:w-[4.75rem] ${index === activeIndex ? 'border-black shadow-[inset_0_-3px_0_#7fff00]' : 'border-black/10 opacity-65 hover:border-black/40 hover:opacity-100'}`}
             >
               {item.kind === 'video'
-                ? <><ImageWithFallback src={item.poster} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover object-center" /><span className="absolute inset-0 grid place-items-center bg-black/20 text-white"><span className="grid size-8 place-items-center rounded-full bg-black/70"><Play className="ml-0.5 size-3.5 fill-current" /></span></span></>
+                ? <><ImageWithFallback src={item.poster.src} alt="" width={item.poster.width} height={item.poster.height} loading="lazy" decoding="async" className="h-full w-full object-cover object-center" /><span className="absolute inset-0 grid place-items-center bg-black/20 text-white"><span className="grid size-8 place-items-center rounded-full bg-black/70"><Play className="ml-0.5 size-3.5 fill-current" /></span></span></>
                 : <ImageWithFallback src={item.image.src} alt="" width={item.image.width} height={item.image.height} loading="lazy" decoding="async" className="h-full w-full object-cover object-center" />}
             </button>
           ))}
@@ -134,7 +133,7 @@ export function ProductGallery({ media, language, productName, video }: ProductG
           <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-auto p-4 sm:p-10">
             <button type="button" onClick={() => show(activeIndex - 1)} aria-label={controls.previous} className="absolute left-3 z-10 inline-grid size-11 place-items-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm sm:left-6"><ChevronLeft className="size-6" /></button>
             {active.kind === 'video'
-              ? <ProductVideo src={active.video.src} mimeType={active.video.mimeType} poster={active.poster} title={active.video.title} active={isLightboxOpen} className="h-full w-full" />
+              ? <ProductVideo src={active.video.src} mimeType={active.video.mimeType} poster={active.poster.src} title={active.video.title} active={isLightboxOpen} className="h-full w-full" />
               : <ImageWithFallback src={active.image.src} alt={localize(active.image.alt, language)} width={active.image.width} height={active.image.height} className="max-h-full max-w-full object-contain transition-transform duration-200" style={{ transform: `scale(${zoom})` }} />}
             <button type="button" onClick={() => show(activeIndex + 1)} aria-label={controls.next} className="absolute right-3 z-10 inline-grid size-11 place-items-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm sm:right-6"><ChevronRight className="size-6" /></button>
           </div>

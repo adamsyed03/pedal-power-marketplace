@@ -54,7 +54,7 @@ Koristite kanonske stranice proizvoda za aktuelne cene i specifikacije. Deklaris
 ### Pogon Glide
 - Kanonska stranica: https://ridepogon.com/products/glide/
 - Namena: Gradski električni bicikl
-- Cena: 165.000 RSD
+- Cena: 150.000 RSD
 - Motor: 250 W, u zadnjem točku
 - Baterija: 1200 Wh
 - Deklarisani domet: Do 90 km
