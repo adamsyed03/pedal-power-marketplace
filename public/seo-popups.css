@@ -1,0 +1,94 @@
+/* Promo bar, lead popup, contact widget and mobile sticky CTA for static SEO pages.
+   Mirrors the behaviour of the equivalents in src/app/App.tsx. */
+
+.promo-bar { border-bottom: 1px solid var(--ink); background: var(--lime); color: var(--ink); }
+.promo-bar a { display: flex; min-height: 42px; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; text-align: center; text-decoration: none; }
+.promo-bar a:hover { background: rgba(0, 0, 0, .05); }
+.promo-tag { border-radius: 999px; background: var(--ink); color: var(--lime); padding: 4px 10px; font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.promo-bar strong { font-weight: 900; }
+.promo-bar del { margin-left: 4px; opacity: .6; font-weight: 500; }
+.promo-cta { font-weight: 900; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Lead popup */
+.lp-overlay { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .75); backdrop-filter: blur(12px); opacity: 0; transition: opacity .22s ease; }
+.lp-overlay.is-open { opacity: 1; }
+.lp-overlay[hidden] { display: none; }
+.lp-dialog { position: relative; width: 100%; max-width: 384px; overflow: hidden; border-radius: 32px 32px 0 0; background: #0c0c0c; color: #fff; box-shadow: 0 -20px 80px rgba(0, 0, 0, .7); transform: translateY(80px); transition: transform .42s cubic-bezier(.22, 1, .36, 1); }
+.lp-overlay.is-open .lp-dialog { transform: none; }
+.lp-dialog::before { content: ""; display: block; height: 3px; background: linear-gradient(90deg, transparent, var(--lime), transparent); }
+.lp-body { padding: 24px 24px 32px; }
+.lp-close { position: absolute; right: 16px; top: 16px; display: flex; width: 32px; height: 32px; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: none; color: rgba(255, 255, 255, .35); font-size: 22px; line-height: 1; cursor: pointer; }
+.lp-close:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+/* Logo.png is a square with lots of padding around the wordmark — trim it with negative margins. */
+.lp-logo { display: block; width: 104px; height: auto; margin: -36px 0 -14px -8px; filter: brightness(0) invert(1); }
+.lp-title { margin: 0; color: #fff; font-size: 32px; font-weight: 900; line-height: 1.1; }
+.lp-title span { color: var(--lime); }
+.lp-text { margin: 10px 0 20px; color: rgba(255, 255, 255, .45); font-size: 14px; line-height: 1.6; }
+.lp-field { display: flex; align-items: center; overflow: hidden; border: 1px solid rgba(255, 255, 255, .1); border-radius: 16px; background: rgba(255, 255, 255, .06); }
+.lp-field:focus-within { border-color: rgba(127, 255, 0, .5); }
+.lp-field.has-error { border-color: rgba(248, 113, 113, .6); }
+.lp-prefix { padding: 0 8px 0 16px; border-right: 1px solid rgba(255, 255, 255, .1); color: rgba(255, 255, 255, .3); font-size: 14px; font-weight: 700; }
+.lp-field input { min-width: 0; flex: 1; border: 0; background: transparent; color: #fff; padding: 16px 16px 16px 12px; font: inherit; font-size: 16px; outline: none; }
+.lp-field input::placeholder { color: rgba(255, 255, 255, .25); }
+.lp-error { margin: 8px 0 0; color: #f87171; font-size: 12px; }
+.lp-submit { width: 100%; margin-top: 10px; border: 0; border-radius: 16px; background: var(--lime); color: var(--ink); padding: 16px; font: inherit; font-size: 14px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.lp-submit:hover { background: #b2ff4d; }
+.lp-submit:disabled { opacity: .6; cursor: wait; }
+.lp-or { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: rgba(255, 255, 255, .25); font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
+.lp-or::before, .lp-or::after { content: ""; height: 1px; flex: 1; background: rgba(255, 255, 255, .08); }
+.lp-whatsapp { display: flex; width: 100%; align-items: center; justify-content: center; gap: 10px; border: 1px solid rgba(255, 255, 255, .1); border-radius: 16px; background: rgba(255, 255, 255, .05); color: rgba(255, 255, 255, .75); padding: 14px; font-size: 14px; font-weight: 700; text-decoration: none; }
+.lp-whatsapp:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+.lp-whatsapp svg { color: #25d366; }
+.lp-done { padding: 32px 0; text-align: center; }
+.lp-check { display: flex; width: 64px; height: 64px; align-items: center; justify-content: center; margin: 0 auto 20px; border-radius: 50%; background: rgba(127, 255, 0, .15); box-shadow: inset 0 0 0 1px rgba(127, 255, 0, .3); color: var(--lime); }
+.lp-done h2 { margin: 0; color: #fff; font-size: 24px; font-weight: 900; }
+.lp-done p { margin: 8px 0 0; color: rgba(255, 255, 255, .45); font-size: 14px; }
+.lp-done button { margin-top: 28px; border: 1px solid rgba(255, 255, 255, .15); border-radius: 999px; background: none; color: rgba(255, 255, 255, .65); padding: 12px 32px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.lp-done button:hover { background: rgba(255, 255, 255, .05); color: #fff; }
+body.lp-locked { overflow: hidden; }
+
+/* Desktop contact widget */
+.cw { position: fixed; right: 24px; bottom: 24px; z-index: 70; display: none; flex-direction: column; align-items: flex-end; gap: 12px; }
+.cw-panel { width: min(20rem, calc(100vw - 2rem)); border: 1px solid rgba(0, 0, 0, .1); border-radius: 24px; background: var(--white); padding: 20px; box-shadow: 0 24px 70px rgba(0, 0, 0, .2); }
+.cw-panel[hidden] { display: none; }
+.cw-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.cw-kicker { margin: 0; color: #65c900; font-size: 10px; font-weight: 700; letter-spacing: .2em; }
+.cw-head h3 { margin: 4px 0 0; font-size: 18px; font-weight: 900; }
+.cw-x { border: 0; border-radius: 50%; background: none; color: rgba(0, 0, 0, .4); padding: 4px 8px; font-size: 20px; line-height: 1; cursor: pointer; }
+.cw-x:hover { background: rgba(0, 0, 0, .05); color: var(--ink); }
+.cw-panel p { margin: 12px 0 0; color: rgba(0, 0, 0, .55); font-size: 14px; line-height: 1.6; }
+.cw-book { display: flex; width: 100%; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; border: 0; border-radius: 999px; background: var(--ink); color: var(--white); padding: 12px 20px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: transform .2s; }
+.cw-book svg { color: var(--lime); }
+.cw-book:hover, .cw-toggle:hover { transform: scale(1.03); }
+.cw-toggle { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--ink); color: var(--white); padding: 12px 20px 12px 12px; font: inherit; font-size: 14px; font-weight: 700; box-shadow: 0 12px 35px rgba(0, 0, 0, .3); cursor: pointer; transition: transform .2s; }
+.cw-toggle-icon { display: flex; width: 32px; height: 32px; align-items: center; justify-content: center; border-radius: 50%; background: var(--lime); color: var(--ink); }
+
+/* Mobile sticky CTA */
+.sticky-cta { position: fixed; inset: auto 0 0; z-index: 60; border-top: 1px solid rgba(217, 216, 210, .6); background: rgba(255, 255, 255, .95); padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 30px rgba(0, 0, 0, .08); backdrop-filter: blur(12px); }
+.sticky-cta-inner { display: flex; max-width: 512px; align-items: center; gap: 8px; margin: 0 auto; }
+.sticky-book { display: inline-flex; height: 48px; flex: 1; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 999px; background: var(--lime); color: var(--ink); font: inherit; font-size: 12px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 8px 20px rgba(127, 255, 0, .25); cursor: pointer; }
+.sticky-icon { display: inline-flex; width: 48px; height: 48px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 50%; color: var(--ink); }
+.sticky-phone { border: 2px solid var(--line); background: var(--white); }
+.sticky-wa { background: #25d366; }
+.sticky-book:active, .sticky-icon:active { transform: scale(.98); }
+
+@media (min-width: 640px) {
+  .lp-overlay { align-items: center; padding: 16px; }
+  .lp-dialog { border-radius: 32px; box-shadow: 0 30px 90px rgba(0, 0, 0, .7); }
+  .lp-body { padding: 24px 32px 32px; }
+}
+
+@media (min-width: 768px) {
+  .cw { display: flex; }
+  .sticky-cta { display: none; }
+}
+
+@media (max-width: 767px) {
+  /* keep the footer clear of the sticky CTA bar */
+  body.has-sticky-cta { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
+  .promo-bar a { font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-overlay, .lp-dialog { transition: none; }
+}

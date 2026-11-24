@@ -114,7 +114,7 @@ function faqSchema(faq) {
   };
 }
 
-function documentHead({ title, description, path, image = '/Excellent4.optimized.jpg', imageWidth = 1448, imageHeight = 1086, type = 'website', schema = [] }) {
+function documentHead({ title, description, path, image = '/Excellent4.optimized.jpg', imageWidth = 1448, imageHeight = 1086, type = 'website', schema = [], extraHead = '' }) {
   const canonical = absolute(path);
   return `<!doctype html>
 <html lang="sr-Latn">
@@ -145,7 +145,7 @@ function documentHead({ title, description, path, image = '/Excellent4.optimized
   <meta name="twitter:description" content="${esc(description)}">
   <meta name="twitter:image" content="${encodedImage(image)}">
   <meta name="twitter:image:alt" content="${esc(title)}">
-  ${jsonLd({ '@context': 'https://schema.org', '@graph': schema })}
+  ${jsonLd({ '@context': 'https://schema.org', '@graph': schema })}${extraHead}
 </head>`;
 }
 
@@ -170,6 +170,9 @@ function siteHeader(current) {
 function breadcrumbs(items) {
   return `<nav class="breadcrumbs wrap" aria-label="Putanja stranice"><ol>${items.map((item, index) => `<li>${item.path && index < items.length - 1 ? `<a href="${item.path}">${esc(item.name)}</a>` : esc(item.name)}</li>`).join('')}</ol></nav>`;
 }
+
+// Black Friday offer — mirrors the promo on /electric-bikes/ and products.ts (Glide 150.000 RSD, list 165.000 RSD).
+const promoBar = () => `<aside class="promo-bar" aria-label="Black Friday ponuda"><a href="/products/glide/"><span class="promo-tag">Black Friday</span><span>Pogon Glide sada <strong>150.000 RSD</strong> <del>165.000 RSD</del></span><span class="promo-cta">Pogledajte ponudu →</span></a></aside>`;
 
 function footer() {
   return `<footer><div class="wrap"><strong>${esc(site.legalName)}</strong><p>Električni bicikli i oprema za gradsku mobilnost u Srbiji</p><p class="footer-contact"><a href="mailto:${site.email}">${esc(site.email)}</a><span aria-hidden="true">·</span><a href="tel:${site.phone}">063 15 05 003</a></p><div class="footer-links"><a href="/elektricni-bicikli/">Modeli</a><a href="/vodici/">Vodiči</a><a href="/dostava/">Dostava širom Srbije</a><a href="/o-nama/">O nama</a><a href="/partneri/">Partneri i saradnja</a><a href="/kontakt/">Kontakt</a><a href="/uslovi-kupovine">Uslovi kupovine</a></div></div></footer>
@@ -311,8 +314,8 @@ function renderHub() {
     '@type': 'CollectionPage', '@id': `${absolute(path)}#webpage`, url: absolute(path), name: title, description, inLanguage: 'sr-Latn',
     isPartOf: { '@id': `${site.url}/#website` }, mainEntity: itemList,
   }, itemList, breadcrumb([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli', path }]), faqSchema(faq)];
-  return `${documentHead({ title, description, path, image: '/Cargo Main.jpg', schema })}
-<body>${siteHeader('models')}<main id="sadrzaj">
+  return `${documentHead({ title, description, path, image: '/Cargo Main.jpg', schema, extraHead: '\n  <link rel="stylesheet" href="/seo-popups.css">' })}
+<body>${promoBar()}${siteHeader('models')}<main id="sadrzaj">
 ${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli' }])}
 <section class="page-hero page-hero--split wrap"><div><div class="eyebrow">Pogon Mobility · Srbija</div><h1>Električni bicikli za grad, posao i dostavu</h1><p class="lead">Pogon električni bicikli kombinuju električnu asistenciju sa praktičnim ramovima, baterijama i opremom za svakodnevne rute. Uporedite gradski, sklopivi i cargo model bez nagađanja o neobjavljenim specifikacijama.</p><div class="button-row"><a class="button" href="#modeli">Uporedite modele</a><a class="button-secondary" href="/#test-voznja">Zakažite test vožnju</a></div></div><aside class="hero-card"><strong>Tri modela, tri jasne namene.</strong><p>Glide za grad, Core za sklapanje i duže rute, Cargo za rad i prevoz stvari.</p></aside></section>
 <section class="topic-section topic-section--white" id="modeli"><div class="wrap"><div class="section-heading"><h2>Pogon modeli električnih bicikala</h2><p>Svaka kartica vodi na potpunu statičku stranicu modela sa specifikacijama, realnim ograničenjima dometa i odgovorima na česta pitanja.</p></div><div class="cards">${models.map((model) => `<article class="card"><img src="${encodedImage(model.image).replace(site.url, '')}" alt="${esc(model.imageAlt)}" width="${model.imageWidth}" height="${model.imageHeight}" loading="lazy" decoding="async"><div class="card-body"><div class="eyebrow">${esc(model.type)}</div><h2>${esc(model.name)}</h2><p>${esc(model.intro)}</p><p><strong>${esc(model.priceDisplay)}</strong></p><a href="/elektricni-bicikli/${model.slug}/">Pogledajte ${esc(model.name)} →</a></div></article>`).join('')}</div></div></section>
@@ -328,7 +331,8 @@ ${breadcrumbs([{ name: 'Pogon', path: '/' }, { name: 'Električni bicikli' }])}
 <section class="related"><div class="wrap"><div class="section-heading"><h2>Vodiči za sigurniju odluku</h2><p>Od izbora modela do baterije, troška i održavanja.</p></div><div class="related-links">${relatedGuideLinks(['kako-izabrati-elektricni-bicikl','domet-elektricnog-bicikla','elektricni-bicikl-za-grad'])}</div><p><a class="button" href="/vodici/">Pogledajte sve vodiče</a></p></div></section>
 ${faqHtml(faq, 'Česta pitanja o električnim biciklima')}
 <section class="final-cta wrap"><h2>Uporedite Pogon modele uživo</h2><p>Izaberite dva modela koji odgovaraju vašoj ruti, pa na test vožnji proverite položaj, asistenciju i kočenje.</p><div class="button-row"><a class="button" href="/#test-voznja">Zakažite test vožnju</a><a class="button-secondary" href="/kontakt/">Pitajte Pogon tim</a></div></section>
-</main>${footer()}</body></html>`;
+</main>${footer()}
+<script src="/seo-popups.js" defer></script></body></html>`;
 }
 
 function renderGuide(guide) {

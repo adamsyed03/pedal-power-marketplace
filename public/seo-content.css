@@ -108,7 +108,7 @@ h3 { margin: 1.6em 0 .45em; font-size: 21px; line-height: 1.22; }
 .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .partner-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .card { display: flex; min-width: 0; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 24px; background: var(--white); }
-.card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #e9e8e3; }
+.card img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: center 60%; background: #e9e8e3; }
 .card-body { display: flex; flex: 1; flex-direction: column; padding: 22px; }
 .card-body h2, .card-body h3 { margin: 0 0 9px; font-size: 23px; }
 .card-body p { color: var(--muted); }
