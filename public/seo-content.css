@@ -44,7 +44,8 @@ img { max-width: 100%; }
 .page-hero { padding: 54px 0 62px; }
 .page-hero--split { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr); gap: 52px; align-items: center; }
 .page-hero figure { margin: 0; }
-.page-hero figure img { display: block; width: 100%; height: clamp(360px, 42vw, 540px); border-radius: 30px; background: var(--white); object-fit: cover; }
+/* Product photos sit in square frames; main photos carry an inline object-position so the whole bike stays in frame. */
+.page-hero figure img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 30px; background: var(--white); }
 .page-hero figcaption { margin-top: 8px; color: var(--muted); font-size: 12px; text-align: center; }
 .eyebrow { color: #397700; font-size: 12px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
 h1, h2, h3 { text-wrap: balance; }
@@ -108,7 +109,7 @@ h3 { margin: 1.6em 0 .45em; font-size: 21px; line-height: 1.22; }
 .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .partner-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .card { display: flex; min-width: 0; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 24px; background: var(--white); }
-.card img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: center 60%; background: #e9e8e3; }
+.card img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; background: #e9e8e3; }
 .card-body { display: flex; flex: 1; flex-direction: column; padding: 22px; }
 .card-body h2, .card-body h3 { margin: 0 0 9px; font-size: 23px; }
 .card-body p { color: var(--muted); }
@@ -218,7 +219,7 @@ footer p { color: #aaa; }
   .page-hero { padding: 38px 0 46px; }
   .page-hero--split { gap: 22px; }
   .page-hero figure { grid-row: 1; }
-  .page-hero figure img { height: min(112vw, 520px); border-radius: 22px; }
+  .page-hero figure img { border-radius: 22px; }
   h1 { font-size: clamp(40px, 12vw, 58px); }
   .article-aside { position: static; }
   .toc ol, .fact-list { grid-template-columns: 1fr; }

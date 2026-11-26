@@ -41,6 +41,7 @@ export const models = [
     image: '/Core main.jpg',
     imageWidth: 1086,
     imageHeight: 1448,
+    imagePosition: '50% 86%',
     imageAlt: 'Pogon Cargo električni bicikl za gradske dostave',
     gallery: [
       ['/Core 1.jpg', 'Pogon Cargo električni bicikl bočni prikaz', 1122, 1402],
@@ -84,6 +85,7 @@ export const models = [
     image: '/Cargo Main.jpg',
     imageWidth: 1122,
     imageHeight: 1402,
+    imagePosition: '50% 65%',
     imageAlt: 'Pogon Core kompaktan sklopivi električni bicikl',
     gallery: [
       ['/Cargo fold.jpg', 'Sklopljen Pogon Core električni bicikl', 1122, 1402],
@@ -128,6 +130,7 @@ export const models = [
     image: '/Glide main.jpg',
     imageWidth: 941,
     imageHeight: 1672,
+    imagePosition: '50% 61%',
     imageAlt: 'Pogon Glide gradski električni bicikl',
     gallery: [
       ['/Glide 1.jpg', 'Pogon Glide gradski električni bicikl bočni prikaz', 1254, 1254],
