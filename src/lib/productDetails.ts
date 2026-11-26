@@ -134,8 +134,8 @@ export const productDetails: Record<BikeKey, ProductDetails> = {
     route: '/products/cargo/',
     eyebrow: l('Električni bicikl za posao i duge gradske rute', 'Work-ready electric bike for long city routes', 'Электровелосипед для работы и длинных городских маршрутов'),
     valueProposition: l('Jedna Samsung baterija, deklarisani domet 140–150 km i GPS zaštita za dan koji ne staje.', 'One Samsung battery, a declared range of 140–150 km and GPS protection for days that do not stop.', 'Один аккумулятор Samsung, заявленный запас хода 140–150 км и GPS-защита для длинного рабочего дня.'),
-    seoTitle: l('Pogon Cargo | Električni bicikl sa dometom 140–150 km', 'Pogon Cargo | Electric bike with a 140–150 km range', 'Pogon Cargo | Электровелосипед с запасом хода 140–150 км'),
-    seoDescription: l('Pogon Cargo sa jednom Samsung baterijom kapaciteta 1512 Wh, motorom od 250 W, GPS zaštitom i hidrauličnim kočnicama.', 'Pogon Cargo with one 1512 Wh Samsung battery, a 250 W motor, GPS protection and hydraulic brakes.', 'Pogon Cargo с одним аккумулятором Samsung ёмкостью 1512 Вт·ч, мотором 250 Вт, GPS-защитой и гидравлическими тормозами.'),
+    seoTitle: l('Električni bicikl za dostavu | Pogon Cargo', 'Pogon Cargo | Electric bike with a 140–150 km range', 'Pogon Cargo | Электровелосипед с запасом хода 140–150 км'),
+    seoDescription: l('Tražite električni bicikl za dostavu? Pogon Cargo ima bateriju od 1512 Wh, motor od 250 W i hidraulične kočnice. Pogledajte cenu i zakažite probnu vožnju.', 'Pogon Cargo with one 1512 Wh Samsung battery, a 250 W motor, GPS protection and hydraulic brakes.', 'Pogon Cargo с одним аккумулятором Samsung ёмкостью 1512 Вт·ч, мотором 250 Вт, GPS-защитой и гидравлическими тормозами.'),
     gallery: [
       { src: '/Core main.jpg', alt: l('Pogon Cargo električni bicikl — glavni prikaz', 'Pogon Cargo electric bike — main view', 'Электровелосипед Pogon Cargo — главный вид'), width: 1086, height: 1448 },
       { src: '/Core 1.jpg', alt: l('Pogon Cargo električni bicikl — bočni prikaz', 'Pogon Cargo electric bike — side view', 'Электровелосипед Pogon Cargo — вид сбоку'), width: 1122, height: 1402 },
